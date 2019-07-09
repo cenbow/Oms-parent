@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.define.OrderMapper">
+
+<!-- 	<select id="getOrderGoodsByOrderSn" parameterType="java.lang.String" resultType="com.work.shop.oms.common.bean.StockGoods">
+		SELECT
+			oi.`order_from` AS 'orderFrom',
+			oi.referer AS 'referer',
+			og.`depot_code` AS 'depotCode',
+			og.`custom_code` AS 'customCode',
+			og.`goods_number` AS 'goodsNumber',
+			og.`extension_code` AS 'extensionCode',
+			og.`extension_id` AS 'extensionId',
+			og.`send_number` AS 'sendNumber'
+		FROM
+			order_info oi,
+			order_goods og,
+			order_ship os
+		WHERE
+			oi.`order_sn` = og.`order_sn`
+		AND oi.`order_sn` = os.`order_sn`
+		AND og.`depot_code` = os.`depot_code`
+		AND os.`shipping_status` = 0
+		AND oi.`order_sn` = #{orderSn,jdbcType=VARCHAR}
+		GROUP BY
+			og.`depot_code`,
+			og.`custom_code`
+		ORDER BY
+			og.`depot_code` /* maxscale route to master */;
+	
+	</select> -->
+
+
+	<!-- <update id="occupyNewOrderGoodsSendNumber" parameterType="Map">
+		UPDATE 
+			order_goods og 
+		SET 
+			og.`send_number` = #{sendNumber,jdbcType=SMALLINT}
+			og.`has_stock` = #{hasStock,jdbcType=INTEGER}
+		WHERE 
+				og.`order_sn` = #{orderSn,jdbcType=VARCHAR}
+			AND 
+				og.`depot_code` = #{depotCode,jdbcType=VARCHAR}
+			AND 
+				og.`custom_code` =  #{customCode,jdbcType=VARCHAR}
+	</update> -->
+	
+	<!-- 复活订单 -->
+	<!-- <update id="reviveOrder" parameterType="Map">
+		UPDATE order_info oi
+			LEFT JOIN order_ship os ON oi.order_sn = os.order_sn
+			LEFT JOIN order_pay op ON oi.order_sn = op.order_sn
+			SET oi.lock_status = 0
+			<choose>
+				<when test="orderStatus==7">
+				已完成回退为 已确认
+				,oi.order_status = 1
+				</when>
+				<when test="payStatus == 3">
+				将已结算 回退为 已付款
+				,oi.pay_status = 2,op.pay_status = 2
+				</when>
+				<when test="shipStatus == 3 or shipStatus == 5">
+				将已发货/客户已收货回退为未发货
+				,oi.ship_status = 0,os.shipping_status = 0
+				</when>
+				<when test="orderStatus == 2 or orderStatus == 11">
+				取消,关闭回退为 已确认
+				,oi.order_status = 1
+				</when>
+			</choose>
+			WHERE oi.order_sn=#{orderSn,jdbcType=VARCHAR}
+	</update>	 -->
+
+
+<!-- 通过订单号获取11位码 -->
+	<!-- <select id="getCustumCodeAndOrderFromByOrderSn" parameterType="java.lang.String" resultType="Map">
+		SELECT
+			oi.`order_from`,
+			og.`custom_code`,
+			oi.`referer`,
+			sum(og.`goods_number`) AS goods_number
+		FROM
+			order_info oi,
+			order_goods og
+		WHERE
+			oi.`order_sn` = og.`order_sn`
+		AND og.`order_sn` = #{orderSn,jdbcType=VARCHAR}
+		GROUP BY
+			og.`custom_code`
+		
+	</select> -->
+	
+	
+	<!-- <select id="getSystemConfigStockNumber" resultType="java.lang.Integer">
+		SELECT 
+			VALUE
+		FROM 
+			system_config
+		WHERE
+		CODE = 'inventoryFz'
+	</select> -->
+	
+<!-- 	<select id="getVedpotCodeByOrderSn" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		SELECT 
+			vdepot_code 
+		FROM 
+			channel_info ci 
+		INNER JOIN
+			order_info oi
+		ON 
+			ci.channel_code = oi.order_from
+		WHERE 
+			oi.order_sn=#{orderSn,jdbcType=VARCHAR}
+	</select> -->
+
+		<!-- 获取11位码-->
+<!-- 	<select id="thirteenChangeToEleven" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		SELECT 
+			pbl.`custum_code` 
+		FROM 
+			product_barcode_list pbl 
+		WHERE 
+			pbl.`custum_code` = #{sku,jdbcType=VARCHAR}
+		OR 
+			pbl.`sku_sn`= #{sku,jdbcType=VARCHAR}
+	</select> -->
+
+<!-- 	<select id="selectOrderGoodsByGoods" resultType="com.work.shop.oms.bean.OrderGoods" parameterType="Map">
+	
+		SELECT
+			DISTINCT
+			og.custom_code as customCode,
+			og.order_sn as orderSn
+		FROM
+			order_goods og
+		WHERE
+			og.order_sn = #{orderSn,jdbcType=VARCHAR}
+		AND og.custom_code IN 
+		<foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+			#{item, ,jdbcType=VARCHAR}
+		</foreach>
+	</select>
+ -->
+
+	<!-- 要的 -->
+	<select id="selectGoodsReturnChangeBySn" resultType="com.work.shop.oms.common.bean.GoodsReturnChangeInfoVO" 
+			parameterType="java.lang.String">
+		SELECT
+			grc.id id,
+			grc.order_sn orderSn,
+			grc.return_type returnType,
+			grc.return_sum returnSum,
+			grc.reason reason,
+			grc.EXPLAIN `explain`,
+			grc.tag_type tagType,
+			grc.exterior_type exteriorType,
+			grc.gift_type giftType,
+			grc.contact_name contactName,
+			grc.contact_mobile contactMobile,
+			grc.contact_telephone_area contactTelephoneArea,
+			grc.contact_telephone contactTelephone,
+			grc.contact_telephone_branch contactTelephoneBranch,
+			grc.return_goods_img returnGoodsImg,
+			og.extension_id extensionId,
+			og.extension_code extensionCode,
+			og.custom_code custumCode,
+			og.goods_price goodsPrice,
+			og.transaction_price transactionPrice,
+			og.discount,
+			og.goods_number goodsNumber,
+			og.promotion_desc promotionDesc,
+			og.use_card useCard
+		FROM
+			goods_return_change grc
+		LEFT JOIN master_order_goods og ON og.master_order_sn = grc.order_sn and og.custom_code = grc.sku_sn
+		WHERE
+			grc.order_sn = #{orderSn, ,jdbcType=VARCHAR}
+		<!-- AND (
+			og.split_to = '0'
+			OR og.split_to IS NULL
+		) -->
+		AND og.extension_code = 'common';
+	</select>
+	
+	<!-- 	<select id="selectUserOrderInfo" resultType="com.work.shop.oms.api.param.bean.user.UserOrderInfo" 
+			parameterType="Map">
+		select oi.order_sn orderSn,
+			   oi.user_id userId,
+			   oi.consignee consignee,
+			   oi.order_status orderStatus,
+			   oi.pay_status payStatus,
+			   orn.pay_status rpayStatus,
+			   oi.ship_status shipStatus,
+			   oi.order_type orderType,
+			   oi.add_time addTime,
+			   op.pay_name payName,
+			   op.pay_id payId,
+			   oi.trans_type transType,
+			   oi.total_payable totalPayable,
+			   oi.pay_total_fee payTotalfee,
+			   oi.total_fee totalfee,
+			   op.surplus surplus,
+			   oie.is_review isReview,
+			   oi.goods_count goodsCount,
+			   oi.bonus bonus,
+			   oi.money_treatment_type moneyTreatmentType
+			   from 
+			   <if test="isHistory == 0">
+			   order_info 
+			    </if>
+			   <if test="isHistory == 1">
+			   order_info_history 
+			    </if>
+			   oi 
+			   left join order_goods og on og.order_sn=oi.order_sn			   
+			   left join order_pay op on op.order_sn=oi.order_sn
+			   left join order_info_extend oie on oie.order_sn=oi.order_sn
+			   left join order_return orn on orn.relating_order_sn=oi.order_sn
+			   where oi.user_id= #{userId,jdbcType=VARCHAR} and oi.order_from=#{channelCode,jdbcType=VARCHAR} 
+			   <if test="orderSn != null">
+			   and oi.order_sn like #{orderSn,jdbcType=VARCHAR} or og.custom_code like #{goodsSn,jdbcType=VARCHAR}
+			   </if>
+			   邦购网最近三个月订单列表不显示关闭订单
+			   <if test="isHistory == 0">
+				   <if test="type != 6">				   
+			     and oi.order_status not in (2,3)
+			     	</if>
+			    </if>
+			    查询未评论或者已评论订单 1已评论  0未评论
+			    <if test="isReview == 1">
+			    and oie.is_review = 1
+			    </if>
+			     <if test="isReview == 0">
+			    and oie.is_review = 0
+			    </if>
+			    
+			   <choose>
+			    <when test="type == 1">
+                 待付款订单
+			    and oi.pay_status in (0,1) and oi.order_status=0
+			    </when>
+			    <when test="type == 2">
+                 待发货订单
+			    and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and oi.ship_status in (0,1)
+			    </when>
+			    <when test="type == 3">
+                 待收货订单
+			    and oi.ship_status = 3
+			    </when>
+			    <when test="type == 4">
+                 已收货订单
+			     and oi.ship_status = 5  
+			    </when>
+			    <when test="type == 5">
+                 完成订单
+			     and oi.ship_status = 5 and oie.is_review = 1
+			    </when>
+			    <when test="type == 6">
+                 交易关闭订单
+			    and  oi.order_status in (2,3) 
+			    </when>
+			    <when test="type==9">
+			     等待补款
+			     and  money_treatment_type=1
+			    </when>
+			    <when test="type==10">
+			     正在换货
+			     and oi.order_type = 2 and oi.pay_status=2
+			    </when>
+			    <when test="type==11">
+			     换货成功
+			     and oi.order_type = 2 and  oi.ship_status = 5
+			    </when>
+			    </choose>
+			    GROUP BY oi.order_sn  order by oi.add_time desc
+	            </select>
+	 -->
+
+		
+<!-- 			<select id="selectUserOrderReturnInfo" resultType="com.work.shop.oms.api.param.bean.user.UserOrderInfo" 
+			parameterType="Map">
+			select 
+			oi.order_sn orderSn,
+			orn.return_sn orderReturnSn,
+			orn.pay_status rpayStatus,
+			orn.return_allgoods_count returnAllgoodsCount,
+			orn.add_time addTime
+			   from 
+			   <if test="isHistory == 0">
+			   order_info 
+			    </if>
+			   <if test="isHistory == 1">
+			   order_info_history 
+			    </if>
+			   oi 
+			   inner join order_return orn on orn.relating_order_sn=oi.order_sn	   
+			   where oi.user_id= #{userId,jdbcType=VARCHAR} and oi.order_from=#{channelCode,jdbcType=VARCHAR}
+			    and orn.return_type=1 and orn.relating_order_type=0 and orn.return_order_status !=4
+			    <if test="type==7">
+			     正在退货
+			     and  orn.pay_status in (0,2)
+			    </if>
+			    <if test="type==8">
+			     退货成功
+			     and orn.pay_status = 1
+			    </if>
+			   order by oi.add_time desc
+	</select> -->
+	
+	
+	<!-- 
+	<select id="selectUserOrderInfoByMobile" resultType="com.work.shop.oms.api.param.bean.user.UserOrderInfo" 
+			parameterType="Map">
+		       select oi.order_sn orderSn,
+			   oi.user_id userId,
+			   oi.consignee consignee,
+			   oi.order_status orderStatus,
+			   oi.pay_status payStatus,
+			   oi.ship_status shipStatus,
+			   oi.order_type orderType,
+			   oi.trans_type transType,
+			   oi.add_time addTime,
+			   op.pay_name payName,
+			   op.pay_id payId,
+			   oie.is_review isReview,
+			   oi.total_fee totalfee,
+			   oi.total_payable totalPayable,
+			   oi.surplus surplus,
+			   oi.bonus bonus,
+			   oi.goods_count goodsCount,
+			   oi.goods_amount goodsAmount,
+			   oi.shipping_total_fee shippingTotalFee
+			   from 
+			   <if test="isHistory == 0">
+			   order_info 
+			    </if>
+			   <if test="isHistory == 1">
+			   order_info_history 
+			    </if>
+			   oi 
+			   left join order_goods og on og.order_sn=oi.order_sn
+			   left join order_info_extend oie on oie.order_sn=oi.order_sn			   
+			   left join order_pay op on op.order_sn=oi.order_sn
+			   where oi.user_id= #{userId,jdbcType=VARCHAR} and oi.order_from=#{channelCode,jdbcType=VARCHAR} 
+			   <choose>
+			    <when test="type == 1">
+                 待付款订单
+			    and oi.pay_status in (0,1) and oi.order_status=0
+			    </when>
+			    <when test="type == 2">
+                 待发货订单
+			    and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and oi.ship_status in (0,1)
+			    </when>
+			    <when test="type == 3">
+                 待收货订单
+			    and oi.ship_status = 3
+			    </when>
+			    <when test="type == 4">
+                 已收货订单,未评价
+			     and oi.ship_status = 5 and oie.is_review = 0
+			    </when>
+			    <when test="type == 5">
+                 已收货订单,已评价
+			     and oi.ship_status = 5 and oie.is_review = 1
+			    </when>
+			    <when test="type == 6">
+                 交易关闭订单
+			    and  oi.order_status in (2,3) 
+			    </when>
+			    </choose>
+			    GROUP BY oi.order_sn  order by oi.add_time desc
+			     limit ${start},${end}
+	            </select>
+		 -->
+		 
+	<!-- 	 
+		<select id="selectUserOrderInfoByMobileCount" resultType="java.lang.Integer" 
+			     parameterType="Map">
+		       select count(1) from (select count(oi.order_sn) from 
+			   <if test="isHistory == 0">
+			   order_info 
+			    </if>
+			   <if test="isHistory == 1">
+			   order_info_history 
+			    </if>
+			   oi 
+			   left join order_goods og on og.order_sn=oi.order_sn
+			   left join order_info_extend oie on oie.order_sn=oi.order_sn			   
+			   left join order_pay op on op.order_sn=oi.order_sn
+			   where oi.user_id= #{userId,jdbcType=VARCHAR} and oi.order_from=#{channelCode,jdbcType=VARCHAR} 
+			   <choose>
+			    <when test="type == 1">
+                 待付款订单
+			    and oi.pay_status in (0,1) and oi.order_status=0
+			    </when>
+			    <when test="type == 2">
+                 待发货订单
+			    and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and oi.ship_status in (0,1)
+			    </when>
+			    <when test="type == 3">
+                 待收货订单
+			    and oi.ship_status = 3
+			    </when>
+				<when test="type == 4">
+                 已收货订单,为评价
+			     and oi.ship_status = 5 and oie.is_review = 0
+			    </when>
+			    <when test="type == 5">
+                 已收货订单,已评价
+			     and oi.ship_status = 5 and oie.is_review = 1
+			    </when>
+			    <when test="type == 6">
+                 交易关闭订单
+			    and  oi.order_status in (2,3) 
+			    </when>
+			    </choose>
+			    GROUP BY oi.order_sn  order by oi.add_time desc) aa
+	            </select>
+	 -->
+<!-- 
+  <resultMap id="OrderPayResultMap" type="com.work.shop.oms.bean.OrderPay">
+    
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+   
+    <id column="pay_sn" jdbcType="VARCHAR" property="paySn" />
+    <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+    <result column="pay_id" jdbcType="TINYINT" property="payId" />
+    <result column="pay_name" jdbcType="VARCHAR" property="payName" />
+    <result column="pay_note" jdbcType="VARCHAR" property="payNote" />
+    <result column="bonus_id" jdbcType="VARCHAR" property="bonusId" />
+    <result column="surplus" jdbcType="DECIMAL" property="surplus" />
+    <result column="integral" jdbcType="DECIMAL" property="integral" />
+    <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+    <result column="pay_totalfee" jdbcType="DECIMAL" property="payTotalfee" />
+    <result column="pay_fee" jdbcType="DECIMAL" property="payFee" />
+    <result column="how_surplus" jdbcType="VARCHAR" property="howSurplus" />
+    <result column="prepay_time" jdbcType="TIMESTAMP" property="prepayTime" />
+    <result column="user_pay_time" jdbcType="TIMESTAMP" property="userPayTime" />
+    <result column="creat_time" jdbcType="TIMESTAMP" property="creatTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="receiving_lasttime" jdbcType="TIMESTAMP" property="receivingLasttime" />
+    <result column="confirm_lasttime" jdbcType="TIMESTAMP" property="confirmLasttime" />
+    <result column="pay_lasttime" jdbcType="TIMESTAMP" property="payLasttime" />
+    <result column="return_order_sn" jdbcType="VARCHAR" property="returnOrderSn" />
+    <result column="pay_remindtime" jdbcType="TIMESTAMP" property="payRemindtime" />
+  </resultMap>
+   -->
+  
+<!--   <sql id="OrderPay_Column_List">
+    
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+   
+    pay_sn, order_sn, pay_status, pay_id, pay_name, pay_note, bonus_id, surplus, integral, 
+    pay_time, pay_totalfee, pay_fee, how_surplus, prepay_time, user_pay_time, creat_time, 
+    update_time, receiving_lasttime, confirm_lasttime, pay_lasttime, return_order_sn, 
+    pay_remindtime
+  </sql> -->
+  
+  
+	<!-- <select id="selectMaxOrderPayByOrderSn" parameterType="java.lang.String" resultMap="OrderPayResultMap">
+		select
+		<include refid="OrderPay_Column_List" />
+		from order_pay
+		where pay_sn = (select max(pay_sn) from order_pay where order_sn = #{orderSn,jdbcType=VARCHAR})
+	</select>
+	 -->
+	 
+	 
+	<!-- 	<select id="selectUserOrderCountByType" resultType="java.lang.Integer" 
+			parameterType="Map">
+		select count(*)
+			   from 
+			   order_info 
+			   oi 
+			   LEFT JOIN order_info_extend oie ON oie.order_sn=oi.order_sn
+			   <if test="type == 6">
+			   LEFT JOIN order_return orn ON oi.order_sn=orn.relating_order_sn
+			   </if>
+			   where oi.user_id= #{userId,jdbcType=VARCHAR} and oi.order_from=#{channelCode,jdbcType=VARCHAR} 
+			   <choose>
+			    <when test="type == 1">
+                 待付款订单
+			    and oi.pay_status in (0,1) and oi.order_status=0
+			    </when>
+			    <when test="type == 2">
+                 待发货订单
+			    and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and oi.ship_status in (0,1)
+			    </when>
+			    <when test="type == 3">
+                 待收货订单
+			    and oi.ship_status = 3
+			    </when>
+			    <when test="type == 4">
+                 已收货订单
+			     and oi.ship_status = 5 and oie.is_review = 0
+			    </when>
+			    <when test="type == 5">
+                 已评论
+			     and oi.ship_status = 5 and oie.is_review = 1
+			    </when>
+			    <when test="type == 6">
+                 退单数量
+                 and  orn.return_type=1 and return_order_status !=4
+			    </when>
+			    <when test="type == 7">
+                 交易关闭订单
+			    and  oi.order_status in (2,3) 
+			    </when>
+			    </choose>
+	</select> -->
+</mapper>

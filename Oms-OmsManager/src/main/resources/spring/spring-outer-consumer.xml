@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<!-- 卡券消费接口 -->
+	<dubbo:reference registry="bg-zookeeper" id="cardCartSearchServiceApi" 
+		 interface="com.work.shop.cardAPI.api.CardCartSearchServiceApi" check="false" timeout="20000" />
+	<!-- 前台红包试算 -->
+	<dubbo:reference registry="bg-zookeeper" group="${bg.dubbo.group}" 
+		id="platformCartAPI"  interface="com.work.shop.cart.api.OrderCartAPI" 
+		check="false" timeout="20000" />
+	<!-- 短信发送接口 -->
+	<dubbo:reference registry="sms-zookeeper"  
+		id="sMSService"  interface="com.work.shop.sms.send.api.SMSService" 
+		check="false" timeout="20000" />
+
+	<dubbo:reference registry="bg-zookeeper" id="bgProductService"
+		interface="com.work.shop.pca.service.BGProductService" check="false" timeout="10000"/>
+</beans>

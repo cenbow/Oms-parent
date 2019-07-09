@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.ProductBarcodeListDefinedMapper" >
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.ProductBarcodeList" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="goods_sn" property="goodsSn" jdbcType="VARCHAR" />
+    <result column="color_code" property="colorCode" jdbcType="VARCHAR" />
+    <result column="size_code" property="sizeCode" jdbcType="VARCHAR" />
+    <result column="sku_sn" property="skuSn" jdbcType="VARCHAR" />
+    <result column="barcode" property="barcode" jdbcType="VARCHAR" />
+    <result column="custum_code" property="custumCode" jdbcType="VARCHAR" />
+    <result column="spec_price" property="specPrice" jdbcType="DECIMAL" />
+    <result column="sale_count" property="saleCount" jdbcType="INTEGER" />
+    <result column="color_name" property="colorName" jdbcType="VARCHAR" />
+    <result column="color_series" property="colorSeries" jdbcType="VARCHAR" />
+    <result column="size_name" property="sizeName" jdbcType="VARCHAR" />
+    <result column="last_update_time" property="lastUpdateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, goods_sn, color_code, size_code, sku_sn, barcode, custum_code, spec_price, sale_count, 
+    color_name, color_series, size_name, last_update_time
+  </sql>
+  <select id="selectProductBarcodeList" resultMap="BaseResultMap" parameterType="hashmap" >
+    select 
+    <include refid="Base_Column_List" />
+    from product_barcode_list
+    where goods_sn = #{goodsSn,jdbcType=VARCHAR}
+    <if test="groupBy == 1">
+      GROUP BY size_code
+    </if>
+    <if test="groupBy == 2">
+      GROUP BY color_code
+    </if>
+  </select>
+	
+	<!-- 根据sku码查询颜色、尺码 -->
+	<select id="selectColorAndSizeBySKU" parameterType="java.lang.String" resultType="java.util.HashMap">
+		SELECT t.`color_name`AS colorname,
+			t.`size_name` AS sizename
+		FROM product_barcode_list t
+		WHERE t.`sku_sn` = #{skuSn,jdbcType=VARCHAR}
+	</select>
+</mapper>

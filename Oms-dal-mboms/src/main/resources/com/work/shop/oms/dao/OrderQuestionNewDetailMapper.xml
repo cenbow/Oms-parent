@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.OrderQuestionNewDetailMapper">
+  <resultMap id="OrderQuestionNewDetailMap" type="com.work.shop.oms.bean.OrderQuestionNewDetail">
+  	<id column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <id column="question_code" jdbcType="VARCHAR" property="questionCode" />
+    <result column="question_desc" jdbcType="VARCHAR" property="questionDesc" />
+    <result column="question_type" jdbcType="INTEGER" property="questionType" />
+    <result column="supplier_order_sn" jdbcType="VARCHAR" property="supplierOrderSn" />
+    <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+    <result column="type" jdbcType="SMALLINT" property="type" />
+  </resultMap>
+  
+  	<select id="getOrderQuestionNewDetail" parameterType="java.util.HashMap" resultMap="OrderQuestionNewDetailMap">
+    	SELECT 
+		  t.order_sn,
+		  t.question_code,
+		  t.question_desc,
+		  t.question_type,
+		  t.supplier_order_sn,
+		  t.add_time,
+		  a.name,
+		  a.note,
+		  a.type 
+		FROM
+		  distribute_question t 
+		  LEFT JOIN order_custom_define a 
+		    ON t.question_code = a.code  
+    	<where>
+    		<if test="orderSn!=null and orderSn!=''">
+    			and t.order_sn = #{orderSn}
+    		</if>
+    	</where> 
+    	/* maxscale route to master */;
+    </select>
+  
+</mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxActive" value="${redis.pool.maxActive}" />
+		<property name="maxIdle" value="${redis.pool.maxIdle}" />
+		<property name="maxWait" value="${redis.pool.maxWait}" />
+		<property name="testOnBorrow" value="${redis.pool.testOnBorrow}" />
+	</bean>
+
+	<bean id="redis1" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1" value="${redis.ip.1}" />
+		<constructor-arg index="2" value="${redis.port.1}" />
+	</bean>
+
+	<bean id="redis2" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1" value="${redis.ip.2}" />
+		<constructor-arg index="2" value="${redis.port.2}" />
+	</bean>
+
+	<bean id="redis3" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1" value="${redis.ip.3}" />
+		<constructor-arg index="2" value="${redis.port.3}" />
+	</bean>
+
+	<bean id="redisClient" class="com.work.shop.oms.redis.RedisClient">
+		<property name="jedisPool">
+			<array value-type="redis.clients.jedis.JedisPool">
+				<ref bean="redis1" />
+				<ref bean="redis2" />
+				<ref bean="redis3" />
+			</array>
+		</property>
+		<property name="ip">
+			<array value-type="java.lang.String">
+				<value>${redis.ip.1}</value>
+				<value>${redis.ip.2}</value>
+				<value>${redis.ip.3}</value>
+			</array>
+		</property>
+		<property name="port">
+			<array value-type="java.lang.String">
+				<value>${redis.port.1}</value>
+				<value>${redis.port.2}</value>
+				<value>${redis.port.3}</value>
+			</array>
+		</property>
+		<property name="dbIndex" value="${redis.dbIndex}" />
+		<property name="password" value="${redis.password}" />
+	</bean>
+
+</beans>

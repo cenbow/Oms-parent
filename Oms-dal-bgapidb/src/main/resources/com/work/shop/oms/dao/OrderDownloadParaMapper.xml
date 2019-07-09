@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.OrderDownloadParaMapper" >
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.bgapidb.OrderDownloadPara" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="channel_code" property="channelCode" jdbcType="VARCHAR" />
+    <result column="short_name" property="shortName" jdbcType="VARCHAR" />
+    <result column="short_text" property="shortText" jdbcType="VARCHAR" />
+    <result column="shop_code" property="shopCode" jdbcType="VARCHAR" />
+    <result column="lastUpdateTime" property="lastupdatetime" jdbcType="BIGINT" />
+    <result column="defaultHourOffset" property="defaulthouroffset" jdbcType="INTEGER" />
+    <result column="secPreOffset" property="secpreoffset" jdbcType="INTEGER" />
+    <result column="secAfterOffset" property="secafteroffset" jdbcType="INTEGER" />
+    <result column="threadNumbers" property="threadnumbers" jdbcType="INTEGER" />
+    <result column="tradeNumPerThread" property="tradenumperthread" jdbcType="INTEGER" />
+    <result column="tradeNumPerApi" property="tradenumperapi" jdbcType="INTEGER" />
+    <result column="use_queue" property="useQueue" jdbcType="INTEGER" />
+    <result column="redis_order" property="redisOrder" jdbcType="INTEGER" />
+    <result column="down2convert" property="down2convert" jdbcType="INTEGER" />
+    <result column="updateTime" property="updatetime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, channel_code, short_name, short_text, shop_code, lastUpdateTime, defaultHourOffset, 
+    secPreOffset, secAfterOffset, threadNumbers, tradeNumPerThread, tradeNumPerApi, use_queue, 
+    redis_order, down2convert, updateTime
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadParaExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from order_download_para
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    <if test="criteria.valid" >
+      <foreach collection="criteria.criteria" item="criterion" >
+        <if test="criterion.limitValue" >
+          limit ${criterion.value},${criterion.secondValue}
+        </if>
+      </foreach>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from order_download_para
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from order_download_para
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadParaExample" >
+    delete from order_download_para
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadPara" >
+    insert into order_download_para (id, channel_code, short_name, 
+      short_text, shop_code, lastUpdateTime, 
+      defaultHourOffset, secPreOffset, secAfterOffset, 
+      threadNumbers, tradeNumPerThread, tradeNumPerApi, 
+      use_queue, redis_order, down2convert, 
+      updateTime)
+    values (#{id,jdbcType=BIGINT}, #{channelCode,jdbcType=VARCHAR}, #{shortName,jdbcType=VARCHAR}, 
+      #{shortText,jdbcType=VARCHAR}, #{shopCode,jdbcType=VARCHAR}, #{lastupdatetime,jdbcType=BIGINT}, 
+      #{defaulthouroffset,jdbcType=INTEGER}, #{secpreoffset,jdbcType=INTEGER}, #{secafteroffset,jdbcType=INTEGER}, 
+      #{threadnumbers,jdbcType=INTEGER}, #{tradenumperthread,jdbcType=INTEGER}, #{tradenumperapi,jdbcType=INTEGER}, 
+      #{useQueue,jdbcType=INTEGER}, #{redisOrder,jdbcType=INTEGER}, #{down2convert,jdbcType=INTEGER}, 
+      #{updatetime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadPara" >
+    insert into order_download_para
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="channelCode != null" >
+        channel_code,
+      </if>
+      <if test="shortName != null" >
+        short_name,
+      </if>
+      <if test="shortText != null" >
+        short_text,
+      </if>
+      <if test="shopCode != null" >
+        shop_code,
+      </if>
+      <if test="lastupdatetime != null" >
+        lastUpdateTime,
+      </if>
+      <if test="defaulthouroffset != null" >
+        defaultHourOffset,
+      </if>
+      <if test="secpreoffset != null" >
+        secPreOffset,
+      </if>
+      <if test="secafteroffset != null" >
+        secAfterOffset,
+      </if>
+      <if test="threadnumbers != null" >
+        threadNumbers,
+      </if>
+      <if test="tradenumperthread != null" >
+        tradeNumPerThread,
+      </if>
+      <if test="tradenumperapi != null" >
+        tradeNumPerApi,
+      </if>
+      <if test="useQueue != null" >
+        use_queue,
+      </if>
+      <if test="redisOrder != null" >
+        redis_order,
+      </if>
+      <if test="down2convert != null" >
+        down2convert,
+      </if>
+      <if test="updatetime != null" >
+        updateTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="channelCode != null" >
+        #{channelCode,jdbcType=VARCHAR},
+      </if>
+      <if test="shortName != null" >
+        #{shortName,jdbcType=VARCHAR},
+      </if>
+      <if test="shortText != null" >
+        #{shortText,jdbcType=VARCHAR},
+      </if>
+      <if test="shopCode != null" >
+        #{shopCode,jdbcType=VARCHAR},
+      </if>
+      <if test="lastupdatetime != null" >
+        #{lastupdatetime,jdbcType=BIGINT},
+      </if>
+      <if test="defaulthouroffset != null" >
+        #{defaulthouroffset,jdbcType=INTEGER},
+      </if>
+      <if test="secpreoffset != null" >
+        #{secpreoffset,jdbcType=INTEGER},
+      </if>
+      <if test="secafteroffset != null" >
+        #{secafteroffset,jdbcType=INTEGER},
+      </if>
+      <if test="threadnumbers != null" >
+        #{threadnumbers,jdbcType=INTEGER},
+      </if>
+      <if test="tradenumperthread != null" >
+        #{tradenumperthread,jdbcType=INTEGER},
+      </if>
+      <if test="tradenumperapi != null" >
+        #{tradenumperapi,jdbcType=INTEGER},
+      </if>
+      <if test="useQueue != null" >
+        #{useQueue,jdbcType=INTEGER},
+      </if>
+      <if test="redisOrder != null" >
+        #{redisOrder,jdbcType=INTEGER},
+      </if>
+      <if test="down2convert != null" >
+        #{down2convert,jdbcType=INTEGER},
+      </if>
+      <if test="updatetime != null" >
+        #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadParaExample" resultType="java.lang.Integer" >
+    select count(*) from order_download_para
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update order_download_para
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.channelCode != null" >
+        channel_code = #{record.channelCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.shortName != null" >
+        short_name = #{record.shortName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.shortText != null" >
+        short_text = #{record.shortText,jdbcType=VARCHAR},
+      </if>
+      <if test="record.shopCode != null" >
+        shop_code = #{record.shopCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.lastupdatetime != null" >
+        lastUpdateTime = #{record.lastupdatetime,jdbcType=BIGINT},
+      </if>
+      <if test="record.defaulthouroffset != null" >
+        defaultHourOffset = #{record.defaulthouroffset,jdbcType=INTEGER},
+      </if>
+      <if test="record.secpreoffset != null" >
+        secPreOffset = #{record.secpreoffset,jdbcType=INTEGER},
+      </if>
+      <if test="record.secafteroffset != null" >
+        secAfterOffset = #{record.secafteroffset,jdbcType=INTEGER},
+      </if>
+      <if test="record.threadnumbers != null" >
+        threadNumbers = #{record.threadnumbers,jdbcType=INTEGER},
+      </if>
+      <if test="record.tradenumperthread != null" >
+        tradeNumPerThread = #{record.tradenumperthread,jdbcType=INTEGER},
+      </if>
+      <if test="record.tradenumperapi != null" >
+        tradeNumPerApi = #{record.tradenumperapi,jdbcType=INTEGER},
+      </if>
+      <if test="record.useQueue != null" >
+        use_queue = #{record.useQueue,jdbcType=INTEGER},
+      </if>
+      <if test="record.redisOrder != null" >
+        redis_order = #{record.redisOrder,jdbcType=INTEGER},
+      </if>
+      <if test="record.down2convert != null" >
+        down2convert = #{record.down2convert,jdbcType=INTEGER},
+      </if>
+      <if test="record.updatetime != null" >
+        updateTime = #{record.updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update order_download_para
+    set id = #{record.id,jdbcType=BIGINT},
+      channel_code = #{record.channelCode,jdbcType=VARCHAR},
+      short_name = #{record.shortName,jdbcType=VARCHAR},
+      short_text = #{record.shortText,jdbcType=VARCHAR},
+      shop_code = #{record.shopCode,jdbcType=VARCHAR},
+      lastUpdateTime = #{record.lastupdatetime,jdbcType=BIGINT},
+      defaultHourOffset = #{record.defaulthouroffset,jdbcType=INTEGER},
+      secPreOffset = #{record.secpreoffset,jdbcType=INTEGER},
+      secAfterOffset = #{record.secafteroffset,jdbcType=INTEGER},
+      threadNumbers = #{record.threadnumbers,jdbcType=INTEGER},
+      tradeNumPerThread = #{record.tradenumperthread,jdbcType=INTEGER},
+      tradeNumPerApi = #{record.tradenumperapi,jdbcType=INTEGER},
+      use_queue = #{record.useQueue,jdbcType=INTEGER},
+      redis_order = #{record.redisOrder,jdbcType=INTEGER},
+      down2convert = #{record.down2convert,jdbcType=INTEGER},
+      updateTime = #{record.updatetime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadPara" >
+    update order_download_para
+    <set >
+      <if test="channelCode != null" >
+        channel_code = #{channelCode,jdbcType=VARCHAR},
+      </if>
+      <if test="shortName != null" >
+        short_name = #{shortName,jdbcType=VARCHAR},
+      </if>
+      <if test="shortText != null" >
+        short_text = #{shortText,jdbcType=VARCHAR},
+      </if>
+      <if test="shopCode != null" >
+        shop_code = #{shopCode,jdbcType=VARCHAR},
+      </if>
+      <if test="lastupdatetime != null" >
+        lastUpdateTime = #{lastupdatetime,jdbcType=BIGINT},
+      </if>
+      <if test="defaulthouroffset != null" >
+        defaultHourOffset = #{defaulthouroffset,jdbcType=INTEGER},
+      </if>
+      <if test="secpreoffset != null" >
+        secPreOffset = #{secpreoffset,jdbcType=INTEGER},
+      </if>
+      <if test="secafteroffset != null" >
+        secAfterOffset = #{secafteroffset,jdbcType=INTEGER},
+      </if>
+      <if test="threadnumbers != null" >
+        threadNumbers = #{threadnumbers,jdbcType=INTEGER},
+      </if>
+      <if test="tradenumperthread != null" >
+        tradeNumPerThread = #{tradenumperthread,jdbcType=INTEGER},
+      </if>
+      <if test="tradenumperapi != null" >
+        tradeNumPerApi = #{tradenumperapi,jdbcType=INTEGER},
+      </if>
+      <if test="useQueue != null" >
+        use_queue = #{useQueue,jdbcType=INTEGER},
+      </if>
+      <if test="redisOrder != null" >
+        redis_order = #{redisOrder,jdbcType=INTEGER},
+      </if>
+      <if test="down2convert != null" >
+        down2convert = #{down2convert,jdbcType=INTEGER},
+      </if>
+      <if test="updatetime != null" >
+        updateTime = #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.work.shop.oms.bean.bgapidb.OrderDownloadPara" >
+    update order_download_para
+    set channel_code = #{channelCode,jdbcType=VARCHAR},
+      short_name = #{shortName,jdbcType=VARCHAR},
+      short_text = #{shortText,jdbcType=VARCHAR},
+      shop_code = #{shopCode,jdbcType=VARCHAR},
+      lastUpdateTime = #{lastupdatetime,jdbcType=BIGINT},
+      defaultHourOffset = #{defaulthouroffset,jdbcType=INTEGER},
+      secPreOffset = #{secpreoffset,jdbcType=INTEGER},
+      secAfterOffset = #{secafteroffset,jdbcType=INTEGER},
+      threadNumbers = #{threadnumbers,jdbcType=INTEGER},
+      tradeNumPerThread = #{tradenumperthread,jdbcType=INTEGER},
+      tradeNumPerApi = #{tradenumperapi,jdbcType=INTEGER},
+      use_queue = #{useQueue,jdbcType=INTEGER},
+      redis_order = #{redisOrder,jdbcType=INTEGER},
+      down2convert = #{down2convert,jdbcType=INTEGER},
+      updateTime = #{updatetime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+      <insert id="insertNativeSql" parameterType="String" >
+     ${value} 
+  </insert>
+  <update id="updateNativeSql" parameterType="String">
+      ${value} 
+  </update>
+  <delete id="deleteNativeSql" parameterType="String">
+      ${value} 
+  </delete>
+</mapper>

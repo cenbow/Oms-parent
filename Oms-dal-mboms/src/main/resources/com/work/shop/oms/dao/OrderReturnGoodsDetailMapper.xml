@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.OrderReturnGoodsDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.OrderReturnGoods" >
+  <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="relating_return_sn" property="relatingReturnSn" jdbcType="VARCHAR" />
+    <result column="custom_code" property="customCode" jdbcType="VARCHAR" />
+    <result column="goods_sn" property="goodsSn" jdbcType="VARCHAR" />
+    <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
+    <result column="goods_return_number" property="goodsReturnNumber" jdbcType="SMALLINT" />
+    <result column="goods_buy_number" property="goodsBuyNumber" jdbcType="SMALLINT" />
+    <result column="charge_back_count" property="chargeBackCount" jdbcType="INTEGER" />
+    <result column="have_return_count" property="haveReturnCount" jdbcType="INTEGER" />
+    <result column="market_price" property="marketPrice" jdbcType="DECIMAL" />
+    <result column="goods_price" property="goodsPrice" jdbcType="DECIMAL" />
+    <result column="extension_code" property="extensionCode" jdbcType="VARCHAR" />
+    <result column="extension_id" property="extensionId" jdbcType="VARCHAR" />
+    <result column="settlement_price" property="settlementPrice" jdbcType="DECIMAL" />
+    <result column="share_bonus" property="shareBonus" jdbcType="DECIMAL" />
+    <result column="share_settle" property="shareSettle" jdbcType="DECIMAL" />
+    <result column="os_depot_code" property="osDepotCode" jdbcType="VARCHAR" />
+    <result column="price_difference" property="priceDifference" jdbcType="DECIMAL" />
+    <result column="price_differ_num" property="priceDifferNum" jdbcType="SMALLINT" />
+    <result column="price_differ_reason" property="priceDifferReason" jdbcType="VARCHAR" />
+    <result column="return_reason" property="returnReason" jdbcType="VARCHAR" />
+    <result column="goods_thumb" property="goodsThumb" jdbcType="VARCHAR" />
+    <result column="goods_color_name" property="goodsColorName" jdbcType="VARCHAR" />
+    <result column="goods_size_name" property="goodsSizeName" jdbcType="VARCHAR" />
+    <result column="group_name" property="groupName" jdbcType="VARCHAR" />
+    <result column="is_real" property="isReal" jdbcType="INTEGER" />
+    <result column="is_gift" property="isGift" jdbcType="SMALLINT" />
+    <result column="rank_points" property="rankPoints" jdbcType="DECIMAL" />
+    <result column="pay_points" property="payPoints" jdbcType="DECIMAL" />
+    <result column="seller" property="seller" jdbcType="VARCHAR" />
+    <result column="is_good_received" property="isGoodReceived" jdbcType="TINYINT" />
+    <result column="checkin_status" property="checkinStatus" jdbcType="TINYINT" />
+    <result column="quality_status" property="qualityStatus" jdbcType="TINYINT" />
+    <result column="integral_money" property="integralMoney" jdbcType="DECIMAL" />
+    <result column="barcode" property="barcode" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="prodScanNum" property="prodscannum" jdbcType="SMALLINT" />
+    <result column="master_order_sn" property="masterOrderSn" jdbcType="VARCHAR" />
+    <result column="order_sn" property="orderSn" jdbcType="VARCHAR" />
+    <result column="storage_time_stamp" property="storageTimeStamp" jdbcType="VARCHAR" />
+    <result column="storage_status" property="storageStatus" jdbcType="VARCHAR" />
+    <result column="storage_treate_time" property="storageTreateTime" jdbcType="VARCHAR" />
+    <result column="checkin_time" property="checkinTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <select id="getReturnNumberByMasOrdSn" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+  	SELECT 
+	  t.relating_return_sn,
+	  t.custom_code,
+	  t.goods_sn,
+	  t.goods_name,
+	  SUM(t.goods_return_number) AS goods_return_number,
+	  SUM(t.goods_buy_number) AS goods_buy_number,
+	  t.market_price,
+	  t.goods_price,
+	  t.extension_code,
+	  t.settlement_price,
+	  t.share_bonus,
+	  t.share_settle,
+	  t.os_depot_code,
+	  t.checkin_status,
+	  t.master_order_sn,
+	  t.order_sn 
+	FROM
+	  order_return_goods t, order_return a
+  	WHERE a.return_sn = t.relating_return_sn
+  	and (a.return_type = '1' || a.return_type = '5') AND a.return_order_status != '4'
+	<if test="masterOrderSn!=null and masterOrderSn!=''">
+	   AND  a.master_order_sn = #{masterOrderSn}
+	</if>
+	<!-- 
+	WHERE t.relating_return_sn IN 
+	  (SELECT  a.return_sn  FROM order_return a 
+	  WHERE (a.return_type = '1' || a.return_type = '5') AND a.return_order_status!='4'
+	  <if test="masterOrderSn!=null and masterOrderSn!=''">
+	   AND  a.master_order_sn = #{masterOrderSn}
+	  </if>
+	  ) 
+	 -->
+	GROUP BY t.custom_code, t.extension_code,t.os_depot_code, t.goods_price, t.settlement_price, t.checkin_status 
+  </select>
+ 
+  <select id = "getReturnToErpData" parameterType = "map" resultType = "String">
+  	select org.relating_return_sn from order_return_goods org where org.to_erp =1 group by org.relating_return_sn 
+  </select>
+  <select id="getStorageTimesList" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+  	SELECT 
+	  s.storage_time_stamp,
+	  GROUP_CONCAT(s.custom_code) AS custom_code,
+	  s.storage_status,
+	  s.storage_treate_time,
+	  s.relating_return_sn,
+	  s.checkin_time  
+	FROM
+	  order_return_goods s 
+	 where
+	 	(s.to_erp='1'||s.to_erp='2')
+    	<if test="relatingReturnSn != null" >
+	      and s.relating_return_sn=#{relatingReturnSn}
+	    </if>
+	GROUP BY s.checkin_time 
+  </select>
+  
+ </mapper>

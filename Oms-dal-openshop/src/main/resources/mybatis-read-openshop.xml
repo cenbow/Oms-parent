@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE generatorConfiguration  
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"  
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+	<!-- location="D:/maven/repo/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.jar" 
+		/> /> -->
+	<classPathEntry
+		location="D:/develop/mavenlib/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.jar" />
+		
+			<!-- -configfile G:\workspace\Oms-parent\Oms-dal-openshop\src\main\resources\mybatis-read-openshop.xml -overwrite -->
+
+	<context id="openshopsqlSessionFactory" targetRuntime="MyBatis3">
+
+		<commentGenerator>
+			<property name="suppressDate" value="true" />
+		</commentGenerator>
+
+		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://192.168.149.52:3306/openshop" userId="admin"
+			password="admin52">
+		</jdbcConnection>
+<!-- 		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://10.100.200.22:3307/openshop" userId="openmall"
+			password="123">
+		</jdbcConnection> -->
+		<!-- <jdbcConnection driverClass="oracle.jdbc.driver.OracleDriver" connectionURL="jdbc:oracle:thin:@10.100.20.151:1521:MBOLTPGG" 
+			userId="ituser" password="ituser123"> </jdbcConnection> -->
+		<!-- type="com.work.shop.oms.utils.ByteToTinyIntJavaTypeResolver" -->
+		<javaTypeResolver type="com.work.shop.oms.utils.ByteToTinyIntJavaTypeResolver">
+			<property name="forceBigDecimals" value="false" />
+		</javaTypeResolver>
+
+		<javaModelGenerator targetPackage="com.work.shop.oms.bean"
+			targetProject="D:\workspace\Oms-parent\Oms-pojo\src\main\java\">
+			<property name="enableSubPackages" value="true" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+
+		<!-- xml文件 -->
+		<sqlMapGenerator targetPackage="com.work.shop.oms.dao"
+			targetProject="D:\workspace\Oms-parent\Oms-dal-openshop\src\main\resources">
+			<property name="enableSubPackages" value="true" />
+		</sqlMapGenerator>
+
+		<javaClientGenerator type="XMLMAPPER"
+			targetPackage="com.work.shop.oms.dao" targetProject="D:\workspace\Oms-parent\Oms-dal-openshop\src\main\java">
+			<property name="enableSubPackages" value="true" />
+		</javaClientGenerator>
+		
+		<!-- <table tableName="product_goods" domainObjectName="ProductGoods" />
+		<table tableName="product_barcode_list" domainObjectName="ProductBarcodeList" />
+		<table tableName="system_config" domainObjectName="SystemConfig" /> -->
+		<table tableName="product_goods_gallery" domainObjectName="ProductGoodsGallery" />
+	</context>
+</generatorConfiguration> 

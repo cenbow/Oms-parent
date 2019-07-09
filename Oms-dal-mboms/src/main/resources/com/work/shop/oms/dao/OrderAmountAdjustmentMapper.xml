@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.OrderAmountAdjustmentMapper">
+	<!-- 订单结算批次清单映射-->
+	<resultMap type="com.work.shop.oms.common.bean.OrderBillVO" id="orderBillMap">
+       <result column="bill_no" property="billNo" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 单据号 -->
+       <result column="channel_code" property="channelCode" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 渠道号 -->
+       <result column="bill_type" property="billType" javaType="java.lang.String" jdbcType="INTEGER"/><!-- 业务类型:0未定义 ，1订单结算，2订单货到付款结算，3退单退款方式结算，4保证金结算，5日志，6邦付宝退款结算7订单金额调整-->
+       <result column="action_user" property="actionUser" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 操作人 -->
+       <result column="note" property="note" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 备注 -->
+       <result column="is_timing" property="isTiming" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否定时执行，0否1是 -->
+       <result column="exec_time" property="execTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 执行时间 -->
+       <result column="is_sync" property="isSync" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 同步状态：0未同步，1已同步，2作废，3部分同步，4同步失败，9同步中 -->
+       <result column="add_time" property="addTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 添加时间 -->
+       <result column="update_time" property="updateTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 更新时间 -->
+    </resultMap>
+    
+    <!-- 订单结算批次清单映射-->
+	<resultMap type="com.work.shop.oms.common.bean.OrderSettleBillVO" id="orderSettleBillVOMap">
+       <result column="id" property="id" javaType="java.lang.String" jdbcType="BIGINT"/><!-- ID -->
+       <result column="bill_no" property="billNo" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 单据批次号 -->
+       <result column="order_code" property="orderCode" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 订单号/外部交易号/退单号 -->
+       <result column="order_code_type" property="orderCodeType" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 0订单号/退单号 1外部交易号 -->
+       <result column="order_type" property="orderType" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 订单类型 0，正常订单 1，补发订单 2，换货订单 3退单-->
+       <result column="shipping_id" property="shippingId" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 用户选择的配送方式id，取值表shipping -->
+       <result column="return_pay" property="returnPay" javaType="java.lang.String" jdbcType="SMALLINT"/><!-- 退款方式 System_payment 字典数据 -->
+       <result column="money" property="money" javaType="java.lang.String" jdbcType="DECIMAL"/><!-- 结算金额 -->
+       <result column="result_status" property="resultStatus" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 处理结果:0.未定义1.结算成功2.结算失败  -->
+       <result column="result_msg" property="resultMsg" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 处理结果  -->
+       <result column="add_time" property="addTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 添加时间  -->
+       <result column="clear_time" property="clearTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 结算时间 -->
+       <result column="update_time" property="updateTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 更新时间 -->
+       <result column="message" property="message" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 日志内容 -->
+    </resultMap>
+    
+    <!-- 邦付宝退款结算：邦付宝退款批次列表数量查询 -->
+    <select id="getOrderAmountAdjustmentListCount" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+    	SELECT COUNT(*) AS totalProperty 
+    	FROM order_bill_list t
+    	<where>
+    		<if test="billNo!=null and billNo!=''">
+    			and t.bill_no like CONCAT('%','${billNo}','%' )
+    		</if>
+    		<if test="isSync!=null and isSync!=''">
+    			and t.is_sync = #{isSync}
+    		</if>
+    		<if test="billType!=null and billType!=''">
+    			and t.bill_type = #{billType}
+    		</if>
+    	</where>  
+    </select>
+    
+    <!-- 邦付宝退款结算：邦付宝退款批次列表查询 -->
+    <select id="getOrderAmountAdjustmentList" parameterType="java.util.HashMap" resultMap="orderBillMap">
+    	SELECT  t.bill_no,
+    			t.channel_code,
+    			t.bill_type,
+    			t.action_user,
+    			t.note,
+    			t.is_timing,
+    			t.exec_time,
+    			t.is_sync,
+    			t.add_time,
+    			t.update_time
+    	FROM order_bill_list t
+    	<where>
+    		<if test="billNo!=null and billNo!=''">
+    			and t.bill_no like CONCAT('%','${billNo}','%' )
+    		</if>
+    		<if test="isSync!=null and isSync!=''">
+    			and t.is_sync = #{isSync}
+    		</if>
+    		<if test="billType!=null and billType!=''">
+    			and t.bill_type = #{billType}
+    		</if>
+    	</where> 
+    	ORDER BY t.add_time DESC
+    	limit #{limitStart},#{limitNum} 
+    </select>
+    
+   	<!-- 订单金额调整：查询是否存在未同步以外状态的调整单 -->
+   	<select id="checkSynCount" parameterType="java.util.List" resultType="java.lang.Integer">
+   		select count(*) 
+   		from order_bill_list
+   		where is_sync != '0'
+   			and bill_no in
+   			<foreach collection="list" item="paramList" open="(" close=")" separator=",">
+				#{paramList}
+			</foreach>
+   	</select>
+   	
+    <!-- 订单金额调整：废除调整单 -->
+    <update id="delOrderAmountAdjustment" parameterType="java.util.HashMap">
+    	update order_bill_list 
+		set 
+			action_user = #{userName,jdbcType=VARCHAR},
+			is_sync = '2',
+			update_time = now()
+		where
+			bill_no in 
+			<foreach collection="paramList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+    </update>
+   
+   <!-- 订单金额调整：查询指定调整单清单详情 -->
+   	<select id="getOrderAmountAjustDownloadList" parameterType="java.lang.String" resultMap="orderSettleBillVOMap">
+   		select  t.id,
+		   		t.bill_no,
+				t.order_code,
+				t.order_code_type,
+				t.order_type,
+				t.shipping_id,
+				t.return_pay,
+				t.money,
+				t.result_status,
+				t.result_msg,
+				t.add_time,
+				t.clear_time,
+				t.update_time,
+				t.message
+		from order_settle_bill t
+		where t.bill_no = #{billNo}
+   	</select>
+   	
+   	<!-- 订单金额调整：查询指定调整单清单列表 -->
+   	<select id="getOrdAmoAjuDetailList" parameterType="java.util.HashMap" resultMap="orderSettleBillVOMap">
+   		select  t.id,
+		   		t.bill_no,
+				t.order_code,
+				t.order_code_type,
+				t.order_type,
+				t.shipping_id,
+				t.return_pay,
+				t.money,
+				t.result_status,
+				t.result_msg,
+				t.add_time,
+				t.clear_time,
+				t.update_time,
+				t.message
+		from order_settle_bill t
+		where t.bill_no = #{billNo}
+		limit #{limitStart},#{limitNum}
+   	</select>
+   	
+   	<!-- 订单金额调整：查询指定调整单清单列表数量 -->
+   	<select id="getOrdAmoAjuDetailListCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+   		select count(*)
+		from order_settle_bill t
+		where t.bill_no = #{billNo}
+   	</select>
+   	
+   	<!-- 订单金额调整：生成调整单-->
+   	<insert id="insertOrderBillVO" parameterType="com.work.shop.oms.common.bean.OrderBillVO">
+   		INSERT INTO order_bill_list
+			(bill_no,channel_code,bill_type,action_user,note,is_timing,is_sync,add_time)
+		VALUES
+		(
+			#{billNo,jdbcType=VARCHAR},
+			#{channelCode,jdbcType=VARCHAR},
+			#{billType,jdbcType=VARCHAR},
+			#{actionUser,jdbcType=LONGVARCHAR},
+			#{note,jdbcType=TINYINT},
+			#{isTiming,jdbcType=LONGVARCHAR},
+			#{isSync,jdbcType=TINYINT},
+			now()
+		)
+   	</insert>
+   	
+   	<!-- 订单金额调整：生成调整单清单  -->
+   	<insert id="insertOrderSettleBillVO" parameterType="com.work.shop.oms.common.bean.OrderSettleBillVO">
+   		INSERT INTO order_settle_bill
+			(bill_no,order_code,order_code_type,order_type,shipping_id,return_pay,money,result_msg,add_time)
+		VALUES
+		(
+			#{billNo,jdbcType=VARCHAR},
+			#{orderCode,jdbcType=VARCHAR},
+			#{orderCodeType,jdbcType=TINYINT},
+			#{orderType,jdbcType=TINYINT},
+			#{shippingId,jdbcType=TINYINT},
+			#{returnPay,jdbcType=SMALLINT},
+			#{money,jdbcType=DECIMAL},
+			#{resultMsg,jdbcType=VARCHAR},
+			now()
+		)
+   	</insert>
+   	
+   	<!-- 订单金额调整：查询调整单号列表paramList中存在的已同步或已废除调整单数量 -->
+   	<select id="checkUnfitCount" parameterType="java.util.List" resultType="java.lang.Integer">
+   		select count(*) 
+   		from order_bill_list
+   		where (is_sync = '1' or is_sync = '2')
+   			and bill_no in
+   			<foreach collection="list" item="paramList" open="(" close=")" separator=",">
+				#{paramList}
+			</foreach>
+   	</select>
+   	   	
+   	<!-- 订单金额调整：更新paramList中的调整单批次同步状态 -->
+   	<update id="updateSynStatus" parameterType="java.util.HashMap">
+   		update order_bill_list
+   		set is_sync = '9',
+   			update_time = now(),
+   			exec_time = now(),
+   			action_user = #{userName,jdbcType=VARCHAR}
+   		where bill_no in
+   			<foreach collection="paramList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+   	</update>   	
+   	
+</mapper>

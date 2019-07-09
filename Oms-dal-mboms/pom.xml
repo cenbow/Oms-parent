@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+  	<parent>
+    	<groupId>com.work.shop.oms</groupId>
+    	<artifactId>Oms-parent</artifactId>
+    	<version>1.2.0</version>
+	</parent>
+  	<artifactId>Oms-dal-mboms</artifactId>
+  	<name>Oms-dal-mboms</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-pojo</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-utils</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mchange</groupId>
+			<artifactId>c3p0</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.work.shop.mybaits</groupId>
+			<artifactId>MybatisGenerator4</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+	</dependencies>
+</project>

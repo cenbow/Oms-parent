@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+	<classPathEntry
+		location="D:\apache-maven-3.0.3\apache-maven-3.0.3\mavenlib\mysql\mysql-connector-java\5.1.6" />
+	<context id="bgapidbContext" targetRuntime="MyBatis3">
+		<!-- 去除自动生成的注释 -configfile E:\workspaces\workItem\ChannelOrderManager\src\test\resources\bgapi_mbg_configuration.xml -overwrite -->
+		<commentGenerator>
+			<property name="suppressAllComments" value="true" />
+		</commentGenerator>
+<!--  		<jdbcConnection driverClass="com.mysql.jdbc.Driver" -->
+<!-- 			connectionURL="jdbc:mysql://10.100.200.22:3307/bgapidb" userId="openshop1" -->
+<!-- 			password="tes001"> -->
+<!-- 		</jdbcConnection> -->
+		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://118.31.250.149:3306/bgapidb" userId="admin"
+			password="Admin2015!">
+		</jdbcConnection>
+		<javaTypeResolver type="com.work.shop.oms.utils.ByteToTinyIntJavaTypeResolver">
+			<property name="forceBigDecimals" value="false" />
+		</javaTypeResolver>
+
+		<javaModelGenerator targetPackage="com.work.shop.oms.bean.bgapidb"
+			targetProject="D:\ccworkspace\Oms-pojo\src\main\java\">
+			<property name="enableSubPackages" value="true" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+
+		<sqlMapGenerator targetPackage="com.work.shop.oms.dao"
+			targetProject="D:\ccworkspace\Oms-dal-bgapidb\src\main\resources">
+			<property name="enableSubPackages" value="true" />
+		</sqlMapGenerator>
+
+		<javaClientGenerator type="XMLMAPPER"
+			targetPackage="com.work.shop.oms.dao"
+			targetProject="D:\ccworkspace\Oms-dal-bgapidb\src\main\java\">
+			<property name="enableSubPackages" value="true" />
+		</javaClientGenerator>
+
+		<table tableName="yike_trade" domainObjectName="YikeTrade"/>
+
+
+	</context>
+</generatorConfiguration>

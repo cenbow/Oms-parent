@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.OrderDistributeDetailMapper">
+  <resultMap id="OrderDistributeMap" type="com.work.shop.oms.bean.OrderDistribute">
+  	<id column="order_sn" property="orderSn" jdbcType="VARCHAR" />
+    <result column="master_order_sn" property="masterOrderSn" jdbcType="VARCHAR" />
+    <result column="order_type" property="orderType" jdbcType="INTEGER" />
+    <result column="trans_type" property="transType" jdbcType="TINYINT" />
+    <result column="order_out_sn" property="orderOutSn" jdbcType="VARCHAR" />
+    <result column="relating_original_sn" property="relatingOriginalSn" jdbcType="VARCHAR" />
+    <result column="relating_return_sn" property="relatingReturnSn" jdbcType="VARCHAR" />
+    <result column="relating_remoney_sn" property="relatingRemoneySn" jdbcType="VARCHAR" />
+    <result column="order_status" property="orderStatus" jdbcType="TINYINT" />
+    <result column="pay_status" property="payStatus" jdbcType="TINYINT" />
+    <result column="ship_status" property="shipStatus" jdbcType="TINYINT" />
+    <result column="question_status" property="questionStatus" jdbcType="INTEGER" />
+    <result column="depot_status" property="depotStatus" jdbcType="TINYINT" />
+    <result column="order_from" property="orderFrom" jdbcType="VARCHAR" />
+    <result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="confirm_time" property="confirmTime" jdbcType="TIMESTAMP" />
+    <result column="question_time" property="questionTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="referer" property="referer" jdbcType="VARCHAR" />
+    <result column="shipping_total_fee" property="shippingTotalFee" jdbcType="DECIMAL" />
+    <result column="pay_total_fee" property="payTotalFee" jdbcType="DECIMAL" />
+    <result column="total_payable" property="totalPayable" jdbcType="DECIMAL" />
+    <result column="goods_amount" property="goodsAmount" jdbcType="DECIMAL" />
+    <result column="total_fee" property="totalFee" jdbcType="DECIMAL" />
+    <result column="money_paid" property="moneyPaid" jdbcType="DECIMAL" />
+    <result column="surplus" property="surplus" jdbcType="DECIMAL" />
+    <result column="bonus" property="bonus" jdbcType="DECIMAL" />
+    <result column="goods_count" property="goodsCount" jdbcType="INTEGER" />
+    <result column="discount" property="discount" jdbcType="DECIMAL" />
+    <result column="last_update_time" property="lastUpdateTime" jdbcType="TIMESTAMP" />
+    <result column="integral_money" property="integralMoney" jdbcType="DECIMAL" />
+    <result column="integral" property="integral" jdbcType="INTEGER" />
+    <result column="cancel_code" property="cancelCode" jdbcType="VARCHAR" />
+    <result column="cancel_reason" property="cancelReason" jdbcType="VARCHAR" />
+    <result column="isNow" property="isnow" jdbcType="INTEGER" />
+    <result column="source" property="source" jdbcType="INTEGER" />
+    <result column="supplier_code" property="supplierCode" jdbcType="VARCHAR" />
+    <result column="supplier_name" property="supplierName" jdbcType="VARCHAR" />
+    <result column="is_del" property="isDel" jdbcType="INTEGER" />
+    <result column="resend_erp" property="resendErp" jdbcType="INTEGER" />
+    <result column="question_codes" property="questionCodes" jdbcType="VARCHAR" />
+    <result column="pay_info" property="payInfo" jdbcType="VARCHAR" />
+    <result column="vendee_agent_name" property="vendeeAgentName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <select id="getOrderDistributeList" parameterType="java.util.HashMap" resultMap="OrderDistributeMap">
+		SELECT  t.order_sn, 
+			t.master_order_sn, 
+			t.order_type, 
+			t.trans_type, 
+			t.order_out_sn, 
+			t.relating_original_sn, 
+			t.relating_return_sn, 
+			t.relating_remoney_sn, 
+			t.order_status, 
+			t.pay_status, 
+			t.ship_status, 
+			t.question_status, 
+			t.depot_status, 
+			t.order_from, 
+			t.add_time, 
+			t.confirm_time, 
+			t.question_time, 
+			t.update_time, 
+			t.referer, 
+			t.shipping_total_fee, 
+			t.pay_total_fee, 
+			t.total_payable, 
+			t.goods_amount, 
+			t.total_fee, 
+			t.money_paid, 
+			t.surplus, 
+			t.bonus, 
+			t.goods_count, 
+			t.discount, 
+			t.last_update_time, 
+			t.integral_money, 
+			t.integral, 
+			t.cancel_code, 
+			t.cancel_reason, 
+			t.isNow, 
+			t.source, 
+			t.supplier_code, 
+			t.supplier_name, 
+			t.is_del, 
+			t.resend_erp, 
+			t.question_codes, 
+			t.pay_info, 
+			t.vendee_agent_name
+		FROM 
+		<if test="isHistory == 0">
+			order_distribute   
+		</if>
+		<if test="isHistory == 1">
+			order_distribute_history 
+		</if>
+		t 
+		WHERE t.is_del = '0'
+		<if test="masterOrderSn!=null and masterOrderSn!=''">
+   			AND t.master_order_sn = #{masterOrderSn}
+   		</if>
+   		<if test="orderSn!=null and orderSn!=''">
+   			AND t.order_sn = #{orderSn}
+   		</if>		
+		/* maxscale route to master */;
+    </select>
+  
+  
+</mapper>

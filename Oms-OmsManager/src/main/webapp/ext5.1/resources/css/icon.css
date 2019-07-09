@@ -1,0 +1,22 @@
+@CHARSET "UTF-8";
+.user {background-image: url(../../shared/icons/fam/user.png) !important;}
+.user-add {background-image: url(../icon/user_add.gif) !important;}
+.save {background-image: url(../icon/save.gif) !important;}
+.reset {background-image: url(../icon/stop.png) !important;}
+.grid {background-image: url(../icon/grid.png) !important;}
+.add {background-image: url(../icon/add.png) !important;}
+.delete {background-image: url(../../shared/icons/fam/delete.gif) !important;}
+.accept {background-image: url(../../shared/icons/fam/accept.png) !important;}
+.cog {background-image: url(../icon/cog.png) !important;}
+.cog-edit {background-image: url(../icon/cog_edit.png) !important;}
+.connect {background-image: url(../icon/connect.png) !important;}
+.cross {background-image: url(../icon/cross.gif) !important;}
+.control-rewind {background-image: url(../icon/control_rewind.png) !important;}
+.error {background-image: url(../icon/error.png) !important;}
+.application-go {background-image: url(../icon/application_go.png) !important;}
+.information {background-image: url(../icon/information.png) !important;}
+.upload {background-image: url(../icon/image_add.png) !important;}
+.plugin {background-image: url(../../shared/icons/fam/plugin.gif) !important;}
+.folder-go {background-image: url(../icon/folder_go.png) !important;}
+.lock {background-image: url( ../../desktop/images/icon_padlock.png ) !important;}
+.unlock {background-image: url( ../../desktop/images/logout.png ) !important;}

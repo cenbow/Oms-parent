@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	
+	<bean id="OrderExpressPullMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.express.jms.listener.OrderExpressPullConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="OrderExpressPullJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_express_pull" />
+		<property name="messageListener" ref="OrderExpressPullMessageListener" />
+		<!-- 1到4个消费者 -->
+		<property name="concurrency" value="1-2"></property>
+	</bean>
+	
+	<bean id="expressMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.express.jms.listener.PullExpressConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="expressJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="pull_express_info" />
+		<property name="messageListener" ref="expressMessageListener" />
+		<!-- 1到4个消费者 -->
+		<property name="concurrency" value="1-2"></property>
+	</bean>
+</beans>

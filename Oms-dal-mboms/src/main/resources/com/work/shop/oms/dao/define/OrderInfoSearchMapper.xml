@@ -1,0 +1,2586 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.define.OrderInfoSearchMapper">
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.MasterOrderInfo">
+ 
+<!--     <id column="order_sn" jdbcType="VARCHAR" property="orderSn" /> -->
+     <id column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+     
+      <result column="relating_original_sn" jdbcType="VARCHAR" property="relatingOriginalSn" />
+      
+     <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+     
+    <result column="trans_type" jdbcType="TINYINT" property="transType" />
+    <result column="order_type" jdbcType="INTEGER" property="orderType" />
+    <result column="relating_exchange_sn" jdbcType="VARCHAR" property="relatingExchangeSn" />
+    <result column="relating_return_sn" jdbcType="VARCHAR" property="relatingReturnSn" />
+    <result column="relating_remoney_sn" jdbcType="VARCHAR" property="relatingRemoneySn" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="use_level" jdbcType="INTEGER" property="useLevel" />
+    <result column="channel_user_level" jdbcType="INTEGER" property="channelUserLevel" />
+    <result column="consignee" jdbcType="VARCHAR" property="consignee" />
+    <result column="order_status" jdbcType="TINYINT" property="orderStatus" />
+    <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+    <result column="ship_status" jdbcType="TINYINT" property="shipStatus" />
+    <result column="lock_status" jdbcType="INTEGER" property="lockStatus" />
+    <result column="process_status" jdbcType="INTEGER" property="processStatus" />
+    <result column="question_status" jdbcType="INTEGER" property="questionStatus" />
+    <result column="notice_status" jdbcType="INTEGER" property="noticeStatus" />
+    <result column="timeout_status" jdbcType="INTEGER" property="timeoutStatus" />
+    <result column="depot_status" jdbcType="TINYINT" property="depotStatus" />
+    <result column="return_status" jdbcType="INTEGER" property="returnStatus" />
+    <result column="refund_status" jdbcType="INTEGER" property="refundStatus" />
+    <result column="is_order_print" jdbcType="INTEGER" property="isOrderPrint" />
+    <result column="money_treatment_type" jdbcType="INTEGER" property="moneyTreatmentType" />
+    <result column="order_from" jdbcType="VARCHAR" property="orderFrom" />
+    <result column="merge_from" jdbcType="VARCHAR" property="mergeFrom" />
+    <result column="split_to" jdbcType="VARCHAR" property="splitTo" />
+    <result column="split_from" jdbcType="VARCHAR" property="splitFrom" />
+    <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+    <result column="confirm_time" jdbcType="TIMESTAMP" property="confirmTime" />
+    <result column="finish_time" jdbcType="TIMESTAMP" property="finishTime" />
+    <result column="clear_time" jdbcType="TIMESTAMP" property="clearTime" />
+    <result column="question_time" jdbcType="TIMESTAMP" property="questionTime" />
+    <result column="lock_time" jdbcType="TIMESTAMP" property="lockTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="notice_time" jdbcType="TIMESTAMP" property="noticeTime" />
+    <result column="order_out_sn" jdbcType="VARCHAR" property="orderOutSn" />
+    <result column="beneficiary_id" jdbcType="INTEGER" property="beneficiaryId" />
+    <result column="from_ad" jdbcType="SMALLINT" property="fromAd" />
+    <result column="pr_ids" jdbcType="VARCHAR" property="prIds" />
+    <result column="pr_name" jdbcType="VARCHAR" property="prName" />
+    <result column="referer" jdbcType="VARCHAR" property="referer" />
+    <result column="how_oos" jdbcType="VARCHAR" property="howOos" />
+    <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
+    <result column="extension_id" jdbcType="INTEGER" property="extensionId" />
+    <result column="is_separate" jdbcType="INTEGER" property="isSeparate" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="outlet_type" jdbcType="INTEGER" property="outletType" />
+    <result column="source_code" jdbcType="VARCHAR" property="sourceCode" />
+    <result column="inv_payee" jdbcType="VARCHAR" property="invPayee" />
+    <result column="inv_content" jdbcType="VARCHAR" property="invContent" />
+    <result column="inv_type" jdbcType="VARCHAR" property="invType" />
+    <result column="tax" jdbcType="DECIMAL" property="tax" />
+    <result column="invoice_status" jdbcType="INTEGER" property="invoiceStatus" />
+    <result column="delivery_station_id" jdbcType="INTEGER" property="deliveryStationId" />
+    <result column="shipping_total_fee" jdbcType="DECIMAL" property="shippingTotalFee" />
+    <result column="insure_total_fee" jdbcType="DECIMAL" property="insureTotalFee" />
+    <result column="pay_total_fee" jdbcType="DECIMAL" property="payTotalFee" />
+    <result column="pack_total_fee" jdbcType="DECIMAL" property="packTotalFee" />
+    <result column="postscript" jdbcType="VARCHAR" property="postscript" />
+    <result column="card_total_fee" jdbcType="DECIMAL" property="cardTotalFee" />
+    <result column="total_payable" jdbcType="DECIMAL" property="totalPayable" />
+    <result column="goods_amount" jdbcType="DECIMAL" property="goodsAmount" />
+    <result column="total_fee" jdbcType="DECIMAL" property="totalFee" />
+    <result column="money_paid" jdbcType="DECIMAL" property="moneyPaid" />
+    <result column="surplus" jdbcType="DECIMAL" property="surplus" />
+    <result column="bonus" jdbcType="DECIMAL" property="bonus" />
+    <result column="goods_count" jdbcType="INTEGER" property="goodsCount" />
+    <result column="discount" jdbcType="DECIMAL" property="discount" />
+    <result column="confirm_lasttime" jdbcType="TIMESTAMP" property="confirmLasttime" />
+    <result column="complete_lasttime" jdbcType="TIMESTAMP" property="completeLasttime" />
+    <result column="settled_lasttime" jdbcType="TIMESTAMP" property="settledLasttime" />
+    <result column="all_process_lasttime" jdbcType="TIMESTAMP" property="allProcessLasttime" />
+    <result column="urgent_level" jdbcType="TINYINT" property="urgentLevel" />
+    <result column="period_series" jdbcType="INTEGER" property="periodSeries" />
+    <result column="to_buyer" jdbcType="VARCHAR" property="toBuyer" />
+    <result column="chased_or_not" jdbcType="INTEGER" property="chasedOrNot" />
+    <result column="is_agent" jdbcType="TINYINT" property="isAgent" />
+    <result column="is_update" jdbcType="INTEGER" property="isUpdate" />
+    <result column="update_type" jdbcType="VARCHAR" property="updateType" />
+    <result column="last_update_time" jdbcType="TIMESTAMP" property="lastUpdateTime" />
+    <result column="is_return" jdbcType="INTEGER" property="isReturn" />
+    <result column="return_fee" jdbcType="DECIMAL" property="returnFee" />
+    <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
+    <result column="agency_id" jdbcType="SMALLINT" property="agencyId" />
+    <result column="wait_pay" jdbcType="INTEGER" property="waitPay" />
+    <result column="tel" jdbcType="VARCHAR" property="tel" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="total_market_fee" jdbcType="DECIMAL" property="totalMarketFee" />
+    <result column="real_shipping_total_fee" jdbcType="DECIMAL" property="realShippingTotalFee" />
+    <result column="cancel_code" jdbcType="VARCHAR" property="cancelCode" />
+    <result column="cancel_reason" jdbcType="VARCHAR" property="cancelReason" />
+    <result column="order_category" jdbcType="INTEGER" property="orderCategory" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="invoices_organization" jdbcType="VARCHAR" property="invoicesOrganization" />
+    <result column="register_mobile" jdbcType="VARCHAR" property="registerMobile" />
+    <result column="bv_value" jdbcType="INTEGER" property="bvValue" />
+    <result column="expected_ship_date" jdbcType="VARCHAR" property="expectedShipDate" />
+    <result column="tax" jdbcType="DECIMAL" property="tax" />
+  </resultMap>
+
+  <resultMap id="CommonListMap" type="com.work.shop.oms.common.bean.Common" extends="BaseResultMap">
+    <result column="pay_id" jdbcType="TINYINT" property="payId" />
+    <result column="channel_name" jdbcType="VARCHAR" property="channelName" />
+    <result column="shipping_time" jdbcType="TIMESTAMP" property="shippingTime" />
+    <result column="lock_user_name" jdbcType="TIMESTAMP" property="lockUserName" />
+    <result column="shipping_fee" jdbcType="DECIMAL" property="shippingFee" />
+    <result column="is_advance" property="isAdvance" jdbcType="TINYINT" />
+    <result column="return_sn" property="returnSn" jdbcType="VARCHAR" />
+    <result column="bg_user_level" property="bgUserLevel" jdbcType="VARCHAR" />
+    <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />  
+    <result column="dist_wareh_code" jdbcType="VARCHAR" property="distWarehCode" />
+    <result column="ship_code" jdbcType="VARCHAR" property="shipCode" />
+    <result column="invoice_no" jdbcType="VARCHAR" property="invoiceNo" />
+    <result column="merge_pay_fee" jdbcType="DECIMAL" property="mergePayFee" /> 
+    <result column="tel" jdbcType="VARCHAR" property="tel" />
+    <result column="merge_pay_sn" jdbcType="VARCHAR" property="mergePaySn" />
+    <result column="question_reason" jdbcType="VARCHAR" property="questionReason" />
+    <result column="pay_name" jdbcType="VARCHAR" property="payName" />
+    <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+    <result column="master_pay_sn" jdbcType="VARCHAR" property="masterPaySn" />  
+    <result column="confirm_time" jdbcType="TIMESTAMP" property="confirmTime" />
+	<result column="shipping_status" jdbcType="TINYINT" property="shippingStatus" />
+	<result column="pay_totalfee" jdbcType="DECIMAL" property="payTotalfee" />
+	<result column="pay_note" jdbcType="VARCHAR" property="payNote" />
+    <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="register_mobile" jdbcType="VARCHAR" property="registerMobile" />
+    <result column="split_status" jdbcType="TINYINT" property="splitStatus" />
+    <result column="custom_code" jdbcType="VARCHAR" property="skuSn" />
+    <result column="goods_num" jdbcType="SMALLINT" property="goodsNum" />
+  </resultMap>
+  
+  
+     <resultMap id="ShortageQuestion" type="com.work.shop.oms.bean.ShortageQuestion">
+
+    <id column="id"  property="id" jdbcType="INTEGER"/>
+ 
+    <result column="out_stock_code"  property="outStockCode"   jdbcType="VARCHAR"/>   
+                            
+    <result column="depot_code" property="depotCode"   jdbcType="VARCHAR" />
+    <result column="delivery_sn"  property="deliverySn"   jdbcType="VARCHAR"/>                                                    
+    <result column="out_stock_reason" property="outStockReason"   jdbcType="VARCHAR" /> 
+  </resultMap> 
+  
+  
+    <resultMap type="com.work.shop.oms.common.bean.OrderQuestionSearchResultVO" id="orderQuestionSearchResultVO">
+    <id column="no" property="no" jdbcType="VARCHAR"/>
+     <result column="master_order_sn" property="masterOrderSn" jdbcType="VARCHAR"/>
+    <result column="order_Sn" property="orderSn" jdbcType="VARCHAR"/>
+    <result column="order_out_sn" property="orderOutSn" jdbcType="VARCHAR"/>
+    <result column="reason" property="reason" jdbcType="VARCHAR"/>
+    <!-- 改订单状态 -->
+    <result column="order_status" property="orderStatus" jdbcType="TINYINT"/>
+    <result column="pay_status" property="payStatus" jdbcType="TINYINT"/>
+    <result column="ship_status" property="shipStatus" jdbcType="TINYINT"/>
+    <!-- 改订单状态 -->
+    <result column="add_time" property="addTime" jdbcType="TIMESTAMP"/>
+    <result column="trans_type" property="transType" jdbcType="TINYINT"/>
+    <result column="order_from" property="orderFrom" jdbcType="VARCHAR"/>
+    <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+    <result column="consignee" property="consignee" jdbcType="VARCHAR"/>
+    <result column="total_fee" property="totalFee" jdbcType="DECIMAL"/>
+    <result column="total_payable" property="totalPayable" jdbcType="DECIMAL"/>
+    <result column="businessNote" property="businessNote" jdbcType="VARCHAR"/>
+    <result column="lock_status" property="lockStatus" jdbcType="INTEGER"/>
+    <result column="use_level" property="useLevel" jdbcType="INTEGER"/>
+    <result column="channel_user_level" property="channelUserLevel" jdbcType="INTEGER"/>
+    <result column="question_type" property="questionType" jdbcType="INTEGER"/>
+    <result column="referer" property="referer" jdbcType="VARCHAR"/>
+    <result column="lock_user_name" jdbcType="TIMESTAMP" property="lockUserName" />
+    <result column="out_stock_code" property="outStockCode" jdbcType="VARCHAR"/> 
+    <!--  物流问题单类型:0:一般物流问题单;1:缺货问题单 -->
+    <result column="logistics_type"  property="logisticsType" jdbcType="VARCHAR"/>
+     <result column="master_question_desc"  property="masterQuestionDesc" jdbcType="VARCHAR"/> 
+    <result column="question_desc"  property="questionDesc" jdbcType="VARCHAR"/> 
+    <result column="channel_name"  property="channelName" jdbcType="VARCHAR"/> 
+    <result column="question_reason"  property="questionReason" jdbcType="VARCHAR"/>
+    <result column="question_add_time" property="questionAddTime" jdbcType="TIMESTAMP"/>
+    
+       <result column="lack_num" jdbcType="SMALLINT" property="lackNum" />
+    
+       <result column="custom_code"  property="customCode" jdbcType="VARCHAR"/> 
+    <result column="depot_code"  property="depotCode" jdbcType="VARCHAR"/> 
+    	
+    
+    
+  </resultMap>
+  
+<!-- 
+  <sql id="Base_Column_List">
+    
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+   
+    oi.order_sn, oi.trans_type, oi.order_type, oi.relating_return_sn, oi.relating_remoney_sn,
+    oi.user_id, oi.user_name, oi.use_level, oi.channel_user_level, oi.consignee, oi.order_status, oi.pay_status,
+    oi.ship_status, oi.lock_status, oi.process_status, oi.question_status, oi.notice_status, oi.timeout_status,
+    oi.depot_status, oi.return_status, oi.refund_status, oi.is_order_print, oi.money_treatment_type,
+    oi.order_from, oi.merge_from, oi.split_to, oi.split_from, oi.add_time, oi.confirm_time, oi.finish_time,
+    oi.clear_time, oi.question_time, oi.lock_time,oi.update_time, oi.notice_time, oi.order_out_sn, oi.beneficiary_id,
+    oi.from_ad, oi.pr_ids, oi.pr_name, oi.referer, oi.how_oos, oi.extension_code, oi.extension_id, oi.is_separate,
+    oi.parent_id, oi.outlet_type, oi.source_code, oi.inv_payee, oi.inv_content, oi.inv_type, oi.tax, oi.invoice_status,
+    oi.delivery_station_id, oi.shipping_total_fee, oi.insure_total_fee, oi.pay_total_fee, oi.pack_total_fee,
+    oi.postscript, oi.card_total_fee, oi.total_payable, oi.goods_amount, oi.total_fee, oi.money_paid, oi.surplus,
+    oi.bonus, oi.goods_count, oi.discount, oi.confirm_lasttime, oi.complete_lasttime, oi.settled_lasttime,
+    oi.all_process_lasttime, oi.urgent_level, oi.period_series, oi.to_buyer, oi.chased_or_not, oi.is_agent,
+    oi.is_update, oi.update_type, oi.last_update_time, oi.is_return, oi.return_fee, oi.integral_money,
+    oi.agency_id, oi.wait_pay, oi.tel, oi.mobile, oi.email, total_market_fee, oi.real_shipping_total_fee,
+    oi.cancel_code, oi.cancel_reason, oi.order_category, oi.reason, oi.invoices_organization
+  </sql> -->
+  
+   <sql id="OrderInfoQuery_Column_List">
+    oi.master_order_sn, oi.order_out_sn, oi.trans_type, oi.order_type,<!--  oi.relating_exchange_sn, --> oi.relating_return_sn,
+    oi.relating_remoney_sn, oi.user_id, oi.user_name,<!--  oi.use_level, --><!--  oi.channel_user_level, -->
+    <!--   oai.consignee, --> 
+     oie.is_group,
+     oi.source,
+      oi.source_code,
+    oi.clear_time,
+      oi.order_status,
+   oi.pay_status, oi.ship_status, oi.lock_status, oi.question_status, oi.notice_status, <!-- oi.timeout_status, -->
+  <!--   oi.depot_status, --> <!-- oi.return_status, -->  <!--  oi.refund_status, --> oi.order_from, oi.add_time, oi.referer, 
+  oi.shipping_total_fee, oi.integral_money,
+    oi.pay_total_fee, oi.postscript,<!--  oi.card_total_fee, --> 
+    oi.total_payable, oi.goods_amount, oi.total_fee, oi.money_paid, oi.surplus,
+    oi.bonus, oi.goods_count, oi.discount,<!--  oi.confirm_lasttime, --><!--  oi.settled_lasttime, --><!--  oi.return_fee, -->
+   <!--  oi.agency_id, total_market_fee, --> <!-- oi.real_shipping_total_fee, --> oi.confirm_time,  oi.relating_original_sn <!-- as relating_Exchange_Sn -->,
+    oi.order_category,<!--  oi.reason, --> oi.invoices_organization,oi.shop_name channel_name, oi.channel_code,oi.register_mobile,oi.split_status,
+    oi.bv_value,oi.expected_ship_date,oi.tax
+  </sql> 
+  
+  
+    <sql id="OrderInfoQueryByOrderSn_Column_List">
+    oi.master_order_sn,od.order_sn, oi.order_out_sn, oi.trans_type, oi.order_type,<!--  oi.relating_exchange_sn, --> oi.relating_return_sn,
+    oi.relating_remoney_sn, oi.user_id, oi.user_name,<!--  oi.use_level, --><!--  oi.channel_user_level, -->
+    <!--  oi.consignee, -->
+     
+      oi.order_status,
+    oi.pay_status, oi.ship_status, oi.lock_status, oi.question_status, oi.notice_status, <!-- oi.timeout_status, -->
+  <!--   oi.depot_status, --> <!-- oi.return_status, -->  <!--  oi.refund_status, --> oi.order_from, oi.add_time, oi.referer, 
+  oi.shipping_total_fee, oi.integral_money,
+    oi.pay_total_fee, oi.postscript,<!--  oi.card_total_fee, --> 
+    oi.total_payable, oi.goods_amount, oi.total_fee, oi.money_paid, oi.surplus,
+    oi.bonus, oi.goods_count, oi.discount,<!--  oi.confirm_lasttime, --><!--  oi.settled_lasttime, --><!--  oi.return_fee, -->
+   <!--  oi.agency_id, total_market_fee, --> <!-- oi.real_shipping_total_fee, --> oi.confirm_time,  oi.relating_original_sn <!-- as relating_Exchange_Sn -->,
+    oi.order_category,<!--  oi.reason, --> oi.invoices_organization
+  </sql> 
+  
+  <sql id="Example_Where_Clause" >
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+    -->
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+	
+	
+	<!-- 默认订单列表  -->
+	<select id="selectCommonByExample" resultMap="CommonListMap"
+		parameterType="com.work.shop.oms.api.param.bean.OrderInfoSearchExample" >
+	SELECT
+		tmp.*,
+		op.pay_name,
+		op.pay_note
+	FROM 
+		(
+		SELECT
+			common.goods_amount - common.discount - common.bonus  - common.integral_money as settlement_price,
+			<!-- os.shipping_id,
+			os.delivery_time,
+			od.order_sn,
+			<if test="!isMainOrderInfo"> 子订单
+				os.delivery_time, 
+			</if> -->
+			common.*
+		FROM (
+			select 
+				<include refid="OrderInfoQuery_Column_List" />,
+				<if test="userOAI">  <!-- 收货人信息表 -->
+				oai.country,
+				oai.province,
+				oai.city,
+				oai.district,
+				oai.consignee,
+				oai.mobile,
+				oai.tel,
+				</if>
+			<if test="userOp">
+				op.pay_id,
+				op.pay_time,
+				op.create_time,
+			</if>
+			<if test="userOg"> 
+				og.custom_code,
+			</if>
+				oie.is_advance 
+			from
+			<if test="listDataType">
+				master_order_info
+			</if>
+			<if test="!listDataType">
+				master_order_info_history
+			</if> 
+			oi
+				LEFT JOIN master_order_info_extend AS oie ON
+				oi.master_order_sn = oie.master_order_sn
+			<if test="userOp">
+				INNER JOIN
+				<if test="listDataType">
+					master_order_pay
+				</if>
+				<if test="!listDataType">
+					master_order_pay_history
+				</if>
+				op ON oi.master_order_sn = op.master_order_sn
+			</if>
+			
+			<if test="userOg"> 
+				left JOIN
+				<if test="listDataType">
+					master_order_goods
+				</if>
+				<if test="!listDataType">
+					master_order_goods_history
+				</if>
+				og ON oi.master_order_sn = og.master_order_sn
+			</if>
+			<if test="userOAI"><!-- 调用,国家，省份，城市，区域  -->
+				<if test="listDataType"> 
+					INNER JOIN master_order_address_info oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+				<if test="!listDataType">
+					INNER JOIN master_order_address_info_history oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+			</if>
+			) common 
+			<!-- LEFT JOIN order_return AS oreturn ON oreturn.master_order_sn = common.master_order_sn -->
+			<!-- <if test="listDataType">
+				LEFT JOIN order_distribute od ON common.master_order_sn = od.master_order_sn
+				LEFT JOIN order_depot_ship os on od.order_sn = os.order_sn
+			</if>
+			<if test="!listDataType">
+				LEFT JOIN order_distribute_history od ON common.master_order_sn = od.master_order_sn 
+				LEFT JOIN order_depot_ship_history os on od.order_sn = os.order_sn
+			</if> -->
+		<if test="_parameter != null" >
+			<include refid="Example_Where_Clause" />
+		</if>
+		<if test="isMainOrderInfo">
+			GROUP BY common.master_order_sn
+		</if>
+		<!-- <if test="!isMainOrderInfo">
+			GROUP BY od.order_sn
+		</if> -->
+		order by ${orderByClause}
+		) tmp 
+		LEFT JOIN master_order_pay op ON op.master_order_sn = tmp.master_order_sn
+		<if test="criteria.valid" >
+			<foreach collection="criteria.criteria" item="criterion" >
+				<if test="criterion.limitValue" >
+					limit ${criterion.value},${criterion.secondValue}
+				</if>
+			</foreach>
+		</if>
+		
+  </select>
+  <!-- 默认订单列表数量  -->
+  <select id="countCommonByExample" parameterType="com.work.shop.oms.api.param.bean.OrderInfoSearchExample" resultType="java.lang.Integer" >
+	SELECT
+		count(1)
+		from
+		(
+			SELECT
+			common.goods_amount - common.discount - common.bonus - common.integral_money  as settlement_price,
+			<!-- os.shipping_id,
+			os.delivery_time,
+			<if test="!isMainOrderInfo"> 子订单
+				od.order_sn,
+			</if>-->
+			common.* 
+		FROM (
+			select 
+				<include refid="OrderInfoQuery_Column_List" />,
+				<if test="userOAI"> <!-- 收货人信息表 -->
+					oai.country,
+					oai.province,
+					oai.city,
+					oai.district,
+					oai.consignee,
+					oai.mobile,
+					oai.tel,
+				</if>
+			<if test="userOp">
+				op.pay_id,
+				op.pay_time,
+				op.create_time,
+			</if>
+			<if test="userOg"> 
+				og.custom_code,
+			</if>
+				oie.is_advance 
+			from
+			<if test="listDataType">
+				master_order_info
+			</if>
+			<if test="!listDataType">
+					master_order_info_history
+			</if>
+			oi
+				LEFT JOIN master_order_info_extend AS oie ON
+					oi.master_order_sn = oie.master_order_sn
+			<if test="userOp">
+				INNER JOIN
+				<if test="listDataType">
+					master_order_pay
+				</if>
+				<if test="!listDataType">
+					master_order_pay_history
+				</if>
+				op ON oi.master_order_sn = op.master_order_sn
+			</if>
+			<if test="userOg"> 
+				left JOIN
+				<if test="listDataType">
+					master_order_goods
+				</if>
+				<if test="!listDataType">
+					master_order_goods_history
+				</if>
+				og ON oi.master_order_sn = og.master_order_sn
+			</if>
+			<if test="userOAI"><!-- 调用,国家，省份，城市，区域  -->
+				<if test="listDataType"> 
+					INNER JOIN master_order_address_info oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+				<if test="!listDataType">
+					INNER JOIN master_order_address_info_history oai ON oai.master_order_sn = oi.master_order_sn
+				</if> 
+			</if>
+			) common 
+			<!-- LEFT JOIN order_return AS oreturn ON oreturn.master_order_sn = common.master_order_sn
+			<if test="listDataType">
+				LEFT JOIN order_distribute od ON common.master_order_sn = od.master_order_sn
+				LEFT JOIN order_depot_ship os on od.order_sn = os.order_sn
+			</if>
+			<if test="!listDataType">
+				LEFT JOIN order_distribute_history od ON common.master_order_sn = od.master_order_sn 
+				LEFT JOIN order_depot_ship_history os on od.order_sn = os.order_sn
+			</if> -->
+		<if test="_parameter != null" >
+				<include refid="Example_Where_Clause" />
+		</if>
+		<if test="isMainOrderInfo"> <!-- 主订单 -->
+			GROUP BY common.master_order_sn
+		</if>
+		
+		<if test="!isMainOrderInfo"> <!-- 子订单 -->
+			GROUP BY od.order_sn
+		</if>
+		) tmp 
+		LEFT JOIN master_order_pay op ON op.master_order_sn = tmp.master_order_sn
+  </select>
+
+	<!-- 订单商品列表  -->
+	<select id="selectCommonGoodsByExample" resultMap="CommonListMap" parameterType="com.work.shop.oms.api.param.bean.OrderInfoSearchExample" >
+		SELECT
+			common.goods_amount - common.discount - common.bonus  - common.integral_money as settlement_price,
+			common.*,
+			common.custom_code,
+			SUM(common.goods_number) goods_num
+		FROM (
+			select
+				<include refid="OrderInfoQuery_Column_List" />,
+				<if test="userOAI">  <!-- 收货人信息表 -->
+				oai.country,
+				oai.province,
+				oai.city,
+				oai.district,
+				oai.consignee,
+				oai.mobile,
+				oai.tel,
+				</if>
+			<if test="userOp">
+				op.pay_id,
+				op.pay_time,
+				op.create_time,
+			</if>
+			<if test="userOg"> 
+				og.custom_code,
+				og.goods_number,
+			</if>
+				oie.is_advance 
+			from
+			<if test="listDataType">
+				master_order_info
+			</if>
+			<if test="!listDataType">
+				master_order_info_history
+			</if> 
+			oi
+				LEFT JOIN master_order_info_extend AS oie ON
+				oi.master_order_sn = oie.master_order_sn
+			<if test="userOp">
+				INNER JOIN
+				<if test="listDataType">
+					master_order_pay
+				</if>
+				<if test="!listDataType">
+					master_order_pay_history
+				</if>
+				op ON oi.master_order_sn = op.master_order_sn
+			</if>
+			<if test="userOg"> 
+				left JOIN
+				<if test="listDataType">
+					master_order_goods
+				</if>
+				<if test="!listDataType">
+					master_order_goods_history
+				</if>
+				og ON oi.master_order_sn = og.master_order_sn
+			</if>
+			<if test="userOAI"><!-- 调用,国家，省份，城市，区域  -->
+				<if test="listDataType"> 
+					INNER JOIN master_order_address_info oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+				<if test="!listDataType">
+					INNER JOIN master_order_address_info_history oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+			</if>
+			) common
+		<if test="_parameter != null" >
+			<include refid="Example_Where_Clause" />
+		</if>
+		<!-- <if test="isMainOrderInfo">
+			GROUP BY common.master_order_sn
+		</if> -->
+		GROUP BY common.master_order_sn, common.custom_code
+		order by ${orderByClause}
+		<if test="criteria.valid" >
+			<foreach collection="criteria.criteria" item="criterion" >
+				<if test="criterion.limitValue" >
+					limit ${criterion.value},${criterion.secondValue}
+				</if>
+			</foreach>
+		</if>
+  </select>
+  <!-- 默认订单列表数量  -->
+  <select id="countCommonGoodsByExample" parameterType="com.work.shop.oms.api.param.bean.OrderInfoSearchExample" resultType="java.lang.Integer" >
+	SELECT
+		count(1)
+		from
+		(
+			SELECT
+			common.goods_amount - common.discount - common.bonus - common.integral_money  as settlement_price,
+			common.* 
+		FROM (
+			select 
+				<include refid="OrderInfoQuery_Column_List" />,
+				<if test="userOAI"> <!-- 收货人信息表 -->
+					oai.country,
+					oai.province,
+					oai.city,
+					oai.district,
+					oai.consignee,
+					oai.mobile,
+					oai.tel,
+				</if>
+				<if test="userOp">
+					op.pay_id,
+					op.pay_time,
+					op.create_time,
+				</if>
+				<if test="userOg"> 
+					og.custom_code,
+				</if>
+					oie.is_advance 
+			from
+			<if test="listDataType">
+				master_order_info
+			</if>
+			<if test="!listDataType">
+				master_order_info_history
+			</if>
+			oi
+				LEFT JOIN master_order_info_extend AS oie ON oi.master_order_sn = oie.master_order_sn
+			<if test="userOp">
+				INNER JOIN
+				<if test="listDataType">
+					master_order_pay
+				</if>
+				<if test="!listDataType">
+					master_order_pay_history
+				</if>
+				op ON oi.master_order_sn = op.master_order_sn
+			</if>
+			<if test="userOg">
+				left JOIN
+				<if test="listDataType">
+					master_order_goods
+				</if>
+				<if test="!listDataType">
+					master_order_goods_history
+				</if>
+				og ON oi.master_order_sn = og.master_order_sn
+			</if>
+			<if test="userOAI"><!-- 调用,国家，省份，城市，区域  -->
+				<if test="listDataType">
+					INNER JOIN master_order_address_info oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+				<if test="!listDataType">
+					INNER JOIN master_order_address_info_history oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+			</if>
+			) common 
+		<if test="_parameter != null" >
+				<include refid="Example_Where_Clause" />
+		</if>
+		GROUP BY common.master_order_sn, common.custom_code
+		<!-- <if test="isMainOrderInfo"> 主订单
+			GROUP BY common.master_order_sn
+		</if>
+		<if test="!isMainOrderInfo"> 子订单
+			GROUP BY od.order_sn
+		</if> -->
+		) tmp
+  </select>
+  <!--  根据子订单号订单模版  -->
+  <select id="selectCommonByOrderSn" resultMap="CommonListMap" parameterType="com.work.shop.oms.api.param.bean.OrderInfoSearchExample" >
+	SELECT
+		GROUP_CONCAT(oreturn.return_sn) return_sn, 
+		<!-- 	common.goods_amount - common.discount - common.bonus as settlement_price, -->
+			<!-- <if test="!isMainOrderInfo"> --> <!-- 子订单 -->
+		<!-- 		od.order_sn,
+				os.delivery_time,  -->
+				
+		<!-- 	</if> -->
+		common.*
+	FROM (
+			select 
+				<include refid="OrderInfoQueryByOrderSn_Column_List" />,
+				<!-- os.delivery_time , -->
+			    <if test="userOAI">  <!-- 收货人信息表 -->
+			        oai.country,
+			        oai.province,
+			        oai.city,
+			        oai.district,
+			    </if>
+			    
+		<!-- 	<if test="useWkUdDistribute">
+		
+			         os.depot_code as dist_wareh_code,
+			        os.shipping_name as ship_code,
+			        
+			        oq.question_reason,
+				</if> -->
+				
+			<!-- 	os.invoice_no,
+				os.shipping_status, -->
+				
+				ci.channel_name,
+				
+				oie.is_advance 
+			
+			from
+			<if test="listDataType">
+				order_distribute
+				<!-- 	master_order_info -->
+			</if>
+			<if test="!listDataType">
+				order_distribute_history
+					<!-- master_order_info_history -->
+			</if> 
+			od
+			
+			LEFT JOIN 
+			
+			
+			  <if test="listDataType">
+				   master_order_info 
+				
+			</if> 
+			
+			<if test="!listDataType">
+				master_order_info_history
+
+			</if> 
+			as  
+			   oi on  od.master_order_sn = oi.master_order_sn
+			   
+			 
+			 LEFT JOIN master_order_info_extend AS oie ON oi.master_order_sn = oie.master_order_sn  
+			   
+			 LEFT JOIN channel_info AS ci ON oi.order_from = ci.channel_code  
+			   
+		    LEFT JOIN
+			 <if test="listDataType">
+				order_depot_ship
+			</if>
+			
+			<if test="!listDataType">
+				order_depot_ship_history
+			</if>      
+			   as os on od.order_sn = os.order_sn
+			   
+			<!-- 	LEFT JOIN master_order_info_extend AS oie ON
+				
+				 oi.master_order_sn = oie.master_order_sn -->
+		
+		<!-- 	 LEFT JOIN channel_info AS ci ON oi.order_from = ci.channel_code  -->
+			
+		<!-- <if test="useWkUdDistribute">
+				LEFT JOIN
+			</if>	
+			
+		    <if test="!useWkUdDistribute">
+				INNER JOIN
+			</if> -->
+		
+		<!-- 
+			<if test="listDataType">
+				order_depot_ship
+			</if>
+			
+			<if test="!listDataType">
+				order_ship_history
+			</if> 
+			
+				os ON oi.master_order_sn = os.order_sn
+				 -->
+				
+		<!-- 	<if test="userOp"> -->
+				INNER JOIN
+				<if test="listDataType">
+					master_order_pay
+				</if>
+				<if test="!listDataType">
+					master_order_pay_history
+				</if>
+				op ON oi.master_order_sn = op.master_order_sn
+		<!-- 	</if> -->
+			
+			<if test="userOg"> 
+				left JOIN
+				<if test="listDataType">
+					master_order_goods
+				</if>
+				<if test="!listDataType">
+					master_order_goods_history
+				</if>
+				og ON oi.master_order_sn = og.master_order_sn
+			</if>
+			
+			<if test="userOAI"><!-- 调用,国家，省份，城市，区域  -->
+				
+				<if test="listDataType"> 
+					INNER JOIN master_order_address_info oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+				<if test="!listDataType">
+					INNER JOIN master_order_address_info_history oai ON oai.master_order_sn = oi.master_order_sn
+				</if> 
+				
+			</if>
+			
+	<!-- 	<if test="useWkUdDistribute">导出物流模版调用
+			
+				left JOIN master_order_question oq ON oq.master_order_sn = oi.master_order_sn
+			</if> -->
+		
+			<if test="_parameter != null" >
+				<include refid="Example_Where_Clause" />
+			</if>
+				<!-- group by oi.master_order_sn -->
+		
+			) common 
+			
+			LEFT JOIN order_return AS oreturn ON oreturn.relating_order_sn = common.master_order_sn
+		
+	
+<!-- 		<if test="!isMainOrderInfo"> 子订单 
+	
+			<if test="listDataType">
+			
+			
+				 LEFT JOIN order_distribute od ON common.master_order_sn = od.master_order_sn
+				 LEFT JOIN order_depot_ship os on od.order_sn = os.order_sn
+ 
+			</if>
+			<if test="!listDataType">
+			
+				LEFT JOIN order_distribute_history od ON common.master_order_sn = od.master_order_sn 
+				 LEFT JOIN order_depot_ship_history os on od.order_sn = os.order_sn
+			</if>
+
+		</if>
+ -->
+		<if test="isMainOrderInfo"><!--  主订单 -->
+			GROUP BY common.master_order_sn
+		</if> 
+		
+		<if test="!isMainOrderInfo">  <!-- 子订单 -->
+			GROUP BY common.order_sn
+		</if> 
+
+		order by  ${orderByClause}
+
+		<if test="criteria.valid" >
+			<foreach collection="criteria.criteria" item="criterion" >
+				<if test="criterion.limitValue" >
+					limit ${criterion.value},${criterion.secondValue}
+				</if>
+			</foreach>
+		</if>
+  </select>
+
+  <!-- 子订单列表数量  -->
+  <select id="countCommonByOrdersn" parameterType="com.work.shop.oms.api.param.bean.OrderInfoSearchExample" resultType="java.lang.Integer" >
+		SELECT
+		
+			count(*)
+		<!-- 	 GROUP_CONCAT(oreturn.return_sn) return_sn,  -->
+			
+		<!-- 	common.goods_amount - common.discount - common.bonus as settlement_price, -->
+			
+			<!-- <if test="!isMainOrderInfo"> --> <!-- 子订单 -->
+		<!-- 		od.order_sn,
+				os.delivery_time,  -->
+				
+		<!-- 	</if> -->
+			
+			<!-- common.* -->
+			
+		FROM (
+			select 
+				<include refid="OrderInfoQueryByOrderSn_Column_List" />,
+				
+			<!-- os.delivery_time , -->
+	
+			    <if test="userOAI">  <!-- 收货人信息表 -->
+			        oai.country,
+			        oai.province,
+			        oai.city,
+			        oai.district,
+			    </if>
+			    
+		<!-- 	<if test="useWkUdDistribute">
+		
+			         os.depot_code as dist_wareh_code,
+			        os.shipping_name as ship_code,
+			        
+			        oq.question_reason,
+				</if> -->
+				
+			<!-- 	os.invoice_no,
+				os.shipping_status, -->
+				
+				ci.channel_name,
+				
+				oie.is_advance 
+			
+			from
+			<if test="listDataType">
+				order_distribute
+				<!-- 	master_order_info -->
+			</if>
+			<if test="!listDataType">
+				order_distribute_history
+					<!-- master_order_info_history -->
+			</if> 
+			od
+			
+			LEFT JOIN 
+			
+			
+			  <if test="listDataType">
+				   master_order_info 
+				
+			</if> 
+			
+			<if test="!listDataType">
+				master_order_info_history
+
+			</if> 
+			as  
+			   oi on  od.master_order_sn = oi.master_order_sn
+			   
+			 
+			 LEFT JOIN master_order_info_extend AS oie ON oi.master_order_sn = oie.master_order_sn  
+			   
+			 LEFT JOIN channel_info AS ci ON oi.order_from = ci.channel_code  
+			   
+		    LEFT JOIN
+			 <if test="listDataType">
+				order_depot_ship
+			</if>
+			
+			<if test="!listDataType">
+				order_depot_ship_history
+			</if>      
+			   as os on od.order_sn = os.order_sn
+			   
+			<!-- 	LEFT JOIN master_order_info_extend AS oie ON
+				
+				 oi.master_order_sn = oie.master_order_sn -->
+		
+		<!-- 	 LEFT JOIN channel_info AS ci ON oi.order_from = ci.channel_code  -->
+			
+		<!-- <if test="useWkUdDistribute">
+				LEFT JOIN
+			</if>	
+			
+		    <if test="!useWkUdDistribute">
+				INNER JOIN
+			</if> -->
+		
+		<!-- 
+			<if test="listDataType">
+				order_depot_ship
+			</if>
+			
+			<if test="!listDataType">
+				order_ship_history
+			</if> 
+			
+				os ON oi.master_order_sn = os.order_sn
+				 -->
+				
+		<!-- 	<if test="userOp"> -->
+				INNER JOIN
+				<if test="listDataType">
+					master_order_pay
+				</if>
+				<if test="!listDataType">
+					master_order_pay_history
+				</if>
+				op ON oi.master_order_sn = op.master_order_sn
+		<!-- 	</if> -->
+			
+			<if test="userOg"> 
+				left JOIN
+				<if test="listDataType">
+					master_order_goods
+				</if>
+				<if test="!listDataType">
+					master_order_goods_history
+				</if>
+				og ON oi.master_order_sn = og.master_order_sn
+			</if>
+			
+			<if test="userOAI"><!-- 调用,国家，省份，城市，区域  -->
+				
+				<if test="listDataType"> 
+					INNER JOIN master_order_address_info oai ON oai.master_order_sn = oi.master_order_sn
+				</if>
+				<if test="!listDataType">
+					INNER JOIN master_order_address_info_history oai ON oai.master_order_sn = oi.master_order_sn
+				</if> 
+				
+			</if>
+			
+	<!-- 	<if test="useWkUdDistribute">导出物流模版调用
+			
+				left JOIN master_order_question oq ON oq.master_order_sn = oi.master_order_sn
+			</if> -->
+		
+			<if test="_parameter != null" >
+				<include refid="Example_Where_Clause" />
+			</if>
+				<!-- group by oi.master_order_sn -->
+		
+			) common 
+			
+			LEFT JOIN order_return AS oreturn ON oreturn.relating_order_sn = common.master_order_sn
+		
+	
+<!-- 		<if test="!isMainOrderInfo"> 子订单 
+	
+			<if test="listDataType">
+			
+			
+				 LEFT JOIN order_distribute od ON common.master_order_sn = od.master_order_sn
+				 LEFT JOIN order_depot_ship os on od.order_sn = os.order_sn
+ 
+			</if>
+			<if test="!listDataType">
+			
+				LEFT JOIN order_distribute_history od ON common.master_order_sn = od.master_order_sn 
+				 LEFT JOIN order_depot_ship_history os on od.order_sn = os.order_sn
+			</if>
+
+		</if>
+ -->
+		<if test="isMainOrderInfo"><!--  主订单 -->
+			GROUP BY common.master_order_sn
+		</if> 
+		
+		<if test="!isMainOrderInfo">  <!-- 子订单 -->
+			GROUP BY common.order_sn
+		</if> 
+
+		order by  ${orderByClause}
+ 
+  </select>
+  
+ 
+   <!-- 子问题单列表 -->
+   <select id="getOrderChildQuestionVOBySearch" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultMap="orderQuestionSearchResultVO">
+   
+		SELECT
+			oq.order_sn,
+	
+			oq.add_time as question_add_time,
+			oq.question_type,
+			oq.question_code,
+			oq.question_desc,
+			oi.pay_status,
+			oi.order_status,
+			oi.total_fee AS total_fee,
+			oi.total_payable AS total_payable,
+			oi.trans_type AS trans_type,
+			oi.to_buyer AS businessNote,
+			oi.lock_status AS lock_status,
+		    oi.referer,
+		    oi.user_name,
+			oi.order_from,
+			oi.order_out_sn,
+			oi.add_time,
+			oi.ship_status,
+			oi.master_order_sn,
+			ci.channel_name
+			
+		FROM
+			          
+		<if test="processStatus == 0">
+			 distribute_question 
+		</if>
+		<if test="processStatus == 1">
+			 distribute_question_del
+		</if>
+		oq 
+		
+		LEFT JOIN order_distribute od ON oq.order_sn = od.order_sn
+		LEFT JOIN master_order_info oi ON oi.master_order_sn = od.master_order_sn
+		
+	<!-- 	LEFT JOIN	master_order_question moq  ON oi.master_order_sn = moq.master_order_sn -->
+		
+		left join channel_info ci   on oi.order_from = ci.channel_code
+
+		where 1=1
+		   
+	    <!-- 一般问题单 -->
+		<if test="listDataType == 'true'">
+			AND oq.question_type = 0
+		</if>
+		<!-- 缺货问题单 -->
+		<if test="listDataType == 'false'">
+			AND oq.question_type = 1
+		</if>
+		
+		<!-- 问题单原因 -->
+		<if test="reason != null  and reason != ''">
+
+			<!-- 主订单 -->
+	<!-- 		<if test="mainOrChild == 'main'"> 
+				   and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+				
+			</if> -->
+			
+			<!-- 子订单  -->
+			<if test="mainOrChild == 'child'"> 
+			       and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+			</if>	
+		</if>
+		
+		<if test="userName != null and userName != ''">
+			and oi.user_name=#{userName,jdbcType=VARCHAR}
+		</if>
+		
+		<!--主订单  -->
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+				and oi.master_order_sn =  #{masterOrderSn, jdbcType=VARCHAR}  	
+		</if>
+		
+		<!-- 子订单  -->
+		<if test="orderSn != null and orderSn != ''">
+		
+				and od.order_sn = #{orderSn, jdbcType=VARCHAR} 
+		</if>
+
+     	<if test="referer != null  and referer != '' and referer != '-1'">
+				and oi.referer = #{referer,jdbcType=VARCHAR}		
+		</if>
+		
+		
+     	<if test="transType != null  and transType != '' and transType != '-1'">
+				and oi.trans_type = #{transType,jdbcType=VARCHAR}		
+		</if>
+	
+   		<!-- 支付状态 -->
+		<if test="payStatus != null and payStatus != -1">
+			and oi.pay_status=#{payStatus,jdbcType=INTEGER}
+		</if>
+		<!-- 发货状态 -->
+		<if test="shipStatus != null and shipStatus != -1">
+			and od.ship_status=#{shipStatus,jdbcType=INTEGER}
+		</if>
+		
+		<!-- 下单时间 -->
+		<if test="selectTimeType == 'addTime'">
+			<if test="addTimeStart != null">
+				and oi.add_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.add_time between SYSDATE() and #{addTimeStart}
+			</if>
+		</if>
+		
+		<!-- 问题单时间 -->
+		<if test="selectTimeType  == 'questionTime'">
+			<if test="addTimeStart != null">
+				and oi.question_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.question_time between SYSDATE() and #{addTimeEnd}
+			</if>
+		</if>
+ 
+		<!-- 三级联动的数据 -->
+		<if test="orderForms !=null">
+			and oi.order_from in 
+			<foreach collection="orderForms" index="index" item="item" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderClause != null and orderClause != ''">
+			order by ${orderClause}
+		</if>
+		<if test="start != null and limits != null">
+			LIMIT #{start},#{limits}
+		</if>
+   
+  </select>
+  
+   <!-- 子问题单列表 数量-->
+   <select id="getOrderChildQuestionVOBySearchCounts" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultType="integer">
+	
+	
+		SELECT
+		    count(*)
+			
+		FROM
+			          
+		<if test="processStatus == 0">
+			 distribute_question 
+		</if>
+		<if test="processStatus == 1">
+			 distribute_question_del
+		</if>
+		oq 
+		
+		LEFT JOIN order_distribute od ON oq.order_sn = od.order_sn
+		LEFT JOIN master_order_info oi ON oi.master_order_sn = od.master_order_sn
+		
+	<!-- 	LEFT JOIN	master_order_question moq  ON oi.master_order_sn = moq.master_order_sn -->
+		
+		left join channel_info ci   on oi.order_from = ci.channel_code
+
+		where 1=1
+		   
+	    <!-- 一般问题单 -->
+		<if test="listDataType == 'true'">
+			AND oq.question_type = 0
+		</if>
+		<!-- 缺货问题单 -->
+		<if test="listDataType == 'false'">
+			AND oq.question_type = 1
+		</if>
+		
+		<!-- 问题单原因 -->
+		<if test="reason != null  and reason != ''">
+
+			<!-- 主订单 -->
+	<!-- 		<if test="mainOrChild == 'main'"> 
+				   and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+				
+			</if> -->
+			
+			<!-- 子订单  -->
+			<if test="mainOrChild == 'child'"> 
+			       and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+			</if>	
+		</if>
+		
+		<if test="userName != null and userName != ''">
+			and oi.user_name=#{userName,jdbcType=VARCHAR}
+		</if>
+		
+		<!--主订单  -->
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+				and oi.master_order_sn =  #{masterOrderSn, jdbcType=VARCHAR}  	
+		</if>
+		
+		<!-- 子订单  -->
+		<if test="orderSn != null and orderSn != ''">
+		
+				and od.order_sn = #{orderSn, jdbcType=VARCHAR} 
+		</if>
+
+     	<if test="referer != null  and referer != '' and referer != '-1'">
+				and oi.referer = #{referer,jdbcType=VARCHAR}		
+		</if>
+		
+		
+     	<if test="transType != null  and transType != '' and transType != '-1'">
+				and oi.trans_type = #{transType,jdbcType=VARCHAR}		
+		</if>
+	
+   		<!-- 支付状态 -->
+		<if test="payStatus != null and payStatus != -1">
+			and oi.pay_status=#{payStatus,jdbcType=INTEGER}
+		</if>
+		<!-- 发货状态 -->
+		<if test="shipStatus != null and shipStatus != -1">
+			and od.ship_status=#{shipStatus,jdbcType=INTEGER}
+		</if>
+		
+		<!-- 下单时间 -->
+		<if test="selectTimeType == 'addTime'">
+			<if test="addTimeStart != null">
+				and oi.add_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.add_time between SYSDATE() and #{addTimeStart}
+			</if>
+		</if>
+		
+		<!-- 问题单时间 -->
+		<if test="selectTimeType  == 'questionTime'">
+			<if test="addTimeStart != null">
+				and oi.question_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.question_time between SYSDATE() and #{addTimeEnd}
+			</if>
+		</if>
+ 
+		<!-- 三级联动的数据 -->
+		<if test="orderForms !=null">
+			and oi.order_from in 
+			<foreach collection="orderForms" index="index" item="item" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderClause != null and orderClause != ''">
+			order by ${orderClause}
+		</if>
+
+  </select>
+  
+   <!-- 缺货问题单表 -->                                               
+    <select id="getShortageQuestionList" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultMap="ShortageQuestion">
+
+	        select      
+	           id,
+	           out_stock_code,
+	           depot_code,
+	           delivery_sn,
+	           out_stock_reason
+	
+	         from shortage_question
+	   	       where 1=1
+	 	    <if test="id != null">
+	   	        and order_question_id=#{id,jdbcType=INTEGER}
+	   	    </if>
+	   	    <if test="orderSn != null">
+	   	        and order_Sn=#{orderSn,jdbcType=VARCHAR}
+	   	    </if> 
+	
+	   	    <if test="start != null and limits != null">
+	   	    
+	   	      LIMIT #{start},#{limits}  
+	   	    </if>
+	   	    
+	   	     
+   </select>
+   
+     <!--订单结算列表  -->
+      <select id="getOrderBillList" resultMap="orderBillListVo" parameterType="com.work.shop.oms.bean.OrderBillListVo" >
+       select 
+          
+		   bill_no,
+		   channel_code,
+		  bill_type,
+		  action_user,
+		  note,
+		  is_timing,
+		  exec_time,
+		  is_sync,
+		  add_time,
+		  update_time
+     
+        from 
+  
+         order_bill_list 
+         
+         where 1=1
+         
+          <if test="channelCode != null">
+		  and  channel_code like  CONCAT('%','${channelCode}','%' )  
+		</if>
+         
+         
+         <if test="billNo != null">
+		  and  bill_no like  CONCAT('%','${billNo}','%' )  
+		</if>
+         
+        <if test="isSync != null and isSync != -1">
+		  and  is_sync=#{isSync, jdbcType=INTEGER}
+		</if>
+		
+		 <if test="billType != null and billType != -1">
+			and bill_type=#{billType, jdbcType=INTEGER}
+		</if>
+ 
+  		<if test="billType == null or billType == -1 or billType == ''">
+			and bill_type  in (1,2)
+		</if>
+
+          order by  add_time desc
+          
+
+         <if test="start != null and limits != null">
+				LIMIT #{start},#{limits}
+			</if>
+   </select>
+   
+   <!--订单结算列表数量  -->
+      <select id="countOrderBillList" parameterType="com.work.shop.oms.bean.OrderBillListVo" resultType="java.lang.Integer" >
+   	select
+
+		count(*)
+		
+	   FROM 
+
+		order_bill_list 
+		
+		  where 1=1
+		  
+		<if test="channelCode != null">
+		  and  channel_code like  CONCAT('%','${channelCode}','%' )  
+		</if>
+		         
+		 <if test="billNo != null">
+
+		  and  bill_no like  CONCAT('%','${billNo}','%' )  
+		</if>       
+		         
+        <if test="isSync != null">
+		  and  is_sync=#{isSync, jdbcType=INTEGER}
+		</if>
+		
+		 <if test="billType != null">
+			and bill_type=#{billType, jdbcType=INTEGER}
+		</if>
+
+		  order by  add_time desc
+
+   </select>
+   
+    
+   <!-- 保证金列表 -->
+    <select id="getOrderDepositList" resultMap="orderBillListVo" parameterType="com.work.shop.oms.bean.OrderBillListVo" >
+       select 
+          
+		   bill_no,
+		   channel_code,
+		  bill_type,
+		  action_user,
+		  note,
+		  is_timing,
+		  exec_time,
+		  is_sync,
+		  add_time,
+		  update_time
+     
+        from 
+  
+         order_bill_list 
+         
+         where 1=1
+         
+          and bill_type=4
+         
+       
+         
+       <if test="billNo != null">
+		  and  bill_no like  CONCAT('%','${billNo}','%' )  
+		</if> 
+         
+        <if test="isSync != null and isSync != -1">
+		  and  is_sync=#{isSync, jdbcType=INTEGER}
+		</if>
+		
+		 <if test="billType != null and billType != -1">
+			and bill_type=#{billType, jdbcType=INTEGER}
+		</if>
+ 
+  
+          order by  add_time desc
+          
+
+         <if test="start != null and limits != null">
+				LIMIT #{start},#{limits}
+			</if>
+   </select>
+   
+   <!-- 保证金列表数量 -->
+    <select id="countOrderDepositList" parameterType="com.work.shop.oms.bean.OrderBillListVo" resultType="java.lang.Integer" >
+   	select
+
+		count(*)
+		
+	   FROM 
+
+		order_bill_list 
+		
+		  where 1=1
+		  and bill_type=4
+		  
+
+		 <if test="billNo != null">
+
+		  and  bill_no like  CONCAT('%','${billNo}','%' )  
+		</if>       
+		         
+        <if test="isSync != null">
+		  and  is_sync=#{isSync, jdbcType=INTEGER}
+		</if>
+		
+	
+
+		  order by  add_time desc
+
+   </select>
+   
+   
+   
+      <!-- 订单退单调整单日志列表 -->
+    <select id="getOrderInfoOrOrderReturnLogListList" resultMap="orderBillListVo" parameterType="com.work.shop.oms.bean.OrderBillListVo" >
+       select 
+          
+		   bill_no,
+		   channel_code,
+		  bill_type,
+		  action_user,
+		  note,
+		  is_timing,
+		  exec_time,
+		  is_sync,
+		  add_time,
+		  update_time
+     
+        from 
+  
+         order_bill_list 
+         
+         where 1=1
+         
+          and bill_type=5
+         
+       
+         
+       <if test="billNo != null">
+		  and  bill_no like  CONCAT('%','${billNo}','%' )  
+		</if> 
+         
+        <if test="isSync != null and isSync != -1">
+		  and  is_sync=#{isSync, jdbcType=INTEGER}
+		</if>
+		
+		 <if test="billType != null and billType != -1">
+			and bill_type=#{billType, jdbcType=INTEGER}
+		</if>
+ 
+  
+          order by  add_time desc
+          
+
+         <if test="start != null and limits != null">
+				LIMIT #{start},#{limits}
+			</if>
+   </select>
+   
+   <!-- 订单退单调整单日志列表数量 -->
+    <select id="countOrderInfoOrOrderReturnLogListList" parameterType="com.work.shop.oms.bean.OrderBillListVo" resultType="java.lang.Integer" >
+   	select
+
+		count(*)
+		
+	   FROM 
+
+		order_bill_list 
+		
+		  where 1=1
+		  and bill_type=5
+		  
+
+		 <if test="billNo != null">
+
+		  and  bill_no like  CONCAT('%','${billNo}','%' )  
+		</if>       
+		         
+        <if test="isSync != null">
+		  and  is_sync=#{isSync, jdbcType=INTEGER}
+		</if>
+		
+	
+
+		  order by  add_time desc
+
+   </select>
+  
+     <resultMap id="orderBillListVo" type="com.work.shop.oms.bean.OrderBillListVo" >
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+    -->
+    <id column="bill_no" property="billNo" jdbcType="VARCHAR" />
+    <result column="channel_code" property="channelCode" jdbcType="VARCHAR" />
+    <result column="bill_type" property="billType" jdbcType="INTEGER" />
+    <result column="action_user" property="actionUser" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+    <result column="is_timing" property="isTiming" jdbcType="TINYINT" />
+    <result column="exec_time" property="execTime" jdbcType="TIMESTAMP" />
+    <result column="is_sync" property="isSync" jdbcType="TINYINT" />
+    <result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  
+    <!-- 问题单列表 -->
+   <select id="getOrderQuestionVOBySearch" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultMap="orderQuestionSearchResultVO">
+   
+		SELECT
+		
+			moq.add_time as question_add_time,
+			moq.question_type,
+			moq.question_code,
+			moq.question_desc,
+			oi.pay_status,
+			oi.order_status,
+			oi.total_fee AS total_fee,
+			oi.total_payable AS total_payable,
+			oi.trans_type AS trans_type,
+			oi.to_buyer AS businessNote,
+			oi.lock_status AS lock_status,
+		    oi.referer,
+		    oi.user_name,
+			oi.order_from,
+			oi.order_out_sn,
+			oi.add_time,
+			oi.ship_status,
+			oi.master_order_sn,
+			ci.channel_name
+
+		FROM
+			          
+		<if test="processStatus == 0">
+			 master_order_question 
+		</if>
+		<if test="processStatus == 1">
+			 master_order_question_del
+		</if>
+		moq 
+		
+		<!-- LEFT JOIN order_distribute od ON oq.order_sn = od.order_sn -->
+		LEFT JOIN master_order_info oi ON oi.master_order_sn = moq.master_order_sn
+		
+	<!--LEFT JOIN master_order_question moq  ON oi.master_order_sn = moq.master_order_sn -->
+		
+		left join channel_info ci  on oi.order_from = ci.channel_code
+
+		where 1=1
+		   
+	    <!-- 一般问题单 -->
+		<if test="listDataType == 'true'">
+			AND moq.question_type = 0
+		</if>
+		<!-- 缺货问题单 -->
+		<if test="listDataType == 'false'">
+			AND moq.question_type = 1
+		</if>
+		
+		<!-- 问题单原因 -->
+		<if test="reason != null  and reason != ''">
+
+			<!-- 主订单 -->
+	<!-- 	<if test="mainOrChild == 'main'"> 
+				   and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+				
+			</if> -->
+			
+			<!-- 子订单  -->
+			<if test="mainOrChild == 'main'"> 
+			       and moq.question_desc = #{reason,jdbcType=VARCHAR}	
+			</if>	
+		</if>
+		
+		<if test="userName != null and userName != ''">
+			and oi.user_name=#{userName,jdbcType=VARCHAR}
+		</if>
+		
+		<!--主订单  -->
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+				and oi.master_order_sn =  #{masterOrderSn, jdbcType=VARCHAR}  	
+		</if>
+		
+		<!-- 子订单  -->
+		<if test="orderSn != null and orderSn != ''">
+		
+				and od.order_sn = #{orderSn, jdbcType=VARCHAR} 
+		</if>
+
+     	<if test="referer != null  and referer != '' and referer != '-1'">
+				and oi.referer = #{referer,jdbcType=VARCHAR}		
+		</if>
+		
+		
+     	<if test="transType != null  and transType != '' and transType != '-1'">
+				and oi.trans_type = #{transType,jdbcType=VARCHAR}		
+		</if>
+	
+   		<!-- 支付状态 -->
+		<if test="payStatus != null and payStatus != -1">
+			and oi.pay_status=#{payStatus,jdbcType=INTEGER}
+		</if>
+		<!-- 发货状态 -->
+<!-- 		<if test="shipStatus != null and shipStatus != -1">
+			and od.ship_status=#{shipStatus,jdbcType=INTEGER}
+		</if> -->
+		
+		<!-- 下单时间 -->
+		<if test="selectTimeType == 'addTime'">
+			<if test="addTimeStart != null">
+				and oi.add_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.add_time between SYSDATE() and #{addTimeStart}
+			</if>
+		</if>
+		
+		<!-- 问题单时间 -->
+		<if test="selectTimeType  == 'questionTime'">
+			<if test="addTimeStart != null">
+				and oi.question_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.question_time between SYSDATE() and #{addTimeEnd}
+			</if>
+		</if>
+ 
+		<!-- 三级联动的数据 -->
+		<if test="orderForms !=null">
+			and oi.order_from in 
+			<foreach collection="orderForms" index="index" item="item" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderClause != null and orderClause != ''">
+			order by ${orderClause}
+		</if>
+		<if test="start != null and limits != null">
+			LIMIT #{start},#{limits}
+		</if>
+   
+  </select>
+  
+   <!-- 问题单列表 数量-->
+   <select id="getOrderQuestionVOBySearchCounts" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultType="integer">
+
+
+   	SELECT
+	      count(*)
+		FROM
+			          
+		<if test="processStatus == 0">
+			 master_order_question 
+		</if>
+		<if test="processStatus == 1">
+			 master_order_question_del
+		</if>
+		moq 
+		
+		<!-- LEFT JOIN order_distribute od ON oq.order_sn = od.order_sn -->
+		LEFT JOIN master_order_info oi ON oi.master_order_sn = moq.master_order_sn
+		
+	<!--LEFT JOIN master_order_question moq  ON oi.master_order_sn = moq.master_order_sn -->
+		
+		left join channel_info ci  on oi.order_from = ci.channel_code
+
+		where 1=1
+		   
+	    <!-- 一般问题单 -->
+		<if test="listDataType == 'true'">
+			AND moq.question_type = 0
+		</if>
+		<!-- 缺货问题单 -->
+		<if test="listDataType == 'false'">
+			AND moq.question_type = 1
+		</if>
+		
+		<!-- 问题单原因 -->
+		<if test="reason != null  and reason != ''">
+
+			<!-- 主订单 -->
+	<!-- 	<if test="mainOrChild == 'main'"> 
+				   and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+				
+			</if> -->
+			
+			<!-- 子订单  -->
+			<if test="mainOrChild == 'main'"> 
+			       and moq.question_desc = #{reason,jdbcType=VARCHAR}	
+			</if>	
+		</if>
+		
+		<if test="userName != null and userName != ''">
+			and oi.user_name=#{userName,jdbcType=VARCHAR}
+		</if>
+		
+		<!--主订单  -->
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+				and oi.master_order_sn =  #{masterOrderSn, jdbcType=VARCHAR}  	
+		</if>
+		
+		<!-- 子订单  -->
+		<if test="orderSn != null and orderSn != ''">
+		
+				and od.order_sn = #{orderSn, jdbcType=VARCHAR} 
+		</if>
+
+     	<if test="referer != null  and referer != '' and referer != '-1'">
+				and oi.referer = #{referer,jdbcType=VARCHAR}		
+		</if>
+		
+		
+     	<if test="transType != null  and transType != '' and transType != '-1'">
+				and oi.trans_type = #{transType,jdbcType=VARCHAR}		
+		</if>
+	
+   		<!-- 支付状态 -->
+		<if test="payStatus != null and payStatus != -1">
+			and oi.pay_status=#{payStatus,jdbcType=INTEGER}
+		</if>
+		<!-- 发货状态 -->
+<!-- 		<if test="shipStatus != null and shipStatus != -1">
+			and od.ship_status=#{shipStatus,jdbcType=INTEGER}
+		</if> -->
+		
+		<!-- 下单时间 -->
+		<if test="selectTimeType == 'addTime'">
+			<if test="addTimeStart != null">
+				and oi.add_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.add_time between SYSDATE() and #{addTimeStart}
+			</if>
+		</if>
+		
+		<!-- 问题单时间 -->
+		<if test="selectTimeType  == 'questionTime'">
+			<if test="addTimeStart != null">
+				and oi.question_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.question_time between SYSDATE() and #{addTimeEnd}
+			</if>
+		</if>
+ 
+		<!-- 三级联动的数据 -->
+		<if test="orderForms !=null">
+			and oi.order_from in 
+			<foreach collection="orderForms" index="index" item="item" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderClause != null and orderClause != ''">
+			order by ${orderClause}
+		</if>
+
+
+
+  </select>
+ 
+   <!-- 交货问题单列表导出-->
+   <select id="getOrderChildQuestionVOByexport" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultMap="orderQuestionSearchResultVO">
+   
+		SELECT
+			oq.order_sn,
+			oq.add_time as question_add_time,
+			oq.question_type,
+			oq.question_code,
+			oq.question_desc,
+			oi.pay_status,
+			oi.order_status,
+			oi.total_fee AS total_fee,
+			oi.total_payable AS total_payable,
+			oi.trans_type AS trans_type,
+			oi.to_buyer AS businessNote,
+			oi.lock_status AS lock_status,
+		    oi.referer,
+		    oi.user_name,
+			oi.order_from,
+			oi.order_out_sn,
+			oi.add_time,
+			oi.ship_status,
+			oi.master_order_sn,
+			ci.channel_name,
+			oqlsn.custom_code,
+			oqlsn.lack_num,
+			oqlsn.depot_code
+			
+		FROM
+			          
+		<if test="processStatus == 0">
+			 distribute_question 
+		</if>
+		<if test="processStatus == 1">
+			 distribute_question_del
+		</if>
+		oq 
+		
+		LEFT JOIN order_distribute od ON oq.order_sn = od.order_sn
+		LEFT JOIN master_order_info oi ON oi.master_order_sn = od.master_order_sn
+
+		left join channel_info ci   on oi.order_from = ci.channel_code
+
+		<if test="processStatus == 0">
+		left join order_question_lack_sku_new oqlsn on  oqlsn.order_sn = oq.order_sn
+		</if>
+		
+		<if test="processStatus == 1">
+			left join order_question_lack_sku_new_del oqlsn on  oqlsn.order_sn = oq.order_sn
+		</if>
+		
+		where 1=1
+		   
+	    <!-- 一般问题单 -->
+		<if test="listDataType == 'true'">
+			AND oq.question_type = 0
+		</if>
+		<!-- 缺货问题单 -->
+		<if test="listDataType == 'false'">
+			AND oq.question_type = 1
+		</if>
+		
+		<!-- 问题单原因 -->
+		<if test="reason != null  and reason != ''">
+		
+			<!-- 子订单  -->
+			<if test="mainOrChild == 'child'"> 
+			       and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+			</if>	
+		</if>
+		
+		<if test="userName != null and userName != ''">
+			and oi.user_name=#{userName,jdbcType=VARCHAR}
+		</if>
+		
+		<!--主订单  -->
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+				and oi.master_order_sn =  #{masterOrderSn, jdbcType=VARCHAR}  	
+		</if>
+		
+		<!-- 子订单  -->
+		<if test="orderSn != null and orderSn != ''">
+		
+				and od.order_sn = #{orderSn, jdbcType=VARCHAR} 
+		</if>
+
+     	<if test="referer != null  and referer != '' and referer != '-1'">
+				and oi.referer = #{referer,jdbcType=VARCHAR}		
+		</if>
+		
+		
+     	<if test="transType != null  and transType != '' and transType != '-1'">
+				and oi.trans_type = #{transType,jdbcType=VARCHAR}		
+		</if>
+	
+   		<!-- 支付状态 -->
+		<if test="payStatus != null and payStatus != -1">
+			and oi.pay_status=#{payStatus,jdbcType=INTEGER}
+		</if>
+		<!-- 发货状态 -->
+		<if test="shipStatus != null and shipStatus != -1">
+			and od.ship_status=#{shipStatus,jdbcType=INTEGER}
+		</if>
+		
+		<!-- 下单时间 -->
+		<if test="selectTimeType == 'addTime'">
+			<if test="addTimeStart != null">
+				and oi.add_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.add_time between SYSDATE() and #{addTimeStart}
+			</if>
+		</if>
+		
+		<!-- 问题单时间 -->
+		<if test="selectTimeType  == 'questionTime'">
+			<if test="addTimeStart != null">
+				and oi.question_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.question_time between SYSDATE() and #{addTimeEnd}
+			</if>
+		</if>
+ 
+		<!-- 三级联动的数据 -->
+		<if test="orderForms !=null">
+			and oi.order_from in 
+			<foreach collection="orderForms" index="index" item="item" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+		</if>
+		
+		GROUP BY  oqlsn.order_sn,custom_code, oqlsn.depot_code
+		
+		<if test="orderClause != null and orderClause != ''">
+			order by ${orderClause}
+		</if>
+		
+		
+		
+		<if test="start != null and limits != null">
+			LIMIT #{start},#{limits}
+		</if>
+   
+  </select>
+  
+  
+   <!-- 子问题单列表 数量-->
+   <select id="countOrderChildQuestionVOByexport" parameterType="com.work.shop.oms.common.bean.OrderQuestionSearchVO" resultType="integer">
+	
+	 select
+	 
+	   count(*) from
+	   
+	   (
+	
+		SELECT
+		   oq.order_sn
+			
+		FROM
+			          
+		<if test="processStatus == 0">
+			 distribute_question 
+		</if>
+		<if test="processStatus == 1">
+			 distribute_question_del
+		</if>
+		oq 
+		
+		LEFT JOIN order_distribute od ON oq.order_sn = od.order_sn
+		LEFT JOIN master_order_info oi ON oi.master_order_sn = od.master_order_sn
+		
+		left join channel_info ci   on oi.order_from = ci.channel_code
+		
+		
+		<if test="processStatus == 0">
+			left join order_question_lack_sku_new oqlsn on  oqlsn.order_sn = oq.order_sn
+		</if>
+		
+		<if test="processStatus == 1">
+			left join order_question_lack_sku_new_del oqlsn on  oqlsn.order_sn = oq.order_sn
+		</if>
+		
+		where 1=1
+		   
+	    <!-- 一般问题单 -->
+		<if test="listDataType == 'true'">
+			AND oq.question_type = 0
+		</if>
+		<!-- 缺货问题单 -->
+		<if test="listDataType == 'false'">
+			AND oq.question_type = 1
+		</if>
+		
+		<!-- 问题单原因 -->
+		<if test="reason != null  and reason != ''">
+
+			<!-- 子订单  -->
+			<if test="mainOrChild == 'child'"> 
+			       and oq.question_desc = #{reason,jdbcType=VARCHAR}	
+			</if>	
+		</if>
+		
+		<if test="userName != null and userName != ''">
+			and oi.user_name=#{userName,jdbcType=VARCHAR}
+		</if>
+		
+		<!--主订单  -->
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+				and oi.master_order_sn =  #{masterOrderSn, jdbcType=VARCHAR}  	
+		</if>
+		
+		<!-- 子订单  -->
+		<if test="orderSn != null and orderSn != ''">
+		
+				and od.order_sn = #{orderSn, jdbcType=VARCHAR} 
+		</if>
+
+     	<if test="referer != null  and referer != '' and referer != '-1'">
+				and oi.referer = #{referer,jdbcType=VARCHAR}		
+		</if>
+
+     	<if test="transType != null  and transType != '' and transType != '-1'">
+				and oi.trans_type = #{transType,jdbcType=VARCHAR}		
+		</if>
+	
+   		<!-- 支付状态 -->
+		<if test="payStatus != null and payStatus != -1">
+			and oi.pay_status=#{payStatus,jdbcType=INTEGER}
+		</if>
+		<!-- 发货状态 -->
+		<if test="shipStatus != null and shipStatus != -1">
+			and od.ship_status=#{shipStatus,jdbcType=INTEGER}
+		</if>
+		
+		<!-- 下单时间 -->
+		<if test="selectTimeType == 'addTime'">
+			<if test="addTimeStart != null">
+				and oi.add_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.add_time between SYSDATE() and #{addTimeStart}
+			</if>
+		</if>
+		
+		<!-- 问题单时间 -->
+		<if test="selectTimeType  == 'questionTime'">
+			<if test="addTimeStart != null">
+				and oi.question_time between #{addTimeStart} and
+				<if test="addTimeEnd != null">
+					#{addTimeEnd}
+				</if> 
+				<if test="addTimeEnd == null">
+					SYSDATE()
+				</if>
+			</if>
+			<if test="addTimeStart == null and addTimeEnd != null">
+				and oi.question_time between SYSDATE() and #{addTimeEnd}
+			</if>
+		</if>
+ 
+		<!-- 三级联动的数据 -->
+		<if test="orderForms !=null">
+			and oi.order_from in 
+			<foreach collection="orderForms" index="index" item="item" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+		</if>
+		
+		GROUP BY  oqlsn.order_sn,custom_code, oqlsn.depot_code
+		
+		<if test="orderClause != null and orderClause != ''">
+			order by ${orderClause}
+		</if>
+
+
+     )aaa
+  </select>
+  <resultMap id="OrderItemMap" type="com.work.shop.oms.bean.OrderItem">
+    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="order_type" jdbcType="INTEGER" property="orderType" />
+    <result column="shop_name" jdbcType="VARCHAR" property="shopName" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="consignee" jdbcType="VARCHAR" property="receiverName" />
+    <result column="order_status" jdbcType="TINYINT" property="orderStatus" />
+    <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+    <result column="ship_status" jdbcType="TINYINT" property="shipStatus" />
+    <result column="question_status" jdbcType="INTEGER" property="questionStatus" />
+    <result column="order_from" jdbcType="VARCHAR" property="orderFrom" />
+    <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+    <result column="confirm_time" jdbcType="TIMESTAMP" property="confirmTime" />
+    <result column="question_time" jdbcType="TIMESTAMP" property="questionTime" />
+    <result column="order_out_sn" jdbcType="VARCHAR" property="outerOrderSn" />
+    <result column="referer" jdbcType="VARCHAR" property="referer" />
+    <result column="shipping_total_fee" jdbcType="DECIMAL" property="shippingTotalFee" />
+    <result column="goods_amount" jdbcType="DECIMAL" property="goodsAmount" />
+    <result column="total_fee" jdbcType="DECIMAL" property="totalFee" />
+    <result column="money_paid" jdbcType="DECIMAL" property="moneyPaid" />
+    <result column="goods_count" jdbcType="INTEGER" property="goodsCount" />
+    <result column="discount" jdbcType="DECIMAL" property="discount" />
+    <result column="tel" jdbcType="VARCHAR" property="receiverTel" />
+    <result column="mobile" jdbcType="VARCHAR" property="receiverMobile" />
+    <result column="channel_name" jdbcType="VARCHAR" property="channelName" />
+    <result column="shop_code" jdbcType="VARCHAR" property="shopCode" />
+    <result column="store_code" jdbcType="VARCHAR" property="storeCode" />
+    <result column="store_name" jdbcType="VARCHAR" property="storeName" />
+    <result column="instead_user_id" jdbcType="VARCHAR" property="insteadUserId" />
+    <result column="user_shop_name" jdbcType="VARCHAR" property="userShopName" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+	<result column="user_pay_apply" property="userPayApply" />
+      <result column="user_bank_no" property="userBankNo" />
+  </resultMap>
+  
+	<!-- 默认订单列表  -->
+  	<select id="selectOrderItemByExample" resultMap="OrderItemMap" parameterType="com.work.shop.oms.api.param.bean.OrderItemQueryExample" >
+		SELECT
+       		oi.master_order_sn,
+            oi.order_out_sn,
+            oi.order_type,
+            oi.split_status,
+            oi.shop_name,
+            oi.referer,
+            oi.order_from,
+            oi.channel_code,
+            oi.order_status,
+            oi.pay_status,
+            oi.ship_status,
+            oi.user_id,
+            oi.user_name,
+            DATE_FORMAT(oi.add_time, '%Y-%m-%d %H:%i:%S') add_time,
+            oi.goods_count,
+            oi.goods_amount,
+            oi.total_fee,
+            oi.money_paid,
+            oi.discount,
+            oi.question_status,
+            oai.consignee,
+            oai.mobile,
+            oai.tel,
+            oai.address,
+            oai.user_shop_name,
+            oi.shipping_total_fee,
+            oie.shop_code store_code,
+            oie.shop_name store_name,
+			oie.user_bank_no userBankNo,
+            oie.user_pay_apply userPayApply,
+            oie.order_type createOrderType,
+            oi.instead_user_id instead_user_id
+		FROM master_order_info oi,
+            master_order_address_info oai,
+            master_order_info_extend oie
+		<if test="_parameter != null" >
+	        <include refid="Example_Where_Clause" />
+	    </if>
+		order by ${orderByClause}
+    	<if test="criteria.valid" >
+        	<foreach collection="criteria.criteria" item="criterion" >
+            	<if test="criterion.limitValue" >
+                	limit ${criterion.value},${criterion.secondValue}
+            	</if>
+        	</foreach>
+    	</if>
+	</select>
+  
+  	<select id="countOrderItemByExample" resultType="java.lang.Integer" parameterType="com.work.shop.oms.api.param.bean.OrderItemQueryExample" >
+    	SELECT
+        	count(1)
+    	FROM
+        	master_order_info oi,
+        	master_order_address_info oai,
+        	master_order_info_extend oie
+    	<if test="_parameter != null" >
+        	<include refid="Example_Where_Clause" />
+    	</if>
+    	<!-- 
+    	order by ${orderByClause}
+    	 -->
+	</select>
+	
+	<!-- 默认订单商品列表  -->
+  	<select id="selectOrderGoodsByExample" resultType="com.work.shop.oms.bean.OrderGoodsItem" parameterType="com.work.shop.oms.api.param.bean.OrderItemQueryExample" >
+		SELECT
+       		oi.master_order_sn as masterOrderSn,
+            oi.order_out_sn as orderOutSn,
+            oi.order_type as orderType,
+            oi.referer,
+            oi.order_from as orderFrom,
+            oi.channel_code as channelCode,
+            oi.order_status as orderStatus,
+            oi.pay_status as payStatus,
+            oi.ship_status as shipStatus,
+            oi.user_id as userId,
+            DATE_FORMAT(oi.add_time, '%Y-%m-%d %H:%i:%S') as addTime,
+            oi.instead_user_id as insteadUserId,
+            oai.consignee,
+            oai.mobile,
+            oai.address,
+            mog.goods_name as goodsName,
+            mog.goods_sn as goodsSn,
+            mog.custom_code as customCode,
+            mog.extension_code as extensionCode,
+            mog.depot_code as depotCode,
+            sum(mog.goods_number) as goodsNumber,
+            mog.goods_price as goodsPrice,
+            sum(mog.goods_price) as totalGoodsPrice,
+            mog.transaction_price as transactionPrice,
+            sum(mog.transaction_price) as totalTransactionPrice,
+            mog.settlement_price as settlementPrice,
+            mog.discount,
+            mog.share_bonus as shareBonus,
+            mog.promotion_id as promotionId,
+            mog.sap,
+            mog.input_tax as inputTax,
+            mog.output_tax as outputTax,
+            mog.cost_price as costPrice,
+            mog.box_gauge as boxGauge
+		FROM master_order_info oi,
+            master_order_address_info oai,
+            master_order_info_extend oie,
+            master_order_goods mog
+		<if test="_parameter != null" >
+	        <include refid="Example_Where_Clause" />
+	    </if>
+	    group by oi.master_order_sn, mog.custom_code, mog.extension_code, mog.goods_price, mog.transaction_price, mog.settlement_price, mog.depot_code
+		order by ${orderByClause}
+    	<if test="criteria.valid" >
+        	<foreach collection="criteria.criteria" item="criterion" >
+            	<if test="criterion.limitValue" >
+                	limit ${criterion.value}, ${criterion.secondValue}
+            	</if>
+        	</foreach>
+    	</if>
+	</select>
+	
+	<!-- 获取查询订单列表商品总记录数 -->
+	<select id="countOrderGoodsByExample" resultType="java.lang.Integer" parameterType="com.work.shop.oms.api.param.bean.OrderItemQueryExample" >
+    	SELECT count(1)
+    	FROM (
+	    	SELECT
+	        	count(1)
+	    	FROM
+	        	master_order_info oi,
+	        	master_order_address_info oai,
+	        	master_order_info_extend oie,
+	        	master_order_goods mog
+	    	<if test="_parameter != null" >
+	        	<include refid="Example_Where_Clause" />
+	    	</if>
+	    	group by oi.master_order_sn, mog.custom_code, mog.extension_code, mog.goods_price, mog.transaction_price, mog.settlement_price, mog.depot_code
+    	) a
+	</select>
+  
+  	<sql id="pickUpSql">
+  		where 
+		oie.is_cac = 1
+		<if test="channelCode != null">
+			and oi.channel_code = #{channelCode}
+		</if>
+		<if test="channelCodeList != null">
+			and oi.channel_code in
+			<foreach collection="channelCodeList" item="item" separator=","  open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderFrom != null">
+			and oi.order_from = #{orderFrom}
+		</if>
+		<if test="orderFromList != null">
+			and oi.order_from in
+			<foreach collection="orderFromList" item="item" separator=","  open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="storeCode != null">
+			and oie.shop_code = #{storeCode}
+		</if>
+		<if test="storeCodeList != null">
+			and oie.shop_code in 
+			<foreach collection="storeCodeList" index="index" item="item" separator="," open="(" close=")">
+		        #{item}
+		    </foreach>
+		</if>
+		<if test="gotStatus != null">
+			and od.got_status = #{gotStatus}
+		</if>
+		<if test="masterOrderSn != null">
+			and oi.master_order_sn = #{masterOrderSn}
+		</if>
+		and od.order_type = 0
+		and oi.order_status != 2
+		and oi.pay_status != 0
+		and oi.add_time &gt;= #{startTime}
+		and oi.add_time &lt;= #{endTime}
+		and oi.master_order_sn = oie.master_order_sn
+		and oi.master_order_sn = oai.master_order_sn
+		and oi.master_order_sn = od.master_order_sn
+  	</sql>
+  	
+	<select id="selectPickUpOrderCount" parameterType="map" resultType="int">
+		select count(1)
+		FROM master_order_info_extend oie, 
+			master_order_address_info oai, 
+			master_order_info oi,
+			order_distribute od
+		<include refid="pickUpSql"/>
+	</select>
+
+	<select id="selectPickUpOrderList" parameterType="map" resultType="com.work.shop.oms.bean.OrderItem">
+		select
+			oi.master_order_sn as masterOrderSn,
+            oi.order_out_sn as outerOrderSn,
+            oi.order_type as orderType,
+            oi.shop_name as shopName,
+            oi.referer,
+            oi.order_from as orderFrom,
+            oi.channel_code as channelCode,
+            oi.order_status as orderStatus,
+            oi.pay_status as payStatus,
+            oi.ship_status as shipStatus,
+            oi.user_id as userId,
+            oi.user_name as userName,
+            oi.add_time as addTime,
+            oi.finish_time as finishTime,
+            oi.goods_count as goodsCount,
+            oi.goods_amount as goodsAmount,
+            oi.total_fee as totalFee,
+            oi.money_paid as moneyPaid,
+            oi.discount,
+            oi.question_status as questionStatus,
+			oai.consignee as receiverName,
+      		oai.mobile as receiverMobile,
+            oai.tel as receiverTel,
+            oie.is_cac as isCac,
+            oie.shop_code as storeCode,
+            oie.shop_name as storeName,
+            od.got_status as gotStatus,
+            od.got_code as gotCode,
+            oreturn.return_sn as returnSn,
+			oreturn.return_allgoods_count as returnGoodsCount, 
+            oreturn.return_total_fee as returnTotalFee
+		FROM master_order_info_extend as oie, 
+			master_order_address_info as oai, 
+			order_distribute as od,
+			master_order_info as oi
+	  		LEFT JOIN order_return as oreturn 
+			on oreturn.relating_order_sn = oi.master_order_sn 
+			and oreturn.return_order_status != 4
+		<include refid="pickUpSql"/>
+		order by oi.add_time desc
+		limit ${start}, ${limit}
+	</select>
+	
+	<sql id="disSql">
+  		where 
+		oie.is_cac = 0
+		<if test="channelCode != null">
+			and oi.channel_code = #{channelCode}
+		</if>
+		<if test="channelCodeList != null">
+			and oi.channel_code in
+			<foreach collection="channelCodeList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="orderFrom != null">
+			and oi.order_from = #{orderFrom}
+		</if>
+		<if test="orderFromList != null">
+			and oi.order_from in
+			<foreach collection="orderFromList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="storeCode != null">
+			and oie.shop_code = #{storeCode}
+		</if>
+		<if test="storeCodeList != null">
+			and oie.shop_code in
+			<foreach collection="storeCodeList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="gotStatus != null">
+			and od.got_status = #{gotStatus}
+		</if>
+		and od.order_type = 0
+		and oi.order_status != 2
+		and oi.pay_status != 0
+		and oi.add_time &gt;= #{startTime}
+		and oi.add_time &lt;= #{endTime}
+		and oi.master_order_sn = oie.master_order_sn
+		and oi.master_order_sn = oai.master_order_sn
+		and oi.master_order_sn = od.master_order_sn
+  	</sql>
+  	
+  	<select id="selectDistributionOrderCount" parameterType="map" resultType="int">
+		select count(1)
+		FROM master_order_info_extend oie, 
+			master_order_address_info oai, 
+			master_order_info oi,
+			order_distribute od
+		<include refid="pickUpSql"/>
+	</select>
+	
+	<select id="selectDistributionOrderList" parameterType="map" resultType="com.work.shop.oms.bean.OrderItem">
+		select
+			oi.master_order_sn as masterOrderSn,
+            oi.order_out_sn as outerOrderSn,
+            oi.order_type as orderType,
+            oi.shop_name as shopName,
+            oi.referer,
+            oi.order_from as orderFrom,
+            oi.channel_code as channelCode,
+            oi.order_status as orderStatus,
+            oi.pay_status as payStatus,
+            oi.ship_status as shipStatus,
+            oi.user_id as userId,
+            oi.user_name as userName,
+            oi.add_time as addTime,
+            oi.finish_time as finishTime,
+            oi.goods_count as goodsCount,
+            oi.goods_amount as goodsAmount,
+            oi.total_fee as totalFee,
+            oi.money_paid as moneyPaid,
+            oi.discount,
+            oi.question_status as questionStatus,
+			oai.consignee as receiverName,
+      		oai.mobile as receiverMobile,
+            oai.tel as receiverTel,
+            oie.is_cac as isCac,
+            oie.shop_code as storeCode,
+            oie.shop_name as storeName,
+            od.got_status as gotStatus,
+            od.got_code as gotCode,
+            oreturn.return_sn as returnSn,
+			oreturn.return_allgoods_count as returnGoodsCount, 
+            oreturn.return_total_fee as returnTotalFee
+		FROM master_order_info_extend oie, 
+			master_order_address_info oai, 
+			order_distribute od,
+			master_order_info oi
+	  		LEFT JOIN order_return oreturn 
+			on oreturn.relating_order_sn = oi.master_order_sn 
+			and oreturn.return_order_status != 4
+			left join order_rider_distribute_log ord 
+			on ord.master_order_sn = oi.master_order_sn
+		<include refid="disSql"/>
+		order by oi.add_time desc
+		limit ${start}, ${limit}
+	</select>
+	
+	<!-- 获取商品销售记录总数 -->
+	<select id="selectOrderGoodsSaleCount" parameterType="map" resultType="int">
+		SELECT count(1)
+		FROM (
+			SELECT 
+				count(1)
+			FROM 
+				master_order_info moi, master_order_goods mog
+			where moi.master_order_sn = mog.master_order_sn
+			and mog.extension_code = "common"
+			and moi.order_status in (1, 3)
+			and moi.add_time &gt;= #{beginTime} and moi.add_time &lt;= #{endTime}
+			GROUP BY moi.channel_code, moi.order_from, mog.goods_sn
+		) a
+	</select>
+	
+	<!-- 获取商品销售记录 -->
+	<select id="selectOrderGoodsSaleList" parameterType="map" resultType="com.work.shop.oms.common.bean.OrderGoodsSaleBean">
+		SELECT 
+			moi.channel_code channelCode, 
+			moi.order_from orderFrom, 
+			mog.custom_code customCode, 
+			mog.goods_sn goodsSn, 
+			sum(mog.goods_number) goodsNumber
+		from 
+			master_order_info moi, master_order_goods mog
+		where moi.master_order_sn = mog.master_order_sn
+		and mog.extension_code = "common"
+		and moi.order_status in (1, 3)
+		and moi.add_time &gt;= #{beginTime} and moi.add_time &lt;= #{endTime}
+		GROUP BY moi.channel_code, moi.order_from, mog.goods_sn
+		<if test="start != null">
+			limit ${start}, ${limit}
+		</if>
+	</select>
+</mapper>

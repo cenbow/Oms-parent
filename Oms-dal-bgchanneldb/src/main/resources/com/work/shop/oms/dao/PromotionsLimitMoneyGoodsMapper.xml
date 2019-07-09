@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.PromotionsLimitMoneyGoodsMapper" >
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.bgchanneldb.PromotionsLimitMoneyGoods" >
+    <result column="prom_code" property="promCode" jdbcType="VARCHAR" />
+    <result column="prom_details_code" property="promDetailsCode" jdbcType="VARCHAR" />
+    <result column="gifts_sku_Sn" property="giftsSkuSn" jdbcType="VARCHAR" />
+    <result column="gifts_sku_count" property="giftsSkuCount" jdbcType="INTEGER" />
+    <result column="gifts_priority" property="giftsPriority" jdbcType="TINYINT" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    prom_code, prom_details_code, gifts_sku_Sn, gifts_sku_count, gifts_priority
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.work.shop.oms.bean.bgchanneldb.PromotionsLimitMoneyGoodsExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from promotions_limit_money_goods
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    <if test="criteria.valid" >
+      <foreach collection="criteria.criteria" item="criterion" >
+        <if test="criterion.limitValue" >
+          limit ${criterion.value},${criterion.secondValue}
+        </if>
+      </foreach>
+    </if>
+  </select>
+  <delete id="deleteByExample" parameterType="com.work.shop.oms.bean.bgchanneldb.PromotionsLimitMoneyGoodsExample" >
+    delete from promotions_limit_money_goods
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.work.shop.oms.bean.bgchanneldb.PromotionsLimitMoneyGoods" >
+    insert into promotions_limit_money_goods (prom_code, prom_details_code, gifts_sku_Sn, 
+      gifts_sku_count, gifts_priority)
+    values (#{promCode,jdbcType=VARCHAR}, #{promDetailsCode,jdbcType=VARCHAR}, #{giftsSkuSn,jdbcType=VARCHAR}, 
+      #{giftsSkuCount,jdbcType=INTEGER}, #{giftsPriority,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.work.shop.oms.bean.bgchanneldb.PromotionsLimitMoneyGoods" >
+    insert into promotions_limit_money_goods
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="promCode != null" >
+        prom_code,
+      </if>
+      <if test="promDetailsCode != null" >
+        prom_details_code,
+      </if>
+      <if test="giftsSkuSn != null" >
+        gifts_sku_Sn,
+      </if>
+      <if test="giftsSkuCount != null" >
+        gifts_sku_count,
+      </if>
+      <if test="giftsPriority != null" >
+        gifts_priority,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="promCode != null" >
+        #{promCode,jdbcType=VARCHAR},
+      </if>
+      <if test="promDetailsCode != null" >
+        #{promDetailsCode,jdbcType=VARCHAR},
+      </if>
+      <if test="giftsSkuSn != null" >
+        #{giftsSkuSn,jdbcType=VARCHAR},
+      </if>
+      <if test="giftsSkuCount != null" >
+        #{giftsSkuCount,jdbcType=INTEGER},
+      </if>
+      <if test="giftsPriority != null" >
+        #{giftsPriority,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.work.shop.oms.bean.bgchanneldb.PromotionsLimitMoneyGoodsExample" resultType="java.lang.Integer" >
+    select count(*) from promotions_limit_money_goods
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update promotions_limit_money_goods
+    <set >
+      <if test="record.promCode != null" >
+        prom_code = #{record.promCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.promDetailsCode != null" >
+        prom_details_code = #{record.promDetailsCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.giftsSkuSn != null" >
+        gifts_sku_Sn = #{record.giftsSkuSn,jdbcType=VARCHAR},
+      </if>
+      <if test="record.giftsSkuCount != null" >
+        gifts_sku_count = #{record.giftsSkuCount,jdbcType=INTEGER},
+      </if>
+      <if test="record.giftsPriority != null" >
+        gifts_priority = #{record.giftsPriority,jdbcType=TINYINT},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update promotions_limit_money_goods
+    set prom_code = #{record.promCode,jdbcType=VARCHAR},
+      prom_details_code = #{record.promDetailsCode,jdbcType=VARCHAR},
+      gifts_sku_Sn = #{record.giftsSkuSn,jdbcType=VARCHAR},
+      gifts_sku_count = #{record.giftsSkuCount,jdbcType=INTEGER},
+      gifts_priority = #{record.giftsPriority,jdbcType=TINYINT}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+</mapper>

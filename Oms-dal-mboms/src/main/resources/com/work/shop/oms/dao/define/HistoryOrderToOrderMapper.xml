@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.define.HistoryOrderToOrderMapper">
+
+	<update id="historyMasOrdInfoToMasOrdInfo" parameterType="java.lang.String">
+		INSERT INTO master_order_info (SELECT * FROM master_order_info_history AS oih WHERE oih.master_order_sn =#{masterOrderSn,jdbcType=VARCHAR});
+	</update>
+	
+	<update id="historyMasOrdAddInfoToMasOrdAddInfo" parameterType="java.lang.String">
+		INSERT INTO master_order_address_info (SELECT * FROM master_order_address_info_history AS oih WHERE oih.master_order_sn =#{masterOrderSn,jdbcType=VARCHAR});
+	</update>
+	
+	<update id="historyMasOrdPayToMasOrdPay" parameterType="java.lang.String">
+		INSERT INTO master_order_pay (SELECT * FROM master_order_pay_history AS oih WHERE oih.master_order_sn =#{masterOrderSn,jdbcType=VARCHAR});
+	</update>
+	
+	<!-- 除了商品表的id -->
+	<update id="historyMasOrdGoodsToMasOrdGoods" parameterType="java.lang.String">
+		INSERT INTO master_order_goods (
+		  depot_code,
+		  master_order_sn,
+		  order_sn,
+		  goods_name,
+		  custom_code,
+		  extension_code,
+		  extension_id,
+		  goods_number,
+		  goods_price,
+		  transaction_price,
+		  settlement_price,
+		  discount,
+		  integral_money,
+		  integral,
+		  group_name,
+		  goods_size_name,
+		  goods_color_name,
+		  goods_thumb,
+		  send_number,
+		  parent_sn,
+		  merge_from,
+		  exchange_from,
+		  promotion_desc,
+		  rank_points,
+		  pay_points,
+		  use_card,
+		  share_bonus,
+		  share_surplus,
+		  made_flag,
+		  charge_back_count,
+		  containerId,
+		  sellerUser,
+		  is_del,
+		  promotion_id,
+		  c2m_item,
+		  protect_falg,
+		  supplier_code,
+		  market_price,
+		  goods_sn,
+		  sales_mode
+		) 
+		(SELECT 
+		    oih.depot_code,
+		    oih.master_order_sn,
+		    oih.order_sn,
+		    oih.goods_name,
+		    oih.custom_code,
+		    oih.extension_code,
+		    oih.extension_id,
+		    oih.goods_number,
+		    oih.goods_price,
+		    oih.transaction_price,
+		    oih.settlement_price,
+		    oih.discount,
+		    oih.integral_money,
+		    oih.integral,
+		    oih.group_name,
+		    oih.goods_size_name,
+		    oih.goods_color_name,
+		    oih.goods_thumb,
+		    oih.send_number,
+		    oih.parent_sn,
+		    oih.merge_from,
+		    oih.exchange_from,
+		    oih.promotion_desc,
+		    oih.rank_points,
+		    oih.pay_points,
+		    oih.use_card,
+		    oih.share_bonus,
+		    oih.share_surplus,
+		    oih.made_flag,
+		    oih.charge_back_count,
+		    oih.containerId,
+		    oih.sellerUser,
+		    oih.is_del,
+		    oih.promotion_id,
+		    oih.c2m_item,
+		    oih.protect_falg,
+		    oih.supplier_code,
+		    oih.market_price,
+		    oih.goods_sn,
+		    oih.sales_mode
+		FROM
+		  master_order_goods_history AS oih 
+		WHERE oih.master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}); 	
+	</update>
+	
+	<update id="historyMasOrdActionToMasOrdAction" parameterType="java.lang.String">
+		INSERT INTO master_order_action (
+		  master_order_sn,
+		  action_user,
+		  order_status,
+		  shipping_status,
+		  pay_status,
+		  action_note,
+		  log_time,
+		  ip
+		) 
+		(SELECT 
+		  oih.master_order_sn,
+		  oih.action_user,
+		  oih.order_status,
+		  oih.shipping_status,
+		  oih.pay_status,
+		  oih.action_note,
+		  oih.log_time,
+		  oih.ip 
+		FROM
+		  master_order_action_history AS oih 
+		WHERE oih.master_order_sn = #{masterOrderSn,jdbcType=VARCHAR});  
+	</update>
+	
+	<update id="historyOrderDistributeToOrderDistribute" parameterType="java.lang.String">
+		INSERT INTO order_distribute (SELECT * FROM order_distribute_history AS oih WHERE oih.master_order_sn =#{masterOrderSn,jdbcType=VARCHAR});
+	</update>
+	
+	<update id="historyDistributeActionToDistributeAction" parameterType="java.lang.String">
+		INSERT INTO distribute_action (
+		  order_sn,
+		  action_user,
+		  order_status,
+		  shipping_status,
+		  pay_status,
+		  range_status,
+		  question_status,
+		  action_note,
+		  log_time
+		) 
+		(SELECT 
+		  oih.order_sn,
+		  oih.action_user,
+		  oih.order_status,
+		  oih.shipping_status,
+		  oih.pay_status,
+		  oih.range_status,
+		  oih.question_status,
+		  oih.action_note,
+		  oih.log_time 
+		FROM
+		  distribute_action_history AS oih 
+		WHERE oih.order_sn = #{orderSn,jdbcType=VARCHAR}) ;  
+	</update>
+	
+	<update id="historyOrderDepotShipToOrderDepotShip" parameterType="java.lang.String">
+		INSERT INTO order_depot_ship 
+		(SELECT 
+		  * 
+		FROM
+		  order_depot_ship_history AS oih 
+		WHERE oih.order_sn = #{orderSn,jdbcType=VARCHAR}) ;
+	</update>
+	
+	<update id="deleteHistoryMasOrdInfo" parameterType="java.lang.String">
+		DELETE FROM master_order_info_history  WHERE master_order_sn = #{masterOrderSn,jdbcType=VARCHAR};
+	</update>
+	
+	<update id="deleteHistoryMasOrdAddInfo" parameterType="java.lang.String">
+		DELETE FROM master_order_address_info_history  WHERE master_order_sn = #{masterOrderSn,jdbcType=VARCHAR};
+	</update>
+	
+	<update id="deleteHistoryMasOrdPay" parameterType="java.lang.String">
+		DELETE FROM master_order_pay_history  WHERE master_order_sn = #{masterOrderSn,jdbcType=VARCHAR};
+	</update>
+	
+	<update id="deleteHistoryMasOrdGoods" parameterType="java.lang.String">
+		DELETE FROM master_order_goods_history  WHERE master_order_sn = #{masterOrderSn,jdbcType=VARCHAR};
+	</update>
+	
+	<update id="deleteHistoryMasOrdAction" parameterType="java.lang.String">
+		DELETE FROM master_order_action_history  WHERE master_order_sn = #{masterOrderSn,jdbcType=VARCHAR};
+	</update>
+	
+	<update id="deleteHistoryOrderDistribute" parameterType="java.lang.String">
+		DELETE FROM order_distribute_history  WHERE master_order_sn = #{masterOrderSn,jdbcType=VARCHAR};
+	</update>
+
+	<update id="deleteHistoryDistributeAction" parameterType="java.lang.String">
+		DELETE 
+		FROM
+		  distribute_action_history 
+		WHERE order_sn = #{orderSn,jdbcType=VARCHAR} ; 
+	</update>
+	
+	<update id="deleteHistoryOrderDepotShip" parameterType="java.lang.String">
+		DELETE 
+		FROM
+		  order_depot_ship_history 
+		WHERE order_sn = #{orderSn,jdbcType=VARCHAR} ; 
+	</update>
+
+</mapper>

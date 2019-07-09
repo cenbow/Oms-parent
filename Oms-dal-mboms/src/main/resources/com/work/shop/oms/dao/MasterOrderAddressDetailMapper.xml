@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.MasterOrderAddressDetailMapper">
+  <resultMap id="MasterOrderAddDetailMap" type="com.work.shop.oms.bean.MasterOrderAddressDetail">
+  	<id column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="consignee" jdbcType="VARCHAR" property="consignee" />
+    <result column="country" jdbcType="VARCHAR" property="country" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="district" jdbcType="VARCHAR" property="district" />
+    <result column="street" jdbcType="VARCHAR" property="street" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="zipcode" jdbcType="VARCHAR" property="zipcode" />
+    <result column="tel" jdbcType="VARCHAR" property="tel" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="best_time" jdbcType="VARCHAR" property="bestTime" />
+    <result column="sign_building" jdbcType="VARCHAR" property="signBuilding" />
+    <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
+    <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
+    <result column="shipping_days" jdbcType="TINYINT" property="shippingDays" />
+    <result column="charge_type" jdbcType="INTEGER" property="chargeType" />
+    <result column="cac_code" jdbcType="VARCHAR" property="cacCode" />
+    <result column="creat_time" jdbcType="TIMESTAMP" property="creatTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="region_id" jdbcType="SMALLINT" property="regionId" />
+    <result column="full_address" jdbcType="VARCHAR" property="fullAddress" />
+  </resultMap>
+  
+  <select id="selectMasOrdAddDetByOrderSnByMasterOrderSn" parameterType="java.util.HashMap" resultMap="MasterOrderAddDetailMap">
+    	SELECT t.master_order_sn, 
+	    	t.consignee, 
+	    	t.country, 
+	    	t.province, 
+	    	t.city, 
+	    	t.district, 
+	    	t.street, 
+	    	t.address, 
+	    	t.zipcode, 
+	   		t.tel, 
+	   		t.mobile, 
+	   		t.email,
+	   		t.best_time, 
+	   		t.sign_building, 
+	   		t.shipping_id, 
+	   		t.shipping_name, 
+	   		t.shipping_days, 
+	    	t.charge_type, 
+	    	t.cac_code, 
+	    	t.creat_time, 
+	    	t.update_time, 
+	    	t.region_id,
+	    	CONCAT(IFNULL(a.region_name,''),IFNULL(b.region_name,''),IFNULL(c.region_name,''),IFNULL(d.region_name,''),IFNULL(e.region_name,''),IFNULL(t.address,'')) AS full_address
+    	FROM master_order_address_info t
+    	LEFT JOIN system_region_area a ON a.region_id = t.country
+    	LEFT JOIN system_region_area b ON b.region_id = t.province
+    	LEFT JOIN system_region_area c ON c.region_id = t.city
+    	LEFT JOIN system_region_area d ON d.region_id = t.street
+    	LEFT JOIN system_region_area e ON e.region_id = t.district
+    	<where>
+    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    			and t.master_order_sn = #{masterOrderSn}
+    		</if>
+    	</where> 
+    	/* maxscale route to master */;
+    </select>
+    
+    <select id="getBatchDecodeDoloadList" parameterType="java.util.HashMap" resultMap="MasterOrderAddDetailMap">
+    	SELECT 
+		  t.master_order_sn,
+		  t.decoded_number AS mobile,
+		  a.consignee,
+		  CONCAT(
+		    IFNULL(b.region_name, ''),
+		    IFNULL(c.region_name, ''),
+		    IFNULL(d.region_name, ''),
+		    IFNULL(e.region_name, ''),
+		    IFNULL(f.region_name, ''),
+		    IFNULL(a.address, '')
+		  ) AS address 
+		FROM
+		  batch_decode_list t 
+		  LEFT JOIN master_order_address_info a  ON a.master_order_sn = t.master_order_sn 
+		  LEFT JOIN system_region_area b  ON b.region_id = a.country 
+		  LEFT JOIN system_region_area c  ON c.region_id = a.province 
+		  LEFT JOIN system_region_area d  ON d.region_id = a.city 
+		  LEFT JOIN system_region_area e  ON e.region_id = a.street 
+		  LEFT JOIN system_region_area f  ON f.region_id = a.district 
+    	<where>
+    		<if test="billNo!=null and billNo!=''">
+    			and t.bill_no = #{billNo}
+    		</if>
+    	</where> 
+    </select>
+  
+</mapper>

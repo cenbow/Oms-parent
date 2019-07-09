@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.define.OrderDistributeDefineMapper">
+
+	<select id="selectQuestionOrder" resultType="string" parameterType="hashmap">
+		SELECT
+			DISTINCT oi.master_order_sn
+		FROM master_order_goods og
+		LEFT JOIN master_order_info oi
+			ON oi.master_order_sn = og.master_order_sn
+		LEFT JOIN master_order_info_extend oie
+			ON oie.master_order_sn = og.master_order_sn
+		WHERE
+			oie.is_advance = 1
+		AND og.custom_code IN 
+		<foreach collection="list" index="index" item="item" open="("  separator=","  close=")">
+			#{item}
+		</foreach>
+		AND oi.order_from = #{shopCode ,jdbcType=VARCHAR}
+	</select>
+
+  <!-- Task 获取Pos指定时间未付款订单直接关闭处理 -->
+  <select id="getNoPayCloseOrderOfPos" resultType="string" parameterType="hashmap">
+   <![CDATA[
+		SELECT
+			oi.master_order_sn
+		FROM 
+			order_distribute oi
+		LEFT JOIN master_order_pay op ON oi.master_order_sn = op.master_order_sn
+		WHERE 1=1
+			AND oi.source = 1
+			AND oi.order_type = 0
+			AND oi.order_status = 0
+			AND oi.pay_status = 0
+			AND oi.ship_status = 0  
+			AND op.pay_status = 0  
+			AND op.pay_id = 21
+			AND op.pay_time IS NULL
+			AND DATE_ADD(oi.add_time, INTERVAL ${delay} MINUTE) < NOW()
+		limit ${num}
+	]]>
+  </select>
+  <!-- Task 关闭平台未付款夜市订单 -->
+  <select id="getNoPayNightOrderOfBanggo" resultType="string" parameterType="hashmap">
+	SELECT
+		oi.master_order_sn
+	FROM
+		master_order_info oi LEFT JOIN
+		master_order_goods os ON oi.master_order_sn=os.master_order_sn
+		WHERE 1=1
+		AND oi.channel_code = #{siteCode ,jdbcType=VARCHAR}
+		AND oi.trans_type=1
+	<![CDATA[AND oi.order_status <> 2
+		AND oi.pay_status=0
+		AND oi.lock_status=0
+		AND oi.surplus<=0.00
+		AND oi.add_time<DATE_SUB(NOW(),INTERVAL ${delay} MINUTE)
+		AND oi.add_time> DATE_SUB(NOW(),INTERVAL 3 HOUR)
+		AND os.send_number > 0
+		ORDER BY oi.master_order_sn ASC
+	LIMIT ${num}
+	]]>
+  </select>
+  <!-- Task 解锁平台超时锁定订单 -->
+  <select id="getLockOrderOverTimeOfBanggo" resultType="string" parameterType="hashmap">
+	SELECT 
+		oi.master_order_sn
+	FROM
+		master_order_info oi 
+	WHERE 1=1
+		<![CDATA[AND oi.lock_status = 10000 
+		AND oi.lock_time <= DATE_SUB(NOW(), INTERVAL 10 MINUTE) 
+		AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 10 DAY) 
+		AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 10  MINUTE)
+	LIMIT ${num}
+	]]>
+  </select>
+  <!-- Task 完结订单3个月移入历史表 -->
+  <select id="getFinishOrderThreeMonth" resultType="string" parameterType="hashmap">
+	<![CDATA[
+	SELECT 
+		oi.master_order_sn
+	FROM
+		master_order_info oi
+	WHERE 1=1
+	AND oi.add_time <= (DATE(NOW()) - INTERVAL ${delay} MONTH)
+	AND (oi.order_status > 1
+	OR (oi.source = 1 AND oi.order_status = '1' AND oi.pay_status = '2' AND oi.ship_status = '3'))
+	LIMIT ${num}
+	]]>
+  </select>
+   <!-- Task 全渠道订单发货14天后更新已收货状态 -->
+  <select id="getShipTimeoutOrder" resultType="string" parameterType="hashmap">
+	<![CDATA[
+	SELECT
+		oi.master_order_sn
+	FROM
+		order_depot_ship os
+	LEFT JOIN order_distribute od ON os.order_sn = od.order_sn
+	LEFT JOIN master_order_info oi ON oi.master_order_sn = od.master_order_sn
+	WHERE
+		oi.order_status NOT IN (2, 3)
+	AND oi.question_status = 0
+	AND oi.ship_status = 3
+	AND oi.pay_status = 3
+	AND os.delivery_time IS NOT NULL
+	AND os.delivery_time < DATE_ADD(NOW(), INTERVAL -${delay} DAY)
+	AND os.delivery_time > DATE_ADD(NOW(), INTERVAL -${delay}-1 DAY)
+	LIMIT ${num}
+	]]>
+  </select>
+    <!-- Task 平台超时未付款订单取消 -->
+    <select id="getPayTimeoutOrderInfo" resultType="string"  parameterType="hashmap">
+		SELECT
+			oi.master_order_sn
+		FROM
+			master_order_info AS oi
+		LEFT JOIN master_order_info_extend oie ON oi.master_order_sn = oie.master_order_sn
+		INNER JOIN
+			master_order_pay AS op  ON  oi.master_order_sn = op.master_order_sn
+		WHERE 1=1
+			<![CDATA[
+			AND oi.order_type = 0
+			AND (oie.is_group IS NULL OR (oie.is_group IS NOT NULL AND oie.is_group <> '1')) 
+			AND oi.trans_type <> 2 
+			AND oi.question_status = 0
+			AND oi.order_status = 0
+			AND oi.pay_status in(0,1) 
+			AND oi.ship_status = 0  
+			AND op.pay_status = 0  
+			AND op.pay_id != 4 
+			AND op.pay_time IS NULL
+			AND op.pay_lasttime <= now()
+			AND oi.lock_status = 0
+		LIMIT ${num}
+	]]>
+  </select>
+    <!-- Task 平台团购订单未付款自动取消 -->
+    <select id="getGroupOrderNoPayClose" resultType="string"  parameterType="hashmap">
+		SELECT
+			oi.master_order_sn
+		FROM
+			master_order_info_extend oie 
+		INNER JOIN master_order_info oi 
+		ON oi.master_order_sn = oie.master_order_sn AND oie.is_group = 1 
+		INNER JOIN master_order_goods og 
+		ON oi.master_order_sn = og.master_order_sn
+		WHERE 1=1
+			<![CDATA[
+			AND oi.lock_status = 0 
+			AND oi.ship_status = 0 
+			AND oi.pay_status = 0 
+			AND oi.order_status = '0'
+			AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 12 HOUR)
+			AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 35 MINUTE)
+		LIMIT ${num}
+	]]>
+  </select>
+  
+    <!-- Task 获取无效复制订单 -->
+  <select id="getCopyOrder" resultType="string" parameterType="hashmap">
+   <![CDATA[
+	SELECT
+		oi.master_order_sn
+	FROM
+		master_order_info oi
+	LEFT JOIN master_order_action action ON oi.master_order_sn = action.master_order_sn
+	WHERE
+		oi.add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+	AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 1 DAY)
+	AND oi.order_status = 0
+	AND oi.pay_status = 0
+	AND oi.goods_count = 0
+	AND action.action_note LIKE '通过复制订单生成订单%'
+	limit ${start},${limit}
+	]]>
+  </select>
+    <!-- Task 获取无效复制订单数量 -->
+  <select id="getCopyOrderCount" resultType="java.lang.Integer" parameterType="hashmap">
+   <![CDATA[
+	SELECT
+		COUNT(1)
+	FROM
+		master_order_info oi
+	LEFT JOIN master_order_action action ON oi.master_order_sn = action.master_order_sn
+	WHERE
+		oi.add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+	AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 1 DAY)
+	AND oi.order_status = 0
+	AND oi.pay_status = 0
+	AND oi.goods_count = 0
+	AND action.action_note LIKE '通过复制订单生成订单%'
+	]]>
+  </select>
+  
+    <!-- Task SWDI订单 -->
+  <select id="getSwdiOrder" resultType="string" parameterType="hashmap">
+   <![CDATA[
+	SELECT
+		oi.order_sn
+	FROM
+		order_distribute oi
+	LEFT JOIN master_order_info moi 
+		ON moi.master_order_sn = oi.master_order_sn
+	WHERE
+		oi.order_status = 1
+	AND moi.pay_status = 2
+	AND oi.ship_status IN (0,2)
+	AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+	AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 1 DAY)
+	AND oi.question_status = 0
+	AND oi.last_update_time != ''
+	AND oi.last_update_time IS NOT NULL
+	limit ${start},${limit}
+	]]>
+  </select>
+  <select id="getSwdiOrderCount" resultType="java.lang.Integer" parameterType="hashmap">
+   <![CDATA[
+	SELECT
+		count(1)
+	FROM
+		order_distribute oi
+	LEFT JOIN master_order_info moi 
+		ON moi.master_order_sn = oi.master_order_sn
+	WHERE
+		oi.order_status = 1
+	AND moi.pay_status = 2
+	AND oi.ship_status IN (0,2)
+	AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+	AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 1 DAY)
+	AND oi.question_status = 0
+	AND oi.last_update_time != ''
+	AND oi.last_update_time IS NOT NULL
+	]]>
+  </select>
+  <!-- Task 下发订单 -->
+  <select id="getPushERPOrder" resultType="string" parameterType="hashmap">
+   <![CDATA[
+	SELECT
+		order_sn
+	FROM
+		order_distribute oi
+	WHERE
+		oi.order_status = 1
+	AND oi.ship_status = 0
+	AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+	AND oi.add_time <= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+	AND oi.question_status = 0
+	AND (oi.last_update_time = '' OR oi.last_update_time IS NULL)
+	LIMIT ${num}
+	]]>
+  </select>
+  
+  <!-- Task OS门店发货信息表-汇通门店仓库数据(单条) -->
+  <select id="queryOrderExpressInfoHtky" resultType="com.work.shop.oms.common.bean.OrderExpressInfo"  parameterType="hashmap">
+	<![CDATA[
+ 	SELECT
+		oi.order_sn AS "orderSn",
+		oi.order_from AS "channelCode",
+		oa.consignee,
+		oa.tel AS "recTel" ,
+		oa.mobile  AS "recMobile" ,
+		oa.province AS "provinceId",
+		oa.city AS "cityId",
+		oa.district AS "districtId",
+		oa.address AS "recAddress" ,
+		oa.zipcode AS "recZipcode",
+		os.invoice_no AS "invoiceNo" ,
+		os.shipping_id AS "companyId" ,
+		os.depot_code AS "depotCode"
+	FROM order_depot_ship os
+	LEFT JOIN task_shop_express task ON os.order_sn = task.order_sn AND task.is_ok = '1' AND task.shipping_id = #{companyId}
+	LEFT JOIN order_distribute oi ON os.order_sn = oi.order_sn
+	LEFT JOIN master_order_address_info oa ON oi.master_order_sn = oa.master_order_sn
+	WHERE task.id IS NULL
+		AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+		AND oi.order_status NOT IN ('2','3')
+		AND oi.ship_status > 2 
+		AND os.shipping_id = #{companyId}
+		AND os.delivery_time >= #{beginTime} 
+		AND #{endTime} >= os.delivery_time
+		AND os.invoice_no != ''
+	LIMIT ${num}
+	]]>
+  </select>
+  
+  <!-- Task OS门店发货信息表-圆通门店数据(多条) -->
+  <select id="queryOrderExpressInfoYto" resultType="com.work.shop.oms.common.bean.OrderExpressInfo"  parameterType="hashmap">
+	<![CDATA[
+ 	SELECT
+		oi.order_sn AS "orderSn",
+		oi.order_from AS "channelCode",
+		oa.consignee,
+		oa.tel AS "recTel" ,
+		oa.mobile  AS "recMobile" ,
+		oa.province AS "provinceId",
+		oa.city AS "cityId",
+		oa.district AS "districtId",
+		oa.address AS "recAddress" ,
+		oa.zipcode AS "recZipcode",
+		os.invoice_no AS "invoiceNo" ,
+		os.shipping_id AS "companyId" ,
+		os.depot_code AS "depotCode"
+	FROM order_depot_ship os
+	LEFT JOIN task_shop_express task ON os.order_sn = task.order_sn AND task.is_ok = '1' AND task.depot_code = os.depot_code AND task.shipping_id = #{companyId}
+	LEFT JOIN order_distribute oi ON os.order_sn = oi.order_sn
+	LEFT JOIN master_order_address_info oa ON oi.master_order_sn = oa.master_order_sn
+	WHERE 1=1 
+		AND task.id IS NULL
+		AND oi.order_status NOT IN ('2','3')
+		AND oi.ship_status > 2
+		AND os.shipping_id = #{companyId}
+		AND LEFT(os.depot_code,2) = 'A0'
+		AND oi.add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+		AND os.delivery_time >= #{beginTime} 
+		AND  #{endTime} >= os.delivery_time
+		AND os.invoice_no != ''
+	LIMIT ${num}
+	]]>
+  </select>
+  
+    <!-- Task OS门店发货信息表-圆通门店数据(多条) -->
+  <select id="moveOrderAction" parameterType="hashmap">
+	INSERT INTO
+		<if test="isHistory == 0">
+			master_order_action
+		</if>
+		<if test="isHistory == 1">
+			master_order_action_history
+		</if>
+	(
+		master_order_sn,
+		action_user,
+		order_status,
+		shipping_status,
+		pay_status,
+		action_note,
+		log_time
+	)(
+		SELECT
+			oih.order_sn,
+			oih.action_user,
+			oih.order_status,
+			oih.shipping_status,
+			oih.pay_status,
+			oih.action_note,
+			oih.log_time
+		FROM
+			<if test="isHistory == 0">
+				order_action AS oih
+			</if>
+			<if test="isHistory == 1">
+				order_action_history AS oih
+			</if>
+		WHERE
+			oih.order_sn = #{orderSn ,jdbcType=VARCHAR}
+	);
+  </select>
+  
+  <!-- Task 查询自提订单 -->
+  <select id="getGotOrder" parameterType="hashmap" resultType="com.work.shop.oms.bean.OrderItem">
+   <![CDATA[
+    SELECT
+	    moi.master_order_sn masterOrderSn,
+	    moie.shop_code storeCode
+	FROM
+	    master_order_info moi,
+	    master_order_info_extend moie,
+	    order_distribute oi
+	WHERE
+	    moi.master_order_sn = oi.master_order_sn
+	AND moi.master_order_sn = moie.master_order_sn
+	AND moi.order_status = 1
+	AND moi.pay_status = 2
+	AND moi.ship_status = 0
+	AND moie.is_cac = 1
+	AND moi.add_time >= CAST((CAST(SYSDATE()AS DATE) - INTERVAL 1 DAY)AS DATETIME)
+	AND moi.add_time <= CAST(CAST(SYSDATE()AS DATE)AS DATETIME)
+	AND moi.question_status = 0
+	AND oi.got_status = 0
+	AND oi.sms_status = 0;
+    ]]>
+  </select>
+  
+  <!-- Task 查询起手配送订单 -->
+  <select id="getRiderDistOrder" parameterType="hashmap" resultType="com.work.shop.oms.bean.OrderItem">
+    SELECT
+	    oinfo.master_order_sn masterOrderSn,
+	    oinfo.delivery_time deliveryTime,
+	    oinfo.shop_code storeCode
+	FROM
+	    (
+	        SELECT
+	            moi.master_order_sn,
+	            moai.delivery_time,
+	            moie.shop_code
+	        FROM
+	            master_order_info moi,
+	            master_order_info_extend moie,
+	            master_order_address_info moai,
+	            order_distribute od
+	        WHERE
+	            moi.master_order_sn = od.master_order_sn
+	        AND moi.master_order_sn = moie.master_order_sn
+	        AND moi.master_order_sn = moai.master_order_sn
+	        AND moi.order_status = 1
+	        AND moi.pay_status = 2
+	        AND moi.ship_status = 0
+	        AND moie.is_cac = 0
+	        AND moi.source != 6
+            AND moi.add_time &gt;= #{startTime}
+            AND moi.add_time &lt;= #{endTime}
+	        <if test="storeCode != null">
+		        AND moie.shop_code = #{storeCode ,jdbcType=VARCHAR}
+		    </if>
+	    ) oinfo
+	LEFT JOIN order_rider_distribute_log ordl ON oinfo.master_order_sn = ordl.master_order_sn
+	WHERE
+	    ordl.master_order_sn IS NULL;
+  </select>
+  
+  	<sql id="queryOrderDistributeOut">
+  		AND oi.order_status = 1
+		AND oi.pay_status = 2
+		AND moi.order_status = 1
+		AND moi.pay_status = 2
+		AND moi.question_status = 0
+		<!--
+		AND moi.source = 6
+		-->
+		AND ods.is_del = 0
+		AND oi.is_del = 0
+		<if test="masterOrderSn != null and masterOrderSn != ''">
+			AND moi.master_order_sn like concat('%', #{masterOrderSn}, '%') 
+		</if>
+		<if test="orderSn != null and orderSn != ''">
+			AND ods.order_sn = #{orderSn}
+		</if>
+		<if test="shipStatus != null">
+			AND ods.shipping_status = #{shipStatus}
+		</if>
+		<if test="gotStatus != null">
+			AND oi.got_status = #{gotStatus}
+		</if>
+		<if test="distTime != null and distTime != ''">
+			AND oi.dist_time &lt;= #{distTime}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			AND oi.dist_time &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND oi.dist_time &lt;= #{endTime}
+		</if>
+		<if test="deliveryStratTime != null and deliveryStratTime != ''">
+			AND ods.delivery_time &gt;= #{deliveryStratTime}
+		</if>
+		<if test="deliveryEndTime != null and deliveryEndTime != ''">
+			AND ods.delivery_time &lt;= #{deliveryEndTime}
+		</if>
+		<if test="depotCode != null and depotCode != ''">
+			AND ods.depot_code = #{depotCode}
+		</if>
+		<if test="depotCodes != null">
+			AND ods.depot_code in
+			<foreach collection="depotCodes" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="siteCode != null and siteCode != ''">
+			AND moi.channel_code = #{siteCode}
+		</if>
+		<if test="siteCodes != null">
+			AND moi.channel_code in
+			<foreach collection="siteCodes" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="shopCode != null and shopCode != ''">
+			AND moi.order_from = #{shopCode}
+		</if>
+		<if test="shopCodes != null">
+			AND moi.order_from in
+			<foreach collection="shopCodes" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="mobile != null">
+			AND moai.mobile like concat('%', #{mobile}, '%') 
+		</if>
+  	</sql>
+  
+  	<select id="getOrderDistributeOutCount" parameterType="map" resultType="int">
+  		select count(1)
+  		FROM
+	    	master_order_info moi,
+	    	master_order_address_info moai,
+	    	order_distribute oi,
+	    	order_depot_ship ods
+		WHERE
+	    	moi.master_order_sn = oi.master_order_sn
+		AND moi.master_order_sn = moai.master_order_sn
+		AND ods.order_sn = oi.order_sn
+		<include refid="queryOrderDistributeOut"/>
+  	</select>
+  
+	<!-- Task 查询配送出库订单 -->
+  	<select id="getOrderDistributeOutList" parameterType="map" resultType="com.work.shop.oms.bean.OrderItem">
+    	SELECT
+	    	moi.master_order_sn masterOrderSn,
+	    	moi.channel_code channelCode,
+	    	moi.order_from shopCode,
+	    	moi.add_time addTime,
+	    	moi.order_status orderStatus,
+	    	oi.order_sn outerOrderSn,
+	    	moai.consignee receiverName,
+	    	moai.mobile receiverMobile,
+	    	moai.province province,
+	    	moai.city city, 
+	    	moai.address address,
+	    	ods.depot_code depotCode,
+	    	ods.shipping_status shipStatus,
+	    	ods.delivery_time deliveryTime,
+	    	ods.delivery_confirm_time deliveryConfirmTime,
+	    	oi.got_status gotStatus,
+	    	sum(mog.goods_number) goodsCount,
+        	moi.total_fee totalFee
+		FROM
+	    	master_order_info moi,
+	    	master_order_address_info moai,
+	    	order_distribute oi,
+	    	order_depot_ship ods,
+	    	master_order_goods mog
+		WHERE
+	    	moi.master_order_sn = oi.master_order_sn
+		AND moi.master_order_sn = moai.master_order_sn
+		AND moi.master_order_sn = mog.master_order_sn
+		AND ods.order_sn = oi.order_sn
+		AND ods.depot_code = mog.depot_code
+		<include refid="queryOrderDistributeOut"/>
+		GROUP BY moi.master_order_sn, oi.order_sn, mog.depot_code
+		order by moi.add_time desc
+		<if test="limit != null">
+			limit ${start}, ${limit}
+		</if>
+	</select>
+	
+	<!-- 获取配送出库订单商品总数 -->
+	<select id="getOrderDistributeOutGoodsCount" parameterType="map" resultType="int">
+		select count(1) FROM(
+  		select count(1)
+  		FROM
+	    	master_order_info moi,
+	    	master_order_address_info moai,
+	    	order_distribute oi,
+	    	order_depot_ship ods,
+	    	master_order_goods mog
+		WHERE
+	    	moi.master_order_sn = oi.master_order_sn
+		AND moi.master_order_sn = moai.master_order_sn
+		AND moi.master_order_sn = mog.master_order_sn
+		AND ods.order_sn = oi.order_sn
+		and ods.depot_code = mog.depot_code
+		<include refid="queryOrderDistributeOut"/>
+		GROUP BY moi.master_order_sn, mog.custom_code, mog.depot_code
+		) a
+  	</select>
+	
+	<!-- 获取配送出库订单商品列表 -->
+	<select id="getOrderDistributeOutGoodsList" parameterType="map" resultType="com.work.shop.oms.bean.OrderShipGoodsItem">
+    	SELECT
+	    	moi.master_order_sn masterOrderSn,
+	    	moi.channel_code channelCode,
+	    	moi.order_from shopCode,
+	    	moi.add_time addTime,
+	    	moi.user_id userId,
+	    	moi.order_status orderStatus,
+	    	oi.order_sn orderSn,
+	    	moai.consignee receiverName,
+	    	moai.mobile receiverMobile,
+	    	ods.depot_code depotCode,
+	    	ods.shipping_status shipStatus,
+	    	ods.delivery_time deliveryTime,
+	    	ods.delivery_confirm_time deliveryConfirmTime,
+	    	mog.goods_name goodsName,
+			mog.goods_sn goodsSn,
+			mog.custom_code customCode,
+        	mog.sap,
+			mog.box_gauge boxGauge,
+			sum(mog.goods_number) goodsNumber
+		FROM
+	    	master_order_info moi,
+	    	master_order_address_info moai,
+	    	order_distribute oi,
+	    	order_depot_ship ods,
+	    	master_order_goods mog
+		WHERE
+	    	moi.master_order_sn = oi.master_order_sn
+		AND moi.master_order_sn = moai.master_order_sn
+		AND moi.master_order_sn = mog.master_order_sn
+		AND ods.order_sn = oi.order_sn
+		and ods.depot_code = mog.depot_code
+		<include refid="queryOrderDistributeOut"/>
+		GROUP BY moi.master_order_sn, mog.custom_code, mog.depot_code
+		order by moi.add_time desc
+		<if test="limit != null">
+			limit ${start}, ${limit}
+		</if>
+	</select>
+</mapper>

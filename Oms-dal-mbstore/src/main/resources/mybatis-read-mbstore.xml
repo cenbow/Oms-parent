@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE generatorConfiguration  
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"  
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+	<!-- location="D:/maven/repo/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.jar" 
+		/> /> -->
+	<classPathEntry
+		location="G:/apache-maven-3.0.3/mavenlib/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.jar" />
+	<context id="mbstoresqlSessionFactory" targetRuntime="MyBatis3">
+
+		<commentGenerator>
+			<property name="suppressDate" value="true" />
+		</commentGenerator>
+		
+	    <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://rm-uf6hk2amuh47pb53s.mysql.rds.aliyuncs.com:3306/mbstore" userId="rdsadmin"
+			password="stor1@EC!">
+		</jdbcConnection>
+
+		<javaTypeResolver type="com.work.shop.oms.utils.ByteToTinyIntJavaTypeResolver">
+			<property name="forceBigDecimals" value="false" />
+		</javaTypeResolver>
+		
+		
+		<javaModelGenerator targetPackage="com.work.shop.oms.bean"
+			targetProject="F:\workspace\Oms-pojo\src\main\java\">
+			<property name="enableSubPackages" value="true" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+
+		<!-- xml文件 -->
+		<sqlMapGenerator targetPackage="com.work.shop.oms.dao"
+			targetProject="F:\workspace\Oms-parent\Oms-dal-mbstore\src\main\resources">
+			<property name="enableSubPackages" value="true" />
+		</sqlMapGenerator>
+
+		<javaClientGenerator type="XMLMAPPER"
+			targetPackage="com.work.shop.oms.dao" targetProject="F:\workspace\Oms-parent\Oms-dal-mbstore\src\main\java\">
+			<property name="enableSubPackages" value="true" />
+		</javaClientGenerator>
+
+		<table tableName="channel_info" domainObjectName="ChannelInfo" />
+		<table tableName="channel_shop" domainObjectName="ChannelShop" />
+
+	</context>
+</generatorConfiguration> 

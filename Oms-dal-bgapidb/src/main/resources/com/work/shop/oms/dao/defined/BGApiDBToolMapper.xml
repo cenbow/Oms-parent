@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.defined.BGApiDBToolMapper" >
+
+ 
+  <select id="findOrderOutSn" parameterType="Map" resultType="java.lang.String" >
+     select 
+     <if test='channelCode == "tb"'>
+     	tid
+     </if>
+     <if test='channelCode == "jd"'>
+     order_id
+     </if>
+     <if test='channelCode == "yf"'>
+     order_id
+     </if>
+     <if test='channelCode == "yhd"'>
+     yid
+     </if>
+     <if test='channelCode == "dd"'>
+     order_id
+     </if>
+     <if test='channelCode == "tbfx"'>
+     fenxiao_id
+     </if>
+     <if test='channelCode == "jm"'>
+     order_id
+     </if>
+     <if test='channelCode == "aqy"'>
+     order_id
+     </if>
+     <if test='channelCode == "sn"'>
+     order_code
+     </if>
+     from
+     <if test='channelCode == "tb"'>
+     	top_trade
+     </if>
+     <if test='channelCode == "jd"'>
+     jd_trade
+     </if>
+     <if test='channelCode == "yf"'>
+     erp_trade
+     </if>
+     <if test='channelCode == "yhd"'>
+     yi_trade
+     </if>
+     <if test='channelCode == "dd"'>
+     dangdang_trade
+     </if>
+     <if test='channelCode == "tbfx"'>
+     top_fx_trade
+     </if>
+     <if test='channelCode == "jm"'>
+     jumei_trade
+     </if>
+     <if test='channelCode == "aqy"'>
+     qiyi_trade
+     </if>
+     <if test='channelCode == "sn"'>
+     suning_trade
+     </if>
+     
+     
+     where 
+         <if test='channelCode == "tb"'>
+     	tid
+     </if>
+     <if test='channelCode == "jd"'>
+     order_id
+     </if>
+     <if test='channelCode == "yf"'>
+     order_id
+     </if>
+     <if test='channelCode == "yhd"'>
+     yid
+     </if>
+     <if test='channelCode == "dd"'>
+     order_id
+     </if>
+     <if test='channelCode == "tbfx"'>
+     fenxiao_id
+     </if>
+     <if test='channelCode == "jm"'>
+     order_id
+     </if>
+     <if test='channelCode == "aqy"'>
+     order_id
+     </if>
+     <if test='channelCode == "sn"'>
+     order_code
+     </if>
+    in        
+    <foreach item="item" index="index" collection="orders" 
+                         open="(" separator="," close=")">
+                        #{item}
+                </foreach>
+  </select>
+
+</mapper>

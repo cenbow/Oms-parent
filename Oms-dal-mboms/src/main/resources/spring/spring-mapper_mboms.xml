@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<bean id="orderCustomDefineMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderCustomDefineMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="orderActionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderActionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderQuestionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderQuestionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="qrderQuestionLackSkuMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.QrderQuestionLackSkuMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="goodsReturnChangeMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.GoodsReturnChangeMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="goodsReturnChangeActionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.GoodsReturnChangeActionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 拆单表Mapper -->
+	<bean id="masterOrderActionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderActionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderAddressInfoMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderAddressInfoMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderGoodsMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderGoodsMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderInfoMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderInfoMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderInfoExtendMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderInfoExtendMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderPayMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderPayMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderQuestionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderQuestionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="mergeOrderPayMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MergeOrderPayMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderDepotShipMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderDepotShipMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderDistributeMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderDistributeMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderQuestionLackSkuNewMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderQuestionLackSkuNewMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemMasterOrderSnMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemMasterOrderSnMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemMasterOrderSnDefineMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemMasterOrderSnDefineMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+		<bean id="systemShippingMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemShippingMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemRegionAreaMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemRegionAreaMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemPaymentMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemPaymentMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderPeriodDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderPeriodDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderGoodsTempMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderGoodsTempMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="wkUdDistributeMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.WkUdDistributeMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="wkUdDistributeTmpMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.WkUdDistributeTmpMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="wkSfGdnMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.WkSfGdnMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="wkSfGdnInfoMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.WkSfGdnInfoMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="wkSfGdnTmpMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.WkSfGdnTmpMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemOmsRoleMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemOmsRoleMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemOmsRolePermisionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemOmsRolePermisionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemOmsResourceMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemOmsResourceMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderRefundMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderRefundMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderReturnMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderReturnMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderReturnSearchMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.OrderReturnSearchMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderReturnActionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderReturnActionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderReturnGoodsMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderReturnGoodsMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderReturnShipMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderReturnShipMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderQuestionLackSkuNewDelMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderQuestionLackSkuNewDelMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderPayBackMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderPayBackMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemReturnSnMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemReturnSnMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="erpWarehouseListMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.ErpWarehouseListMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="returnForwardMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.ReturnForwardMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 自定义Mapper -->
+	
+	<!-- 主订单详情 -->
+	<bean id="MasterOrderInfoDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderInfoDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<!-- 邦购订单接口相关 -->
+	<bean id="defineOrderMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.DefineOrderMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<!-- 邦购退换货申请单相关 -->
+	<bean id="goodsReturnChangePageListMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.GoodsReturnChangePageListMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	
+	<!-- 主订单地址详情 -->
+	<bean id="MasterOrderAddressDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderAddressDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 主单商品信息 -->
+	<bean id="MasterOrderGoodsDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderGoodsDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 配送信息 -->
+	<bean id="OrderDepotShipDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderDepotShipDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 付款信息 -->
+	<bean id="MasterOrderPayTypeDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderPayTypeDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderCardPackageMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderCardPackageMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 图片地址保存 -->
+	<bean id="orderAttachmentMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderAttachmentMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderDistributeDefineMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.OrderDistributeDefineMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderBillListMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderBillListMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderSettleBillMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderSettleBillMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderRefundSearchMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderRefundSearchMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderQuestionNewDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderQuestionNewDetailMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderQuestionDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderQuestionDetailMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderReturnGoodsDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderReturnGoodsDetailMapper"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemOmsResourceMapperDefined" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.SystemOmsResourceMapperDefined"/>
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderGoodsHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderGoodsHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderShipHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderShipHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderPayHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderPayHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderAddressInfoHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderAddressInfoHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="masterOrderInfoHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderInfoHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="masterOrderGoodsHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderGoodsHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="masterOrderPayHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderPayHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderDistributeHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderDistributeHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderDepotShipHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderDepotShipHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="masterOrderAddressInfoHistoryMappe" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderAddressInfoHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+
+	
+	<bean id="orderInfoSearchMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.OrderInfoSearchMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+
+	<bean id="systemResourceMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemResourceMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="regionManagementMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.RegionManagementMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="paymentManagementMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.PaymentManagementMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+
+	<bean id="shippingManagementMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.ShippingManagementMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="distributeActionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.DistributeActionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="orderTaskConfigMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderTaskConfigMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderDistributeDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderDistributeDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="ordeMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.OrderMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="masterOrderActionHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderActionHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="distributeActionHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.DistributeActionHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="bfbRefundSettlementMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BfbRefundSettlementMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderAmountAdjustmentMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderAmountAdjustmentMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="taskShopExpressMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.TaskShopExpressMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 当前表和历史表数据切换-->
+	<bean id="historyOrderToOrderMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.HistoryOrderToOrderMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderToHistoryMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.define.OrderToHistoryMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderGoodsChargeBackMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderGoodsChargeBackMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="distributeQuestionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.DistributeQuestionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="distributeQuestionDelMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.DistributeQuestionDelMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="masterOrderQuestionDelMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.MasterOrderQuestionDelMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="erpStatusInfoMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.ErpStatusInfoMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="batchDecodeListMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BatchDecodeListMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="sendMessageToolRecordMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SendMessageToolRecordMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="serverMqConfigMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.ServerMqConfigMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="queueMqConfigMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.QueueMqConfigMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemConfigMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemConfigMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemRegionMatchMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemRegionMatchMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="systemMsgTemplateMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.SystemMsgTemplateMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderExpressTracingMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderExpressTracingMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<bean id="orderExpressCompanyMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderExpressCompanyMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="goodsReturnChangeDetailMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.GoodsReturnChangeDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="userPointsExceptionMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.UserPointsExceptionMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="handOrderBatchMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.HandOrderBatchMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="handOrderInfoMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.HandOrderInfoMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="handOrderGoodsMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.HandOrderGoodsMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderPickingListMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderPickingListMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="orderPickingListDetailsMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderPickingListDetailsMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	
+	<!-- 骑手平台配送 -->
+	<!-- <bean id="orderRiderDistributeLogMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.distribute.OrderRiderDistributeLogMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean> -->
+	
+	<bean id="orderRiderDistributeLogMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+        <property name="mapperInterface" value="com.work.shop.oms.dao.OrderRiderDistributeLogMapper" />
+        <property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+    </bean>
+
+    <bean id="goodsReturnChangeStMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+        <property name="mapperInterface" value="com.work.shop.oms.dao.define.GoodsReturnChangeStMapper" />
+        <property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+    </bean>
+	<bean id="purchaseOrderMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.PurchaseOrderMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+	<bean id="purchaseOrderLineMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.PurchaseOrderLineMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+</beans>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.OrderDepotShipDetailMapper">
+  <resultMap id="OrderDepotShipDetailMap" type="com.work.shop.oms.bean.OrderDepotShipDetail">
+  	<id column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <id column="invoice_no" jdbcType="VARCHAR" property="invoiceNo" />
+    <id column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="shipping_status" jdbcType="TINYINT" property="shippingStatus" />
+    <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime" />
+    <result column="creat_time" jdbcType="TIMESTAMP" property="creatTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="pickup_date" jdbcType="TIMESTAMP" property="pickupDate" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
+    <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
+    <result column="delivery_type" jdbcType="TINYINT" property="deliveryType" />
+    <result column="goods_number" jdbcType="VARCHAR" property="goodsNumber" />
+  </resultMap>
+  
+  <select id="getOrderDepotShipDetail" parameterType="java.util.HashMap" resultMap="OrderDepotShipDetailMap">
+		SELECT 
+		  t.depot_code,
+		  t.invoice_no,
+		  t.order_sn,
+		  t.shipping_status,
+		  t.delivery_time,
+		  t.creat_time,
+		  t.update_time,
+		  t.pickup_date,
+		  t.is_del,
+		  t.shipping_name,
+		  t.shipping_id,
+		  t.delivery_type,
+		  a.supplier_code,
+		  SUM(b.goods_number) AS goods_number 
+		FROM
+		<if test="isHistory == 0">
+			order_depot_ship  
+		</if>
+		<if test="isHistory == 1">
+			order_depot_ship_history 
+		</if>
+		  t
+		  LEFT JOIN 
+		<if test="isHistory == 0">
+			order_distribute  
+		</if>
+		<if test="isHistory == 1">
+			order_distribute_history 
+		</if>
+		  a 
+		  ON a.order_sn = t.order_sn AND a.is_del = '0'
+		  LEFT JOIN 
+		<if test="isHistory == 0">
+			master_order_goods   
+		</if>
+		<if test="isHistory == 1">
+			master_order_goods_history 
+		</if>
+		  b 
+		  ON b.order_sn = t.order_sn AND b.depot_code = t.depot_code  AND b.is_del = '0'
+		WHERE t.order_sn IN 
+		  (SELECT 
+		    c.order_sn 
+		  FROM
+		  <if test="isHistory == 0">
+			order_distribute   
+		  </if>
+		  <if test="isHistory == 1">
+			order_distribute_history 
+		  </if>
+		    c  
+			 <where>
+	    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+	    			and c.master_order_sn = #{masterOrderSn}
+	    		</if>
+	    	</where>
+	    	)
+	    	and t.is_del = '0'
+		GROUP BY t.order_sn,t.depot_code,t.invoice_no 
+		/* maxscale route to master */;
+    </select>
+  
+  <resultMap id="OrderItemDepotDetailMap" type="com.work.shop.oms.common.bean.OrderItemDepotDetail">
+    <id column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <id column="invoice_no" jdbcType="VARCHAR" property="invoiceNo" />
+    <id column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="shipping_status" jdbcType="TINYINT" property="shippingStatus" />
+    <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime" />
+    <result column="creat_time" jdbcType="TIMESTAMP" property="creatTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="pickup_date" jdbcType="TIMESTAMP" property="pickupDate" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
+    <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
+    <result column="delivery_type" jdbcType="TINYINT" property="deliveryType" />
+    <result column="goods_number" jdbcType="VARCHAR" property="goodsNumber" />
+  </resultMap>
+  <select id="getOrderItemDepotDetail" parameterType="String" resultMap="OrderItemDepotDetailMap">
+	SELECT
+	    t.depot_code,
+	    t.invoice_no,
+	    t.order_sn,
+	    t.shipping_status,
+	    t.delivery_time,
+	    t.creat_time,
+	    t.update_time,
+	    t.pickup_date,
+	    t.is_del,
+	    t.shipping_name,
+	    t.shipping_id,
+	    t.delivery_type,
+	    od.supplier_code supplierCode,
+	    od.supplier_name supplierName,
+	    SUM(b.goods_number) AS goods_number
+	FROM
+	    order_depot_ship t,
+	    master_order_goods b,
+	    order_distribute od
+	WHERE
+	    b.order_sn = t.order_sn
+	and od.order_sn = t.order_sn
+	AND b.depot_code = t.depot_code
+	AND b.is_del = '0'
+	AND b.master_order_sn = #{masterOrderSn}
+	AND t.is_del = '0'
+	GROUP BY
+	    t.order_sn,
+	    t.depot_code,
+	    t.invoice_no;
+    </select>
+</mapper>

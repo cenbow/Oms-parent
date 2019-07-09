@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- JMS connectionFactory -->
+	<bean name="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL">
+			<value>${activeMQ}</value>
+		</property>
+		<property name="userName">
+			<value>${mq.userName}</value>
+		</property>
+		<property name="password">
+			<value>${mq.password}</value>
+		</property>
+	</bean>
+	<!-- a pooling based JMS provider -->
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="connectionFactory" ref="connectionFactory" />
+	</bean>
+	
+	<!-- 创建异步处理订单队列 -->
+	<bean id="asyn_process_order" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="asyn_process_order" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="asynProcessOrderProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="asyn_process_order" />
+	</bean>
+	
+	<!-- 订单拆单队列 -->
+	<bean id="order_distribute" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_distribute" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="orderDistributeProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_distribute" />
+	</bean>
+
+	<!-- 创建子订单队列 -->
+	<bean id="split_order" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="split_order" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="splitOrderProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="split_order" />
+	</bean>
+
+	<!-- 分发供应商系统队列 -->
+	<bean id="distribute_supplier" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="distribute_supplier" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="distributeSupplierProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="distribute_supplier" />
+	</bean>
+	
+	<!-- 供应商系统通知分仓队列 -->
+	<bean id="notice_distribute" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="notice_distribute" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="noticeDistributeProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="notice_distribute" />
+	</bean>
+	
+	<!-- 供应商系统通知发货队列 -->
+	<bean id="notice_ship" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="notice_ship" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="noticeShipProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="notice_ship" />
+	</bean>
+
+	<!-- 库存占用 队列 -->
+	<bean id="order_stock" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_stock" />
+	</bean>
+	<bean id="orderStockProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_stock" />
+	</bean>
+	
+	<!-- 订单分配通知库存 队列 -->
+	<bean id="order_stock_dist" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_stock_dist" />
+	</bean>
+	<bean id="orderDistProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_stock_dist" />
+	</bean>
+
+	<!-- 订单确认 队列 -->
+	<bean id="order_confirm" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_confirm" />
+	</bean>
+	<bean id="orderConfirmProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_confirm" />
+	</bean>
+	
+	<!-- 订单未确认 队列 -->
+	<bean id="order_unconfirm" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_unconfirm" />
+	</bean>
+	<bean id="orderUnConfirmProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_unconfirm" />
+	</bean>
+	
+	<!-- 订单问题单 队列 -->
+	<bean id="order_question" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_question" />
+	</bean>
+	<bean id="orderQuestionProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_question" />
+	</bean>
+	
+	<!-- 订单正常单 队列 -->
+	<bean id="order_normal" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_normal" />
+	</bean>
+	<bean id="orderNormalProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_normal" />
+	</bean>
+	
+	<!--普通订单结算 退货单入库、结算队列 -->
+	<bean id="QUEUE_ORDER_SETTLE" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="QUEUE_ORDER_SETTLE" />
+	</bean>
+	
+	<!-- 普通订单-结算 退货单-入库结算 -->
+	<bean id="orderSettleProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="QUEUE_ORDER_SETTLE" />
+	</bean>
+	
+	<bean id="THIRD_ORDER_SETTLE" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="THIRD_ORDER_SETTLE" />
+	</bean>
+	<bean id="thirdSettleProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="THIRD_ORDER_SETTLE" />
+	</bean>
+
+	<bean id="distribute_swdi" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="distribute_swdi" />
+	</bean>
+	<bean id="distributeSwdiJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="timeToLive" value="86400" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="distribute_swdi" />
+	</bean>
+	
+	<!-- 订单金额批量调整 队列 -->
+	<bean id="BATCHEXORDERMONEY" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="BATCHEXORDERMONEY" />
+	</bean>
+	
+	<!-- 订单金额批量调整-->
+	<bean id="processOrderMoneyJmsContainer" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="timeToLive" value="86400" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="BATCHEXORDERMONEY" />
+	</bean>
+	
+	<!-- 退单批量结算队列 -->
+	<bean id="QUEUE_SETTLE_BILL_BATCH_NEW" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="QUEUE_SETTLE_BILL_BATCH_NEW" />
+	</bean>
+
+	<!-- 订单结算批量放数据-->
+	<bean id="processOrderSettleBillJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="timeToLive" value="86400" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="QUEUE_SETTLE_BILL_BATCH_NEW" />
+	</bean>
+
+	<!-- 订单取消 队列 -->
+	<bean id="order_cancel" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_cancel" />
+	</bean>
+	<bean id="orderCancelProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_cancel" />
+	</bean>
+	
+	<!--ERP仓内作业状态(淘宝) 将淘宝订单ERP仓内作业状态转送至此队列 -->
+	<bean id="QUERPSTATUS_TAOBAO" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="QUERPSTATUS_TAOBAO" />
+	</bean>
+	<bean id="taoBaoERPStatusProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="QUERPSTATUS_TAOBAO" />
+	</bean>
+
+	<!-- 库存释放 队列 -->
+	<bean id="order_stock_realese" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_stock_realese" />
+	</bean>
+	<bean id="orderStockRealeseJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_stock_realese" />
+	</bean>
+	
+	<!-- 批量解密队列 -->
+	<bean id="batch_decode_queue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="batch_decode_queue" />
+	</bean>
+	<bean id="batchDecodeQeueJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="batch_decode_queue" />
+	</bean>
+	
+	<!-- 通知物流配货队列 -->
+	<bean id="notice_picking" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="notice_picking" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="noticePickingProducerJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="notice_picking" />
+	</bean>
+	
+	<!--订单物流回写队列 -->
+	<bean id="order_express_pull" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_express_pull" />
+	</bean>
+	<!-- Spring JMS Template -->
+	<bean id="orderExpressPullProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_express_pull" />
+	</bean>
+	
+	<!--退单物流回写队列 -->
+	<bean id="return_express_pull" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="return_express_pull" />
+	</bean>
+	<!-- Spring JMS Template -->
+	<bean id="returnExpressPullProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="return_express_pull" />
+	</bean>
+	
+	<!--退单下发XOMS队列 -->
+	<bean id="notice_order_return" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="notice_order_return" />
+	</bean>
+	<!-- Spring JMS Template -->
+	<bean id="noticeOrderReturnProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="notice_order_return" />
+	</bean>
+	
+	<!--退单完结通知队列 -->
+	<bean id="notice_order_return_finish" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="notice_order_return_finish" />
+	</bean>
+	<!-- Spring JMS Template -->
+	<bean id="orderReturnFinishProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="notice_order_return_finish" />
+	</bean>
+	
+	<!--获取快递信息队列 -->
+	<bean id="pull_express_info" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="pull_express_info" />
+	</bean>
+	<!-- Spring JMS Template -->
+	<bean id="pullExpressInfoProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="pull_express_info" />
+	</bean>
+	
+	<bean id="putQueueJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" /> <!-- mq 事务 -->
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+	</bean>
+	
+	
+	<!--手工打单队列 -->
+	<bean id="batch_hand_order" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="batch_hand_order" />
+	</bean>
+	<!-- Spring JMS Template -->
+	<bean id="handOrderProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="batch_hand_order" />
+	</bean>
+	<!-- 渠道订单发货队列 -->
+	<bean id="og_order_delivery" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="og_order_delivery" />
+	</bean>
+	<bean id="orderDeliveryJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="og_order_delivery" />
+	</bean>
+	
+	<!-- 发送自提码队列 -->
+	<bean id="send_got_code" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="send_got_code" />
+	</bean>
+	<bean id="sendGotCodeJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="send_got_code" />
+	</bean>
+	
+	<!-- 支付后通知分配队列 -->
+	<bean id="cloud-center-orderDistribute" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="cloud-center-orderDistribute" />
+	</bean>
+	<bean id="cloudCenterDistJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="cloud-center-orderDistribute" />
+	</bean>
+	
+	<!-- 配送单发货确认队列 -->
+	<bean id="cloud-center-distDeliveryConfirm" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="cloud-center-distDeliveryConfirm" />
+	</bean>
+	<bean id="cloudCenterDistDeliveryConfirmJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="cloud-center-distDeliveryConfirm" />
+	</bean>
+	
+	<!-- 配送单发货确认队列 -->
+	<bean id="cloud-center-distReceiptConfirm" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="cloud-center-distReceiptConfirm" />
+	</bean>
+	<bean id="cloudCenterDistReceiptConfirmJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="cloud-center-distReceiptConfirm" />
+	</bean>
+	
+	<!--退货单入库队列 -->
+	<bean id="QUEUE_RETURN_INPUT" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="MB.ERP.DR.Queue.OOS.BGR" />
+	</bean>
+
+	<bean id="returnInputProviderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="QUEUE_RETURN_INPUT" />
+	</bean>
+	
+	<bean id="business_monitor_erp_entry_end" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="business_monitor_erp_entry_end" />
+	</bean>
+
+    <!-- 招采队列 -->
+    <bean id="jointPurchasingProcessJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="sessionTransacted" value="true" />
+        <property name="sessionAcknowledgeMode" value="1" />
+        <property name="deliveryMode" value="2" />
+        <property name="defaultDestination" ref="joint_purchasing_process" />
+    </bean>
+    <bean id="joint_purchasing_process" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="joint_purchasing_process" />
+    </bean>
+
+	<!-- 账期支付队列 -->
+	<bean id="orderAccountPeriodJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_account_period" />
+	</bean>
+	<bean id="order_account_period" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_account_period" />
+	</bean>
+</beans>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- 配置主库数据源 -->
+	<bean id="bgchanneldbMasterDataSource" parent="ParentDataSource">
+		<property name="jdbcUrl">
+			<value>${bgchanneldb.master.jdbc.url}</value>
+		</property>
+		<property name="user">
+			<value>${bgchanneldb.master.jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${bgchanneldb.master.jdbc.password}</value>
+		</property>
+	</bean>
+	<!-- 配置从库数据源 -->
+	<bean id="bgchanneldbSlaverDataSource" parent="ParentDataSource">
+		<property name="jdbcUrl">
+			<value>${bgchanneldb.slaver.jdbc.url}</value>
+		</property>
+		<property name="user">
+			<value>${bgchanneldb.slaver.jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${bgchanneldb.slaver.jdbc.password}</value>
+		</property>
+	</bean>
+	<!-- 配置动态数据源 -->
+	<bean id="bgchanneldbDataSource" class="com.work.shop.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="slaver" value-ref="bgchanneldbSlaverDataSource"/>
+				<entry key="master" value-ref="bgchanneldbMasterDataSource"/>
+			</map>
+		</property>
+		<!-- 默认丛库 -->
+		<property name="defaultTargetDataSource" ref="bgchanneldbSlaverDataSource"/>
+	</bean>
+
+	<bean id="bgchanneldbsqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="bgchanneldbDataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+</beans>

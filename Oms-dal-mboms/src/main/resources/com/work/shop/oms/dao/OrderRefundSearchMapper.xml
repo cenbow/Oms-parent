@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.OrderRefundSearchMapper" >
+ <!--退单结算数据查询 -->
+	<resultMap type="com.work.shop.oms.vo.OrderRefundListVO" id="pageListResultMap">
+		<id column="return_pay_sn" property="returnPaySn" jdbcType="VARCHAR" />
+	    <result column="relating_return_sn" property="relatingReturnSn" jdbcType="VARCHAR" />
+	    <result column="return_pay_status" property="returnPayStatus" jdbcType="TINYINT" />
+	    <result column="return_pay" property="returnPay" jdbcType="SMALLINT" />
+	    <result column="return_fee" property="returnFee" jdbcType="DECIMAL" />
+	    <result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+	    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	    <result column="backBalance" property="backbalance" jdbcType="TINYINT" />
+		<result column="order_out_sn" jdbcType="VARCHAR" property="orderOutSn" />
+		<result column="referer" jdbcType="VARCHAR" property="referer" />
+		<result column="master_order_sn" jdbcType="VARCHAR" property="relatingOrderSn" />
+		<result column="return_order_status" jdbcType="TINYINT" property="returnOrderStatus" />
+		<result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+		<result column="ship_status" jdbcType="TINYINT" property="shipStatus" />
+		<result column="is_good_received" jdbcType="TINYINT" property="isGoodReceived" />
+		<result column="checkin_status" jdbcType="TINYINT" property="checkinStatus" />
+		<result column="quality_status" jdbcType="TINYINT" property="qualityStatus" />
+		<result column="return_type" jdbcType="TINYINT" property="returnType" />
+		<result column="channel_name" jdbcType="VARCHAR" property="channelName" />
+		<result column="pay_note" jdbcType="VARCHAR" property="payNote" />
+	</resultMap>
+  <select id="selectOrderRefundListByExample" resultMap="pageListResultMap" parameterType="map" >
+    select temp.*,oi.order_out_sn,oi.referer,ors.is_good_received,ors.checkin_status,ors.quality_status,ci.channel_name from 
+		(select ord.*,
+			orn.master_order_sn,orn.return_order_status,orn.pay_status,orn.ship_status,orn.return_type,
+			orn.have_refund
+		 from order_refund ord left join order_return orn on ord.relating_return_sn=orn.return_sn 
+		 where  orn.return_order_status !=4  ) temp
+	left join order_return_ship ors on temp.relating_return_sn = ors.relating_return_sn
+	left join 
+	<if test="listDataType">
+		master_order_info oi
+	</if>
+	<if test="!listDataType">
+		 master_order_info_history oi  
+	</if>
+	 on temp.master_order_sn=oi.master_order_sn
+	 left join channel_info ci on oi.order_from = ci.channel_code
+    <where>
+    	<if test="relatingReturnSn != null" >
+	      and temp.relating_return_sn=#{relatingReturnSn}
+	    </if>
+    	<if test="relatingOrderSn != null" >
+	      and temp.master_order_sn=#{relatingOrderSn}
+	    </if>
+    	<if test="orderOutSn != null" >
+	      and oi.order_out_sn=#{orderOutSn}
+	    </if>
+    	<if test="returnPay != null" >
+	      and temp.return_pay=#{returnPay}
+	    </if>
+    	<if test="backBalance != null" >
+	      and temp.backBalance=#{backBalance}
+	    </if>
+    	<if test="returnType != null" >
+	      and temp.return_type=#{returnType}
+	    </if>
+	    <if test="haveRefund != null" >
+	      and temp.have_refund=#{haveRefund}
+	    </if>
+	    <if test="returnPayStatus != null" >
+	      and temp.return_pay_status=#{returnPayStatus}
+	    </if>
+    	<if test="orderForms != null" >
+    		and oi.order_from in
+	      <foreach item="item" index="index" collection="orderForms" open="(" separator="," close=")">  
+		  		#{item}  
+		 </foreach>
+	    </if>
+    </where>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    	limit #{limitStart},#{limitNum}
+    	/* maxscale route to master */;
+  </select>
+  <!--退单结算数目 -->
+  <select id="countOrderRefundListByExample" resultType="java.lang.Integer" parameterType="map" >
+    select count(*) from 
+		(select ord.*,
+			orn.master_order_sn,orn.return_order_status,orn.pay_status,orn.ship_status,orn.return_type,orn.have_refund
+		 from order_refund ord left join order_return orn on ord.relating_return_sn=orn.return_sn where  orn.return_order_status !=4 ) temp
+	left join order_return_ship ors on temp.relating_return_sn = ors.relating_return_sn
+	left join 
+	<if test="listDataType">
+		master_order_info oi
+	</if>
+	<if test="!listDataType">
+		 master_order_info_history oi  
+	</if>
+	 on temp.master_order_sn=oi.master_order_sn
+	 left join channel_info ci on oi.order_from = ci.channel_code
+    <where>
+    	<if test="relatingReturnSn != null" >
+	      and temp.relating_return_sn=#{relatingReturnSn}
+	    </if>
+    	<if test="relatingOrderSn != null" >
+	      and temp.master_order_sn=#{relatingOrderSn}
+	    </if>
+    	<if test="orderOutSn != null" >
+	      and oi.order_out_sn=#{orderOutSn}
+	    </if>
+	    <if test="backBalance != null" >
+	      and temp.backBalance=#{backBalance}
+	    </if>
+    	<if test="returnPay != null" >
+	      and temp.return_pay=#{returnPay}
+	    </if>
+    	<if test="returnType != null" >
+	      and temp.return_type=#{returnType}
+	    </if>
+	    <if test="haveRefund != null" >
+	      and temp.have_refund=#{haveRefund}
+	    </if>
+	    <if test="returnPayStatus != null" >
+	      and temp.return_pay_status=#{returnPayStatus}
+	    </if>
+	    <if test="orderForms != null" >
+    		and oi.order_from in
+	      <foreach item="item" index="index" collection="orderForms" open="(" separator="," close=")">  
+		  		#{item}  
+		 </foreach>
+	    </if>
+    </where>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    /* maxscale route to master */;
+  </select>
+</mapper>

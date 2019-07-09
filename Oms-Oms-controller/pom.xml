@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  	<modelVersion>4.0.0</modelVersion>
+  	<parent>
+    	<groupId>com.work.shop.oms</groupId>
+    	<artifactId>Oms-parent</artifactId>
+    	<version>1.2.0</version>
+  	</parent>
+  	<artifactId>Oms-Oms-controller</artifactId>
+  	<name>Oms-Oms-controller</name>
+
+	<dependencies>
+<!-- 		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-order-service</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-goods-service</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency> -->
+		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-functions-pom</artifactId>
+			<version>${project.parent.version}</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-inner-api</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.work.shop.oms</groupId>
+			<artifactId>Oms-biz-orderinfo</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.4.2</version>
+		</dependency>
+	</dependencies>
+</project>

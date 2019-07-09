@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.RegionManagementMapper">
+	<!-- 根据上级区域ID查询下一级区域列表：结果映射 -->
+	<resultMap type="com.work.shop.oms.common.bean.RegionManagementVO" id="regionResultMap">
+       <result column="region_id" property="regionId" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 区域ID -->
+       <result column="parent_id" property="parentId" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 上级区域ID -->
+       <result column="region_name" property="regionName" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 区域名称 -->
+       <result column="region_type" property="regionType" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 菜单级别 -->
+       <result column="zip_code" property="zipCode" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 邮政编码 -->
+       <result column="shipping_fee" property="shippingFee" javaType="java.lang.String" jdbcType="FLOAT"/><!-- 快递费用 -->
+       <result column="ems_fee" property="emsFee" javaType="java.lang.String" jdbcType="FLOAT"/><!-- EMS费用 -->
+       <result column="cod_fee" property="codFee" javaType="java.lang.String" jdbcType="FLOAT"/><!-- 货到付款费用 -->
+       <result column="is_cod" property="isCod" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否支持货到付款 -->
+       <result column="cod_pos" property="codPos" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否支持POS刷卡 -->
+       <result column="is_cac" property="isCac" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否支持自提 -->
+       <result column="is_verify_tel" property="isVerifyTel" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 货到付款是否验证手机号 -->
+       <result column="agency_id" property="agencyId" javaType="java.lang.String" jdbcType="SMALLINT"/><!-- 办事处的id-->
+       <result column="last_update_time" property="lastUpdateTime" javaType="java.lang.String" jdbcType="DATE"/><!-- 最近一次更新时间 -->
+       <result column="is_update" property="isUpdate" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否更新 -->
+    </resultMap>
+	<!-- 区域查询条件：根据上级区域ID查询下一级区域列表：结果映射 -->
+	<resultMap type="java.util.HashMap" id="countryResultMap">
+       <result column="region_id" property="regionId" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 区域ID -->
+       <result column="region_name" property="regionName" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 区域名称 -->
+    </resultMap>
+    
+    
+	<!-- 区域管理：区域下拉菜单数据-->
+	<select id="getRegionQueryCondition" parameterType="java.lang.String" resultMap="countryResultMap">
+		SELECT t.region_id,
+			   t.region_name  
+		FROM system_region_area t 
+		WHERE t.parent_id = #{parentId,jdbcType=VARCHAR} 
+	</select>
+	
+    <!-- 区域管理：根据父区域ID查询区域列表-->
+    <select id="getRegionListByParentId" parameterType="java.util.HashMap" resultMap="regionResultMap">
+    	SELECT  t.region_id,
+    			t.parent_id,
+    			t.region_name,
+    			t.region_type,
+    			t.zip_code,
+    			t.shipping_fee,
+    			t.ems_fee,
+    			t.cod_fee,
+    			t.is_cod,
+    			t.cod_pos,
+    			t.is_cac,
+    			t.is_verify_tel,
+    			t.agency_id,
+    			t.last_update_time,
+    			t.is_update
+    	FROM system_region_area t
+    	<where>
+    		<if test="parentId!=null and parentId!=''">
+    			and t.parent_id = #{parentId}
+    		</if>
+    	</where> 
+    	limit #{limitStart},#{limitNum}
+    </select> 
+    
+    <!-- 区域管理：根据父区域ID查询区域总记录数-->
+    <select id="getRegionCountByParentId" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+    	SELECT  count(*) as totalProperty
+    	FROM system_region_area t
+    	<where>
+    		<if test="parentId!=null and parentId!=''">
+    			and t.parent_id = #{parentId}
+    		</if>
+    	</where>  
+    </select>
+    
+    <!-- 区域管理：检查是否存在同级同名记录-->
+    <select id="checkRegionName" parameterType="com.work.shop.oms.common.bean.RegionManagementVO" resultType="java.lang.Integer">
+    	SELECT  count(*) as totalProperty
+    	FROM system_region_area t
+    	<where>
+    		<if test="regionName!=null and regionName!=''">
+    			and t.region_name = #{regionName}
+    		</if>
+    		<if test="parentId!=null and parentId!=''">
+    			and t.parent_id = #{parentId}
+    		</if>
+    		<if test="regionId!=null and regionId!=''">
+    			and t.region_id != #{regionId}
+    		</if>
+    	</where>  
+    </select>
+    
+    <!-- 区域管理：新增下级区域 -->
+   <insert id="doAddRegion" parameterType="com.work.shop.oms.common.bean.RegionManagementVO">
+   		INSERT INTO system_region_area 
+			(region_id,parent_id,region_name,region_type,agency_id,shipping_fee,zip_code,ems_fee,cod_fee,is_cod,cod_pos,is_cac,is_verify_tel,last_update_time,is_update)
+		VALUES
+		(
+			#{regionId,jdbcType=VARCHAR},
+			#{parentId,jdbcType=VARCHAR},
+			#{regionName,jdbcType=VARCHAR},
+			#{regionType,jdbcType=TINYINT},
+			#{agencyId,jdbcType=SMALLINT},
+			#{shippingFee,jdbcType=FLOAT},
+			#{zipCode,jdbcType=VARCHAR},
+			#{emsFee,jdbcType=FLOAT},
+			#{codFee,jdbcType=FLOAT},
+			#{isCod,jdbcType=TINYINT},
+			#{codPos,jdbcType=TINYINT},
+			#{isCac,jdbcType=TINYINT},
+			#{isVerifyTel,jdbcType=TINYINT},
+			#{lastUpdateTime,jdbcType=DATE},
+			#{isUpdate,jdbcType=TINYINT}
+		)
+   </insert>
+   
+  <!-- 区域管理：获取regionId下级子区域的ID集合 -->
+   <select id="getChildRegionIdList" parameterType="java.util.List" resultType="java.lang.String">
+		SELECT t.region_id 
+		FROM system_region_area t 
+		WHERE t.parent_id in 
+		<foreach collection="list" item="paramList" open="(" close=")" separator=",">
+			#{paramList}
+		</foreach>
+	</select>
+	
+	<!-- 区域管理：删除paramList中的所有记录 -->
+	<delete id="delRegion" parameterType="java.util.List" >
+		delete FROM system_region_area  
+		WHERE  region_id in 
+		<foreach collection="list" item="paramList" open="(" close=")" separator=",">
+			#{paramList}
+		</foreach>
+	</delete>
+	
+	<!-- 区域管理：查询regionId是否已存在-->
+	<select id="checkRegionId" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(*)  
+		FROM system_region_area t 
+		WHERE t.region_id = #{regionId,jdbcType=VARCHAR} 
+	</select>
+	
+	<!-- 区域管理：根据区域ID查询详细信息-->
+    <select id="getRegionInfoByRegionId" parameterType="java.lang.String" resultMap="regionResultMap">
+    	SELECT  t.region_id,
+    			t.parent_id,
+    			t.region_name,
+    			t.region_type,
+    			t.zip_code,
+    			t.shipping_fee,
+    			t.ems_fee,
+    			t.cod_fee,
+    			t.is_cod,
+    			t.cod_pos,
+    			t.is_cac,
+    			t.is_verify_tel,
+    			t.agency_id,
+    			t.last_update_time,
+    			t.is_update
+    	FROM system_region_area t
+	    where t.region_id = #{regionId,jdbcType=VARCHAR}
+    </select>
+    
+    <!-- 区域管理：保存区域编辑信息 -->
+    <update id="doSaveEdit" parameterType="com.work.shop.oms.common.bean.RegionManagementVO">
+		update system_region_area
+		set 
+			region_name = #{regionName,jdbcType=VARCHAR},
+			zip_code = #{zipCode,jdbcType=VARCHAR}, 
+			shipping_fee = #{shippingFee,jdbcType=FLOAT},
+			ems_fee = #{emsFee,jdbcType=FLOAT},
+			cod_fee = #{codFee,jdbcType=FLOAT},
+			is_cod = #{isCod,jdbcType=TINYINT},
+			cod_pos = #{codPos,jdbcType=TINYINT},
+			is_cac = #{isCac,jdbcType=TINYINT},
+			is_verify_tel = #{isVerifyTel,jdbcType=TINYINT},
+			last_update_time = now(),
+			is_update = '1'
+		where region_id = #{regionId,jdbcType=VARCHAR}
+    </update>
+    
+    <!-- 区域管理：区域编辑保存 同步保存所有下级区域的快递费用、EMS费用、货到付款费用、是否支持货到付款、是否支持POS刷卡、是否支持自提、是否支持货到付款验证手机号信息 -->
+    <update id="doSaveChildRegionInfo" parameterType="java.util.HashMap">
+		update system_region_area
+		set 
+			shipping_fee = #{shippingFee,jdbcType=FLOAT},
+			ems_fee = #{emsFee,jdbcType=FLOAT},
+			cod_fee = #{codFee,jdbcType=FLOAT},
+			is_cod = #{isCod,jdbcType=TINYINT},
+			cod_pos = #{codPos,jdbcType=TINYINT},
+			is_cac = #{isCac,jdbcType=TINYINT},
+			is_verify_tel = #{isVerifyTel,jdbcType=TINYINT},
+			last_update_time = now(),
+			is_update = '1'
+		WHERE region_id in 
+		<foreach collection="allNodeList" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+    </update>
+</mapper>

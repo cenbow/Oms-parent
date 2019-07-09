@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.MasterOrderPayTypeDetailMapper">
+  <resultMap id="MasterOrderPayTypeDetailMap" type="com.work.shop.oms.bean.MasterOrderPayTypeDetail">
+	    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+		<result column="master_pay_sn" jdbcType="VARCHAR" property="masterPaySn" />
+	    <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+	    <result column="pay_status_name" jdbcType="VARCHAR" property="payStatusName" />
+	    <result column="pay_totalfee" jdbcType="DECIMAL" property="payTotalfee" />
+	    <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+	    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+	    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	    <result column="pay_lasttime" jdbcType="TIMESTAMP" property="payLasttime" />
+	    <result column="pay_id" jdbcType="TINYINT" property="payId" />
+	    <result column="pay_name" jdbcType="VARCHAR" property="payName" />
+	    <result column="pay_note" jdbcType="VARCHAR" property="payNote" />
+	    <result column="merge_pay_sn" jdbcType="VARCHAR" property="mergePaySn" />
+  </resultMap>
+  
+  <select id="getMasterOrderPayTypeDetail" parameterType="java.util.HashMap" resultMap="MasterOrderPayTypeDetailMap">
+  		SELECT 
+		  t.master_order_sn,
+		  t.master_pay_sn,
+		  t.pay_status,
+		  CASE t.pay_status 
+		    WHEN 0  THEN '未支付' 
+		    WHEN 1  THEN '部分付款' 
+		    WHEN 2  THEN '已付款' 
+		    WHEN 3  THEN '已结算' 
+		    WHEN 4  THEN '待确认' 
+		    ELSE '' 
+		  END AS pay_status_name,
+		  t.pay_totalfee,
+		  DATE_FORMAT(t.pay_time,'%Y-%m-%d %H:%i:%S') AS pay_time,
+		  DATE_FORMAT(t.create_time,'%Y-%m-%d %H:%i:%S') AS create_time,
+		  DATE_FORMAT(t.update_time,'%Y-%m-%d %H:%i:%S') AS update_time,
+		  DATE_FORMAT(t.pay_lasttime,'%Y-%m-%d %H:%i:%S') AS pay_lasttime,
+		  t.pay_id,
+		  t.pay_name,
+		  t.pay_note,
+		  t.merge_pay_sn 
+		FROM
+		  <if test="isHistory == 0">
+			master_order_pay  
+		  </if>
+		  <if test="isHistory == 1">
+			master_order_pay_history 
+		  </if>
+		t 
+    	<where>
+    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    			and t.master_order_sn = #{masterOrderSn}
+    		</if>
+    	</where> 
+    	/* maxscale route to master */;
+    </select>
+  
+    <resultMap id="OrderItemPayDetailMap" type="com.work.shop.oms.common.bean.OrderItemPayDetail">
+        <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+        <result column="master_pay_sn" jdbcType="VARCHAR" property="masterPaySn" />
+        <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+        <result column="pay_status_name" jdbcType="VARCHAR" property="payStatusName" />
+        <result column="pay_totalfee" jdbcType="DECIMAL" property="payTotalfee" />
+        <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="pay_lasttime" jdbcType="TIMESTAMP" property="payLasttime" />
+        <result column="pay_id" jdbcType="TINYINT" property="payId" />
+        <result column="pay_name" jdbcType="VARCHAR" property="payName" />
+        <result column="pay_note" jdbcType="VARCHAR" property="payNote" />
+        <result column="merge_pay_sn" jdbcType="VARCHAR" property="mergePaySn" />
+		<result column="payment_period" jdbcType="VARCHAR" property="paymentPeriod" />
+		<result column="payment_rate" jdbcType="VARCHAR" property="paymentRate" />
+  </resultMap>
+  
+  <select id="getOrderItemPayDetail" parameterType="String" resultMap="OrderItemPayDetailMap">
+        SELECT 
+          t.master_order_sn,
+          t.master_pay_sn,
+          t.pay_status,
+          CASE t.pay_status 
+            WHEN 0  THEN '未支付' 
+            WHEN 1  THEN '部分付款' 
+            WHEN 2  THEN '已付款' 
+            WHEN 3  THEN '已结算' 
+            WHEN 4  THEN '待确认' 
+            ELSE '' 
+          END AS pay_status_name,
+          t.pay_totalfee,
+          DATE_FORMAT(t.pay_time,'%Y-%m-%d %H:%i:%S') AS pay_time,
+          DATE_FORMAT(t.create_time,'%Y-%m-%d %H:%i:%S') AS create_time,
+          DATE_FORMAT(t.update_time,'%Y-%m-%d %H:%i:%S') AS update_time,
+          DATE_FORMAT(t.pay_lasttime,'%Y-%m-%d %H:%i:%S') AS pay_lasttime,
+          t.pay_id,
+          t.pay_name,
+          t.pay_note,
+          t.merge_pay_sn,
+	      t.payment_period,
+	      t.payment_rate
+        FROM
+          master_order_pay t 
+        <where>
+            and t.master_order_sn = #{masterOrderSn}
+        </where> 
+    </select>
+</mapper>

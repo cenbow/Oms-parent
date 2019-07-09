@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.ChannelGoodsDefinedMapper">
+
+  <resultMap id="channelGoodsVo" type="com.work.shop.oms.common.bean.ChannelGoodsVo" >
+	<id column="id" property="id" jdbcType="INTEGER" />
+	<result column="channel_code" property="channelCode" jdbcType="VARCHAR" />
+	<result column="goods_sn" property="goodsSn" jdbcType="VARCHAR" />
+	<result column="goods_title" property="goodsTitle" jdbcType="VARCHAR" />
+	<result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
+	<result column="keywords" property="keywords" jdbcType="VARCHAR" />
+	<result column="allow_search" property="allowSearch" jdbcType="INTEGER" />
+	<result column="channel_price" property="channelPrice" jdbcType="DECIMAL" />
+	<result column="platform_price" property="platformPrice" jdbcType="DECIMAL" />
+	<result column="is_on_sell" property="isOnSell" jdbcType="TINYINT" />
+	<result column="max_onsell_rate" property="maxOnsellRate" jdbcType="INTEGER" />
+	<result column="is_best" property="isBest" jdbcType="TINYINT" />
+	<result column="is_new" property="isNew" jdbcType="TINYINT" />
+	<result column="is_hot" property="isHot" jdbcType="TINYINT" />
+	<result column="is_presell" property="isPresell" jdbcType="INTEGER" />
+	<result column="new_order" property="newOrder" jdbcType="SMALLINT" />
+	<result column="best_order" property="bestOrder" jdbcType="SMALLINT" />
+	<result column="hot_order" property="hotOrder" jdbcType="SMALLINT" />
+	<result column="presell_order" property="presellOrder" jdbcType="SMALLINT" />
+	<result column="sort_order" property="sortOrder" jdbcType="SMALLINT" />
+	<result column="warn_number" property="warnNumber" jdbcType="INTEGER" />
+	<result column="add_time" property="addTime" jdbcType="INTEGER" />
+	<result column="last_update_time" property="lastUpdateTime" jdbcType="INTEGER" />
+	<result column="is_presale" property="isPresale" jdbcType="TINYINT" />
+	<result column="is_custom" property="isCustom" jdbcType="TINYINT" />
+	<result column="pos" property="pos" jdbcType="VARCHAR" />
+	<result column="last_update" property="lastUpdate" jdbcType="TIMESTAMP" />
+	<result column="shipping_days" property="shippingDays" jdbcType="INTEGER" />
+	<result column="statistic_days" property="statisticDays" jdbcType="INTEGER" />
+	<result column="hot_number" property="hotNumber" jdbcType="INTEGER" />
+	<result column="is_second_sale" property="isSecondSale" jdbcType="TINYINT" />
+	<result column="second_sale_begin" property="secondSaleBegin" jdbcType="TIMESTAMP" />
+	<result column="second_sale_end" property="secondSaleEnd" jdbcType="TIMESTAMP" />
+	<result column="second_price" property="secondPrice" jdbcType="DECIMAL" />
+	<result column="is_outlet" property="isOutlet" jdbcType="TINYINT" />
+	<result column="is_update" property="isUpdate" jdbcType="TINYINT" />
+	<result column="sale_point" property="salePoint" jdbcType="VARCHAR" />
+	<result column="size_picture" property="sizePicture" jdbcType="VARCHAR" />
+	<result column="card_picture" property="cardPicture" jdbcType="VARCHAR" />
+	<result column="tpl_id" property="tplId" jdbcType="INTEGER" />
+	<result column="model_picture" property="modelPicture" jdbcType="VARCHAR" />
+	<result column="model_picture_list" property="modelPictureList" jdbcType="VARCHAR" />
+	<result column="limit_number" property="limitNumber" jdbcType="INTEGER" />
+	<result column="limit_start_date" property="limitStartDate" jdbcType="INTEGER" />
+	<result column="limit_end_date" property="limitEndDate" jdbcType="INTEGER" />
+	<result column="can_discount" property="canDiscount" jdbcType="TINYINT" />
+	<result column="cat_id" property="catId" jdbcType="INTEGER" /> 
+	<result column="sku_sn" property="skuSn" jdbcType="VARCHAR" />
+	<result column="brand_code" property="brandCode" jdbcType="VARCHAR" />
+	<result column="color_code" property="colorCode" jdbcType="VARCHAR" />
+	<result column="size_code" property="sizeCode" jdbcType="VARCHAR" />
+	<result column="custum_code" property="custumCode" jdbcType="VARCHAR" />
+	<result column="color_name" property="colorName" jdbcType="VARCHAR" />
+	<result column="size_name" property="sizeName" jdbcType="VARCHAR" />
+	<result column="market_price" property="marketPrice" jdbcType="DECIMAL" />
+  </resultMap>
+  <select id="searchGoodsForOrder" parameterType="hashmap" resultMap="channelGoodsVo">
+		SELECT
+			cg.channel_code,
+			cg.goods_sn,
+			cg.goods_title,
+			cg.goods_name,
+			cg.channel_price,
+			cg.platform_price,
+			pg.cat_id,
+			pg.brand_code,
+			pg.market_price
+		FROM
+			channel_goods cg
+		LEFT JOIN product_goods pg ON cg.goods_sn = pg.goods_sn
+		WHERE cg.channel_code=#{channelCode,jdbcType=VARCHAR}
+		<if test="goodsSn != null ">
+			and cg.goods_sn=#{goodsSn,jdbcType=VARCHAR}
+		</if>
+		<if test="goodsName != null">
+			and cg.goods_name like #{goodsName,jdbcType=VARCHAR}
+		</if> 
+		<if test="brandCode != null">
+			and pg.brand_code=#{brandCode,jdbcType=VARCHAR}
+		</if>
+		<if test="catId != null">
+			and pg.cat_id = #{catId,jdbcType=INTEGER}
+		</if>
+		LIMIT 100;
+	</select>
+
+	<select id="getGoodsInfoOfOrderInfo" parameterType="hashmap" resultMap="channelGoodsVo">
+		SELECT
+			cg.id,
+			cg.channel_code,
+			cg.goods_name,
+			cg.goods_sn,
+			cg.goods_title,
+			cg.channel_price,
+			cg.platform_price,
+			pbl.color_code,
+			pbl.size_code,
+			pbl.sku_sn,
+			pbl.barcode,
+			pbl.custum_code,
+			pbl.color_name,
+			pbl.size_name,
+			pbl.size_code,
+			pg.market_price
+		FROM
+			channel_goods cg
+		LEFT JOIN product_barcode_list pbl ON cg.goods_sn = pbl.goods_sn
+		LEFT JOIN product_goods pg ON cg.goods_sn = pg.goods_sn
+		WHERE
+			cg.goods_sn = #{goodsSn, jdbcType=VARCHAR} and cg.channel_code = #{channelCode, jdbcType=VARCHAR}
+		LIMIT 100
+	</select>
+	<select id="selectProductLibBrandBygoodsSns" parameterType="hashmap" resultMap="channelGoodsVo">
+		SELECT
+			cg.id,
+			cg.channel_code,
+			cg.goods_name,
+			cg.goods_sn,
+			cg.goods_title,
+			cg.channel_price,
+			cg.platform_price,
+			pbl.color_code,
+			pbl.size_code,
+			pbl.sku_sn,
+			pbl.barcode,
+			pbl.custum_code,
+			pbl.color_name,
+			pbl.size_name,
+			pbl.size_code,
+			pg.market_price
+		FROM
+			channel_goods cg
+		LEFT JOIN product_barcode_list pbl ON cg.goods_sn = pbl.goods_sn
+		LEFT JOIN product_goods pg ON cg.goods_sn = pg.goods_sn
+		WHERE
+			cg.goods_sn = #{goodsSn, jdbcType=VARCHAR} and cg.channel_code = #{channelCode, jdbcType=VARCHAR}
+		LIMIT 100
+	</select>
+	
+  <select id="selectGoodsProtectPrice" resultType="com.work.shop.oms.bean.ProductGoods" parameterType="hashmap">
+	<![CDATA[
+		SELECT 
+			pg.goods_sn goodsSn,
+			IF( pg.`protect_price`>0 , pg.`protect_price`, 
+				(
+					IF(
+						(
+							SELECT 
+								sc.`value`  
+							FROM 
+								system_config sc 
+							WHERE 
+								sc.`code`='basic_sold_price_discount'
+						) IS NULL, 0.3 , (
+							SELECT 
+								sc.`value` 
+							FROM 
+								system_config sc 
+							WHERE 
+								sc.`code`='basic_sold_price_discount'
+						) + 0
+					)
+				) * pg.`market_price`
+			) AS protectPrice 
+		FROM
+			product_goods pg
+	]]>
+  </select>
+</mapper>

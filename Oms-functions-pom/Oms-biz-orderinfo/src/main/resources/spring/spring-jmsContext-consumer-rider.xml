@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<!-- 创建异步处理订单下发骑手平台队列 -->
+	<bean id="rider_distribute_process" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="rider_distribute_process" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="riderDistributeProcessJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="rider_distribute_process" />
+	</bean>
+	
+	<!-- 骑手下单-->
+	<bean id="riderDistributeProcessMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.RiderDistributeProcessConsumer" />
+		</constructor-arg>
+	</bean>
+	
+	<!-- Spring jmsContainer -->
+	<bean id="riderDistributeProcessJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="rider_distribute_process" />
+		<property name="messageListener" ref="riderDistributeProcessMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-10"></property>
+	</bean>
+	
+	<!-- B端订单配送出库 -->
+	<bean id="order_distribute_process" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="cloud-center-orderPurchaseOrder" />
+	</bean>
+
+	<!-- Spring JMS Producer Template -->
+	<bean id="orderDistributeProcessJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="order_distribute_process" />
+	</bean>
+</beans>

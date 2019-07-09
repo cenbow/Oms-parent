@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.ShippingManagementMapper">
+	<!-- 承运商管理：结果映射 -->
+	<resultMap type="com.work.shop.oms.common.bean.ShippingManagementVO" id="shippingResultMap">
+       <result column="shipping_id" property="shippingId" javaType="java.lang.String" jdbcType="TINYINT"/>
+       <result column="shipping_code" property="shippingCode" javaType="java.lang.String" jdbcType="VARCHAR"/>
+       <result column="shipping_name" property="shippingName" javaType="java.lang.String" jdbcType="VARCHAR"/>
+       <result column="shipping_desc" property="shippingDesc" javaType="java.lang.String" jdbcType="VARCHAR"/>
+       <result column="insure" property="insure" javaType="java.lang.String" jdbcType="VARCHAR"/>
+       <result column="support_cod" property="supportCod" javaType="java.lang.String" jdbcType="TINYINT"/>
+       <result column="enabled" property="enabled" javaType="java.lang.String" jdbcType="TINYINT"/>
+       <result column="shipping_print" property="shippingPrint" javaType="java.lang.String" jdbcType="LONGVARCHAR"/>
+       <result column="shipping_print2" property="shippingPrint2" javaType="java.lang.String" jdbcType="LONGVARCHAR"/>
+       <result column="is_receive_print" property="isReceivePrint" javaType="java.lang.String" jdbcType="TINYINT"/>
+       <result column="model_img" property="modelImg" javaType="java.lang.String" jdbcType="VARCHAR"/>
+       <result column="defalut_delivery" property="defalutDelivery" javaType="java.lang.String" jdbcType="VARCHAR"/>
+       <result column="is_common_use" property="isCommonUse" javaType="java.lang.String" jdbcType="TINYINT"/>
+    </resultMap>
+    
+    <!-- 承运商管理：获取承运商查询列表数量 -->
+    <select id="getShippingQueryListCount" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+    	SELECT COUNT(*) AS totalProperty 
+    	FROM system_shipping t
+    	<where>
+    		<if test="shippingCode!=null and shippingCode!=''">
+    			and t.shipping_code like CONCAT('%','${shippingCode}','%' )
+    		</if>
+    		<if test="shippingName!=null and shippingName!=''">
+    			and t.shipping_name like CONCAT('%','${shippingName}','%' )
+    		</if>
+    		<if test="supportCod!=null and supportCod!=''">
+    			and t.support_cod = #{supportCod}
+    		</if>
+    		<if test="enabled!=null and enabled!=''">
+    			and t.enabled = #{enabled}
+    		</if>
+    	</where>  
+    </select>
+    
+    <!-- 承运商管理：获取承运商查询列表 -->
+    <select id="getShippingQueryList" parameterType="java.util.HashMap" resultMap="shippingResultMap">
+    	SELECT  t.shipping_id,
+    			t.shipping_code,
+    			t.shipping_name,
+    			t.shipping_desc,
+    			t.insure,
+    			t.support_cod,
+    			t.enabled,
+    			t.shipping_print,
+    			t.shipping_print2,
+    			t.is_receive_print,
+    			t.model_img,
+    			t.defalut_delivery,
+    			t.is_common_use
+    	FROM system_shipping t
+    	<where>
+    		<if test="shippingCode!=null and shippingCode!=''">
+    			and t.shipping_code like CONCAT('%','${shippingCode}','%' )
+    		</if>
+    		<if test="shippingName!=null and shippingName!=''">
+    			and t.shipping_name like CONCAT('%','${shippingName}','%' )
+    		</if>
+    		<if test="supportCod!=null and supportCod!=''">
+    			and t.support_cod = #{supportCod}
+    		</if>
+    		<if test="enabled!=null and enabled!=''">
+    			and t.enabled = #{enabled}
+    		</if>
+    	</where> 
+    	limit #{limitStart},#{limitNum}
+    </select>
+    
+    <!-- 承运商管理：查询是否存在某些相同字段的记录 -->
+    <select id="checkSameRecord" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+    	SELECT COUNT(*) AS totalProperty 
+    	FROM system_shipping t
+    	<where>
+    		<if test="shippingCode!=null and shippingCode!=''">
+    			and t.shipping_code = #{shippingCode}
+    		</if>
+    		<if test="shippingName!=null and shippingName!=''">
+    			and t.shipping_name = #{shippingName}
+    		</if>
+    		<if test="shippingId!=null and shippingId!=''">
+    			and t.shipping_id != #{shippingId}
+    		</if>
+    	</where> 
+    </select>
+    
+    <!-- 承运商管理：新增承运商 -->
+    <insert id="doAddShipping" parameterType="com.work.shop.oms.common.bean.ShippingManagementVO">
+   		INSERT INTO system_shipping 
+			(shipping_code,shipping_name,shipping_desc,insure,support_cod,enabled,is_receive_print,defalut_delivery,shipping_print,is_common_use)
+		VALUES
+		(
+			#{shippingCode,jdbcType=VARCHAR},
+			#{shippingName,jdbcType=VARCHAR},
+			#{shippingDesc,jdbcType=VARCHAR},
+			#{insure,jdbcType=VARCHAR},
+			#{supportCod,jdbcType=TINYINT},
+			#{enabled,jdbcType=TINYINT},
+			#{isReceivePrint,jdbcType=TINYINT},
+			#{defalutDelivery,jdbcType=VARCHAR},
+			#{shippingPrint,jdbcType=LONGVARCHAR},
+			#{isCommonUse,jdbcType=TINYINT}
+		)
+   </insert>
+   
+   <!-- 承运商管理：切换承运商状态（启用变禁用，禁用变启用） -->
+   <update id="changeStatus"  parameterType="java.util.HashMap">
+   		update system_shipping
+   		set enabled = #{enabled}
+   		where shipping_id = #{shippingId}
+   </update>
+   
+   <!-- 承运商管理：保存编辑承运商信息 -->
+   <update id="doSaveEdit" parameterType="com.work.shop.oms.common.bean.ShippingManagementVO">
+   		update system_shipping
+   		set 
+   			shipping_code = #{shippingCode,jdbcType=VARCHAR},
+			shipping_name = #{shippingName,jdbcType=VARCHAR}, 
+			shipping_desc = #{shippingDesc,jdbcType=VARCHAR},
+			insure = #{insure,jdbcType=VARCHAR},
+			support_cod = #{supportCod,jdbcType=TINYINT},
+   			enabled = #{enabled,jdbcType=TINYINT},
+			is_receive_print = #{isReceivePrint,jdbcType=TINYINT},
+			defalut_delivery = #{defalutDelivery,jdbcType=VARCHAR},
+			is_common_use = #{isCommonUse,jdbcType=TINYINT}
+   		where shipping_id = #{shippingId}
+   </update>
+   
+</mapper>

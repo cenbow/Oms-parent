@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="Oms">
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resources"/>
+        <dependent-module archiveName="Oms-base-api-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-base-api/Oms-base-api">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-utils-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-utils/Oms-utils">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-dal-mboms-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-dal-mboms/Oms-dal-mboms">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-dal-bgchanneldb-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-dal-bgchanneldb/Oms-dal-bgchanneldb">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-Oms-controller-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-Oms-controller/Oms-Oms-controller">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-config-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-config/Oms-config">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-config-base-0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-config-base/Oms-config-base">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-pojo.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-pojo/Oms-pojo">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="Oms-inner-api.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Oms-inner-api/Oms-inner-api">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="java-output-path" value="/Oms-Oms/target/classes"/>
+        <property name="context-root" value="Oms"/>
+    </wb-module>
+</project-modules>

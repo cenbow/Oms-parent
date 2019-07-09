@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<!-- 引用远程服务配置 -->
+	<!-- <dubbo:reference registry="sms-zookeeper" id="sMSService"
+		interface="com.work.shop.sms.send.api.SMSService" check="false" /> -->
+
+	<!-- <dubbo:reference registry="bg-zookeeper" group="${bg.dubbo.group}"
+		id="stockNewService" interface="com.work.shop.stockcenter.client.service.StockNewService"
+		check="false" timeout="10000"/> -->
+	
+	<!-- <dubbo:reference registry="oms-zookeeper" group="${dubbo.server.group}"
+		id="orderExpressPullService" interface="com.work.shop.oms.api.express.service.OrderExpressPullService"
+		check="false" timeout="10000"/> -->
+	
+	<!-- <dubbo:reference registry="bg-zookeeper" group="${bg.dubbo.group}"
+		id="orderStockService2" interface="com.work.shop.stockcenter.client.service.OrderStockService"
+		check="false" timeout="10000"/>
+
+	<dubbo:reference registry="bg-zookeeper" group="${bg.dubbo.group}"
+	    id="stockServiceByShop" interface="com.work.shop.stockcenter.client.service.StockServiceByShop"
+	    check="false" timeout="10000"/> -->
+
+</beans>

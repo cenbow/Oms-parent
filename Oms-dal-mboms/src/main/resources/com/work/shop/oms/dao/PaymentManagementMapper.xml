@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.PaymentManagementMapper">
+	<!-- 支付方式管理映射-->
+	<resultMap type="com.work.shop.oms.common.bean.PaymentManagementVO" id="paymentResultMap">
+       <result column="pay_id" property="payId" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 支付方式ID -->
+       <result column="pay_code" property="payCode" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 支付方式编码  -->
+       <result column="pay_name" property="payName" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 支付方式名称  -->
+       <result column="pay_fee" property="payFee" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 支付费用  -->
+       <result column="pay_desc" property="payDesc" javaType="java.lang.String" jdbcType="VARCHAR"/><!-- 支付方式描述  -->
+       <result column="pay_order" property="payOrder" javaType="java.lang.String" jdbcType="FLOAT"/><!-- 支付方式在页面的显示顺序  -->
+       <result column="pay_config" property="payConfig" javaType="java.lang.String" jdbcType="FLOAT"/><!-- 支付方式的配置信息 -->
+       <result column="enabled" property="enabled" javaType="java.lang.String" jdbcType="FLOAT"/><!-- 是否可用 -->
+       <result column="is_cod" property="isCod" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否货到付款 -->
+       <result column="is_online" property="isOnline" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否在线支付 -->
+       <result column="is_mobile" property="isMobile" javaType="java.lang.String" jdbcType="TINYINT"/><!-- 是否手机渠道使用 -->
+    </resultMap>
+    
+    <!-- 支付方式管理：查询支付方式列表数量 -->
+    <select id="getPaymentQueryListCount" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+    	SELECT COUNT(*) AS totalProperty 
+    	FROM system_payment t
+    	<where>
+    		<if test="payCode!=null and payCode!=''">
+    			and t.pay_code like CONCAT('%','${payCode}','%' )
+    		</if>
+    		<if test="payName!=null and payName!=''">
+    			and t.pay_name like CONCAT('%','${payName}','%' )
+    		</if>
+    		<if test="isOnline!=null and isOnline!=''">
+    			and t.is_online = #{isOnline}
+    		</if>
+    		<if test="enabled!=null and enabled!=''">
+    			and t.enabled = #{enabled}
+    		</if>
+    	</where>  
+    </select>
+    
+    <!-- 支付方式管理：查询支付方式列表 -->
+    <select id="getPaymentQueryList" parameterType="java.util.HashMap" resultMap="paymentResultMap">
+    	SELECT  t.pay_id,
+    			t.pay_code,
+    			t.pay_name,
+    			t.pay_fee,
+    			t.pay_desc,
+    			t.pay_order,
+    			t.pay_config,
+    			t.enabled,
+    			t.is_cod,
+    			t.is_online,
+    			t.is_mobile
+    	FROM system_payment t
+    	<where>
+    		<if test="payCode!=null and payCode!=''">
+    			and t.pay_code like CONCAT('%','${payCode}','%' )
+    		</if>
+    		<if test="payName!=null and payName!=''">
+    			and t.pay_name like CONCAT('%','${payName}','%' )
+    		</if>
+    		<if test="isOnline!=null and isOnline!=''">
+    			and t.is_online = #{isOnline}
+    		</if>
+    		<if test="enabled!=null and enabled!=''">
+    			and t.enabled = #{enabled}
+    		</if>
+    	</where> 
+    	limit #{limitStart},#{limitNum}
+    </select>
+    
+    <!-- 支付方式管理：检查是否存在同名或同code的记录 -->
+    <select id="checkSameRecord" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+    	SELECT COUNT(*) AS totalProperty 
+    	FROM system_payment t
+    	<where>
+    		<if test="payCode!=null and payCode!=''">
+    			and t.pay_code = #{payCode}
+    		</if>
+    		<if test="payName!=null and payName!=''">
+    			and t.pay_name = #{payName}
+    		</if>
+    		<if test="payId!=null and payId!=''">
+    			and t.pay_id != #{payId}
+    		</if>
+    	</where> 
+    </select>
+    
+    <!-- 支付方式管理：新增支付方式-->
+    <insert id="doAddPayment" parameterType="com.work.shop.oms.common.bean.PaymentManagementVO">
+   		INSERT INTO system_payment 
+			(pay_code,pay_name,pay_fee,pay_desc,pay_order,pay_config,enabled,is_cod,is_online,is_mobile)
+		VALUES
+		(
+			#{payCode,jdbcType=VARCHAR},
+			#{payName,jdbcType=VARCHAR},
+			#{payFee,jdbcType=VARCHAR},
+			#{payDesc,jdbcType=LONGVARCHAR},
+			#{payOrder,jdbcType=TINYINT},
+			#{payConfig,jdbcType=LONGVARCHAR},
+			#{enabled,jdbcType=TINYINT},
+			#{isCod,jdbcType=TINYINT},
+			#{isOnline,jdbcType=TINYINT},
+			#{isMobile,jdbcType=TINYINT}
+		)
+   </insert>
+   
+    <!-- 支付方式管理：切换支付方式状态（启用变禁用，禁用变启用） -->
+   <update id="changeStatus"  parameterType="java.util.HashMap">
+   		update system_payment
+   		set enabled = #{enabled}
+   		where pay_id = #{payId}
+   </update>
+   
+   <!-- 支付方式管理：保存编辑支付方式信息 -->
+   <update id="doSaveEdit" parameterType="com.work.shop.oms.common.bean.PaymentManagementVO">
+   		update system_payment
+   		set 
+   			pay_code = #{payCode,jdbcType=VARCHAR},
+			pay_name = #{payName,jdbcType=VARCHAR}, 
+			pay_fee = #{payFee,jdbcType=VARCHAR},
+			pay_desc = #{payDesc,jdbcType=LONGVARCHAR},
+			pay_order = #{payOrder,jdbcType=TINYINT},
+			enabled = #{enabled,jdbcType=TINYINT},
+   			is_cod = #{isCod,jdbcType=TINYINT},
+			is_online = #{isOnline,jdbcType=TINYINT},
+			is_mobile = #{isMobile,jdbcType=TINYINT}
+   		where pay_id = #{payId}
+   </update>
+   
+</mapper>

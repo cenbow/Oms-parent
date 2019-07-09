@@ -1,0 +1,1042 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.YikeTradeMapper">
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.bgapidb.YikeTrade">
+    <id column="code" jdbcType="VARCHAR" property="code" />
+    <result column="shopcode" jdbcType="VARCHAR" property="shopcode" />
+    <result column="total_qty" jdbcType="INTEGER" property="totalQty" />
+    <result column="total_money" jdbcType="DECIMAL" property="totalMoney" />
+    <result column="discount_money" jdbcType="DECIMAL" property="discountMoney" />
+    <result column="discount_amount" jdbcType="DECIMAL" property="discountAmount" />
+    <result column="return_quantity" jdbcType="INTEGER" property="returnQuantity" />
+    <result column="order_pre_shiptime" jdbcType="VARCHAR" property="orderPreShiptime" />
+    <result column="pay_amount" jdbcType="DECIMAL" property="payAmount" />
+    <result column="usecoupon_value" jdbcType="DECIMAL" property="usecouponValue" />
+    <result column="reward_fee" jdbcType="DECIMAL" property="rewardFee" />
+    <result column="use_bonus" jdbcType="INTEGER" property="useBonus" />
+    <result column="is_cod" jdbcType="VARCHAR" property="isCod" />
+    <result column="cod_service_fee" jdbcType="DECIMAL" property="codServiceFee" />
+    <result column="buyer_code" jdbcType="VARCHAR" property="buyerCode" />
+    <result column="store_code" jdbcType="VARCHAR" property="storeCode" />
+    <result column="buyer_email" jdbcType="VARCHAR" property="buyerEmail" />
+    <result column="recv_consignee" jdbcType="VARCHAR" property="recvConsignee" />
+    <result column="recv_mobile" jdbcType="VARCHAR" property="recvMobile" />
+    <result column="recv_tel" jdbcType="VARCHAR" property="recvTel" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="county" jdbcType="VARCHAR" property="county" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="order_status" jdbcType="VARCHAR" property="orderStatus" />
+    <result column="buyer_remark" jdbcType="VARCHAR" property="buyerRemark" />
+    <result column="order_remark" jdbcType="VARCHAR" property="orderRemark" />
+    <result column="service_salercode" jdbcType="VARCHAR" property="serviceSalercode" />
+    <result column="service_salername" jdbcType="VARCHAR" property="serviceSalername" />
+    <result column="service_channelcode" jdbcType="VARCHAR" property="serviceChannelcode" />
+    <result column="seller_code" jdbcType="VARCHAR" property="sellerCode" />
+    <result column="seller_sys_shopcode" jdbcType="VARCHAR" property="sellerSysShopcode" />
+    <result column="invoice_type" jdbcType="VARCHAR" property="invoiceType" />
+    <result column="invoice_name" jdbcType="VARCHAR" property="invoiceName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+    <result column="ship_time" jdbcType="TIMESTAMP" property="shipTime" />
+    <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="modified_time" jdbcType="TIMESTAMP" property="modifiedTime" />
+    <result column="is_os" jdbcType="INTEGER" property="isOs" />
+    <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+    <result column="channel_code" jdbcType="VARCHAR" property="channelCode" />
+    <result column="channel_name" jdbcType="VARCHAR" property="channelName" />
+    <result column="download_finish" jdbcType="INTEGER" property="downloadFinish" />
+    <result column="outer_order_sn" jdbcType="VARCHAR" property="outerOrderSn" />
+    <result column="order_error_msg" jdbcType="VARCHAR" property="orderErrorMsg" />
+    <result column="is_occupy" jdbcType="TINYINT" property="isOccupy" />
+    <result column="order_type" jdbcType="VARCHAR" property="orderType" />
+    <result column="order_time" jdbcType="TIMESTAMP" property="orderTime" />
+    <result column="order_pre_ship_time" jdbcType="TIMESTAMP" property="orderPreShipTime" />
+    <result column="is_payed" jdbcType="VARCHAR" property="isPayed" />
+    <result column="finish_time" jdbcType="TIMESTAMP" property="finishTime" />
+    <result column="express_fee" jdbcType="DECIMAL" property="expressFee" />
+    <result column="express_cost" jdbcType="DECIMAL" property="expressCost" />
+    <result column="buyer_old_code" jdbcType="VARCHAR" property="buyerOldCode" />
+    <result column="buyer_nick" jdbcType="VARCHAR" property="buyerNick" />
+    <result column="express_fee_type" jdbcType="VARCHAR" property="expressFeeType" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    code, shopcode, total_qty, total_money, discount_money, discount_amount, return_quantity, 
+    order_pre_shiptime, pay_amount, usecoupon_value, reward_fee, use_bonus, is_cod, cod_service_fee, 
+    buyer_code, store_code, buyer_email, recv_consignee, recv_mobile, recv_tel, province, 
+    city, county, address, order_status, buyer_remark, order_remark, service_salercode, 
+    service_salername, service_channelcode, seller_code, seller_sys_shopcode, invoice_type, 
+    invoice_name, create_time, pay_time, ship_time, end_time, modified_time, is_os, add_time, 
+    channel_code, channel_name, download_finish, outer_order_sn, order_error_msg, is_occupy, 
+    order_type, order_time, order_pre_ship_time, is_payed, finish_time, express_fee, 
+    express_cost, buyer_old_code, buyer_nick, express_fee_type
+  </sql>
+  <select id="selectByExample" parameterType="com.work.shop.oms.bean.bgapidb.YikeTradeExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from yike_trade
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="criteria.valid">
+      <foreach collection="criteria.criteria" item="criterion">
+        <if test="criterion.limitValue">
+          limit ${criterion.value},${criterion.secondValue}
+        </if>
+      </foreach>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from yike_trade
+    where code = #{code,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from yike_trade
+    where code = #{code,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.work.shop.oms.bean.bgapidb.YikeTradeExample">
+    delete from yike_trade
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.work.shop.oms.bean.bgapidb.YikeTrade">
+    insert into yike_trade (code, shopcode, total_qty, 
+      total_money, discount_money, discount_amount, 
+      return_quantity, order_pre_shiptime, pay_amount, 
+      usecoupon_value, reward_fee, use_bonus, 
+      is_cod, cod_service_fee, buyer_code, 
+      store_code, buyer_email, recv_consignee, 
+      recv_mobile, recv_tel, province, 
+      city, county, address, 
+      order_status, buyer_remark, order_remark, 
+      service_salercode, service_salername, service_channelcode, 
+      seller_code, seller_sys_shopcode, invoice_type, 
+      invoice_name, create_time, pay_time, 
+      ship_time, end_time, modified_time, 
+      is_os, add_time, channel_code, 
+      channel_name, download_finish, outer_order_sn, 
+      order_error_msg, is_occupy, order_type, 
+      order_time, order_pre_ship_time, is_payed, 
+      finish_time, express_fee, express_cost, 
+      buyer_old_code, buyer_nick, express_fee_type
+      )
+    values (#{code,jdbcType=VARCHAR}, #{shopcode,jdbcType=VARCHAR}, #{totalQty,jdbcType=INTEGER}, 
+      #{totalMoney,jdbcType=DECIMAL}, #{discountMoney,jdbcType=DECIMAL}, #{discountAmount,jdbcType=DECIMAL}, 
+      #{returnQuantity,jdbcType=INTEGER}, #{orderPreShiptime,jdbcType=VARCHAR}, #{payAmount,jdbcType=DECIMAL}, 
+      #{usecouponValue,jdbcType=DECIMAL}, #{rewardFee,jdbcType=DECIMAL}, #{useBonus,jdbcType=INTEGER}, 
+      #{isCod,jdbcType=VARCHAR}, #{codServiceFee,jdbcType=DECIMAL}, #{buyerCode,jdbcType=VARCHAR}, 
+      #{storeCode,jdbcType=VARCHAR}, #{buyerEmail,jdbcType=VARCHAR}, #{recvConsignee,jdbcType=VARCHAR}, 
+      #{recvMobile,jdbcType=VARCHAR}, #{recvTel,jdbcType=VARCHAR}, #{province,jdbcType=VARCHAR}, 
+      #{city,jdbcType=VARCHAR}, #{county,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, 
+      #{orderStatus,jdbcType=VARCHAR}, #{buyerRemark,jdbcType=VARCHAR}, #{orderRemark,jdbcType=VARCHAR}, 
+      #{serviceSalercode,jdbcType=VARCHAR}, #{serviceSalername,jdbcType=VARCHAR}, #{serviceChannelcode,jdbcType=VARCHAR}, 
+      #{sellerCode,jdbcType=VARCHAR}, #{sellerSysShopcode,jdbcType=VARCHAR}, #{invoiceType,jdbcType=VARCHAR}, 
+      #{invoiceName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{payTime,jdbcType=TIMESTAMP}, 
+      #{shipTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{modifiedTime,jdbcType=TIMESTAMP}, 
+      #{isOs,jdbcType=INTEGER}, #{addTime,jdbcType=TIMESTAMP}, #{channelCode,jdbcType=VARCHAR}, 
+      #{channelName,jdbcType=VARCHAR}, #{downloadFinish,jdbcType=INTEGER}, #{outerOrderSn,jdbcType=VARCHAR}, 
+      #{orderErrorMsg,jdbcType=VARCHAR}, #{isOccupy,jdbcType=TINYINT}, #{orderType,jdbcType=VARCHAR}, 
+      #{orderTime,jdbcType=TIMESTAMP}, #{orderPreShipTime,jdbcType=TIMESTAMP}, #{isPayed,jdbcType=VARCHAR}, 
+      #{finishTime,jdbcType=TIMESTAMP}, #{expressFee,jdbcType=DECIMAL}, #{expressCost,jdbcType=DECIMAL}, 
+      #{buyerOldCode,jdbcType=VARCHAR}, #{buyerNick,jdbcType=VARCHAR}, #{expressFeeType,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.work.shop.oms.bean.bgapidb.YikeTrade">
+    insert into yike_trade
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="code != null">
+        code,
+      </if>
+      <if test="shopcode != null">
+        shopcode,
+      </if>
+      <if test="totalQty != null">
+        total_qty,
+      </if>
+      <if test="totalMoney != null">
+        total_money,
+      </if>
+      <if test="discountMoney != null">
+        discount_money,
+      </if>
+      <if test="discountAmount != null">
+        discount_amount,
+      </if>
+      <if test="returnQuantity != null">
+        return_quantity,
+      </if>
+      <if test="orderPreShiptime != null">
+        order_pre_shiptime,
+      </if>
+      <if test="payAmount != null">
+        pay_amount,
+      </if>
+      <if test="usecouponValue != null">
+        usecoupon_value,
+      </if>
+      <if test="rewardFee != null">
+        reward_fee,
+      </if>
+      <if test="useBonus != null">
+        use_bonus,
+      </if>
+      <if test="isCod != null">
+        is_cod,
+      </if>
+      <if test="codServiceFee != null">
+        cod_service_fee,
+      </if>
+      <if test="buyerCode != null">
+        buyer_code,
+      </if>
+      <if test="storeCode != null">
+        store_code,
+      </if>
+      <if test="buyerEmail != null">
+        buyer_email,
+      </if>
+      <if test="recvConsignee != null">
+        recv_consignee,
+      </if>
+      <if test="recvMobile != null">
+        recv_mobile,
+      </if>
+      <if test="recvTel != null">
+        recv_tel,
+      </if>
+      <if test="province != null">
+        province,
+      </if>
+      <if test="city != null">
+        city,
+      </if>
+      <if test="county != null">
+        county,
+      </if>
+      <if test="address != null">
+        address,
+      </if>
+      <if test="orderStatus != null">
+        order_status,
+      </if>
+      <if test="buyerRemark != null">
+        buyer_remark,
+      </if>
+      <if test="orderRemark != null">
+        order_remark,
+      </if>
+      <if test="serviceSalercode != null">
+        service_salercode,
+      </if>
+      <if test="serviceSalername != null">
+        service_salername,
+      </if>
+      <if test="serviceChannelcode != null">
+        service_channelcode,
+      </if>
+      <if test="sellerCode != null">
+        seller_code,
+      </if>
+      <if test="sellerSysShopcode != null">
+        seller_sys_shopcode,
+      </if>
+      <if test="invoiceType != null">
+        invoice_type,
+      </if>
+      <if test="invoiceName != null">
+        invoice_name,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="payTime != null">
+        pay_time,
+      </if>
+      <if test="shipTime != null">
+        ship_time,
+      </if>
+      <if test="endTime != null">
+        end_time,
+      </if>
+      <if test="modifiedTime != null">
+        modified_time,
+      </if>
+      <if test="isOs != null">
+        is_os,
+      </if>
+      <if test="addTime != null">
+        add_time,
+      </if>
+      <if test="channelCode != null">
+        channel_code,
+      </if>
+      <if test="channelName != null">
+        channel_name,
+      </if>
+      <if test="downloadFinish != null">
+        download_finish,
+      </if>
+      <if test="outerOrderSn != null">
+        outer_order_sn,
+      </if>
+      <if test="orderErrorMsg != null">
+        order_error_msg,
+      </if>
+      <if test="isOccupy != null">
+        is_occupy,
+      </if>
+      <if test="orderType != null">
+        order_type,
+      </if>
+      <if test="orderTime != null">
+        order_time,
+      </if>
+      <if test="orderPreShipTime != null">
+        order_pre_ship_time,
+      </if>
+      <if test="isPayed != null">
+        is_payed,
+      </if>
+      <if test="finishTime != null">
+        finish_time,
+      </if>
+      <if test="expressFee != null">
+        express_fee,
+      </if>
+      <if test="expressCost != null">
+        express_cost,
+      </if>
+      <if test="buyerOldCode != null">
+        buyer_old_code,
+      </if>
+      <if test="buyerNick != null">
+        buyer_nick,
+      </if>
+      <if test="expressFeeType != null">
+        express_fee_type,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="shopcode != null">
+        #{shopcode,jdbcType=VARCHAR},
+      </if>
+      <if test="totalQty != null">
+        #{totalQty,jdbcType=INTEGER},
+      </if>
+      <if test="totalMoney != null">
+        #{totalMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="discountMoney != null">
+        #{discountMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="discountAmount != null">
+        #{discountAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="returnQuantity != null">
+        #{returnQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="orderPreShiptime != null">
+        #{orderPreShiptime,jdbcType=VARCHAR},
+      </if>
+      <if test="payAmount != null">
+        #{payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="usecouponValue != null">
+        #{usecouponValue,jdbcType=DECIMAL},
+      </if>
+      <if test="rewardFee != null">
+        #{rewardFee,jdbcType=DECIMAL},
+      </if>
+      <if test="useBonus != null">
+        #{useBonus,jdbcType=INTEGER},
+      </if>
+      <if test="isCod != null">
+        #{isCod,jdbcType=VARCHAR},
+      </if>
+      <if test="codServiceFee != null">
+        #{codServiceFee,jdbcType=DECIMAL},
+      </if>
+      <if test="buyerCode != null">
+        #{buyerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCode != null">
+        #{storeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerEmail != null">
+        #{buyerEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="recvConsignee != null">
+        #{recvConsignee,jdbcType=VARCHAR},
+      </if>
+      <if test="recvMobile != null">
+        #{recvMobile,jdbcType=VARCHAR},
+      </if>
+      <if test="recvTel != null">
+        #{recvTel,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null">
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="county != null">
+        #{county,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="orderStatus != null">
+        #{orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerRemark != null">
+        #{buyerRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="orderRemark != null">
+        #{orderRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceSalercode != null">
+        #{serviceSalercode,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceSalername != null">
+        #{serviceSalername,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceChannelcode != null">
+        #{serviceChannelcode,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerCode != null">
+        #{sellerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerSysShopcode != null">
+        #{sellerSysShopcode,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceType != null">
+        #{invoiceType,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceName != null">
+        #{invoiceName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="payTime != null">
+        #{payTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shipTime != null">
+        #{shipTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifiedTime != null">
+        #{modifiedTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isOs != null">
+        #{isOs,jdbcType=INTEGER},
+      </if>
+      <if test="addTime != null">
+        #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="channelCode != null">
+        #{channelCode,jdbcType=VARCHAR},
+      </if>
+      <if test="channelName != null">
+        #{channelName,jdbcType=VARCHAR},
+      </if>
+      <if test="downloadFinish != null">
+        #{downloadFinish,jdbcType=INTEGER},
+      </if>
+      <if test="outerOrderSn != null">
+        #{outerOrderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="orderErrorMsg != null">
+        #{orderErrorMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="isOccupy != null">
+        #{isOccupy,jdbcType=TINYINT},
+      </if>
+      <if test="orderType != null">
+        #{orderType,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTime != null">
+        #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderPreShipTime != null">
+        #{orderPreShipTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isPayed != null">
+        #{isPayed,jdbcType=VARCHAR},
+      </if>
+      <if test="finishTime != null">
+        #{finishTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="expressFee != null">
+        #{expressFee,jdbcType=DECIMAL},
+      </if>
+      <if test="expressCost != null">
+        #{expressCost,jdbcType=DECIMAL},
+      </if>
+      <if test="buyerOldCode != null">
+        #{buyerOldCode,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerNick != null">
+        #{buyerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="expressFeeType != null">
+        #{expressFeeType,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.work.shop.oms.bean.bgapidb.YikeTradeExample" resultType="java.lang.Integer">
+    select count(*) from yike_trade
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update yike_trade
+    <set>
+      <if test="record.code != null">
+        code = #{record.code,jdbcType=VARCHAR},
+      </if>
+      <if test="record.shopcode != null">
+        shopcode = #{record.shopcode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.totalQty != null">
+        total_qty = #{record.totalQty,jdbcType=INTEGER},
+      </if>
+      <if test="record.totalMoney != null">
+        total_money = #{record.totalMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="record.discountMoney != null">
+        discount_money = #{record.discountMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="record.discountAmount != null">
+        discount_amount = #{record.discountAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="record.returnQuantity != null">
+        return_quantity = #{record.returnQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="record.orderPreShiptime != null">
+        order_pre_shiptime = #{record.orderPreShiptime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.payAmount != null">
+        pay_amount = #{record.payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="record.usecouponValue != null">
+        usecoupon_value = #{record.usecouponValue,jdbcType=DECIMAL},
+      </if>
+      <if test="record.rewardFee != null">
+        reward_fee = #{record.rewardFee,jdbcType=DECIMAL},
+      </if>
+      <if test="record.useBonus != null">
+        use_bonus = #{record.useBonus,jdbcType=INTEGER},
+      </if>
+      <if test="record.isCod != null">
+        is_cod = #{record.isCod,jdbcType=VARCHAR},
+      </if>
+      <if test="record.codServiceFee != null">
+        cod_service_fee = #{record.codServiceFee,jdbcType=DECIMAL},
+      </if>
+      <if test="record.buyerCode != null">
+        buyer_code = #{record.buyerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.storeCode != null">
+        store_code = #{record.storeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.buyerEmail != null">
+        buyer_email = #{record.buyerEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="record.recvConsignee != null">
+        recv_consignee = #{record.recvConsignee,jdbcType=VARCHAR},
+      </if>
+      <if test="record.recvMobile != null">
+        recv_mobile = #{record.recvMobile,jdbcType=VARCHAR},
+      </if>
+      <if test="record.recvTel != null">
+        recv_tel = #{record.recvTel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.province != null">
+        province = #{record.province,jdbcType=VARCHAR},
+      </if>
+      <if test="record.city != null">
+        city = #{record.city,jdbcType=VARCHAR},
+      </if>
+      <if test="record.county != null">
+        county = #{record.county,jdbcType=VARCHAR},
+      </if>
+      <if test="record.address != null">
+        address = #{record.address,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderStatus != null">
+        order_status = #{record.orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="record.buyerRemark != null">
+        buyer_remark = #{record.buyerRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderRemark != null">
+        order_remark = #{record.orderRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.serviceSalercode != null">
+        service_salercode = #{record.serviceSalercode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.serviceSalername != null">
+        service_salername = #{record.serviceSalername,jdbcType=VARCHAR},
+      </if>
+      <if test="record.serviceChannelcode != null">
+        service_channelcode = #{record.serviceChannelcode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sellerCode != null">
+        seller_code = #{record.sellerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sellerSysShopcode != null">
+        seller_sys_shopcode = #{record.sellerSysShopcode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.invoiceType != null">
+        invoice_type = #{record.invoiceType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.invoiceName != null">
+        invoice_name = #{record.invoiceName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.payTime != null">
+        pay_time = #{record.payTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.shipTime != null">
+        ship_time = #{record.shipTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.endTime != null">
+        end_time = #{record.endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.modifiedTime != null">
+        modified_time = #{record.modifiedTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.isOs != null">
+        is_os = #{record.isOs,jdbcType=INTEGER},
+      </if>
+      <if test="record.addTime != null">
+        add_time = #{record.addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.channelCode != null">
+        channel_code = #{record.channelCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.channelName != null">
+        channel_name = #{record.channelName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.downloadFinish != null">
+        download_finish = #{record.downloadFinish,jdbcType=INTEGER},
+      </if>
+      <if test="record.outerOrderSn != null">
+        outer_order_sn = #{record.outerOrderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderErrorMsg != null">
+        order_error_msg = #{record.orderErrorMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="record.isOccupy != null">
+        is_occupy = #{record.isOccupy,jdbcType=TINYINT},
+      </if>
+      <if test="record.orderType != null">
+        order_type = #{record.orderType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderTime != null">
+        order_time = #{record.orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.orderPreShipTime != null">
+        order_pre_ship_time = #{record.orderPreShipTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.isPayed != null">
+        is_payed = #{record.isPayed,jdbcType=VARCHAR},
+      </if>
+      <if test="record.finishTime != null">
+        finish_time = #{record.finishTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.expressFee != null">
+        express_fee = #{record.expressFee,jdbcType=DECIMAL},
+      </if>
+      <if test="record.expressCost != null">
+        express_cost = #{record.expressCost,jdbcType=DECIMAL},
+      </if>
+      <if test="record.buyerOldCode != null">
+        buyer_old_code = #{record.buyerOldCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.buyerNick != null">
+        buyer_nick = #{record.buyerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="record.expressFeeType != null">
+        express_fee_type = #{record.expressFeeType,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update yike_trade
+    set code = #{record.code,jdbcType=VARCHAR},
+      shopcode = #{record.shopcode,jdbcType=VARCHAR},
+      total_qty = #{record.totalQty,jdbcType=INTEGER},
+      total_money = #{record.totalMoney,jdbcType=DECIMAL},
+      discount_money = #{record.discountMoney,jdbcType=DECIMAL},
+      discount_amount = #{record.discountAmount,jdbcType=DECIMAL},
+      return_quantity = #{record.returnQuantity,jdbcType=INTEGER},
+      order_pre_shiptime = #{record.orderPreShiptime,jdbcType=VARCHAR},
+      pay_amount = #{record.payAmount,jdbcType=DECIMAL},
+      usecoupon_value = #{record.usecouponValue,jdbcType=DECIMAL},
+      reward_fee = #{record.rewardFee,jdbcType=DECIMAL},
+      use_bonus = #{record.useBonus,jdbcType=INTEGER},
+      is_cod = #{record.isCod,jdbcType=VARCHAR},
+      cod_service_fee = #{record.codServiceFee,jdbcType=DECIMAL},
+      buyer_code = #{record.buyerCode,jdbcType=VARCHAR},
+      store_code = #{record.storeCode,jdbcType=VARCHAR},
+      buyer_email = #{record.buyerEmail,jdbcType=VARCHAR},
+      recv_consignee = #{record.recvConsignee,jdbcType=VARCHAR},
+      recv_mobile = #{record.recvMobile,jdbcType=VARCHAR},
+      recv_tel = #{record.recvTel,jdbcType=VARCHAR},
+      province = #{record.province,jdbcType=VARCHAR},
+      city = #{record.city,jdbcType=VARCHAR},
+      county = #{record.county,jdbcType=VARCHAR},
+      address = #{record.address,jdbcType=VARCHAR},
+      order_status = #{record.orderStatus,jdbcType=VARCHAR},
+      buyer_remark = #{record.buyerRemark,jdbcType=VARCHAR},
+      order_remark = #{record.orderRemark,jdbcType=VARCHAR},
+      service_salercode = #{record.serviceSalercode,jdbcType=VARCHAR},
+      service_salername = #{record.serviceSalername,jdbcType=VARCHAR},
+      service_channelcode = #{record.serviceChannelcode,jdbcType=VARCHAR},
+      seller_code = #{record.sellerCode,jdbcType=VARCHAR},
+      seller_sys_shopcode = #{record.sellerSysShopcode,jdbcType=VARCHAR},
+      invoice_type = #{record.invoiceType,jdbcType=VARCHAR},
+      invoice_name = #{record.invoiceName,jdbcType=VARCHAR},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      pay_time = #{record.payTime,jdbcType=TIMESTAMP},
+      ship_time = #{record.shipTime,jdbcType=TIMESTAMP},
+      end_time = #{record.endTime,jdbcType=TIMESTAMP},
+      modified_time = #{record.modifiedTime,jdbcType=TIMESTAMP},
+      is_os = #{record.isOs,jdbcType=INTEGER},
+      add_time = #{record.addTime,jdbcType=TIMESTAMP},
+      channel_code = #{record.channelCode,jdbcType=VARCHAR},
+      channel_name = #{record.channelName,jdbcType=VARCHAR},
+      download_finish = #{record.downloadFinish,jdbcType=INTEGER},
+      outer_order_sn = #{record.outerOrderSn,jdbcType=VARCHAR},
+      order_error_msg = #{record.orderErrorMsg,jdbcType=VARCHAR},
+      is_occupy = #{record.isOccupy,jdbcType=TINYINT},
+      order_type = #{record.orderType,jdbcType=VARCHAR},
+      order_time = #{record.orderTime,jdbcType=TIMESTAMP},
+      order_pre_ship_time = #{record.orderPreShipTime,jdbcType=TIMESTAMP},
+      is_payed = #{record.isPayed,jdbcType=VARCHAR},
+      finish_time = #{record.finishTime,jdbcType=TIMESTAMP},
+      express_fee = #{record.expressFee,jdbcType=DECIMAL},
+      express_cost = #{record.expressCost,jdbcType=DECIMAL},
+      buyer_old_code = #{record.buyerOldCode,jdbcType=VARCHAR},
+      buyer_nick = #{record.buyerNick,jdbcType=VARCHAR},
+      express_fee_type = #{record.expressFeeType,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.work.shop.oms.bean.bgapidb.YikeTrade">
+    update yike_trade
+    <set>
+      <if test="shopcode != null">
+        shopcode = #{shopcode,jdbcType=VARCHAR},
+      </if>
+      <if test="totalQty != null">
+        total_qty = #{totalQty,jdbcType=INTEGER},
+      </if>
+      <if test="totalMoney != null">
+        total_money = #{totalMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="discountMoney != null">
+        discount_money = #{discountMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="discountAmount != null">
+        discount_amount = #{discountAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="returnQuantity != null">
+        return_quantity = #{returnQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="orderPreShiptime != null">
+        order_pre_shiptime = #{orderPreShiptime,jdbcType=VARCHAR},
+      </if>
+      <if test="payAmount != null">
+        pay_amount = #{payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="usecouponValue != null">
+        usecoupon_value = #{usecouponValue,jdbcType=DECIMAL},
+      </if>
+      <if test="rewardFee != null">
+        reward_fee = #{rewardFee,jdbcType=DECIMAL},
+      </if>
+      <if test="useBonus != null">
+        use_bonus = #{useBonus,jdbcType=INTEGER},
+      </if>
+      <if test="isCod != null">
+        is_cod = #{isCod,jdbcType=VARCHAR},
+      </if>
+      <if test="codServiceFee != null">
+        cod_service_fee = #{codServiceFee,jdbcType=DECIMAL},
+      </if>
+      <if test="buyerCode != null">
+        buyer_code = #{buyerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCode != null">
+        store_code = #{storeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerEmail != null">
+        buyer_email = #{buyerEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="recvConsignee != null">
+        recv_consignee = #{recvConsignee,jdbcType=VARCHAR},
+      </if>
+      <if test="recvMobile != null">
+        recv_mobile = #{recvMobile,jdbcType=VARCHAR},
+      </if>
+      <if test="recvTel != null">
+        recv_tel = #{recvTel,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null">
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        city = #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="county != null">
+        county = #{county,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="orderStatus != null">
+        order_status = #{orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerRemark != null">
+        buyer_remark = #{buyerRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="orderRemark != null">
+        order_remark = #{orderRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceSalercode != null">
+        service_salercode = #{serviceSalercode,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceSalername != null">
+        service_salername = #{serviceSalername,jdbcType=VARCHAR},
+      </if>
+      <if test="serviceChannelcode != null">
+        service_channelcode = #{serviceChannelcode,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerCode != null">
+        seller_code = #{sellerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerSysShopcode != null">
+        seller_sys_shopcode = #{sellerSysShopcode,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceType != null">
+        invoice_type = #{invoiceType,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceName != null">
+        invoice_name = #{invoiceName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="payTime != null">
+        pay_time = #{payTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shipTime != null">
+        ship_time = #{shipTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifiedTime != null">
+        modified_time = #{modifiedTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isOs != null">
+        is_os = #{isOs,jdbcType=INTEGER},
+      </if>
+      <if test="addTime != null">
+        add_time = #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="channelCode != null">
+        channel_code = #{channelCode,jdbcType=VARCHAR},
+      </if>
+      <if test="channelName != null">
+        channel_name = #{channelName,jdbcType=VARCHAR},
+      </if>
+      <if test="downloadFinish != null">
+        download_finish = #{downloadFinish,jdbcType=INTEGER},
+      </if>
+      <if test="outerOrderSn != null">
+        outer_order_sn = #{outerOrderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="orderErrorMsg != null">
+        order_error_msg = #{orderErrorMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="isOccupy != null">
+        is_occupy = #{isOccupy,jdbcType=TINYINT},
+      </if>
+      <if test="orderType != null">
+        order_type = #{orderType,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTime != null">
+        order_time = #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderPreShipTime != null">
+        order_pre_ship_time = #{orderPreShipTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isPayed != null">
+        is_payed = #{isPayed,jdbcType=VARCHAR},
+      </if>
+      <if test="finishTime != null">
+        finish_time = #{finishTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="expressFee != null">
+        express_fee = #{expressFee,jdbcType=DECIMAL},
+      </if>
+      <if test="expressCost != null">
+        express_cost = #{expressCost,jdbcType=DECIMAL},
+      </if>
+      <if test="buyerOldCode != null">
+        buyer_old_code = #{buyerOldCode,jdbcType=VARCHAR},
+      </if>
+      <if test="buyerNick != null">
+        buyer_nick = #{buyerNick,jdbcType=VARCHAR},
+      </if>
+      <if test="expressFeeType != null">
+        express_fee_type = #{expressFeeType,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where code = #{code,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.work.shop.oms.bean.bgapidb.YikeTrade">
+    update yike_trade
+    set shopcode = #{shopcode,jdbcType=VARCHAR},
+      total_qty = #{totalQty,jdbcType=INTEGER},
+      total_money = #{totalMoney,jdbcType=DECIMAL},
+      discount_money = #{discountMoney,jdbcType=DECIMAL},
+      discount_amount = #{discountAmount,jdbcType=DECIMAL},
+      return_quantity = #{returnQuantity,jdbcType=INTEGER},
+      order_pre_shiptime = #{orderPreShiptime,jdbcType=VARCHAR},
+      pay_amount = #{payAmount,jdbcType=DECIMAL},
+      usecoupon_value = #{usecouponValue,jdbcType=DECIMAL},
+      reward_fee = #{rewardFee,jdbcType=DECIMAL},
+      use_bonus = #{useBonus,jdbcType=INTEGER},
+      is_cod = #{isCod,jdbcType=VARCHAR},
+      cod_service_fee = #{codServiceFee,jdbcType=DECIMAL},
+      buyer_code = #{buyerCode,jdbcType=VARCHAR},
+      store_code = #{storeCode,jdbcType=VARCHAR},
+      buyer_email = #{buyerEmail,jdbcType=VARCHAR},
+      recv_consignee = #{recvConsignee,jdbcType=VARCHAR},
+      recv_mobile = #{recvMobile,jdbcType=VARCHAR},
+      recv_tel = #{recvTel,jdbcType=VARCHAR},
+      province = #{province,jdbcType=VARCHAR},
+      city = #{city,jdbcType=VARCHAR},
+      county = #{county,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      order_status = #{orderStatus,jdbcType=VARCHAR},
+      buyer_remark = #{buyerRemark,jdbcType=VARCHAR},
+      order_remark = #{orderRemark,jdbcType=VARCHAR},
+      service_salercode = #{serviceSalercode,jdbcType=VARCHAR},
+      service_salername = #{serviceSalername,jdbcType=VARCHAR},
+      service_channelcode = #{serviceChannelcode,jdbcType=VARCHAR},
+      seller_code = #{sellerCode,jdbcType=VARCHAR},
+      seller_sys_shopcode = #{sellerSysShopcode,jdbcType=VARCHAR},
+      invoice_type = #{invoiceType,jdbcType=VARCHAR},
+      invoice_name = #{invoiceName,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      pay_time = #{payTime,jdbcType=TIMESTAMP},
+      ship_time = #{shipTime,jdbcType=TIMESTAMP},
+      end_time = #{endTime,jdbcType=TIMESTAMP},
+      modified_time = #{modifiedTime,jdbcType=TIMESTAMP},
+      is_os = #{isOs,jdbcType=INTEGER},
+      add_time = #{addTime,jdbcType=TIMESTAMP},
+      channel_code = #{channelCode,jdbcType=VARCHAR},
+      channel_name = #{channelName,jdbcType=VARCHAR},
+      download_finish = #{downloadFinish,jdbcType=INTEGER},
+      outer_order_sn = #{outerOrderSn,jdbcType=VARCHAR},
+      order_error_msg = #{orderErrorMsg,jdbcType=VARCHAR},
+      is_occupy = #{isOccupy,jdbcType=TINYINT},
+      order_type = #{orderType,jdbcType=VARCHAR},
+      order_time = #{orderTime,jdbcType=TIMESTAMP},
+      order_pre_ship_time = #{orderPreShipTime,jdbcType=TIMESTAMP},
+      is_payed = #{isPayed,jdbcType=VARCHAR},
+      finish_time = #{finishTime,jdbcType=TIMESTAMP},
+      express_fee = #{expressFee,jdbcType=DECIMAL},
+      express_cost = #{expressCost,jdbcType=DECIMAL},
+      buyer_old_code = #{buyerOldCode,jdbcType=VARCHAR},
+      buyer_nick = #{buyerNick,jdbcType=VARCHAR},
+      express_fee_type = #{expressFeeType,jdbcType=VARCHAR}
+    where code = #{code,jdbcType=VARCHAR}
+  </update>
+</mapper>

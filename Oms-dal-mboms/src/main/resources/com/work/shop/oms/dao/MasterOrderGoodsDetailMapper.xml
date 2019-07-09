@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.MasterOrderGoodsDetailMapper">
+  <resultMap id="MasterOrderGoodsDetailMap" type="com.work.shop.oms.bean.MasterOrderGoodsDetail">
+  	<id column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
+    <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
+    <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
+    <result column="extension_id" jdbcType="VARCHAR" property="extensionId" />
+    <result column="goods_number" jdbcType="SMALLINT" property="goodsNumber" />
+    <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+    <result column="transaction_price" jdbcType="DECIMAL" property="transactionPrice" />
+    <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />
+    <result column="discount" jdbcType="REAL" property="discount" />
+    <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
+    <result column="integral" jdbcType="INTEGER" property="integral" />
+    <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+    <result column="goods_sn" jdbcType="VARCHAR" property="goodsSn" />
+    <result column="goods_size_name" jdbcType="VARCHAR" property="goodsSizeName" />
+    <result column="goods_color_name" jdbcType="VARCHAR" property="goodsColorName" />
+    <result column="goods_thumb" jdbcType="VARCHAR" property="goodsThumb" />
+    <result column="send_number" jdbcType="SMALLINT" property="sendNumber" />
+    <result column="parent_sn" jdbcType="VARCHAR" property="parentSn" />
+    <result column="merge_from" jdbcType="VARCHAR" property="mergeFrom" />
+    <result column="exchange_from" jdbcType="VARCHAR" property="exchangeFrom" />
+    <result column="promotion_desc" jdbcType="VARCHAR" property="promotionDesc" />
+    <result column="rank_points" jdbcType="DECIMAL" property="rankPoints" />
+    <result column="pay_points" jdbcType="DECIMAL" property="payPoints" />
+    <result column="use_card" jdbcType="VARCHAR" property="useCard" />
+    <result column="share_bonus" jdbcType="DECIMAL" property="shareBonus" />
+    <result column="share_surplus" jdbcType="DECIMAL" property="shareSurplus" />
+    <result column="made_flag" jdbcType="TINYINT" property="madeFlag" />
+    <result column="charge_back_count" jdbcType="INTEGER" property="chargeBackCount" />
+    <result column="containerId" jdbcType="VARCHAR" property="containerid" />
+    <result column="sellerUser" jdbcType="VARCHAR" property="selleruser" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+    <result column="promotion_id" jdbcType="VARCHAR" property="promotionId" />
+    <result column="c2m_item" jdbcType="VARCHAR" property="c2mItem" />
+    <result column="protect_falg" jdbcType="INTEGER" property="protectFalg" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="sales_mode" jdbcType="INTEGER" property="salesMode" />
+    <!-- 发货仓字段 -->
+    <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
+    <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
+    <result column="delivery_type" jdbcType="INTEGER" property="deliveryType" />
+    <result column="bak1" jdbcType="VARCHAR" property="bak1" />
+    <result column="region_id" jdbcType="SMALLINT" property="regionId" />
+    <result column="depot_time" jdbcType="TIMESTAMP" property="depotTime" />
+    <result column="pdwarh_code" jdbcType="VARCHAR" property="pdwarhCode" />
+    <result column="pdwarh_name" jdbcType="VARCHAR" property="pdwarhName" />
+    <result column="to_user" jdbcType="VARCHAR" property="toUser" />
+    <result column="to_user_phone" jdbcType="VARCHAR" property="toUserPhone" />
+    <result column="provincecity" jdbcType="VARCHAR" property="provincecity" />
+    <result column="over_trans_cycle" jdbcType="VARCHAR" property="overTransCycle" />
+    <!-- 发货单字段 -->
+    <result column="invoice_no" jdbcType="VARCHAR" property="invoiceNo" />
+    <result column="shipping_status" jdbcType="TINYINT" property="shippingStatus" />
+    <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime" />
+    <result column="pickup_date" jdbcType="TIMESTAMP" property="pickupDate" />
+    <result column="lack_num" jdbcType="SMALLINT" property="lackNum" />
+    <!-- 交货单字段 -->
+    <result column="order_status" jdbcType="TINYINT" property="orderStatus" />
+    <result column="sap" jdbcType="VARCHAR" property="sap" />
+    <result column="bv_value" jdbcType="VARCHAR" property="bvValue" />
+    <result column="expected_ship_date" jdbcType="VARCHAR" property="expectedShipDate" />
+    
+    <result column="tax" jdbcType="DECIMAL" property="tax" />
+    <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
+  </resultMap>
+  
+  <select id="getMergedMasOrdGoodsDetail" parameterType="java.util.HashMap" resultMap="MasterOrderGoodsDetailMap">
+	  	SELECT 
+		    t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code, 
+		    t.extension_id, SUM(t.goods_number) AS goods_number, t.goods_price, t.transaction_price, t.settlement_price, SUM(t.discount) AS discount, 
+		    t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb, 
+		    SUM(t.send_number) AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points, 
+		    t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId, 
+		    t.sellerUser, t.is_del, t.promotion_id, t.c2m_item, t.protect_falg, t.supplier_code,t.sales_mode,
+		    b.shipping_id,b.shipping_name,b.delivery_type,b.bak1,b.region_id,b.depot_time,b.pdwarh_code,b.pdwarh_name,
+		    b.to_user,b.to_user_phone,b.provincecity,b.over_trans_cycle,
+		    b.invoice_no,b.shipping_status,b.delivery_time,b.pickup_date,
+		    SUM(IFNULL(c.lack_num,0)) AS lack_num, t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value
+		FROM 
+		<if test="isHistory == 0">
+			master_order_goods  
+		</if>
+		<if test="isHistory == 1">
+			master_order_goods_history 
+		</if>
+		t
+		LEFT JOIN 
+		<if test="isHistory == 0">
+			order_depot_ship  
+		</if>
+		<if test="isHistory == 1">
+			order_depot_ship_history 
+		</if>
+		b 
+		ON b.order_sn = t.order_sn  AND  b.depot_code = t.depot_code  AND b.is_del = '0'
+		LEFT JOIN order_question_lack_sku_new c ON c.order_sn = t.order_sn  AND c.custom_code = t.custom_code  AND c.depot_code = t.depot_code AND c.extension_code = t.extension_code
+    				AND c.extension_id = t.extension_id 
+    	where
+    		t.is_del = 0
+    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    			and t.master_order_sn = #{masterOrderSn}
+    		</if>
+    		<if test="orderSn!=null and orderSn!=''">
+    			and t.order_sn = #{orderSn}
+    		</if>
+    		<if test="supplierCode!=null and supplierCode!=''">
+    			and t.supplier_code = #{supplierCode}
+    		</if>
+    	GROUP BY t.order_sn,t.extension_code,t.custom_code,t.transaction_price,t.settlement_price,t.depot_code,t.use_card
+    	/* maxscale route to master */;
+    </select>
+  
+  <!-- 查询未删除、未取消的商品 -->
+  <select id="getMasterOrderGoodsDetail" parameterType="java.util.HashMap" resultMap="MasterOrderGoodsDetailMap">
+	  	SELECT 
+		    t.id as goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code, 
+		    t.extension_id, t.goods_number, t.goods_price, t.transaction_price, t.settlement_price, t.discount, 
+		    t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb, 
+		    t.send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points, 
+		    t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId, 
+		    t.sellerUser, t.is_del, t.promotion_id, t.c2m_item, t.protect_falg, t.supplier_code,t.sales_mode,
+		    b.shipping_id,b.shipping_name,b.delivery_type,b.bak1,b.region_id,b.depot_time,b.pdwarh_code,b.pdwarh_name,
+		    b.to_user,b.to_user_phone,b.provincecity,b.over_trans_cycle,
+		    b.invoice_no,b.shipping_status,b.delivery_time,b.pickup_date,
+			IFNULL(c.lack_num,0) lack_num, d.order_status,t.goods_sn
+		FROM master_order_goods t
+		LEFT JOIN order_depot_ship b ON b.order_sn = t.order_sn  AND  b.depot_code = t.depot_code  AND b.is_del = '0'
+		LEFT JOIN order_question_lack_sku_new c ON c.order_sn = t.order_sn  AND c.custom_code = t.custom_code  AND c.depot_code = t.depot_code AND c.extension_code = t.extension_code
+    				AND c.extension_id = t.extension_id 
+    	LEFT JOIN order_distribute d ON d.order_sn = t.order_sn
+    	where
+    		t.is_del = 0
+    		<if test="flag!=null and flag!=''">
+    			AND d.order_status!='2'
+    		</if>
+    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    			and t.master_order_sn = #{masterOrderSn}
+    		</if>
+    		<if test="orderSn!=null and orderSn!=''">
+    			and t.order_sn = #{orderSn}
+    		</if>
+    		<if test="supplierCode!=null and supplierCode!=''">
+    			and t.supplier_code = #{supplierCode}
+    		</if>
+    	/* maxscale route to master */;
+    </select>
+  
+    <resultMap id="MasterOrderGoodsBaseResultMap" type="com.work.shop.oms.bean.MasterOrderGoods">
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
+    <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
+    <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
+    <result column="extension_id" jdbcType="VARCHAR" property="extensionId" />
+    <result column="goods_number" jdbcType="SMALLINT" property="goodsNumber" />
+    <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+    <result column="transaction_price" jdbcType="DECIMAL" property="transactionPrice" />
+    <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />
+    <result column="discount" jdbcType="REAL" property="discount" />
+    <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
+    <result column="integral" jdbcType="INTEGER" property="integral" />
+    <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+    <result column="goods_size_name" jdbcType="VARCHAR" property="goodsSizeName" />
+    <result column="goods_color_name" jdbcType="VARCHAR" property="goodsColorName" />
+    <result column="goods_thumb" jdbcType="VARCHAR" property="goodsThumb" />
+    <result column="send_number" jdbcType="SMALLINT" property="sendNumber" />
+    <result column="parent_sn" jdbcType="VARCHAR" property="parentSn" />
+    <result column="merge_from" jdbcType="VARCHAR" property="mergeFrom" />
+    <result column="exchange_from" jdbcType="VARCHAR" property="exchangeFrom" />
+    <result column="promotion_desc" jdbcType="VARCHAR" property="promotionDesc" />
+    <result column="rank_points" jdbcType="DECIMAL" property="rankPoints" />
+    <result column="pay_points" jdbcType="DECIMAL" property="payPoints" />
+    <result column="use_card" jdbcType="VARCHAR" property="useCard" />
+    <result column="share_bonus" jdbcType="DECIMAL" property="shareBonus" />
+    <result column="share_surplus" jdbcType="DECIMAL" property="shareSurplus" />
+    <result column="made_flag" jdbcType="TINYINT" property="madeFlag" />
+    <result column="charge_back_count" jdbcType="INTEGER" property="chargeBackCount" />
+    <result column="containerId" jdbcType="VARCHAR" property="containerid" />
+    <result column="sellerUser" jdbcType="VARCHAR" property="selleruser" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+    <result column="promotion_id" jdbcType="VARCHAR" property="promotionId" />
+    <result column="c2m_item" jdbcType="VARCHAR" property="c2mItem" />
+    <result column="protect_falg" jdbcType="INTEGER" property="protectFalg" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="market_price" jdbcType="DECIMAL" property="marketPrice" />
+    <result column="goods_sn" jdbcType="VARCHAR" property="goodsSn" />
+    <result column="sales_mode" jdbcType="TINYINT" property="salesMode" />
+    <result column="channel_send_number" jdbcType="SMALLINT" property="channelSendNumber" />
+    <result column="sap" jdbcType="VARCHAR" property="sap" />
+    <result column="bv_value" jdbcType="VARCHAR" property="bvValue" />
+    <result column="expected_ship_date" jdbcType="VARCHAR" property="expectedShipDate" />
+    <result column="tax" jdbcType="DECIMAL" property="tax" />
+    <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
+    <result column="base_bv_value" jdbcType="INTEGER" property="baseBvValue" />
+  </resultMap>
+  <select id="getXOMSMasterOrderGoods" parameterType="String" resultMap="MasterOrderGoodsBaseResultMap">
+	SELECT
+		id,
+		depot_code,
+		master_order_sn,
+		order_sn,
+		goods_name,
+		custom_code,
+		extension_code,
+		extension_id,
+		COUNT(goods_number) goods_number,
+		goods_price,
+		transaction_price,
+		settlement_price,
+		discount,
+		integral_money,
+		integral,
+		group_name,
+		goods_size_name,
+		goods_color_name,
+		goods_thumb,
+		send_number,
+		parent_sn,
+		merge_from,
+		exchange_from,
+		promotion_desc,
+		rank_points,
+		pay_points,
+		use_card,
+		share_bonus,
+		share_surplus,
+		made_flag,
+		charge_back_count,
+		containerId,
+		sellerUser,
+		is_del,
+		promotion_id,
+		c2m_item,
+		protect_falg,
+		supplier_code,
+		market_price,
+		goods_sn,
+		sales_mode,
+		channel_send_number,
+		sap,
+		bv_value,
+		expected_ship_date,
+		tax,
+		tax_rate,
+		base_bv_value
+	FROM
+		master_order_goods
+	WHERE
+		master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
+	AND is_del = 0
+	GROUP BY
+		custom_code,
+		extension_code,
+		transaction_price,
+		settlement_price,
+		discount,
+		integral_money,
+		share_bonus;
+  </select>
+  
+    <resultMap id="OrderReturnGoodsBaseResultMap" type="com.work.shop.oms.common.bean.ReturnOrderGoods">
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="relating_return_sn" jdbcType="VARCHAR" property="relatingReturnSn" />
+    <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
+    <result column="goods_sn" jdbcType="VARCHAR" property="goodsSn" />
+    <result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
+    <result column="goods_return_number" jdbcType="SMALLINT" property="goodsReturnNumber" />
+    <result column="goods_buy_number" jdbcType="SMALLINT" property="goodsBuyNumber" />
+    <result column="charge_back_count" jdbcType="INTEGER" property="chargeBackCount" />
+    <result column="have_return_count" jdbcType="INTEGER" property="haveReturnCount" />
+    <result column="market_price" jdbcType="DECIMAL" property="marketPrice" />
+    <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+    <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
+    <result column="extension_id" jdbcType="VARCHAR" property="extensionId" />
+    <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />
+    <result column="share_bonus" jdbcType="DECIMAL" property="shareBonus" />
+    <result column="share_settle" jdbcType="DECIMAL" property="shareSettle" />
+    <result column="os_depot_code" jdbcType="VARCHAR" property="osDepotCode" />
+    <result column="price_difference" jdbcType="DECIMAL" property="priceDifference" />
+    <result column="price_differ_num" jdbcType="SMALLINT" property="priceDifferNum" />
+    <result column="price_differ_reason" jdbcType="VARCHAR" property="priceDifferReason" />
+    <result column="return_reason" jdbcType="VARCHAR" property="returnReason" />
+    <result column="goods_thumb" jdbcType="VARCHAR" property="goodsThumb" />
+    <result column="goods_color_name" jdbcType="VARCHAR" property="goodsColorName" />
+    <result column="goods_size_name" jdbcType="VARCHAR" property="goodsSizeName" />
+    <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+    <result column="is_real" jdbcType="INTEGER" property="isReal" />
+    <result column="is_gift" jdbcType="SMALLINT" property="isGift" />
+    <result column="rank_points" jdbcType="DECIMAL" property="rankPoints" />
+    <result column="pay_points" jdbcType="DECIMAL" property="payPoints" />
+    <result column="seller" jdbcType="VARCHAR" property="seller" />
+    <result column="is_good_received" jdbcType="TINYINT" property="isGoodReceived" />
+    <result column="checkin_status" jdbcType="TINYINT" property="checkinStatus" />
+    <result column="quality_status" jdbcType="TINYINT" property="qualityStatus" />
+    <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
+    <result column="barcode" jdbcType="VARCHAR" property="barcode" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="prodScanNum" jdbcType="SMALLINT" property="prodscannum" />
+    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="sales_mode" jdbcType="TINYINT" property="salesMode" />
+    <result column="to_erp" jdbcType="TINYINT" property="toErp" />
+    <result column="storage_time_stamp" jdbcType="VARCHAR" property="storageTimeStamp" />
+    <result column="storage_status" jdbcType="TINYINT" property="storageStatus" />
+    <result column="storage_treate_time" jdbcType="TIMESTAMP" property="storageTreateTime" />
+    <result column="checkin_time" jdbcType="TIMESTAMP" property="checkinTime" />
+    <result column="sap" jdbcType="VARCHAR" property="sap" />
+    <result column="bv_value" jdbcType="VARCHAR" property="bvValue" />
+    <result column="discount" jdbcType="REAL" property="discount" />
+    <result column="base_bv_value" jdbcType="INTEGER" property="baseBvValue" />
+    <result column="promotion_id" jdbcType="VARCHAR" property="promotionId" />
+  </resultMap>
+  
+  <select id="getXOMSOrderReturnGoods" parameterType="String" resultMap="OrderReturnGoodsBaseResultMap">
+	<!-- SELECT
+		id,
+		relating_return_sn,
+		custom_code,
+		goods_sn,
+		goods_name,
+		COUNT(goods_return_number) goods_return_number,
+		goods_buy_number,
+		charge_back_count,
+		have_return_count,
+		market_price,
+		goods_price,
+		extension_code,
+		extension_id,
+		settlement_price,
+		share_bonus,
+		share_settle,
+		os_depot_code,
+		price_difference,
+		price_differ_num,
+		price_differ_reason,
+		return_reason,
+		goods_thumb,
+		goods_color_name,
+		goods_size_name,
+		group_name,
+		is_real,
+		is_gift,
+		rank_points,
+		pay_points,
+		seller,
+		is_good_received,
+		checkin_status,
+		quality_status,
+		integral_money,
+		barcode,
+		remark,
+		prodScanNum,
+		master_order_sn,
+		order_sn,
+		sales_mode,
+		to_erp,
+		storage_time_stamp,
+		storage_status,
+		storage_treate_time,
+		checkin_time,
+		sap,
+		bv_value,
+		discount,
+		base_bv_value
+	FROM
+		order_return_goods
+	WHERE
+		relating_return_sn = #{relatingReturnSn,jdbcType=VARCHAR}
+	GROUP BY
+		custom_code,
+		extension_code,
+		goods_price,
+		settlement_price,
+		discount,
+		integral_money,
+		share_bonus; -->
+	SELECT
+		org.id,
+		org.relating_return_sn,
+		org.custom_code,
+		org.goods_sn,
+		org.goods_name,
+		SUM(org.goods_return_number) goods_return_number,
+		org.goods_buy_number,
+		org.charge_back_count,
+		org.have_return_count,
+		org.market_price,
+		org.goods_price,
+		org.extension_code,
+		org.extension_id,
+		org.settlement_price,
+		org.share_bonus,
+		org.share_settle,
+		org.os_depot_code,
+		org.price_difference,
+		org.price_differ_num,
+		org.price_differ_reason,
+		org.return_reason,
+		org.goods_thumb,
+		org.goods_color_name,
+		org.goods_size_name,
+		org.group_name,
+		org.is_real,
+		org.is_gift,
+		org.rank_points,
+		org.pay_points,
+		org.seller,
+		org.is_good_received,
+		org.checkin_status,
+		org.quality_status,
+		org.integral_money,
+		org.barcode,
+		org.remark,
+		org.prodScanNum,
+		org.master_order_sn,
+		org.order_sn,
+		org.sales_mode,
+		org.to_erp,
+		org.storage_time_stamp,
+		org.storage_status,
+		org.storage_treate_time,
+		org.checkin_time,
+		org.sap,
+		org.bv_value,
+		org.discount,
+		mog.base_bv_value,
+		mog.promotion_id
+	FROM (
+	SELECT *
+		FROM
+			order_return_goods
+		WHERE
+			relating_return_sn = #{relatingReturnSn,jdbcType=VARCHAR}
+	) org
+	LEFT JOIN master_order_goods mog ON org.master_order_sn = mog.master_order_sn
+			AND org.extension_code = mog.extension_code
+			AND org.extension_id = mog.extension_id
+	GROUP BY
+		org.custom_code,
+		org.extension_code,
+		org.goods_price,
+		org.settlement_price,
+		org.discount,
+		org.integral_money,
+		org.share_bonus,
+		mog.bv_value,
+		mog.promotion_id;
+  </select>
+  
+  <resultMap id="OrderItemGoodsDetailMap" type="com.work.shop.oms.common.bean.OrderItemGoodsDetail">
+    <id column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
+    <result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
+    <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
+    <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
+    <result column="extension_id" jdbcType="VARCHAR" property="extensionId" />
+    <result column="goods_number" jdbcType="SMALLINT" property="goodsNumber" />
+    <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+    <result column="transaction_price" jdbcType="DECIMAL" property="transactionPrice" />
+    <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />
+    <result column="discount" jdbcType="REAL" property="discount" />
+    <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
+    <result column="integral" jdbcType="INTEGER" property="integral" />
+    <result column="group_name" jdbcType="VARCHAR" property="groupName" />
+    <result column="goods_sn" jdbcType="VARCHAR" property="goodsSn" />
+    <result column="goods_size_name" jdbcType="VARCHAR" property="goodsSizeName" />
+    <result column="goods_color_name" jdbcType="VARCHAR" property="goodsColorName" />
+    <result column="goods_thumb" jdbcType="VARCHAR" property="goodsThumb" />
+    <result column="send_number" jdbcType="SMALLINT" property="sendNumber" />
+    <result column="parent_sn" jdbcType="VARCHAR" property="parentSn" />
+    <result column="merge_from" jdbcType="VARCHAR" property="mergeFrom" />
+    <result column="exchange_from" jdbcType="VARCHAR" property="exchangeFrom" />
+    <result column="promotion_desc" jdbcType="VARCHAR" property="promotionDesc" />
+    <result column="rank_points" jdbcType="DECIMAL" property="rankPoints" />
+    <result column="pay_points" jdbcType="DECIMAL" property="payPoints" />
+    <result column="use_card" jdbcType="VARCHAR" property="useCard" />
+    <result column="share_bonus" jdbcType="DECIMAL" property="shareBonus" />
+    <result column="share_surplus" jdbcType="DECIMAL" property="shareSurplus" />
+    <result column="made_flag" jdbcType="TINYINT" property="madeFlag" />
+    <result column="charge_back_count" jdbcType="INTEGER" property="chargeBackCount" />
+    <result column="containerId" jdbcType="VARCHAR" property="containerid" />
+    <result column="sellerUser" jdbcType="VARCHAR" property="selleruser" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+    <result column="promotion_id" jdbcType="VARCHAR" property="promotionId" />
+    <result column="c2m_item" jdbcType="VARCHAR" property="c2mItem" />
+    <result column="protect_falg" jdbcType="INTEGER" property="protectFalg" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="sales_mode" jdbcType="INTEGER" property="salesMode" />
+    <!-- 发货仓字段 -->
+    <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
+    <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
+    <result column="delivery_type" jdbcType="INTEGER" property="deliveryType" />
+    <result column="bak1" jdbcType="VARCHAR" property="bak1" />
+    <result column="region_id" jdbcType="SMALLINT" property="regionId" />
+    <result column="depot_time" jdbcType="TIMESTAMP" property="depotTime" />
+    <result column="pdwarh_code" jdbcType="VARCHAR" property="pdwarhCode" />
+    <result column="pdwarh_name" jdbcType="VARCHAR" property="pdwarhName" />
+    <result column="to_user" jdbcType="VARCHAR" property="toUser" />
+    <result column="to_user_phone" jdbcType="VARCHAR" property="toUserPhone" />
+    <result column="provincecity" jdbcType="VARCHAR" property="provincecity" />
+    <result column="over_trans_cycle" jdbcType="VARCHAR" property="overTransCycle" />
+    <!-- 发货单字段 -->
+    <result column="invoice_no" jdbcType="VARCHAR" property="invoiceNo" />
+    <result column="shipping_status" jdbcType="TINYINT" property="shippingStatus" />
+    <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime" />
+    <result column="pickup_date" jdbcType="TIMESTAMP" property="pickupDate" />
+    <result column="lack_num" jdbcType="SMALLINT" property="lackNum" />
+    <!-- 交货单字段 -->
+    <result column="order_status" jdbcType="TINYINT" property="orderStatus" />
+    <result column="sap" jdbcType="VARCHAR" property="sap" />
+    <result column="bv_value" jdbcType="VARCHAR" property="bvValue" />
+    <result column="expected_ship_date" jdbcType="VARCHAR" property="expectedShipDate" />
+    
+    <result column="tax" jdbcType="DECIMAL" property="tax" />
+    <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
+    <result column="box_gauge" property="boxGauge" />
+  </resultMap>
+  
+  <select id="getOrderGoodsDetail" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
+        SELECT 
+            t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code, 
+            t.extension_id, SUM(t.goods_number) AS goods_number, t.goods_price, t.transaction_price, t.settlement_price, SUM(t.discount) AS discount, 
+            t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb, 
+            SUM(t.send_number) AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points, 
+            t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId, 
+            t.sellerUser, t.is_del, t.promotion_id, t.c2m_item, t.protect_falg, t.supplier_code,t.sales_mode,
+            b.shipping_id,b.shipping_name,b.delivery_type,b.bak1,b.region_id,b.depot_time,b.pdwarh_code,b.pdwarh_name,
+            b.to_user,b.to_user_phone,b.provincecity,b.over_trans_cycle,
+            b.invoice_no,b.shipping_status,b.delivery_time,b.pickup_date,
+            t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value, SUM(lack.lack_num) AS lack_num,
+            t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
+            t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName
+        FROM 
+            master_order_goods t
+        LEFT JOIN 
+            order_depot_ship b 
+        ON b.order_sn = t.order_sn 
+        AND b.depot_code = t.depot_code
+        AND b.is_del = 0
+        LEFT JOIN 
+            order_question_lack_sku_new lack
+        ON lack.order_sn = t.order_sn 
+        AND lack.depot_code = t.depot_code
+        AND lack.custom_code = t.custom_code
+		AND lack.extension_code = t.extension_code
+		AND lack.extension_id = t.extension_id
+        where
+            t.is_del = 0
+            and t.master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
+        GROUP BY t.order_sn,t.extension_code,t.custom_code,t.transaction_price,t.settlement_price,t.depot_code,t.use_card
+        /* maxscale route to master */;
+    </select>
+    
+    <select id="getMasterOrderGoodsByDepot" parameterType="com.work.shop.oms.bean.MasterOrderGoods" resultMap="MasterOrderGoodsBaseResultMap">
+		select
+			depot_code, master_order_sn, order_sn, goods_name, custom_code, extension_code, 
+			extension_id, sum(goods_number) as goods_number, goods_price, transaction_price, settlement_price, discount, 
+			integral_money, integral, group_name, goods_size_name, goods_color_name, goods_thumb, 
+			send_number, parent_sn, merge_from, exchange_from, promotion_desc, rank_points, pay_points, 
+			use_card, share_bonus, share_surplus, made_flag, charge_back_count, containerId, 
+			sellerUser, is_del, promotion_id, c2m_item, protect_falg, supplier_code, market_price, 
+			goods_sn, sales_mode, channel_send_number, sap, bv_value, expected_ship_date, tax, 
+			tax_rate, base_bv_value, input_tax, output_tax, cost_price, box_gauge, distribution_category,seller_custom_code, seller_goods_sn
+		from master_order_goods
+		where 
+		is_del = 0
+		and master_order_sn = #{masterOrderSn}
+		and order_sn = #{orderSn}
+		and depot_code = #{depotCode}
+		group by custom_code
+	</select>
+</mapper>

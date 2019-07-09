@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- 配置主库数据源 -->
+	<bean id="mbomsMasterDataSource" parent="ParentDataSource">
+		<property name="jdbcUrl">
+			<value>${mboms.master.jdbc.url}</value>
+		</property>
+		<property name="user">
+			<value>${mboms.master.jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${mboms.master.jdbc.password}</value>
+		</property>
+	</bean>
+	<!-- 配置从库数据源 -->
+	<bean id="mbomsSlaverDataSource" parent="ParentDataSource">
+		<property name="jdbcUrl">
+			<value>${mboms.slaver.jdbc.url}</value>
+		</property>
+		<property name="user">
+			<value>${mboms.slaver.jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${mboms.slaver.jdbc.password}</value>
+		</property>
+	</bean>
+	<!-- 配置动态数据源 -->
+	<bean id="mbomsDataSource" class="com.work.shop.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="slaver" value-ref="mbomsSlaverDataSource"/>
+				<entry key="master" value-ref="mbomsMasterDataSource"/>
+			</map>
+		</property>
+		<!-- 默认丛库 -->
+		<property name="defaultTargetDataSource" ref="mbomsSlaverDataSource"/>
+	</bean>
+
+	<bean id="mbomssqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="mbomsDataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+</beans>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="orderConfirmMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderConfirmConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderConfirmJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_confirm" />
+		<property name="messageListener" ref="orderConfirmMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-10"></property>
+	</bean>
+	<!-- 未确认 -->
+	<bean id="orderUnConfirmMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderUnConfirmConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderUnConfirmJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_unconfirm" />
+		<property name="messageListener" ref="orderUnConfirmMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-4"></property>
+	</bean>
+	
+	<bean id="orderQuestionMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderQuestionConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderQuestionJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_question" />
+		<property name="messageListener" ref="orderQuestionMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-5"></property>
+	</bean>
+
+	<bean id="orderStockMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderStockConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderStockJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_stock" />
+		<property name="messageListener" ref="orderStockMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-10"></property>
+	</bean>
+	
+	<bean id="orderNormalMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderNormalConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderNormalJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_normal" />
+		<property name="messageListener" ref="orderNormalMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-5"></property>
+	</bean>
+
+	<bean id="noticeShipMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.NoticeShipConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="noticeShipJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="notice_ship" />
+		<property name="messageListener" ref="noticeShipMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="1-3"></property>
+	</bean>
+	
+	<bean id="orderSwdiMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderSwdiConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderSwdiJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="distribute_swdi" />
+		<property name="messageListener" ref="orderSwdiMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-5"></property>
+	</bean>
+
+	<bean id="orderStockDistMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderStockDistConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderStockDistJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_stock_dist" />
+		<property name="messageListener" ref="orderStockDistMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-5"></property>
+	</bean>
+	
+	<!-- 取消 -->
+	<bean id="orderCancelMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderCancelConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderCancelJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_cancel" />
+		<property name="messageListener" ref="orderCancelMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-4"></property>
+	</bean>
+
+	<bean id="orderStockRealeseMessageListener"
+		class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderStockRealeseConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderStockRealeseJmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_stock_realese" />
+		<property name="messageListener" ref="orderStockRealeseMessageListener" />
+		<!-- 2到10个消费者 -->
+		<property name="concurrency" value="2-3"></property>
+	</bean>
+	
+	<!-- 自提码 -->
+	<bean id="sendGotCodeMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.work.shop.oms.jms.listener.SendGotCodeConsumer" />
+        </constructor-arg>
+    </bean>
+    <!-- Spring jmsContainer -->
+    <bean id="sendGotCodeJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="send_got_code" />
+        <property name="messageListener" ref="sendGotCodeMessageListener" />
+        <!-- 2到3个消费者 -->
+        <property name="concurrency" value="2-3"></property>
+    </bean>
+    
+    <!-- 配送单发货确认 -->
+	<bean id="distDeliveryConfirmMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.work.shop.oms.jms.listener.DistDeliveryConfirmConsumer" />
+        </constructor-arg>
+    </bean>
+    <!-- Spring jmsContainer -->
+    <bean id="distDeliveryConfirmJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="cloud-center-distDeliveryConfirm" />
+        <property name="messageListener" ref="distDeliveryConfirmMessageListener" />
+        <!-- 2个消费者 -->
+        <property name="concurrency" value="2"></property>
+    </bean>
+    
+    <!-- 配送单收货确认 -->
+    <bean id="distReceiptConfirmMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.work.shop.oms.jms.listener.DistReceiptConfirmConsumer" />
+        </constructor-arg>
+    </bean>
+    <!-- Spring jmsContainer -->
+    <bean id="distReceiptConfirmJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="cloud-center-distReceiptConfirm" />
+        <property name="messageListener" ref="distReceiptConfirmMessageListener" />
+        <!-- 2个消费者 -->
+        <property name="concurrency" value="2"></property>
+    </bean>
+</beans>

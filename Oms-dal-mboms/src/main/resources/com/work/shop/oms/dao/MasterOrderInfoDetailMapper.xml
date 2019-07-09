@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.MasterOrderInfoDetailMapper">
+  <resultMap id="MasterOrderDetailMap" type="com.work.shop.oms.common.bean.MasterOrderDetail">
+  <!-- 主单信息表相关字段 -->
+  	<id column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="trans_type" jdbcType="TINYINT" property="transType" />
+    <result column="order_type" jdbcType="INTEGER" property="orderType" />
+    <result column="relating_original_sn" jdbcType="VARCHAR" property="relatingOriginalSn" />
+    <result column="relating_return_sn" jdbcType="VARCHAR" property="relatingReturnSn" />
+    <result column="relating_remoney_sn" jdbcType="VARCHAR" property="relatingRemoneySn" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="order_status" jdbcType="TINYINT" property="orderStatus" />
+    <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+    <result column="ship_status" jdbcType="TINYINT" property="shipStatus" />
+    <result column="lock_status" jdbcType="INTEGER" property="lockStatus" />
+    <result column="question_status" jdbcType="INTEGER" property="questionStatus" />
+    <result column="notice_status" jdbcType="INTEGER" property="noticeStatus" />
+    <result column="split_status" jdbcType="TINYINT" property="splitStatus" />
+    <result column="split_time" jdbcType="TIMESTAMP" property="splitTime" />
+    <result column="order_from" jdbcType="VARCHAR" property="orderFrom" />
+    <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+    <result column="confirm_time" jdbcType="TIMESTAMP" property="confirmTime" />
+    <result column="finish_time" jdbcType="TIMESTAMP" property="finishTime" />
+    <result column="clear_time" jdbcType="VARCHAR" property="clearTime" />
+    <result column="question_time" jdbcType="TIMESTAMP" property="questionTime" />
+    <result column="lock_time" jdbcType="TIMESTAMP" property="lockTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="notice_time" jdbcType="TIMESTAMP" property="noticeTime" />
+    <result column="order_out_sn" jdbcType="VARCHAR" property="orderOutSn" />
+    <result column="beneficiary_id" jdbcType="INTEGER" property="beneficiaryId" />
+    <result column="from_ad" jdbcType="SMALLINT" property="fromAd" />
+    <result column="pr_ids" jdbcType="VARCHAR" property="prIds" />
+    <result column="pr_name" jdbcType="VARCHAR" property="prName" />
+    <result column="referer" jdbcType="VARCHAR" property="referer" />
+    <result column="how_oos" jdbcType="VARCHAR" property="howOos" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="outlet_type" jdbcType="INTEGER" property="outletType" />
+    <result column="source_code" jdbcType="VARCHAR" property="sourceCode" />
+    <result column="shipping_total_fee" jdbcType="DECIMAL" property="shippingTotalFee" />
+    <result column="insure_total_fee" jdbcType="DECIMAL" property="insureTotalFee" />
+    <result column="pay_total_fee" jdbcType="DECIMAL" property="payTotalFee" />
+    <result column="total_payable" jdbcType="DECIMAL" property="totalPayable" />
+    <result column="goods_amount" jdbcType="DECIMAL" property="goodsAmount" />
+    <result column="total_fee" jdbcType="DECIMAL" property="totalFee" />
+    <result column="money_paid" jdbcType="DECIMAL" property="moneyPaid" />
+    <result column="surplus" jdbcType="DECIMAL" property="surplus" />
+    <result column="bonus" jdbcType="DECIMAL" property="bonus" />
+    <result column="bonus_id" jdbcType="VARCHAR" property="bonusId" />
+    <result column="goods_count" jdbcType="INTEGER" property="goodsCount" />
+    <result column="discount" jdbcType="DECIMAL" property="discount" />
+    <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
+    <result column="integral" jdbcType="INTEGER" property="integral" />
+    <result column="postscript" jdbcType="VARCHAR" property="postscript" />
+    <result column="to_buyer" jdbcType="VARCHAR" property="toBuyer" />
+    <result column="cancel_code" jdbcType="VARCHAR" property="cancelCode" />
+    <result column="cancel_reason" jdbcType="VARCHAR" property="cancelReason" />
+    <result column="order_category" jdbcType="INTEGER" property="orderCategory" />
+    <result column="invoices_organization" jdbcType="VARCHAR" property="invoicesOrganization" />
+    <result column="isNow" jdbcType="INTEGER" property="isnow" />
+    <result column="source" jdbcType="INTEGER" property="source" />
+    <!-- 扩展表相关字段 -->
+    <result column="agdist" jdbcType="TINYINT" property="agdist" />
+    <result column="is_group" jdbcType="TINYINT" property="isGroup" />
+    <result column="is_advance" jdbcType="TINYINT" property="isAdvance" />
+    <result column="is_shop" jdbcType="INTEGER" property="isShop" />
+    <result column="shop_id" jdbcType="VARCHAR" property="shopId" />
+    <result column="shop_name" jdbcType="VARCHAR" property="shopName" />
+    <result column="shop_time" jdbcType="TIMESTAMP" property="shopTime" />
+    <result column="is_cac" jdbcType="INTEGER" property="isCac" />
+    <result column="rule_promotion" jdbcType="VARCHAR" property="rulePromotion" />
+    <result column="revive_stt" jdbcType="TINYINT" property="reviveStt" />
+    <result column="enc_mobile" jdbcType="INTEGER" property="encMobile" />
+    <result column="shop_code" jdbcType="VARCHAR" property="shopCode" />
+    <result column="assistant_id" jdbcType="VARCHAR" property="assistantId" />
+    <result column="order_finished" jdbcType="INTEGER" property="orderFinished" />
+    <result column="settle_queue" jdbcType="INTEGER" property="settleQueue" />
+    <result column="bill_no" jdbcType="VARCHAR" property="billNo" />
+    <result column="is_review" jdbcType="INTEGER" property="isReview" />
+    <result column="use_level" jdbcType="INTEGER" property="useLevel" />
+    <result column="channel_user_level" jdbcType="INTEGER" property="channelUserLevel" />
+    <result column="is_order_print" jdbcType="INTEGER" property="isOrderPrint" />
+    <result column="inv_payee" jdbcType="VARCHAR" property="invPayee" />
+    <result column="inv_content" jdbcType="VARCHAR" property="invContent" />
+    <result column="inv_type" jdbcType="VARCHAR" property="invType" />
+    <result column="tax" jdbcType="DECIMAL" property="tax" />
+    <result column="invoice_status" jdbcType="INTEGER" property="invoiceStatus" />
+    <result column="delivery_station_id" jdbcType="INTEGER" property="deliveryStationId" />
+    <!-- 主单地址表相关字段 -->
+    <result column="consignee" jdbcType="VARCHAR" property="consignee" />
+    <result column="country" jdbcType="VARCHAR" property="country" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="district" jdbcType="VARCHAR" property="district" />
+    <result column="street" jdbcType="VARCHAR" property="street" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="zipcode" jdbcType="VARCHAR" property="zipcode" />
+    <result column="tel" jdbcType="VARCHAR" property="tel" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="best_time" jdbcType="VARCHAR" property="bestTime" />
+    <result column="sign_building" jdbcType="VARCHAR" property="signBuilding" />
+    <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
+    <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
+    <result column="shipping_days" jdbcType="TINYINT" property="shippingDays" />
+    <result column="charge_type" jdbcType="INTEGER" property="chargeType" />
+    <result column="cac_code" jdbcType="VARCHAR" property="cacCode" />
+    <result column="creat_time" jdbcType="TIMESTAMP" property="creatTime" />
+    <!-- 与主单表冲突字段<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" /> -->
+    <result column="region_id" jdbcType="SMALLINT" property="regionId" />
+    <result column="way_payment_freight" jdbcType="VARCHAR" property="wayPaymentFreight" />
+    <result column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <!-- 自定义字段 -->
+    <result column="channel_name" jdbcType="VARCHAR" property="channelName" />
+    <result column="full_address" jdbcType="VARCHAR" property="fullAddress" />
+    <result column="site_code" jdbcType="VARCHAR" property="siteCode" />
+    <result column="points" jdbcType="DECIMAL" property="points" />
+    <result column="bv_value" jdbcType="INTEGER" property="bvValue" />
+    <result column="expected_ship_date" jdbcType="VARCHAR" property="expectedShipDate" />
+    <result column="user_card_no" jdbcType="VARCHAR" property="userCardNo" />
+    <result column="user_card_name" jdbcType="VARCHAR" property="userCardName" />
+    <result column="wareh_name" jdbcType="VARCHAR" property="warehName" />
+    <result column="order_index" jdbcType="VARCHAR" property="orderIndex" />
+    <result column="inv_taxer" jdbcType="VARCHAR" property="invTaxer" />
+	<result column="user_bank_no" jdbcType="VARCHAR" property="userBankNo" />
+	<result column="user_pay_apply"  property="userPayApply" />
+  </resultMap>
+  
+  <select id="selectMasOrdDetByMasterOrderSn" parameterType="java.util.HashMap" resultMap="MasterOrderDetailMap">
+    	SELECT 
+		  t.master_order_sn,
+		  t.trans_type,
+		  t.order_type,
+		  t.relating_original_sn,
+		  t.relating_return_sn,
+		  t.relating_remoney_sn,
+		  t.user_id,
+		  t.user_name,
+		  t.order_status,
+		  t.pay_status,
+		  t.ship_status,
+		  t.lock_status,
+		  t.question_status,
+		  t.notice_status,
+		  t.split_status,
+		  t.split_time,
+		  t.order_from,
+		  t.add_time,
+		  t.confirm_time,
+		  t.finish_time,
+		  DATE_FORMAT(t.clear_time,'%Y-%m-%d %H:%i:%S') AS clear_time,
+		  t.question_time,
+		  t.lock_time,
+		  t.update_time,
+		  t.notice_time,
+		  t.order_out_sn,
+		  t.beneficiary_id,
+		  t.from_ad,
+		  t.pr_ids,
+		  t.pr_name,
+		  t.referer,
+		  t.how_oos,
+		  t.parent_id,
+		  t.outlet_type,
+		  t.source_code,
+		  t.shipping_total_fee,
+		  t.insure_total_fee,
+		  t.pay_total_fee,
+		  t.total_payable,
+		  t.goods_amount,
+		  t.total_fee,
+		  t.money_paid,
+		  t.surplus,
+		  t.bonus,
+		  t.bonus_id,
+		  t.goods_count,
+		  t.discount,
+		  t.integral_money,
+		  t.integral,
+		  t.postscript,
+		  t.to_buyer,
+		  t.cancel_code,
+		  t.cancel_reason,
+		  t.order_category,
+		  t.invoices_organization,
+		  t.isNow,
+		  t.source,
+		  a.agdist,
+		  a.is_group,
+		  a.is_advance,
+		  a.is_shop,
+		  a.shop_id,
+		  a.shop_name storeName,
+		  a.shop_time,
+		  a.is_cac,
+		  a.rule_promotion,
+		  a.revive_stt,
+		  a.enc_mobile,
+		  a.shop_code storeCode,
+		  a.assistant_id,
+		  a.order_finished,
+		  a.settle_queue,
+		  a.bill_no,
+		  a.is_review,
+		  a.use_level,
+		  a.channel_user_level,
+		  a.is_order_print,
+		  a.inv_payee,
+		  a.inv_content,
+		  a.inv_type,
+		  a.tax,
+		  a.invoice_status,
+		  a.delivery_station_id,
+		  a.order_index,
+		  a.inv_taxer,
+		  b.consignee,
+		  b.country,
+		  b.province,
+		  b.city,
+		  b.district,
+		  b.street,
+		  b.address,
+		  b.zipcode,
+		  b.tel,
+		  b.mobile,
+		  b.email,
+		  b.best_time,
+		  b.sign_building,
+		  b.shipping_id,
+		  b.shipping_name,
+		  b.shipping_days,
+		  b.charge_type,
+		  b.cac_code,
+		  b.creat_time,
+		  b.update_time,
+		  b.region_id,
+		  b.way_payment_freight,
+		  b.depot_code,
+		  t.shop_name channel_name,
+		  t.channel_code site_code,
+		  CONCAT(
+		    IFNULL(d.region_name, ''),
+		    IFNULL(e.region_name, ''),
+		    IFNULL(f.region_name, ''),
+		    IFNULL(h.region_name, ''),
+		    IFNULL(g.region_name, ''),
+		    IFNULL(b.address, '')
+		  ) AS full_address,
+		  t.bv_value,
+		  t.points,
+		  t.expected_ship_date,
+		  t.tax,
+		  b.user_card_no,
+		  b.user_card_name,
+		  cinfo.channel_name wareh_name,
+		  d.region_name countryName,
+		  e.region_name provinceName,
+		  f.region_name cityName,
+		  h.region_name districtName,
+		  g.region_name streetName,
+          t.need_audit needAudit,
+          a.inv_bank invBank,
+          a.inv_bank_no invBankNo,
+          a.inv_company_name invCompanyName,
+          a.inv_company_address invCompanyAddress,
+          a.rider_time riderTime,
+          a.customer_contract_num customerContractNum,
+          a.remark remark,
+	  	  a.user_bank_no userBankNo,
+	  	  a.user_pay_apply userPayApply,
+          a.order_type createOrderType,
+          b.inv_consignee invConsignee,
+          b.inv_mobile invMobile,
+          b.inv_address invAddress
+		FROM
+		<if test="isHistory == 0">
+		  master_order_info t 
+		  LEFT JOIN master_order_address_info b ON b.master_order_sn = t.master_order_sn 
+		</if>
+		<if test="isHistory == 1">
+		  master_order_info_history t 
+		  LEFT JOIN master_order_address_info_history b ON b.master_order_sn = t.master_order_sn 
+		</if>
+		  LEFT JOIN master_order_info_extend a  ON a.master_order_sn = t.master_order_sn 
+		  LEFT JOIN system_region_area d  ON d.region_id = b.country 
+		  LEFT JOIN system_region_area e  ON e.region_id = b.province 
+		  LEFT JOIN system_region_area f  ON f.region_id = b.city 
+		  LEFT JOIN system_region_area g  ON g.region_id = b.street 
+		  LEFT JOIN system_region_area h  ON h.region_id = b.district
+		  LEFT JOIN channel_info cinfo ON cinfo.channel_code = t.referer
+    	<where>
+    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    			and t.master_order_sn = #{masterOrderSn}
+    		</if>
+    	</where> 
+    </select>
+  
+  	<select id="getMasterOrderPayInfo" parameterType="java.util.HashMap" resultMap="MasterOrderDetailMap">
+    	SELECT 
+		  t.master_order_sn,
+		  t.goods_amount,
+		  a.tax,
+		  t.discount,
+		  t.shipping_total_fee,
+		  t.money_paid,
+		  t.insure_total_fee,
+		  t.surplus,
+		  t.pay_total_fee,
+		  t.integral_money,
+		  t.total_fee,
+		  t.total_payable,
+		  SUM(b.discount) AS total_price_discount 
+		FROM
+		  master_order_info t 
+		  LEFT JOIN master_order_info_extend a 
+		    ON a.master_order_sn = t.master_order_sn 
+		  LEFT JOIN master_order_goods b 
+		    ON b.master_order_sn = t.master_order_sn AND b.is_del = '0' 
+    	<where>
+    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    			and t.master_order_sn = #{masterOrderSn}
+    		</if>
+    	</where>
+    	/* maxscale route to master */; 
+    </select>
+  
+</mapper>
