@@ -1,6 +1,7 @@
 package com.work.shop.oms.controller.order;
 
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.OrderReturnBean;
 import com.work.shop.oms.order.request.ReturnManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.ReturnManagementResponse;
@@ -311,5 +312,37 @@ public class ReturnManagementController {
         }
 
         return returnBean;
+    }
+
+    /**
+     * 退单对账单已生成
+     * @param request
+     * @return ReturnManagementResponse
+     */
+    @PostMapping("/returnOrderBillCompleted")
+    public ReturnManagementResponse returnOrderBillCompleted(@RequestBody ReturnManagementRequest request) {
+        ReturnManagementResponse returnBean = new ReturnManagementResponse();
+        returnBean.setSuccess(false);
+        try {
+            returnBean = returnManagementService.returnOrderBillCompleted(request);
+        } catch (Exception e) {
+            logger.error("退单对账单已生成处理异常:" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("退单对账单已生成处理异常");
+        }
+
+        return returnBean;
+    }
+
+    /**
+     * 订单退款操作
+     * @param orderReturnBean
+     */
+    @PostMapping("/doOrderReturnMoneyByCommon")
+    public void doOrderReturnMoneyByCommon(@RequestBody OrderReturnBean orderReturnBean) {
+        try {
+            returnManagementService.doOrderReturnMoneyByCommon(orderReturnBean);
+        } catch (Exception e) {
+            logger.error("订单退款操作异常:" + JSONObject.toJSONString(orderReturnBean), e);
+        }
     }
 }

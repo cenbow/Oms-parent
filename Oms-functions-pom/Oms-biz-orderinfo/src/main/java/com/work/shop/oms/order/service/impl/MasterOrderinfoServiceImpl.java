@@ -540,6 +540,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setIsnow(0);
 		// 是否需要审核
         orderInfo.setNeedAudit(masterOrder.getNeedAudit());
+        //是否需要合同签章
+        orderInfo.setNeedSign(masterOrder.getNeedSign());
 	}
 
 	/**
@@ -612,6 +614,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setTax(BigDecimal.valueOf(masterOrder.getTax()));
 		// 是否需要审核 0不需要、1需要
 		orderInfo.setNeedAudit(masterOrder.getNeedAudit());
+		// 是否需要合同签章
+		orderInfo.setNeedSign(masterOrder.getNeedSign());
 		masterOrderInfoMapper.insertSelective(orderInfo);
 		byte payStatus = orderInfo.getPayStatus() == 2 ? orderInfo.getPayStatus() : 0;
 		// 写入订单日志
@@ -703,6 +707,37 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			validateOrder.setIsXianxia(true);
 		}
 		return validateOrder;
+	}
+
+	/**
+	 * 定时任务处理到期账期支付扣款
+	 * @param orderAccountPeriod
+	 * @return
+	 */
+	@Override
+	public ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod) {
+		ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
+		returnInfo.setIsOk(Constant.OS_NO);
+
+		try {
+			String masterOrderSn = orderAccountPeriod.getMasterOrderSn();
+			List<MasterOrderPay> masterOrderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
+			if (masterOrderPayList == null || masterOrderPayList.size() == 0) {
+				returnInfo.setMessage("订单:" + masterOrderSn + "支付单信息不存在");
+				return returnInfo;
+			}
+
+			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
+			orderAccountPeriod.setOrderMoney(masterOrderPay.getPayTotalfee());
+			orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
+			orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
+			orderAccountPeriod.setType(1);
+			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
+		} catch (Exception e) {
+			logger.error("处理订单账期支付推送问题");
+		}
+
+		return returnInfo;
 	}
 
     /**

@@ -270,9 +270,15 @@
 	  	  a.user_bank_no userBankNo,
 	  	  a.user_pay_apply userPayApply,
           a.order_type createOrderType,
+          a.company_code companyId,
+          a.inv_phone invPhone,
+          a.push_supply_chain pushSupplyChain,
           b.inv_consignee invConsignee,
           b.inv_mobile invMobile,
-          b.inv_address invAddress
+          b.inv_address invAddress,
+          t.need_sign needSign,
+          t.sign_status signStatus,
+          t.sign_contract_num signContractNum
 		FROM
 		<if test="isHistory == 0">
 		  master_order_info t 

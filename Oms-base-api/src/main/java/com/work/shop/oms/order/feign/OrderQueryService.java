@@ -1,5 +1,6 @@
 package com.work.shop.oms.order.feign;
 
+import com.work.shop.oms.api.bean.OrderContractRequest;
 import com.work.shop.oms.bean.OrderItem;
 import com.work.shop.oms.bean.OrderRiderDistributeLog;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
@@ -161,4 +162,12 @@ public interface OrderQueryService {
      */
     @PostMapping("/order/getOrderDistributeOut")
     void getOrderDistributeOut(Map<String, Object> param);
+
+    /**
+     * 订单合同列表查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    @PostMapping("/order/orderContractQuery")
+    OrderQueryResponse orderContractQuery(OrderContractRequest request);
 }

@@ -44,4 +44,14 @@ public class ConstantTask {
 	 * 快递100物流信息任务
 	 */
 	public static String TASK_JOB_TYPE_ORDER_EXPRESS_TASK = "orderExpressTask";
+
+	/**
+	 * 公司账期支付
+	 */
+	public static String TASK_JOB_TYPE_COMPANY_PAY_TASK = "companyPayPeriodTask";
+
+	/**
+	 * 订单发货单自动签收
+	 */
+	public static String TASK_JOB_TYPE_ORDER_SHIP_RECEIVE_TASK = "orderShipReceiveTask";
 }

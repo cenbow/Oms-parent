@@ -41,10 +41,7 @@ public class OrderStockRealeseConsumer extends Consumer {
 			if (Constant.order_type_distribute.equals(orderStatus.getType())) {
 				//orderStockService.realeseByOrderSn(orderStatus.getOrderSn(), orderStatus.getMasterOrderSn());
 			} else {
-				// 不创建退单，订单未支付取消，释放冻结库存
-				if (orderStatus.isStockRealese()) {
-					channelStockService.cancelRealese(orderStatus.getMasterOrderSn());
-				}
+				channelStockService.cancelRealese(orderStatus.getMasterOrderSn());
 			}
 		} catch (Exception e) {
 			logger.error(text + "订单库存释放操作失败", e);

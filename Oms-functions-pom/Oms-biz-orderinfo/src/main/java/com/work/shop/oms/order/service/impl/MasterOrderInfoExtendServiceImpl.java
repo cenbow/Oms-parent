@@ -132,6 +132,9 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         if (StringUtils.isNotBlank(masterOrder.getCompanyName())) {
             moie.setCompanyName(masterOrder.getCompanyName());
         }
+
+        moie.setInvPhone(masterOrder.getInvPhone());
+
         masterOrderInfoExtendMapper.insertSelective(moie);
 	}
 
@@ -261,5 +264,27 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         }
 
         return apiReturnData;
+    }
+
+    /**
+     * 更新订单推送供应链状态
+     * @param masterOrderSn
+     * @return
+     */
+    @Override
+    public boolean updatePushSupplyChain(String masterOrderSn) {
+        boolean bl = false;
+        try {
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            extend.setMasterOrderSn(masterOrderSn);
+            extend.setPushSupplyChain((byte) 1);
+            int result = masterOrderInfoExtendMapper.updateByPrimaryKeySelective(extend);
+
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("设置订单推送供应链状态状态异常:" + masterOrderSn, e);
+        }
+
+        return bl;
     }
 }

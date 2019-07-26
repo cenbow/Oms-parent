@@ -56,6 +56,7 @@
     <result column="discount" jdbcType="REAL" property="discount" />
     <result column="base_bv_value" jdbcType="INTEGER" property="baseBvValue" />
     <result column="box_gauge" jdbcType="INTEGER" property="boxGauge" />
+      <result column="cost_price" jdbcType="DECIMAL" property="costPrice" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <!--
@@ -135,7 +136,7 @@
     goods_size_name, group_name, is_real, is_gift, rank_points, pay_points, seller, is_good_received, 
     checkin_status, quality_status, integral_money, barcode, remark, prodScanNum, master_order_sn, 
     order_sn, sales_mode, to_erp, storage_time_stamp, storage_status, storage_treate_time, 
-    checkin_time, sap, bv_value, discount, base_bv_value, box_gauge
+    checkin_time, sap, bv_value, discount, base_bv_value, box_gauge, cost_price
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.OrderReturnGoodsExample" resultMap="BaseResultMap">
     <!--
@@ -211,7 +212,7 @@
       sales_mode, to_erp, storage_time_stamp, 
       storage_status, storage_treate_time, checkin_time, 
       sap, bv_value, discount, 
-      base_bv_value)
+      base_bv_value, cost_price)
     values (#{id,jdbcType=BIGINT}, #{relatingReturnSn,jdbcType=VARCHAR}, #{customCode,jdbcType=VARCHAR}, 
       #{goodsSn,jdbcType=VARCHAR}, #{goodsName,jdbcType=VARCHAR}, #{goodsReturnNumber,jdbcType=SMALLINT}, 
       #{goodsBuyNumber,jdbcType=SMALLINT}, #{chargeBackCount,jdbcType=INTEGER}, #{haveReturnCount,jdbcType=INTEGER}, 
@@ -228,7 +229,7 @@
       #{salesMode,jdbcType=TINYINT}, #{toErp,jdbcType=TINYINT}, #{storageTimeStamp,jdbcType=VARCHAR}, 
       #{storageStatus,jdbcType=TINYINT}, #{storageTreateTime,jdbcType=TIMESTAMP}, #{checkinTime,jdbcType=TIMESTAMP}, 
       #{sap,jdbcType=VARCHAR}, #{bvValue,jdbcType=VARCHAR}, #{discount,jdbcType=REAL}, 
-      #{baseBvValue,jdbcType=INTEGER})
+      #{baseBvValue,jdbcType=INTEGER}, #{costPrice})
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.OrderReturnGoods">
     <!--
@@ -387,6 +388,9 @@
       <if test="boxGauge != null">
         box_gauge,
       </if>
+        <if test="costPrice != null">
+            cost_price,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -539,6 +543,9 @@
       <if test="boxGauge != null">
         #{boxGauge},
       </if>
+        <if test="costPrice != null">
+            #{costPrice},
+        </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="com.work.shop.oms.bean.OrderReturnGoodsExample" resultType="java.lang.Integer">
@@ -705,6 +712,9 @@
       <if test="record.baseBvValue != null">
         base_bv_value = #{record.baseBvValue,jdbcType=INTEGER},
       </if>
+        <if test="record.costPrice != null">
+            cost_price = #{record.costPrice,jdbcType=DECIMAL},
+        </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -764,7 +774,8 @@
       sap = #{record.sap,jdbcType=VARCHAR},
       bv_value = #{record.bvValue,jdbcType=VARCHAR},
       discount = #{record.discount,jdbcType=REAL},
-      base_bv_value = #{record.baseBvValue,jdbcType=INTEGER}
+      base_bv_value = #{record.baseBvValue,jdbcType=INTEGER},
+      cost_price = #{record.costPrice}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -920,6 +931,9 @@
       <if test="baseBvValue != null">
         base_bv_value = #{baseBvValue,jdbcType=INTEGER},
       </if>
+        <if test="costPrice != null">
+            cost_price = #{costPrice},
+        </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -976,7 +990,8 @@
       sap = #{sap,jdbcType=VARCHAR},
       bv_value = #{bvValue,jdbcType=VARCHAR},
       discount = #{discount,jdbcType=REAL},
-      base_bv_value = #{baseBvValue,jdbcType=INTEGER}
+      base_bv_value = #{baseBvValue,jdbcType=INTEGER},
+      cost_price = #{costPrice}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

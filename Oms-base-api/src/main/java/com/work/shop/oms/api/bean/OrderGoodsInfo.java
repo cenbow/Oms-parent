@@ -92,6 +92,8 @@ public class OrderGoodsInfo implements Serializable{
     private String customerMaterialCode;                            //客户物料编码
 
     private String distributionCategory;                            //配送周期
+
+    private int canChangeNum;                                       //可申请售后数量
 	
 	public int getGoodsStatus() {
 		return goodsStatus;
@@ -294,5 +296,13 @@ public class OrderGoodsInfo implements Serializable{
 
     public void setDistributionCategory(String distributionCategory) {
         this.distributionCategory = distributionCategory;
+    }
+
+    public int getCanChangeNum() {
+        return canChangeNum;
+    }
+
+    public void setCanChangeNum(int canChangeNum) {
+        this.canChangeNum = canChangeNum;
     }
 }

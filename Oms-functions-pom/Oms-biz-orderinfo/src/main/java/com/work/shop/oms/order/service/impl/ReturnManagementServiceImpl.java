@@ -10,6 +10,7 @@ import com.work.shop.oms.api.param.bean.CreateOrderReturn;
 import com.work.shop.oms.api.param.bean.CreateOrderReturnGoods;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.config.service.OrderCustomDefineService;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.utils.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -104,6 +105,9 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
 	@Resource
 	private GoodsReturnChangeDetailMapper goodsReturnChangeDetailMapper;
+
+	@Resource
+	private OrderCustomDefineService orderCustomDefineService;
 
 	/**
 	 * 退单详情
@@ -268,6 +272,10 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		MasterOrderGoodsExample.Criteria criteria = masterOrderGoodsExample.or();
 		criteria.andMasterOrderSnEqualTo(relOrderSn);
 		criteria.andIsDelEqualTo(Constant.IS_DEL_NO);
+		if (StringUtils.isNotBlank(request.getOrderSn())) {
+            criteria.andOrderSnEqualTo(request.getOrderSn());
+        }
+
 		List<MasterOrderGoods> orderGoodsList = masterOrderGoodsMapper.selectByExample(masterOrderGoodsExample);
 		if (CollectionUtils.isEmpty(orderGoodsList)) {
 			response.setMessage("原订单已发货商品列表为空");
@@ -350,8 +358,8 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 				continue ;
 			}
 			returnGoodsVOList.add(returnGoodsVO);
-			settlementPrice += orderGoods.getSettlementPrice().doubleValue()*orderGoods.getGoodsNumber().intValue();
-			totalGoodsMoney += returnGoodsVO.getGoodsPrice().doubleValue() * returnGoodsVO.getCanReturnCount().intValue();
+			settlementPrice += orderGoods.getSettlementPrice().multiply(new BigDecimal(orderGoods.getGoodsNumber())).doubleValue();
+			totalGoodsMoney += new BigDecimal(returnGoodsVO.getGoodsPrice()).multiply(new BigDecimal(returnGoodsVO.getCanReturnCount())).doubleValue();
 		}
         returnGoodsVOList = mergeReturnGoods(returnGoodsVOList, detailVoList);
 
@@ -414,8 +422,10 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		if(Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue() 
 				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.REJECTION_AND_WAREHOUSE.intValue()
 				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_LOSE_GOODS.intValue()){
-			//总货款 
-			returnAccount.setReturnTotalFee(returnAccount.getReturnGoodsMoney().doubleValue() -returnAccount.getTotalIntegralMoney().doubleValue()-returnAccount.getReturnBonusMoney().doubleValue());
+			//总货款
+            BigDecimal returnTotalFee = new BigDecimal(returnAccount.getReturnGoodsMoney()).subtract(new BigDecimal(returnAccount.getTotalIntegralMoney()))
+                .subtract(new BigDecimal(returnAccount.getReturnBonusMoney()));
+            returnAccount.setReturnTotalFee(returnTotalFee.doubleValue());
 		}else{
 			//运费
 			returnAccount.setReturnTotalFee(shippingTotalFee);
@@ -504,17 +514,17 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
                 //折扣
                 Double discount = vo.getDiscount();
                 if (discount != null) {
-                    disCountTotal = disCountTotal.add(new BigDecimal(discount).multiply(new BigDecimal(goodsBuyNumber)));
+                    disCountTotal = disCountTotal.add(new BigDecimal(discount));
                 }
                 //积分
                 Double integralMoney = vo.getIntegralMoney();
                 if (integralMoney != null) {
-                    inMoney = inMoney.add(new BigDecimal(integralMoney).multiply(new BigDecimal(goodsBuyNumber)));
+                    inMoney = inMoney.add(new BigDecimal(integralMoney));
                 }
                 //bv
                 Integer bvValue = vo.getBvValue();
                 if (bvValue != null) {
-                    bv = bv.add(new BigDecimal(bvValue).multiply(new BigDecimal(goodsBuyNumber)));
+                    bv = bv.add(new BigDecimal(bvValue));
                 }
 
                 //退差价数量
@@ -670,6 +680,15 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
             GoodsReturnChange change = new GoodsReturnChange();
             change.setStatus(2);
             goodsReturnChangeMapper.updateByExampleSelective(change, goodsReturnChangeExample);
+
+            //退单确认
+            if (request.getIsConfirm() == 1) {
+                request.setReturnSn(info.getReturnSn());
+                request.setActionUser(param.getActionUser());
+                ReturnManagementResponse returnManagementResponse = returnItemConfirm(request);
+                logger.info("退单确认结果：" + JSONObject.toJSONString(returnManagementResponse));
+            }
+
 		} catch (Exception e) {
 			logger.error("退单创建失败:" + e.getMessage(), e);
 			response.setMessage("退单创建失败:" + e.getMessage());
@@ -1204,6 +1223,71 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
     }
 
 	/**
+	 * 退单对账单已生成
+	 * @param request
+	 * @return ReturnManagementResponse
+	 */
+	@Override
+	public ReturnManagementResponse returnOrderBillCompleted(ReturnManagementRequest request) {
+		ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setMessage("退单对账单生成状态失败");
+		response.setSuccess(false);
+		if (request == null) {
+			response.setMessage("参数为空");
+			return response;
+		}
+		String returnSn = request.getReturnSn();
+		if (StringUtil.isTrimEmpty(returnSn)) {
+			response.setMessage("退单号为空");
+			return response;
+		}
+
+		String actionNote = "对账单生成状态处理成功";
+		Integer returnOrderStatus = 7;
+		try {
+			OrderReturn orderReturn = orderReturnMapper.selectByPrimaryKey(returnSn.trim());
+			if (orderReturn == null) {
+				response.setMessage("退单[" + returnSn + "]不存在");
+				return response;
+			}
+
+			if (orderReturn.getSelltedBillStatus() != null && orderReturn.getSelltedBillStatus() == 1) {
+				response.setMessage("对账单生成状态处理成功");
+				response.setSuccess(true);
+				return response;
+			}
+
+			OrderReturn updateOrderReturn = new OrderReturn();
+			updateOrderReturn.setReturnSn(returnSn);
+			updateOrderReturn.setSelltedBillStatus(1);
+			updateOrderReturn.setUpdateTime(new Date());
+			orderReturnMapper.updateByPrimaryKeySelective(updateOrderReturn);
+
+			response.setMessage("对账单生成状态处理成功");
+			response.setSuccess(true);
+
+		} catch (Exception e) {
+			logger.error(returnSn + "退单对账单生成状态处理失败:" + e.getMessage(), e);
+			response.setMessage("退单对账单生成状态处理失败:" + e.getMessage());
+			actionNote = "退单对账单生成状态处理失败:" + e.getMessage();
+		} finally {
+			//操作日志
+			orderActionService.addOrderReturnAction(returnSn, actionNote, request.getActionUser(), returnOrderStatus);
+		}
+
+		return response;
+	}
+
+    /**
+     * 订单退款操作
+     * @param orderReturnBean
+     */
+    @Override
+    public void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean) {
+        orderCancelService.doOrderReturnMoneyByCommon(orderReturnBean);
+    }
+
+	/**
 	 * 退单状态显示
 	 * @param common 退单信息
 	 * @return String
@@ -1247,6 +1331,10 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 				checkInStatus = "未入库";
 			}
 		}
+
+        if (common.getReturnType() == 3) {
+            return orderStatus;
+        }
 		return orderStatus + "&nbsp;" + payStatus + "&nbsp;" + passStatus + "&nbsp;" + checkInStatus;
 	}
 
@@ -1310,15 +1398,49 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnCommon.setBackToCs(orderReturn.getBackToCs());
 		returnCommon.setQualityStatus(orderReturnShip.getQualityStatus());
 		returnCommon.setReturnStatusDisplay(displayReturnStatus(returnCommon));
-		returnCommon.setReturnReason(orderReturn.getReturnReason());
+
+        String returnReason = orderReturn.getReturnReason();
+        returnCommon.setReturnReason(returnReason);
+		if (StringUtils.isNotBlank(returnReason)) {
+            OrderCustomDefine orderCustomDefine = orderCustomDefineService.selectCustomDefineByCode(returnReason);
+            if (orderCustomDefine != null) {
+                returnCommon.setReturnReasonStr(orderCustomDefine.getName());
+            }
+        }
+
 		returnCommon.setRefundType(orderReturn.getRefundType().intValue());
 		//主单号
 		returnCommon.setMasterOrderSn(orderReturn.getMasterOrderSn());
 		returnCommon.setToErp(orderReturn.getToErp().intValue());
 		returnCommon.setSiteCode(orderReturn.getSiteCode());
-		return returnCommon;
+
+		OrderRefundExample example = new OrderRefundExample();
+        example.or().andRelatingReturnSnEqualTo(orderReturn.getReturnSn());
+        int backBalance = 0;
+        List<OrderRefund> orderRefunds = orderRefundMapper.selectByExample(example);
+        if (StringUtil.isListNotNull(orderRefunds)) {
+            for (OrderRefund orderRefund : orderRefunds) {
+                if (orderRefund.getBackbalance() == 1) {
+                    backBalance = 1;
+                    break;
+                }
+            }
+
+            OrderRefund orderRefund = orderRefunds.get(0);
+            Short returnPay = orderRefund.getReturnPay();
+            SystemPaymentExample paymentExample = new SystemPaymentExample();
+            paymentExample.or().andEnabledEqualTo(1).andPayIdEqualTo(returnPay.byteValue());
+            List<SystemPayment> systemPaymentList = systemPaymentMapper.selectByExample(paymentExample);
+            if (StringUtil.isListNotNull(systemPaymentList)) {
+                SystemPayment payment = systemPaymentList.get(0);
+                returnCommon.setPayCode(payment.getPayCode());
+            }
+        }
+        returnCommon.setBackBalance(backBalance);
+
+        return returnCommon;
 	}
-	
+
 	/**
 	 * 填充退单商品
 	 * @param orderReturn 退单信息
@@ -1348,7 +1470,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setSettlementPrice(orderReturnGoods.getSettlementPrice().doubleValue());
 		returnGoodsVO.setShareBonus(orderReturnGoods.getShareBonus().doubleValue());
 		returnGoodsVO.setGoodsBuyNumber(orderReturnGoods.getGoodsBuyNumber().intValue());
-		returnGoodsVO.setDiscount((orderReturnGoods.getMarketPrice().doubleValue() - orderReturnGoods.getGoodsPrice().doubleValue())*orderReturnGoods.getGoodsBuyNumber().intValue());
+		returnGoodsVO.setDiscount((orderReturnGoods.getMarketPrice().doubleValue() - orderReturnGoods.getGoodsPrice().doubleValue()));
 		//实际扫描数量
 		returnGoodsVO.setProdScanNum(orderReturnGoods.getProdscannum().intValue());
 		returnGoodsVO.setSalesMode(orderReturnGoods.getSalesMode().intValue());
@@ -1372,6 +1494,8 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setSeller(orderReturnGoods.getSeller());
 		returnGoodsVO.setIntegralMoney(orderReturnGoods.getIntegralMoney().doubleValue());
 		returnGoodsVO.setBoxGauge(orderReturnGoods.getBoxGauge());
+		//成本价
+        returnGoodsVO.setCostPrice(orderReturnGoods.getCostPrice().doubleValue());
 		return returnGoodsVO;
 	}
 	
@@ -1429,6 +1553,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setDiscount(new BigDecimal(String.valueOf(orderGoods.getDiscount())).doubleValue());
 		returnGoodsVO.setOsDepotCode(orderGoods.getDepotCode());
 		returnGoodsVO.setShopReturnCount(orderGoods.getChargeBackCount());
+        returnGoodsVO.setCostPrice(orderGoods.getCostPrice().doubleValue());
 
 		//商品销售模式：1为自营，2为买断，3为寄售，4为直发
 		if (orderGoods.getSalesMode() == null) {

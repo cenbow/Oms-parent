@@ -4,19 +4,29 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 供应商查询参数
+ * @author QuYachu
+ */
 public class SellerParam implements Serializable {
 
 	private static final long serialVersionUID = 211252459267330290L;
-	
+
+    /**
+     * 供应商编码列表
+     */
 	private List<String> sellers;
 	
 	private Date dateFrom;
 	
 	private Date dateTo;
-	
+
+    /**
+     * 退单状态：0未确定、1已确认、4无效、10已完成
+     */
 	private Integer returnOrderStatus;
 	
-	private Date updateTimeBegin;//更新时间
+	private Date updateTimeBegin;
 	
 	private Date updateTimeEnd;
 

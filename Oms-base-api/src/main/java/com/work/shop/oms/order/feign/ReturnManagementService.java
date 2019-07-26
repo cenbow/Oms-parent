@@ -1,11 +1,13 @@
 package com.work.shop.oms.order.feign;
 
+import com.work.shop.oms.bean.OrderReturnBean;
 import com.work.shop.oms.order.request.ReturnManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.ReturnManagementResponse;
 import com.work.shop.oms.vo.ReturnGoodsVO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * feign退单管理服务
@@ -133,5 +135,20 @@ public interface ReturnManagementService {
      * @return
      */
     @PostMapping("/order/manualRefund")
-    public ReturnManagementResponse manualRefund(ReturnManagementRequest request);
+    ReturnManagementResponse manualRefund(ReturnManagementRequest request);
+
+    /**
+     * 退单对账单已生成
+     * @param request
+     * @return ReturnManagementResponse
+     */
+    @PostMapping("/order/returnOrderBillCompleted")
+    ReturnManagementResponse returnOrderBillCompleted(ReturnManagementRequest request);
+
+    /**
+     * 订单退款操作
+     * @param orderReturnBean
+     */
+    @PostMapping("/order/doOrderReturnMoneyByCommon")
+    void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
 }

@@ -1,5 +1,6 @@
 package com.work.shop.oms.order.service;
 
+import com.work.shop.oms.bean.OrderReturnBean;
 import com.work.shop.oms.order.request.ReturnManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.ReturnManagementResponse;
@@ -112,10 +113,23 @@ public interface ReturnManagementService {
 	 */
 	ReturnManagementResponse returnRefundCompleted(ReturnManagementRequest request);
 
+	/**
+	 * 退单对账单已生成
+	 * @param request
+	 * @return ReturnManagementResponse
+	 */
+	ReturnManagementResponse returnOrderBillCompleted(ReturnManagementRequest request);
+
     /**
      * 手动退款
      * @param request
      * @return
      */
     public ReturnManagementResponse manualRefund(ReturnManagementRequest request);
+
+    /**
+     * 订单退款操作
+     * @param orderReturnBean
+     */
+    void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
 }

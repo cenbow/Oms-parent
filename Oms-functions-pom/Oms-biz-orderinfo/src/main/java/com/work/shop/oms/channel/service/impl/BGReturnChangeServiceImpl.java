@@ -3,11 +3,9 @@ package com.work.shop.oms.channel.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.api.bean.*;
+import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.api.orderinfo.service.BGReturnChangeService;
-import com.work.shop.oms.api.param.bean.CreateGoodsReturnChange;
-import com.work.shop.oms.api.param.bean.GoodsReturnChangeDetailInfo;
-import com.work.shop.oms.api.param.bean.Paging;
-import com.work.shop.oms.api.param.bean.ReturnChangeGoodsBean;
+import com.work.shop.oms.api.param.bean.*;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
@@ -15,6 +13,11 @@ import com.work.shop.oms.dao.define.DefineOrderMapper;
 import com.work.shop.oms.dao.define.GoodsReturnChangePageListMapper;
 import com.work.shop.oms.dao.define.GoodsReturnChangeStMapper;
 import com.work.shop.oms.dao.define.OrderReturnSearchMapper;
+import com.work.shop.oms.mq.bean.TextMessageCreator;
+import com.work.shop.oms.order.request.OrderQueryRequest;
+import com.work.shop.oms.order.request.ReturnManagementRequest;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.oms.order.service.MasterOrderPayService;
 import com.work.shop.oms.orderop.service.OrderQuestionService;
 import com.work.shop.oms.utils.*;
 import com.work.shop.oms.utils.TimeUtil;
@@ -22,9 +25,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -80,6 +89,18 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
     @Resource(name="goodsReturnChangeStMapper")
     private GoodsReturnChangeStMapper goodsReturnChangeStMapper;
+
+    @Resource(name="orderCancelProviderJmsTemplate")
+    private JmsTemplate orderCancelProviderJmsTemplate;
+
+    @Resource(name="createReturnOrderJmsTemplate")
+    private JmsTemplate createReturnOrderJmsTemplate;
+
+    @Resource
+    private MasterOrderPayService masterOrderPayService;
+
+    @Resource(name="bgOrderInfoService")
+    private BGOrderInfoService bgOrderInfoService;
 
     /**
      * 创建订单商品退换货信息
@@ -357,7 +378,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
             //填充申请商品信息
             Map<String, List<GoodsReturnChangeDetailBean>> detailMap = getDetailList(changeSnList);
-            if (detailMap != null && detailMap.size() > 1) {
+            if (detailMap != null && detailMap.size() > 0) {
                 for (GoodsReturnPageInfo info : rList) {
                     String changeSn = info.getGoodsReturnChangeSn();
                     if (StringUtil.isListNotNull(detailMap.get(changeSn))) {
@@ -1180,7 +1201,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             action.setActionNote("提交：" + createGoodsReturnChange.getActionNote());
             action.setLogTime(new Date());
             action.setReturnchangeSn(returnChangeSn);
-            goodsReturnChangeActionMapper.insert(action);
+            goodsReturnChangeActionMapper.insertSelective(action);
             //如果未发货 备货中 部分发货 则可以设为问题单
             if (masterOrderInfo.getShipStatus() == 0 || masterOrderInfo.getShipStatus() == 1 || masterOrderInfo.getShipStatus() == 2) {
                 // 19 问题单类型  退单转问题单
@@ -1266,6 +1287,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 goodsReturnChangeDetail.setReturnchangeSn(returnChangeSn);
                 goodsReturnChangeDetail.setGoodsSn(goods.getGoodsSn());
                 goodsReturnChangeDetail.setShareBonus(new BigDecimal(detailInfo.getShareBonus()));
+                goodsReturnChangeDetail.setDepotCode(goods.getDepotCode() == null ? "DEFAULT" : goods.getDepotCode());
 
                 returnNum += detailInfo.getReturnSum();
                 details.add(goodsReturnChangeDetail);
@@ -1402,6 +1424,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
             //获取申请日志
             GoodsReturnChangeActionExample actionExample = new GoodsReturnChangeActionExample();
+            actionExample.setOrderByClause("action_id desc");
             actionExample.or().andReturnchangeSnEqualTo(returnChangeSn);
             List<GoodsReturnChangeAction> returnChangeActions = goodsReturnChangeActionMapper.selectByExampleWithBLOBs(actionExample);
             returnChangeDetailInfo.setActions(returnChangeActions);
@@ -1612,6 +1635,163 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
     }
 
+    /**
+     * 申请单审核
+     * @param createGoodsReturnChange
+     * @return
+     */
+    @Override
+    public ApiReturnData<Boolean> examinationPassed(CreateGoodsReturnChange createGoodsReturnChange) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk("0");
+        apiReturnData.setMessage("审核失败");
+
+        if (createGoodsReturnChange == null) {
+            apiReturnData.setMessage("审核参数为空");
+            return apiReturnData;
+        }
+
+        String orderSn = createGoodsReturnChange.getOrderSn();
+        if (StringUtils.isBlank(orderSn)) {
+            apiReturnData.setMessage("订单号为空");
+            return apiReturnData;
+        }
+
+        String returnChangeSn = createGoodsReturnChange.getReturnChangeSn();
+        if (StringUtil.isTrimEmpty(returnChangeSn)) {
+            apiReturnData.setMessage("申请单号为空");
+            return apiReturnData;
+        }
+
+        String actionUser = createGoodsReturnChange.getActionUser();
+        if (StringUtil.isTrimEmpty(actionUser)) {
+            apiReturnData.setMessage("操作人为空");
+            return apiReturnData;
+        }
+
+        GoodsReturnChange goodsReturnChange = null;
+        String msg = "";
+
+        try {
+            //校验订单信息
+            MasterOrderInfoExample infoExample = new MasterOrderInfoExample();
+            infoExample.or().andMasterOrderSnEqualTo(orderSn);
+            List<MasterOrderInfo> masterOrderInfos = masterOrderInfoMapper.selectByExample(infoExample);
+            if (StringUtil.isListNull(masterOrderInfos)) {
+                apiReturnData.setMessage(orderSn + "订单信息异常");
+                return apiReturnData;
+            }
+
+            //校验申请单信息
+            GoodsReturnChangeExample example = new GoodsReturnChangeExample();
+            List<Integer> statusList = new ArrayList<Integer>();
+            statusList.add(1);
+            statusList.add(3);
+            example.or().andOrderSnEqualTo(orderSn).andReturnchangeSnEqualTo(returnChangeSn).andIsDelEqualTo(0).andStatusIn(statusList);
+            List<GoodsReturnChange> goodsReturnChanges = goodsReturnChangeMapper.selectByExample(example);
+            if (StringUtil.isListNull(goodsReturnChanges)) {
+                apiReturnData.setMessage(returnChangeSn + "无此申请单");
+                return apiReturnData;
+            }
+            goodsReturnChange = goodsReturnChanges.get(0);
+
+            //审核，自动创建退单，申请单自动完成
+            logger.info("申请售后自动创建退单");
+            MasterOrderInfo masterOrderInfo = masterOrderInfos.get(0);
+            createGoodsReturnChange.setShipFee(masterOrderInfo.getShippingTotalFee() == null ? 0.0 : masterOrderInfo.getShippingTotalFee().doubleValue());
+            createOrderProcess(createGoodsReturnChange, masterOrderInfo.getShipStatus());
+
+            apiReturnData.setIsOk("1");
+            apiReturnData.setMessage("审核成功");
+            apiReturnData.setData(true);
+
+            //审核成功申请单完成
+            GoodsReturnChangeExample goodsReturnChangeExample = new GoodsReturnChangeExample();
+            statusList.add(1);
+            statusList.add(3);
+            goodsReturnChangeExample.or().andOrderSnEqualTo(orderSn).andStatusIn(statusList);
+            GoodsReturnChange change = new GoodsReturnChange();
+            change.setStatus(2);
+            goodsReturnChangeMapper.updateByExampleSelective(change, goodsReturnChangeExample);
+
+            msg = "审核成功";
+        } catch (Exception e) {
+            logger.error("申请单审核失败:" + e.getMessage(), e);
+            apiReturnData.setMessage("审核失败:" + e.getMessage());
+            msg = "审核失败";
+        } finally {
+            //添加申请单日志
+            GoodsReturnChangeAction action = new GoodsReturnChangeAction();
+            action.setActionUser(actionUser);
+            // 状态
+            action.setStatus(goodsReturnChange.getStatus());
+            action.setOrderSn(goodsReturnChange.getOrderSn());
+            action.setActionNote(msg);
+            action.setLogTime(new Date());
+            action.setReturnchangeSn(returnChangeSn);
+            goodsReturnChangeActionMapper.insertSelective(action);
+        }
+
+        return apiReturnData;
+    }
+
+    /**
+     * 驳回申请单
+     * @param channelCode 店铺编码
+     * @param returnChangeSn 申请单号
+     * @param siteCode 站点编码
+     * @return GoodsReturnChangeReturnInfo
+     */
+    @Override
+    public GoodsReturnChangeReturnInfo rejectGoodsReturnChange(String channelCode, String returnChangeSn, String siteCode) {
+        logger.info("申请单驳回:returnChangeSn=" + returnChangeSn + "渠道号：" + channelCode + ";siteCode=" + siteCode);
+        GoodsReturnChangeReturnInfo goodsReturnChangeReturnInfo = new GoodsReturnChangeReturnInfo();
+        if (channelCode == null||channelCode.length() == 0) {
+            goodsReturnChangeReturnInfo.setIsOK(Constant.YESORNO_NO);
+            goodsReturnChangeReturnInfo.setMessage("请传入渠道号！");
+            return goodsReturnChangeReturnInfo;
+        }
+        if (returnChangeSn == null || returnChangeSn.length() == 0) {
+            goodsReturnChangeReturnInfo.setIsOK(Constant.YESORNO_NO);
+            goodsReturnChangeReturnInfo.setMessage("请传入申请单号！");
+            return goodsReturnChangeReturnInfo;
+        }
+        try {
+            GoodsReturnChangeExample example = new GoodsReturnChangeExample();
+            GoodsReturnChangeExample.Criteria criteria = example.or();
+            criteria.andReturnchangeSnEqualTo(returnChangeSn);
+            GoodsReturnChange goodsReturnChange = new GoodsReturnChange();
+            //4 为已驳回
+            goodsReturnChange.setStatus(4);
+            List<GoodsReturnChange> list = goodsReturnChangeMapper.selectByExample(example);
+            if (null == list || list.size() == 0) {
+                goodsReturnChangeReturnInfo.setIsOK(Constant.YESORNO_NO);
+                goodsReturnChangeReturnInfo.setMessage("没有找到该申请单信息！");
+                goodsReturnChangeReturnInfo.setReturnChangeSn(returnChangeSn);
+                logger.info("驳回申请单api调用结束：没有找到该申请单信息！");
+                return goodsReturnChangeReturnInfo;
+            }
+            goodsReturnChangeMapper.updateByExampleSelective(goodsReturnChange, example);
+            GoodsReturnChangeAction action = new GoodsReturnChangeAction();
+            action.setActionUser(channelCode);
+            action.setStatus(4);
+            action.setOrderSn(list.get(0).getOrderSn());
+            action.setActionNote("系统提交：渠道"+channelCode+"请求驳回申请单！");
+            action.setLogTime(new Date());
+            action.setReturnchangeSn(returnChangeSn);
+            goodsReturnChangeActionMapper.insert(action);
+            goodsReturnChangeReturnInfo.setIsOK(Constant.YESORNO_YES);
+            goodsReturnChangeReturnInfo.setReturnChangeSn(returnChangeSn);
+            //0 表示os问题单
+            logger.info("渠道请求驳回api调用成功!");
+        } catch (Exception e) {
+            goodsReturnChangeReturnInfo.setIsOK(0);
+            goodsReturnChangeReturnInfo.setMessage("驳回申请单异常！" + e.toString());
+            goodsReturnChangeReturnInfo.setReturnChangeSn(returnChangeSn);
+            logger.info("渠道请求驳回api调用结束异常:" + e.toString());
+        }
+        return goodsReturnChangeReturnInfo;
+    }
 
     /**
      * 获取申请单查询参数
@@ -1676,5 +1856,222 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
         }
 
         return map;
+    }
+
+    /**
+     * 自动创建退单处理
+     * @param bean
+     * @param shipStatus 配送状态
+     */
+    private void createOrderProcess(CreateGoodsReturnChange bean, Byte shipStatus) {
+
+        if (shipStatus == 0) {
+            //未发货整单取消
+            logger.info("申请售后：未发货整单取消");
+//            cancelOrderJms(bean);
+        } else if (shipStatus == 1) {
+            //备货中 配送取消，整单创建退单，自动确认
+            //配送取消
+            logger.info("申请售后：备货中 配送取消，整单创建退单，自动确认");
+            cancelShipJms(bean);
+            //创建整单退
+            bean.setIsAll(1);
+//            createReturnOrderJms(bean, 1);
+
+        } else if (shipStatus > 1) {
+            //填充退单商品
+            List<GoodsReturnChangeDetailBean> details = fillReturnGoods(bean);
+            //已发货之后，创建退单，自动确认
+            logger.info("申请售后：已发货之后，创建退单，自动确认");
+            createReturnOrderJms(bean, details, 1);
+        }
+    }
+
+    /**
+     * 填充退单商品
+     * @param bean
+     * @return
+     */
+    private List<GoodsReturnChangeDetailBean> fillReturnGoods(CreateGoodsReturnChange bean) {
+        if (bean == null || StringUtils.isBlank(bean.getReturnChangeSn())) {
+            return null;
+        }
+
+        //获取申请单商品详情
+        String returnChangeSn = bean.getReturnChangeSn();
+        List<String> changeSnList = new ArrayList<String>();
+        changeSnList.add(returnChangeSn);
+        Map<String, List<GoodsReturnChangeDetailBean>> detailListMap = getDetailList(changeSnList);
+        if (detailListMap == null || StringUtil.isListNull(detailListMap.get(returnChangeSn))) {
+            return null;
+        }
+        List<GoodsReturnChangeDetailBean> detailBeanList = detailListMap.get(returnChangeSn);
+
+        //计算退单价格
+        BigDecimal returnFee = new BigDecimal(0);
+        BigDecimal returnGoodsFee = new BigDecimal(0);
+        BigDecimal returnBouns = new BigDecimal(0);
+        for (GoodsReturnChangeDetailBean detailBean : detailBeanList) {
+            //申请商品数量
+            Integer returnSum = detailBean.getReturnSum();
+            if (returnSum == null || returnSum == 0) {
+                continue;
+            }
+
+            //计算申请退货总金额
+            BigDecimal changefee = detailBean.getSettlementPrice().multiply(new BigDecimal(returnSum));
+            returnFee = returnFee.add(changefee);
+
+            //计算申请退货商品总金额
+            BigDecimal changeGoodsfee = detailBean.getGoodsPrice().multiply(new BigDecimal(returnSum));
+            returnGoodsFee = returnGoodsFee.add(changeGoodsfee);
+
+            //计算红包合计
+            BigDecimal bouns = detailBean.getShareBonus().multiply(new BigDecimal(returnSum));
+            returnBouns = returnBouns.add(bouns);
+
+        }
+
+        bean.setChangeReturnTotalFee(returnFee.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        bean.setChangeReturnGoodsTotalFee(returnGoodsFee.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        bean.setReturnBouns(returnBouns.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        return detailBeanList;
+    }
+
+    /**
+     * 创建退单
+     * @param bean
+     * @param isConfirm 1为确认退单
+     */
+    private void createReturnOrderJms(CreateGoodsReturnChange bean, List<GoodsReturnChangeDetailBean> details, int isConfirm) {
+
+        try {
+            ReturnManagementRequest request = new ReturnManagementRequest();
+            request.setIsConfirm(isConfirm);
+            CreateOrderReturnBean returnBean = new CreateOrderReturnBean();
+            returnBean.setActionNote("申请售后创建退单");
+            returnBean.setActionUser(bean.getActionUser());
+            returnBean.setAddTime(new Date());
+            returnBean.setRelatingOrderSn(bean.getOrderSn());
+            returnBean.setReturnType(1);
+
+            //退款信息
+            CreateOrderRefund refund = new CreateOrderRefund();
+            //根据订单号查询支付单
+            List<MasterOrderPay> orderPayList = masterOrderPayService.getMasterOrderPayList(bean.getOrderSn());
+            if (StringUtil.isListNull(orderPayList)) {
+                return;
+            }
+            MasterOrderPay masterOrderPay = orderPayList.get(0);
+            refund.setReturnPay(masterOrderPay.getPayId().shortValue());
+            refund.setReturnFee(bean.getChangeReturnTotalFee());
+            List<CreateOrderRefund> refundList = new ArrayList<CreateOrderRefund>(1);
+            refundList.add(refund);
+            returnBean.setCreateOrderRefundList(refundList);
+
+            //退单信息
+            CreateOrderReturn orderReturn = new CreateOrderReturn();
+            orderReturn.setHaveRefund(1);
+            orderReturn.setProcessType((byte) 1);
+            orderReturn.setRelatingOrderSn(bean.getOrderSn());
+            orderReturn.setReturnGoodsMoney(bean.getChangeReturnGoodsTotalFee());
+            orderReturn.setReturnReason("R01");
+            orderReturn.setReturnSettlementType((byte) 1);
+            orderReturn.setReturnTotalFee(bean.getChangeReturnTotalFee());
+            orderReturn.setReturnType((byte) 1);
+            returnBean.setCreateOrderReturn(orderReturn);
+            orderReturn.setReturnBonusMoney(bean.getReturnBouns());
+//            orderReturn.setReturnShipping(bean.getShipFee());
+
+            //退单商品
+            List<CreateOrderReturnGoods> orderReturnGoodsList = new ArrayList<CreateOrderReturnGoods>();
+            for (GoodsReturnChangeDetailBean detail : details) {
+                CreateOrderReturnGoods returnGoods = new CreateOrderReturnGoods();
+                returnGoods.setColorName(detail.getGoodsColorName());
+                returnGoods.setCustomCode(detail.getCustomCode());
+                returnGoods.setExtensionCode(detail.getExtensionCode());
+                returnGoods.setDiscount(detail.getDiscount().doubleValue());
+                returnGoods.setExtensionId("1");
+                returnGoods.setGoodsBuyNumber(detail.getGoodsNumber());
+                returnGoods.setGoodsName(detail.getGoodsName());
+                returnGoods.setGoodsPrice(detail.getGoodsPrice().doubleValue());
+                returnGoods.setGoodsReturnNumber(detail.getReturnSum().shortValue());
+                returnGoods.setGoodsSn(detail.getGoodsSn());
+                returnGoods.setGoodsThumb(detail.getGoodsThumb());
+                returnGoods.setOsDepotCode(detail.getDepotCode());
+                returnGoods.setSalesMode(1);
+                returnGoods.setSizeName(detail.getGoodsSizeName());
+                returnGoods.setSettlementPrice(detail.getSettlementPrice().doubleValue());
+                returnGoods.setMarketPrice(detail.getMarketPrice().doubleValue());
+                returnGoods.setSeller(detail.getSupplierCode());
+                orderReturnGoodsList.add(returnGoods);
+            }
+            returnBean.setCreateOrderReturnGoodsList(orderReturnGoodsList);
+
+            request.setReturnBean(returnBean);
+            final String executeData =JSONObject.toJSONString(request);
+            logger.error("开始创建退单 -> 请求参数:" + executeData);
+
+            createReturnOrderJmsTemplate.send(new MessageCreator() {
+                @Override
+                public Message createMessage(Session session) throws JMSException {
+                    TextMessage message = session.createTextMessage();
+                    message.setText(executeData);
+                    logger.info("批量解密联系方式数据:"+executeData);
+                    return session.createTextMessage(executeData);
+                }
+            });
+
+        } catch (Exception e) {
+            logger.error("创建退单失败");
+        }
+    }
+
+    /**
+     * 整单取消
+     * @param bean
+     */
+    private void cancelOrderJms(CreateGoodsReturnChange bean) {
+        try {
+            OrderStatus orderStatus = new OrderStatus();
+            orderStatus.setMasterOrderSn(bean.getOrderSn());
+            orderStatus.setCode("8012");
+            orderStatus.setSource("OMS");
+            orderStatus.setUpdateReturnChangeStatus(true);
+            orderStatus.setAdminUser(bean.getActionUser());
+            orderStatus.setType("1");
+            orderStatus.setReturnType(3);
+            //修改申请单状态
+            orderStatus.setUpdateReturnChangeStatus(true);
+            orderStatus.setMessage("申请售后取消创建退单");
+            final String executeData =JSONObject.toJSONString(orderStatus);
+            logger.error("开始创建退单 -> 请求参数:" + executeData);
+
+            orderCancelProviderJmsTemplate.send(new MessageCreator() {
+                @Override
+                public Message createMessage(Session session) throws JMSException {
+                    TextMessage message = session.createTextMessage();
+                    message.setText(executeData);
+                    logger.info("批量解密联系方式数据:"+executeData);
+                    return session.createTextMessage(executeData);
+                }
+            });
+
+        } catch (Exception e) {
+            logger.error("创建退单失败");
+        }
+    }
+
+    /**
+     * 取消配送
+     * @param bean
+     */
+    private void cancelShipJms(CreateGoodsReturnChange bean) {
+        logger.info("------备货中申请售后下发配送取消------");
+        OrderQueryRequest request = new OrderQueryRequest();
+        request.setMasterOrderSn(bean.getOrderSn());
+        request.setActionUser(bean.getActionUser());
+        request.setMessage(bean.getActionNote());
+//        riderCancelProcessJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(request)));
     }
 }

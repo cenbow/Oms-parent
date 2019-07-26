@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.utils.*;
 import com.work.shop.oms.utils.TimeUtil;
 import org.apache.commons.lang.StringUtils;
@@ -106,10 +107,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	private SystemPaymentService systemPaymentService;
 	@Resource(name="orderQuestionService")
 	private OrderQuestionService orderQuestionService;
-	
-    private OrderDistributeServiceImpl() {
-    	System.out.println("OrderDistributeServiceImpl init...");
-	}
+
+	@Resource
+	private MasterOrderInfoService masterOrderInfoService;
 
 	/**
 	 * 判断订单拆交货单信息
@@ -205,26 +205,39 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
 	    String masterOrderSn = master.getMasterOrderSn();
 
+        // 需要审核订单设置待审核问题单
+        if (master.getNeedAudit() == 1 && master.getAuditStatus() == 0) {
+            orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待审核问题单", Constant.QUESTION_CODE_REVIEW));
+        } else {
+            // 不需要审核正常订单 创建采购单
+            if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
+
+                //订单推送供应链
+                logger.info("拆单完成后:" + masterOrderSn + "订单推送供应链");
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, 0);
+
+                // 需要合同签章的，先设置问题单
+                if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
+                    orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
+                } else {
+                    for (String orderSn : orderSns) {
+                        OrderManagementRequest request = new OrderManagementRequest();
+                        request.setShipSn(orderSn);
+                        purchaseOrderService.purchaseOrderCreate(request);
+                        distributeActionService.addOrderAction(orderSn, depotResult.getMessage());
+                    }
+                }
+            }
+            // 不需要审批的订单，下发账期支付扣款
+			// 是否账期支付, 0期立即扣款
+			masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+        }
+
         MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
         Short orderType = masterOrderInfoExtend.getOrderType();
         if (orderType == null || orderType == 0) {
             // 通知统一库存分配库存
             uniteStockService.distOccupy(masterOrderSn);
-        }
-
-        // 需要审核订单设置待审核问题单
-        if (master.getNeedAudit() == 1) {
-            orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待审核问题单", "17"));
-        } else {
-            // 不需要审核正常订单 创建采购单
-            if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
-                for (String orderSn : orderSns) {
-                    OrderManagementRequest request = new OrderManagementRequest();
-                    request.setShipSn(orderSn);
-                    purchaseOrderService.purchaseOrderCreate(request);
-                    distributeActionService.addOrderAction(orderSn, depotResult.getMessage());
-                }
-            }
         }
     }
 
@@ -719,6 +732,19 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		return distributes;
 	}
 
+    /**
+     * 根据交货单号获取交货单信息
+     * @param orderSn
+     * @return
+     */
+    @Override
+    public OrderDistribute selectDistributesByOrderSn(String orderSn) {
+        if (StringUtil.isTrimEmpty(orderSn)) {
+            return null;
+        }
+        return orderDistributeMapper.selectByPrimaryKey(orderSn);
+    }
+
 	@Override
 	public List<OrderDepotShip> selectEffectiveShips(String orderSn) {
 		if (StringUtil.isTrimEmpty(orderSn)) {
@@ -821,6 +847,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 			distribute.setOrderGoods(items);
 			distribute.setDepotCode(items.get(0).getDepotCode());
 			distribute.setSupplierCode(distKey);
+            distribute.setSupplierName(items.get(0).getSupplierName());
 			distributeMap.put(distKey, distribute);
 		}
 		return distributeMap;
@@ -884,6 +911,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		distribute.setGotStatus(Constant.GOT_STATUS_NO);
 
         distribute.setSupplierCode(goodsDistribute.getSupplierCode());
+        distribute.setSupplierName(goodsDistribute.getSupplierName());
 
 		// 货到付款运费传值
 		if (master.getTransType() == Constant.OI_TRANS_TYPE_PRESHIP) {

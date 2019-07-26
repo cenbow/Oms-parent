@@ -3,6 +3,7 @@ package com.work.shop.oms.order.service;
 import java.util.List;
 
 import com.work.shop.oms.bean.MasterOrderInfo;
+import com.work.shop.oms.bean.OrderAccountPeriod;
 import com.work.shop.oms.common.bean.*;
 
 /**
@@ -58,4 +59,11 @@ public interface MasterOrderInfoService {
 	 * @return ReturnInfo<Boolean>
 	 */
 	ReturnInfo<Boolean> processOrderPayPeriod(String masterOrderSn);
+
+	/**
+	 * 定时任务处理到期账期支付扣款
+	 * @param orderAccountPeriod
+	 * @return
+	 */
+	ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod);
 }

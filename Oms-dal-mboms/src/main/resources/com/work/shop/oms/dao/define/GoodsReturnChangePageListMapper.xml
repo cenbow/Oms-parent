@@ -256,36 +256,33 @@
       <if test="changeSn != null">
           and grc.returnchange_sn=#{changeSn}
       </if>
-    and grc.id in (select max(id) from goods_return_change where user_id = #{userId,jdbcType=VARCHAR} 
-    group by sku_sn,order_sn) group by grc.id ORDER BY grc.create desc  limit #{start},#{pageSize}
+      ORDER BY grc.create desc
+      limit #{start},#{pageSize}
   </select>
   
   <select id="countByExampleMall" parameterType="Map" resultType="java.lang.Integer">
-    select count(1) from (select
-    count(*)
-   from goods_return_change grc
-    <if test="isHistory==1">
-     LEFT join master_order_goods_history
-    </if>
-    <if test="isHistory==0">
-     LEFT join master_order_goods 
-    </if>
-    og
-    on grc.sku_sn=og.custom_code and grc.order_sn=og.master_order_sn
-    WHERE  grc.user_id = #{userId,jdbcType=VARCHAR}
-    and grc.site_code = #{siteCode,jdbcType=VARCHAR}
+      select count(1)
+      from goods_return_change grc
+      <if test="isHistory==1">
+          LEFT join master_order_goods_history
+      </if>
+      <if test="isHistory==0">
+          LEFT join master_order_goods
+      </if>
+      og
+      on grc.sku_sn=og.custom_code and grc.order_sn=og.master_order_sn
+      WHERE  grc.user_id = #{userId,jdbcType=VARCHAR}
+      and grc.site_code = #{siteCode,jdbcType=VARCHAR}
       and grc.is_del = 0
-    <if test="goodsSn != null">
-    and grc.sku_sn=#{goodsSn,jdbcType=VARCHAR} 
-    </if>
-    <if test="rStatus != null">
-    and grc.status=#{rStatus} 
-    </if>
-    <if test="orderSn != null">
-      and grc.order_sn=#{orderSn}
-    </if>
-    and grc.id in (select max(id) from goods_return_change where user_id = #{userId,jdbcType=VARCHAR} 
-    group by sku_sn,order_sn) group by grc.id ORDER BY grc.`create` desc ) aa
+      <if test="goodsSn != null">
+          and grc.sku_sn=#{goodsSn,jdbcType=VARCHAR}
+      </if>
+      <if test="rStatus != null">
+          and grc.status=#{rStatus}
+      </if>
+      <if test="orderSn != null">
+          and grc.order_sn=#{orderSn}
+      </if>
   </select>
 
     <resultMap id="CountTypeMap" type="com.work.shop.oms.api.bean.OrderStatusTypeBean">

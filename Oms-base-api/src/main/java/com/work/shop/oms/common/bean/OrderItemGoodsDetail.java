@@ -43,7 +43,8 @@ public class OrderItemGoodsDetail implements Serializable {
 	private String sizeCode;// 尺码
 	private String colorName;// 颜色名
 	private String sizeName;// 尺码名
-	private Double subTotal;// 订单商品小计
+	private BigDecimal subTotal;// 订单商品小计
+    private String subTotalStr;// 订单商品小计
 	private Short initGoodsNumber;// 初始商品数量
 	private String currSizeCode;// 当前商品尺码
 	private String currColorCode;// 当前商品颜色码
@@ -699,23 +700,23 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.sizeName = sizeName;
 	}
 
-	public Double getSubTotal() {
+	public BigDecimal getSubTotal() {
 		if (null == subTotal || subTotal.doubleValue() == 0) {
 			if (null == transactionPrice) {
 				transactionPrice = new BigDecimal(0.00);
 			}
 			if (null == goodsNumber) {
-				subTotal = 0.00D;
+				subTotal = new BigDecimal(0.00);
 			} else {
 				BigDecimal number = new BigDecimal(goodsNumber);
-				subTotal = transactionPrice.multiply(number).doubleValue();
+				subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//subTotal = transactionPrice.doubleValue() * goodsNumber;
 			}
 		}
 		return subTotal;
 	}
 
-	public void setSubTotal(Double subTotal) {
+	public void setSubTotal(BigDecimal subTotal) {
 		this.subTotal = subTotal;
 	}
 
@@ -917,5 +918,18 @@ public class OrderItemGoodsDetail implements Serializable {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public String getSubTotalStr() {
+        BigDecimal subTotal = getSubTotal();
+        subTotalStr = "";
+        if (subTotal != null) {
+            subTotalStr = subTotal.toString();
+        }
+        return subTotalStr;
+    }
+
+    public void setSubTotalStr(String subTotalStr) {
+        this.subTotalStr = subTotalStr;
     }
 }

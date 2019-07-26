@@ -1,21 +1,18 @@
 package com.work.shop.oms.dao.define;
 
-import java.util.List;
-import java.util.Map;
-
 import com.work.shop.invocation.ReadOnly;
-
+import com.work.shop.oms.api.bean.OrderContractBean;
+import com.work.shop.oms.api.bean.OrderContractRequest;
 import com.work.shop.oms.api.param.bean.OrderInfoSearchExample;
 import com.work.shop.oms.api.param.bean.OrderItemQueryExample;
-import com.work.shop.oms.bean.OrderBillList;
-import com.work.shop.oms.bean.OrderBillListVo;
-import com.work.shop.oms.bean.OrderGoodsItem;
-import com.work.shop.oms.bean.OrderItem;
-import com.work.shop.oms.bean.ShortageQuestion;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.Common;
 import com.work.shop.oms.common.bean.OrderGoodsSaleBean;
 import com.work.shop.oms.common.bean.OrderQuestionSearchResultVO;
 import com.work.shop.oms.common.bean.OrderQuestionSearchVO;
+
+import java.util.List;
+import java.util.Map;
 
 public interface OrderInfoSearchMapper {
 
@@ -170,4 +167,25 @@ public interface OrderInfoSearchMapper {
 	 * @return
 	 */
 	int countOrderGoodsByExample(OrderItemQueryExample example);
+
+	/**
+	 * 获取订单到期账期支付信息列表
+	 * @param query
+	 * @return List<OrderAccountPeriod>
+	 */
+	List<OrderAccountPeriod> selectCompanyPayPeriodList(Map<String, Object> query);
+
+    /**
+     * 订单合同列表
+     * @param request
+     * @return
+     */
+    List<OrderContractBean> selectOrderContractList(OrderContractRequest request);
+
+    /**
+     * 订单合同总数
+     * @param request
+     * @return
+     */
+    int countOrderContractList(OrderContractRequest request);
 }

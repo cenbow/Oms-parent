@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.work.shop.oms.bean.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,22 +23,6 @@ import com.work.shop.cardAPI.bean.APIBackMsgBean;
 import com.work.shop.cardAPI.bean.ParaUserCardStatus;
 import com.work.shop.oms.action.service.OrderActionService;
 import com.work.shop.oms.api.param.bean.CreateOrderReturnGoods;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.DistributeQuestion;
-import com.work.shop.oms.bean.DistributeQuestionExample;
-import com.work.shop.oms.bean.MasterOrderAction;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderGoodsExample;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoBean;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.OrderCustomDefine;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.OrderRefund;
-import com.work.shop.oms.bean.OrderRefundExample;
-import com.work.shop.oms.bean.OrderReturn;
-import com.work.shop.oms.bean.OrderReturnMoneyBean;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.CreateReturnVO;
 import com.work.shop.oms.common.bean.DistributeShippingBean;
@@ -681,7 +666,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 			}
 		}
 		// 处理退单后续事项
-        processReturnOrderFollow(master);
+        processReturnOrderFollow(master, orderStatus);
 
 		info.setIsOk(Constant.OS_YES);
 		info.setMessage("订单取消成功！");
@@ -692,14 +677,14 @@ public class OrderCancelServiceImpl implements OrderCancelService {
      * 处理退单后续事项
      * @param master
      */
-	private void processReturnOrderFollow(MasterOrderInfo master) {
+	private void processReturnOrderFollow(MasterOrderInfo master, OrderStatus orderStatus) {
         // 交易类型 1：款到发货 2：货到付款 3：担保交易
         Byte transType = master.getTransType();
         if (transType != null && transType == Constant.OI_TRANS_TYPE_GUARANTEE) {
             // 担保交易, 不需要处理
         } else {
             // 订单取消释放商城库存
-            OrderStatus stockStatus = new OrderStatus();
+			OrderStatus stockStatus = new OrderStatus();
             stockStatus.setMasterOrderSn(master.getMasterOrderSn());
             stockStatus.setType(Constant.order_type_master);
             orderStockRealeseJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(stockStatus)));
@@ -721,33 +706,6 @@ public class OrderCancelServiceImpl implements OrderCancelService {
             processOrderReturnGoods(masterOrderSn, useCardList, returnGoodsList);
         } else {
             // 已拆单
-            OrderDistributeExample example = new OrderDistributeExample();
-            example.or().andMasterOrderSnEqualTo(masterOrderSn).andOrderStatusEqualTo((byte)Constant.OI_ORDER_STATUS_CANCLED);
-            List<OrderDistribute> distributes = orderDistributeMapper.selectByExample(example);
-            // 修改订单总状态
-            List<MasterOrderGoods> cancelGoods = new ArrayList<MasterOrderGoods>();
-            if (StringUtil.isListNotNull(distributes)) {
-                List<String> returnDistributes = new ArrayList<String>();
-                for (OrderDistribute distributeTemp : distributes) {
-                    returnDistributes.add(distributeTemp.getOrderSn());
-                }
-                MasterOrderGoodsExample cancelGoodsExample = new MasterOrderGoodsExample();
-                cancelGoodsExample.or().andMasterOrderSnEqualTo(masterOrderSn)
-                        .andOrderSnIn(returnDistributes).andIsDelEqualTo(0);
-                cancelGoods = masterOrderGoodsMapper.selectByExample(cancelGoodsExample);
-            }
-
-            for (int i = 0;i < cancelGoods.size(); i++) {
-                MasterOrderGoods orderGoods = cancelGoods.get(i);
-                returnGoodsList.add(buildCreateOrderReturnGoods(orderGoods));
-                if (StringUtil.isNotEmpty(orderGoods.getUseCard())) {
-                    String[] arr = orderGoods.getUseCard().split(Constant.STRING_SPLIT_COLON);
-                    for (int j = 0;j < arr.length;j++) {
-                        useCardList.add(arr[j]);
-                    }
-                }
-            }
-
             processOrderReturnGoods(masterOrderSn, useCardList, returnGoodsList);
         }
 
@@ -1219,6 +1177,8 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		returnGoods.setIntegralMoney(orderGoods.getIntegralMoney().doubleValue());
         // 箱规
 		returnGoods.setBoxGauge(orderGoods.getBoxGauge() == null ? null : orderGoods.getBoxGauge().intValue());
+		//成本价
+        returnGoods.setCostPrice(orderGoods.getCostPrice().doubleValue());
 		return returnGoods;
 	}
 	
@@ -1326,6 +1286,38 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 			newOrderInfo = null;
 		}
 		return newOrderInfo;
+	}
+
+	/**
+	 * 订单退款操作
+	 * @param orderReturnBean
+	 */
+	@Override
+	public void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean) {
+        // 退单编码
+	    String returnSn = orderReturnBean.getReturnSn();
+
+        OrderRefundExample orderRefundExample = new OrderRefundExample();
+        orderRefundExample.or().andRelatingReturnSnEqualTo(returnSn);
+        List<OrderRefund> orderRefundList = orderRefundMapper.selectByExample(orderRefundExample);
+        if (CollectionUtils.isEmpty(orderRefundList)) {
+            logger.info("通过退单编码:" + returnSn + "无法获取有效地退款单数据" + "," + JSONObject.toJSONString(orderReturnBean));
+            return;
+        }
+
+        OrderRefund orderRefund = orderRefundList.get(0);
+        // 退款状态：0未退，1已退
+        Byte backBalance = orderRefund.getBackbalance();
+        // 退款金额
+        orderReturnBean.setReturnMoney(orderRefund.getReturnFee());
+
+        // 未退
+        if (backBalance == null || backBalance.intValue() == 0) {
+            jmsSendQueueService.sendQueueMessage(MqConfig.CLOUD_ORDER_ACCOUNT_RETURN, JSON.toJSONString(orderReturnBean));
+        } else {
+            logger.info("通过退单编码:" + returnSn + "退款已退无须发起退款," + JSONObject.toJSONString(orderReturnBean));
+        }
+
 	}
 	
 	/**

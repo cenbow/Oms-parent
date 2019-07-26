@@ -7,6 +7,7 @@ import com.work.shop.oms.bean.MasterOrderInfoFinishBean;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.order.request.OmsRequest;
 import com.work.shop.oms.order.service.MasterOrderActionService;
+import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,9 @@ public class MasterOrderInfoController {
 
     @Resource
     private MasterOrderActionService masterOrderActionService;
+
+    @Resource
+    private MasterOrderInfoExtendService masterOrderInfoExtendService;
 
     /**
      * 生成订单
@@ -130,5 +134,19 @@ public class MasterOrderInfoController {
         } catch (Exception e) {
             logger.error("添加订单日志:" + JSONObject.toJSONString(request) + "异常", e);
         }
+    }
+
+    /**
+     * 更新订单推送供应链状态
+     * @param request 订单号
+     */
+    @PostMapping("/updatePushSupplyChain")
+    public Boolean updatePushSupplyChain(@RequestBody OmsRequest request) {
+        try {
+            return masterOrderInfoExtendService.updatePushSupplyChain(request.getMasterOrderSn());
+        } catch (Exception e) {
+            logger.error(request.getMasterOrderSn() + "更新订单推送供应链状态:" + "异常", e);
+        }
+        return false;
     }
 }

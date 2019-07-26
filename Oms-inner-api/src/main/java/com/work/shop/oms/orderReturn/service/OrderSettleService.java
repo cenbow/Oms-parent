@@ -27,8 +27,12 @@ public interface OrderSettleService {
      */
     public ReturnInfo<String> settleOrderPoint(SettleParamObj paramObj);
 
-
-    public ReturnInfo<String> MasterOrderSettle(SettleParamObj paramObj);
+    /**
+     * 订单结算完成
+     * @param paramObj
+     * @return ReturnInfo<String>
+     */
+    ReturnInfo<String> MasterOrderSettle(SettleParamObj paramObj);
     
     /**
      * 订单结算撤销
@@ -69,7 +73,7 @@ public interface OrderSettleService {
      * @param returnSn
      * @return
      */
-    public ReturnInfo<String> checkReturnSettle(String returnSn);
+    ReturnInfo<String> checkReturnSettle(String returnSn);
     
     /**
      * 接收队列数据-按照结算订单数据(正常订单以及货到付款订单)

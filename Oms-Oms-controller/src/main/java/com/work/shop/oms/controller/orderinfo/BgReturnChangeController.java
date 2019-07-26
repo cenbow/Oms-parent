@@ -296,4 +296,47 @@ public class BgReturnChangeController {
 
         return apiReturnData;
     }
+
+    /**
+     * 申请单审核（自动创建退单并确认）
+     * @param returnChangeGoodsBean
+     * @return
+     */
+    @PostMapping("/examinationPassed")
+    public ApiReturnData<Boolean> examinationPassed(@RequestBody CreateGoodsReturnChange returnChangeGoodsBean) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk("0");
+
+        try {
+            apiReturnData = bgReturnChangeService.examinationPassed(returnChangeGoodsBean);
+        } catch (Exception e) {
+            logger.error("申请单审核异常", e);
+            apiReturnData.setMessage("审核异常");
+        }
+
+        return apiReturnData;
+    }
+
+    /**
+     * 驳回申请单
+     * @param channelCode 店铺编码
+     * @param returnChangeSn 申请单号
+     * @param siteCode 站点编码
+     * @return GoodsReturnChangeReturnInfo
+     */
+    @PostMapping("/rejectGoodsReturnChange")
+    public GoodsReturnChangeReturnInfo rejectGoodsReturnChange(@RequestParam(name="channelCode") String channelCode,
+                                                               @RequestParam(name="returnChangeSn") String returnChangeSn,
+                                                               @RequestParam(name="siteCode") String siteCode) {
+        GoodsReturnChangeReturnInfo returnBean = new GoodsReturnChangeReturnInfo();
+
+        try {
+            returnBean = bgReturnChangeService.rejectGoodsReturnChange(channelCode, returnChangeSn, siteCode);
+        } catch (Exception e) {
+            logger.error("驳回申请单异常", e);
+            returnBean.setMessage("驳回异常");
+        }
+
+        return returnBean;
+    }
 }

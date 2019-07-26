@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 退单信息
+ * @author QuYachu
+ */
 public class OrderReturn implements Serializable {
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 6101193136020542725L;
 
 	/**
@@ -239,6 +241,11 @@ public class OrderReturn implements Serializable {
      * ERP处理结算数据：0未处理、1处理中、2处理完成、3处理失败
      */
     private Byte settleStatus;
+
+    /**
+     * 对账单 0未生成、1已生成
+     */
+    private Integer selltedBillStatus;
 
     /**
      * 订单平台渠道
@@ -1584,5 +1591,13 @@ public class OrderReturn implements Serializable {
 
     public void setIsDel(Integer isDel) {
         this.isDel = isDel;
+    }
+
+    public Integer getSelltedBillStatus() {
+        return selltedBillStatus;
+    }
+
+    public void setSelltedBillStatus(Integer selltedBillStatus) {
+        this.selltedBillStatus = selltedBillStatus;
     }
 }

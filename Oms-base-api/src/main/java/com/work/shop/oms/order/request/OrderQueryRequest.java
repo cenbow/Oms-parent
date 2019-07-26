@@ -70,8 +70,10 @@ public class OrderQueryRequest implements Serializable {
 	private String depotCode; // 仓库编码
 	
 	private int exportType; // 导出类型 0 订单列表、1订单商品列表
-	
-	public Integer getPageNo() {
+
+    private String message;
+
+    public Integer getPageNo() {
 		return pageNo;
 	}
 
@@ -318,4 +320,12 @@ public class OrderQueryRequest implements Serializable {
 	public void setExportType(int exportType) {
 		this.exportType = exportType;
 	}
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

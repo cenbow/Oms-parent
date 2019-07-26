@@ -4,23 +4,14 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import com.work.shop.oms.api.express.service.Express100Service;
+import com.work.shop.oms.api.express.feign.Express100Service;
+import com.work.shop.oms.core.service.impl.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.work.shop.oms.core.beans.ConstantTask;
-import com.work.shop.oms.core.service.impl.AutoReceiptTask;
-import com.work.shop.oms.core.service.impl.CloseNoPayBanggoOrderTask;
-import com.work.shop.oms.core.service.impl.CloseNoPayGroupOrderTask;
-import com.work.shop.oms.core.service.impl.Copy2HistoryOrderTask;
-import com.work.shop.oms.core.service.impl.GotOrderNoticeTask;
-import com.work.shop.oms.core.service.impl.OrderDistributeOutTask;
-import com.work.shop.oms.core.service.impl.OrderReceiveChangeTask;
-import com.work.shop.oms.core.service.impl.RiderDistTask;
-import com.work.shop.oms.core.service.impl.TaskManagerFactory;
-import com.work.shop.oms.core.service.impl.UnLockOverTimeOrderTask;
 import com.work.shop.oms.core.task.ITaskServiceCall;
 
 /**
@@ -61,6 +52,12 @@ public class TaskServiceCall implements ITaskServiceCall{
 	@Resource
 	private Express100Service express100Service;
 
+	@Resource
+	private CompanyPayPeriodTask companyPayPeriodTask;
+
+	@Resource
+	private OrderShipReceiveTask orderShipReceiveTask;
+
     /**
      * 处理订单任务
      * @param para
@@ -98,6 +95,12 @@ public class TaskServiceCall implements ITaskServiceCall{
 			} else if (ConstantTask.TASK_JOB_TYPE_ORDER_EXPRESS_TASK.equals(type)) {
 				// 快递100物流信息抓取
 				express100Service.express();
+			} else if (ConstantTask.TASK_JOB_TYPE_COMPANY_PAY_TASK.equals(type)) {
+				// 公司账期支付扣款
+				taskManagerFactory.processTask(companyPayPeriodTask);
+			} else if (ConstantTask.TASK_JOB_TYPE_ORDER_SHIP_RECEIVE_TASK.equals(type)) {
+				// 订单发货超时签收
+				taskManagerFactory.processTask(orderShipReceiveTask);
 			} else{
 				throw new RuntimeException(type + "无法解析任务类型");
 			}

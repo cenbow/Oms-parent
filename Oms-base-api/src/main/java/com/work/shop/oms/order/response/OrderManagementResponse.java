@@ -3,12 +3,7 @@ package com.work.shop.oms.order.response;
 import java.io.Serializable;
 import java.util.List;
 
-import com.work.shop.oms.common.bean.OrderItemAction;
-import com.work.shop.oms.common.bean.OrderItemDepotDetail;
-import com.work.shop.oms.common.bean.OrderItemDetail;
-import com.work.shop.oms.common.bean.OrderItemGoodsDetail;
-import com.work.shop.oms.common.bean.OrderItemPayDetail;
-import com.work.shop.oms.common.bean.OrderItemStatusUtils;
+import com.work.shop.oms.common.bean.*;
 
 /**
  * 订单管理返回对象
@@ -35,6 +30,8 @@ public class OrderManagementResponse implements Serializable {
 	private List<OrderItemAction> itemActions;
 	
 	private List<String> returnSns;
+
+	private List<OrderItemDepotInfo> orderItemDepotInfos;
 
 	public Boolean getSuccess() {
 		return success;
@@ -107,4 +104,12 @@ public class OrderManagementResponse implements Serializable {
 	public void setReturnSns(List<String> returnSns) {
 		this.returnSns = returnSns;
 	}
+
+    public List<OrderItemDepotInfo> getOrderItemDepotInfos() {
+        return orderItemDepotInfos;
+    }
+
+    public void setOrderItemDepotInfos(List<OrderItemDepotInfo> orderItemDepotInfos) {
+        this.orderItemDepotInfos = orderItemDepotInfos;
+    }
 }

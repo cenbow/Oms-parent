@@ -6,7 +6,10 @@ import java.util.*;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 
+import com.work.shop.oms.api.bean.OrderContractBean;
+import com.work.shop.oms.api.bean.OrderContractRequest;
 import com.work.shop.oms.bean.*;
+import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,11 +26,6 @@ import com.work.shop.cart.api.bean.service.ShopCartResponse;
 import com.work.shop.cart.api.bean.service.StoreInfoRequest;
 import com.work.shop.oms.api.param.bean.OrderItemQueryExample;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
-import com.work.shop.oms.common.bean.GoodsReturnChangeBean;
-import com.work.shop.oms.common.bean.GoodsReturnChangeVO;
-import com.work.shop.oms.common.bean.OrderGoodsQuery;
-import com.work.shop.oms.common.bean.OrderGoodsSaleBean;
-import com.work.shop.oms.common.bean.ServiceReturnInfo;
 import com.work.shop.oms.dao.define.DefineOrderMapper;
 import com.work.shop.oms.dao.define.GoodsReturnChangePageListMapper;
 import com.work.shop.oms.dao.define.OrderDistributeDefineMapper;
@@ -727,6 +725,9 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         Set<Byte> payIdSet = new HashSet<Byte>();
         for (OrderReturnListVO vo : list) {
             Integer returnPay = vo.getReturnPay();
+            if (returnPay == null) {
+                continue;
+            }
             payIdSet.add(returnPay.byteValue());
         }
         List<Byte> payIdList = new ArrayList<Byte>();
@@ -738,6 +739,9 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
         for (OrderReturnListVO vo : list) {
             Integer returnPay = vo.getReturnPay();
+            if (returnPay == null) {
+                continue;
+            }
             SystemPayment systemPayment = systemPaymentMap.get(returnPay.toString());
             String payName = returnPay.toString();
             if (systemPayment != null) {
@@ -756,6 +760,9 @@ public class OrderQueryServiceImpl implements OrderQueryService {
      * @return
      */
 	private Map<String, SystemPayment> getSystemPaymentMap(List<Byte> payIdList) {
+	    if (StringUtil.isListNull(payIdList)) {
+	        return null;
+        }
         SystemPaymentExample paymentExample = new SystemPaymentExample();
         paymentExample.or().andPayIdIn(payIdList);
         List<SystemPayment> systemPayments = systemPaymentMapper.selectByExample(paymentExample);
@@ -2029,6 +2036,48 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			start += limit;
 		}
 	}
+
+    /**
+     * 订单合同列表查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    @Override
+    public OrderQueryResponse orderContractQuery(OrderContractRequest request) {
+        logger.info("订单合同列表查询 request:" + JSON.toJSONString(request));
+        OrderQueryResponse response = new OrderQueryResponse();
+        response.setSuccess(false);
+        response.setMessage("订单合同信息查询失败");
+        if (request.getPageNo() == null || request.getPageNo() < 1) {
+            response.setMessage("订单合同信息查询页码不能为空或小于1");
+            return response;
+        }
+        if (request.getPageSize() == null || request.getPageSize() < 1) {
+            response.setMessage("订单合同信息查询每页条目不能为空或小于1");
+            return response;
+        }
+        int start = (request.getPageNo() - 1) * request.getPageSize();
+        int limit = request.getPageSize();
+        request.setStart(start);
+        request.setLimit(limit);
+
+        try {
+            int count = orderInfoSearchMapper.countOrderContractList(request);
+            response.setTotalProperty(count);
+
+            if (count > 0) {
+                List<OrderContractBean> orderContractBeanList = orderInfoSearchMapper.selectOrderContractList(request);
+                response.setOrderContractBeans(orderContractBeanList);
+            }
+            response.setSuccess(true);
+            response.setMessage("查询订单合同列表成功");
+
+        } catch (Exception e) {
+            logger.error("订单合同查询异常: " + e.getMessage(), e);
+            response.setMessage("订单合同查询失败: " + e.getMessage());
+        }
+        return response;
+    }
 	
 	/**
 	 * 处理订单配送单出库

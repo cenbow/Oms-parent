@@ -312,12 +312,18 @@ public class OrderSettleServiceImpl implements OrderSettleService {
 		logger.info("[OrderSettleService.settleNormalOrder]end.......returnInfo:"+JSON.toJSONString(returnInfo));
 		return returnInfo;
 	}
-	
+
+	/**
+	 * 订单结算完成
+	 * @param paramObj
+	 * @return
+	 */
 	@Override
 	public ReturnInfo<String> MasterOrderSettle(SettleParamObj paramObj) {
 		logger.info("主单结算 start.paramObj:"+JSON.toJSONString(paramObj));
 		Assert.notNull(paramObj, "paramObj is null");
-		String masterOrderSn = paramObj.getDealCode();//主单号
+		//主单号
+		String masterOrderSn = paramObj.getDealCode();
 		ReturnInfo<String> returnInfo = new ReturnInfo<String>();
 		returnInfo.setIsOk(Constant.OS_NO);
 		returnInfo.setOrderSn(masterOrderSn);
@@ -1448,10 +1454,11 @@ public class OrderSettleServiceImpl implements OrderSettleService {
 		returnInfo.setIsOk(ConstantValues.YESORNO_NO);
 		try {
 			OrderReturn orderReturn = orderReturnMapper.selectByPrimaryKey(returnSn);
-			if(orderReturn == null){
+			if (orderReturn == null) {
 				throw new RuntimeException("无法获取有效的退单信息！");
 			}
-			if(orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_PAY){
+			// 普通退款单
+			if (orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_PAY) {
 				returnInfo.setIsOk(ConstantValues.YESORNO_YES);
 				returnInfo.setMessage("验证通过");
 				logger.info("checkReturnSettle 由于退款单 验证通过 returnSn:"+returnSn+",resultInfo:"+returnInfo);
@@ -1460,37 +1467,23 @@ public class OrderSettleServiceImpl implements OrderSettleService {
 			OrderReturnShipExample shipExample = new OrderReturnShipExample();
 			shipExample.or().andRelatingReturnSnEqualTo(returnSn);
 			List<OrderReturnShip> shipList = orderReturnShipMapper.selectByExample(shipExample);
-			if(CollectionUtils.isEmpty(shipList)){
+			if (CollectionUtils.isEmpty(shipList)) {
 				throw new RuntimeException("无法获取有效的退单发货单！");
 			}
 		 
 			OrderReturnGoodsExample goodsExample = new OrderReturnGoodsExample();
 			goodsExample.or().andRelatingReturnSnEqualTo(returnSn);
 			List<OrderReturnGoods> returnGoodsList = orderReturnGoodsMapper.selectByExample(goodsExample);
-			if(CollectionUtils.isEmpty(returnGoodsList)){
+			if (CollectionUtils.isEmpty(returnGoodsList)) {
 				throw new RuntimeException("无法获取退货单下有效的商品信息！");
 			}
-			//int returnGoodsCount = 0;
+
 			for (OrderReturnGoods orderReturnGoods : returnGoodsList) {
 				String customCode = orderReturnGoods.getCustomCode();
-				if(StringUtils.isBlank(customCode)){
+				if (StringUtils.isBlank(customCode)) {
 					throw new RuntimeException("退货商品编码为空不可进行操作");
 				}
-				ProductBarcodeListExample productExample = new ProductBarcodeListExample();
-				productExample.or().andCustumCodeEqualTo(customCode);
-				/*List<ProductBarcodeList> productList = productBarcodeListMapper.selectByExample(productExample);
-				if(CollectionUtils.isEmpty(productList)){
-					throw new RuntimeException("无法获取有效商品11位编码数据！");
-				}*/
-				//returnGoodsCount += orderReturnGoods.getGoodsReturnNumber().intValue();
-				/*double diffMoney = FormatUtil.roundDouble(orderReturnGoods.getGoodsPrice().doubleValue() - orderReturnGoods.getShareBonus().doubleValue() - orderReturnGoods.getSettlementPrice().doubleValue(),2);
-				if(diffMoney > 0.01 || diffMoney < -0.01){
-					throw new RuntimeException("退货商品("+orderReturnGoods.getCustomCode()+")商品成交价("+orderReturnGoods.getGoodsPrice().doubleValue()+")、财务价格("+orderReturnGoods.getSettlementPrice().doubleValue()+")、红包分摊额("+orderReturnGoods.getShareBonus().doubleValue()+")等值存在差异("+diffMoney+")"); 
-				}*/
 			}
-			/*if(returnGoodsCount != orderReturn.getReturnAllgoodsCount().intValue()){
-				throw new RuntimeException("实际退货商品数量("+returnGoodsCount+")与退货单不符("+orderReturn.getReturnAllgoodsCount()+")");
-			}*/
 			returnInfo.setIsOk(ConstantValues.YESORNO_YES);
 			returnInfo.setMessage("验证通过");
 			logger.info("checkReturnSettle 验证通过 returnSn:"+returnSn+",resultInfo:"+returnInfo);

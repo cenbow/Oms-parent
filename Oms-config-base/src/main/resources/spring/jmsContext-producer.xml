@@ -491,4 +491,28 @@
 	<bean id="order_account_period" class="org.apache.activemq.command.ActiveMQQueue">
 		<constructor-arg index="0" value="order_account_period" />
 	</bean>
+
+	<!-- 供应商采购单下发 -->
+	<bean id="supplierOrderSendJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="supplierOrderSend" />
+	</bean>
+	<bean id="supplierOrderSend" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="supplier_order_send" />
+	</bean>
+
+    <!-- 创建退单 队列 -->
+    <bean id="create_return_order" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="create_return_order" />
+    </bean>
+    <bean id="createReturnOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="sessionTransacted" value="true" />
+        <property name="sessionAcknowledgeMode" value="1" />
+        <property name="deliveryMode" value="2" />
+        <property name="defaultDestination" ref="create_return_order" />
+    </bean>
 </beans>

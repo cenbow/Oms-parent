@@ -462,7 +462,7 @@
             grc.contact_mobile contactMobile,
             orf.backBalance backBalance,
             orn.return_order_status returnOrderStatus,
-            orn.return_reason returnReason,
+            ocd.name returnReason,
             moie.customer_contract_num customerContractNum,
 			DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') orderCreateTime
 		from
@@ -470,6 +470,7 @@
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
         left join goods_return_change grc on grc.order_sn=orn.relating_order_sn and grc.is_del=0 and grc.status=2
         left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
+        left join order_custom_define ocd on ocd.code = orn.return_reason
 		where
 			orn.user_id= #{userId,jdbcType=VARCHAR}
 		AND
@@ -679,6 +680,7 @@
 			oi.shop_name channelName,
 			oi.bv_value bvValue,
 			oi.points,
+            oi.cancel_reason orderCancel,
 			oie.is_advance isAdvance,
             oie.rider_time riderTime,
             oie.last_pay_date lastPayDate,
@@ -759,7 +761,7 @@
 			ors.return_express_img returnExpressImg,
 			ors.return_invoice_no returnInvoiceNo,
             orn.return_desc remark,
-            orn.return_reason returnReason,
+            ocd.name returnReason,
             orn.action_user actionUser,
             orn.return_order_status returnOrderStatus,
             grc.contact_name contactUser,
@@ -771,6 +773,7 @@
         left join goods_return_change grc on grc.order_sn=orn.relating_order_sn and grc.is_del=0 and grc.status=2
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
         left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
+        left join order_custom_define ocd on ocd.code = orn.return_reason
 		where orn.return_sn= #{orderReturnSn,jdbcType=VARCHAR}
 		<if test="userId != null">
 			and orn.user_id = #{userId,jdbcType=VARCHAR}

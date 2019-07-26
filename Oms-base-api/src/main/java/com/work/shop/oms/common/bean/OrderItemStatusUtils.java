@@ -1,8 +1,10 @@
 package com.work.shop.oms.common.bean;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.work.shop.oms.bean.AdminUser;
+import com.work.shop.oms.bean.MasterOrderQuestionBean;
 import com.work.shop.oms.common.utils.OrderItemConstant;
 
 /**
@@ -123,6 +125,11 @@ public class OrderItemStatusUtils implements Serializable {
 	 */
 	private Integer addExtra;
 
+    /**
+     * 人工分配
+     */
+	private Integer artificialDepot;
+
 	/**
 	 * 默认构造函数
 	 */
@@ -173,7 +180,7 @@ public class OrderItemStatusUtils implements Serializable {
 			this.norQuesMenu = new ButtonMenu("订单返回正常单", "normal", "normal");
 		}
 		this.sendGotCode = sendGotCode(masterOrderInfo,masterOrderSn, adminUser.getUserName(), userId).getIsOk();
-
+        this.artificialDepot = artificialDepot(masterOrderInfo,masterOrderSn, adminUser.getUserName(), userId).getIsOk();
 	}
 
 	/**
@@ -780,10 +787,10 @@ public class OrderItemStatusUtils implements Serializable {
 			ri.setMessage("订单" + masterOrderSn + "已经解锁");
 			return ri;
 		}
-		if (masterOrderInfo.getIsnow() != null && masterOrderInfo.getIsnow() == 1) {
+		/*if (masterOrderInfo.getIsnow() != null && masterOrderInfo.getIsnow() == 1) {
 			ri.setMessage(" 订单" + masterOrderSn + "要处于未下发状态！");
 			return ri;
-		}
+		}*/
 		if (!isPayed(masterOrderInfo.getTransType(), masterOrderInfo.getPayStatus())) {
 			ri.setMessage("订单" + masterOrderSn + "要处于已付款状态！否则不能进行确认操作！");
 			return ri;
@@ -1085,8 +1092,61 @@ public class OrderItemStatusUtils implements Serializable {
 		}
 		return null;
 	}
-	
-	public Integer getLock() {
+
+    /**
+     * 校验是否可以人工分配
+     * @param masterOrderInfo
+     * @param masterOrderSn
+     * @param actionUser
+     * @param userId
+     * @return
+     */
+    public static ReturnInfo artificialDepot(MasterOrderDetail masterOrderInfo, String masterOrderSn, String actionUser, Integer userId) {
+        ReturnInfo ri = new ReturnInfo(OrderItemConstant.OS_NO);
+        // 参数检验
+        if (masterOrderInfo == null) {
+            ri.setMessage("订单" + masterOrderSn + "在近三个月的记录中，没有取得订单信息!");
+            return ri;
+        }
+
+        //校验是否为当前用户锁定
+        if (masterOrderInfo.getLockStatus() == OrderItemConstant.OI_LOCK_STATUS_UNLOCKED
+            || !judgeSelfLock(masterOrderInfo.getLockStatus(), userId, actionUser)) {
+            ri.setMessage(" 订单" + masterOrderSn + "要处于已锁定状态！");
+            return ri;
+        }
+
+        //校验拆单
+        Byte splitStatus = masterOrderInfo.getSplitStatus();
+        if (splitStatus == 0) {
+            ri.setMessage("订单" + masterOrderSn + "未拆单");
+            return ri;
+        }
+
+        //校验交货单
+        List<OrderItemDepotDetail> depotDetails = masterOrderInfo.getDepotDetails();
+        if (depotDetails == null || depotDetails.size() < 1) {
+            ri.setMessage("订单" + masterOrderSn + "无有效交货单信息");
+            return ri;
+        }
+        boolean flag = false;
+        for (OrderItemDepotDetail depotDetail : depotDetails) {
+            int depotStatus = depotDetail.getDepotStatus();
+            if (depotStatus == 0) {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            ri.setMessage("订单" + masterOrderSn + "已分仓");
+            return ri;
+        }
+
+        ri.setIsOk(OrderItemConstant.OS_YES);
+        return ri;
+    }
+
+    public Integer getLock() {
 		return lock;
 	}
 
@@ -1261,4 +1321,12 @@ public class OrderItemStatusUtils implements Serializable {
 	public void setAddExtra(Integer addExtra) {
 		this.addExtra = addExtra;
 	}
+
+    public Integer getArtificialDepot() {
+        return artificialDepot;
+    }
+
+    public void setArtificialDepot(Integer artificialDepot) {
+        this.artificialDepot = artificialDepot;
+    }
 }

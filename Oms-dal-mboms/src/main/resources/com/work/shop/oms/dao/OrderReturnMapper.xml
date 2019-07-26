@@ -59,6 +59,7 @@
     <result column="base_bv_value" jdbcType="INTEGER" property="baseBvValue" />
     <result column="store_code" jdbcType="VARCHAR" property="storeCode" />
     <result column="store_name" jdbcType="VARCHAR" property="storeName" />
+    <result column="sellted_bill_status" property="selltedBillStatus" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.work.shop.oms.bean.OrderReturn">
     <!--
@@ -146,7 +147,7 @@
     payment, return_integral_money, return_shipping, return_tax, return_pack_money, return_card, 
     return_other_money, add_time, confirm_time, clear_time, lock_time, update_time, integral_money, 
     master_order_sn, init_clear_time, to_erp, storage_status, settle_status, site_code, 
-    shop_name, bv_value, points, base_bv_value, store_code, store_name
+    shop_name, bv_value, points, base_bv_value, store_code, store_name, sellted_bill_status
   </sql>
   <sql id="Blob_Column_List">
     <!--
@@ -252,7 +253,7 @@
       init_clear_time, to_erp, storage_status, 
       settle_status, site_code, shop_name, 
       bv_value, points, base_bv_value, 
-      store_code, store_name, return_desc
+      store_code, store_name, return_desc, sellted_bill_status
       )
     values (#{returnSn,jdbcType=VARCHAR}, #{relatingOrderSn,jdbcType=VARCHAR}, #{relatingOrderType,jdbcType=INTEGER}, 
       #{returnType,jdbcType=TINYINT}, #{returnOrderStatus,jdbcType=TINYINT}, #{payStatus,jdbcType=TINYINT}, 
@@ -271,7 +272,7 @@
       #{initClearTime,jdbcType=TIMESTAMP}, #{toErp,jdbcType=TINYINT}, #{storageStatus,jdbcType=TINYINT}, 
       #{settleStatus,jdbcType=TINYINT}, #{siteCode,jdbcType=VARCHAR}, #{shopName,jdbcType=VARCHAR}, 
       #{bvValue,jdbcType=INTEGER}, #{points,jdbcType=DECIMAL}, #{baseBvValue,jdbcType=INTEGER}, 
-      #{storeCode,jdbcType=VARCHAR}, #{storeName,jdbcType=VARCHAR}, #{returnDesc,jdbcType=LONGVARCHAR}
+      #{storeCode,jdbcType=VARCHAR}, #{storeName,jdbcType=VARCHAR}, #{returnDesc,jdbcType=LONGVARCHAR}, #{selltedBillStatus}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.OrderReturn">
@@ -443,6 +444,9 @@
       <if test="returnDesc != null">
         return_desc,
       </if>
+      <if test="selltedBillStatus != null">
+        sellted_bill_status,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="returnSn != null">
@@ -606,6 +610,9 @@
       </if>
       <if test="returnDesc != null">
         #{returnDesc,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="selltedBillStatus != null">
+        #{selltedBillStatus},
       </if>
     </trim>
   </insert>
@@ -791,6 +798,9 @@
         <if test="record.isDel != null">
             is_del = #{record.isDel,jdbcType=INTEGER},
         </if>
+        <if test="record.selltedBillStatus != null">
+            sellted_bill_status = #{record.selltedBillStatus},
+        </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -856,7 +866,8 @@
       store_code = #{record.storeCode,jdbcType=VARCHAR},
       store_name = #{record.storeName,jdbcType=VARCHAR},
       is_del = #{record.isDel,jdbcType=INTEGER},
-      return_desc = #{record.returnDesc,jdbcType=LONGVARCHAR}
+      return_desc = #{record.returnDesc,jdbcType=LONGVARCHAR},
+      sellted_bill_status = #{record.selltedBillStatus}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -920,7 +931,8 @@
       base_bv_value = #{record.baseBvValue,jdbcType=INTEGER},
       store_code = #{record.storeCode,jdbcType=VARCHAR},
       is_del = #{record.isDel,jdbcType=INTEGER},
-      store_name = #{record.storeName,jdbcType=VARCHAR}
+      store_name = #{record.storeName,jdbcType=VARCHAR},
+      sellted_bill_status = #{record.selltedBillStatus}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -1094,6 +1106,10 @@
         <if test="isDel != null">
             is_del = #{isDel,jdbcType=INTEGER},
         </if>
+        <if test="selltedBillStatus != null">
+            sellted_bill_status = #{selltedBillStatus},
+        </if>
+
     </set>
     where return_sn = #{returnSn,jdbcType=VARCHAR}
   </update>
@@ -1156,7 +1172,8 @@
       store_code = #{storeCode,jdbcType=VARCHAR},
       store_name = #{storeName,jdbcType=VARCHAR},
       is_del = #{isDel,jdbcType=INTEGER},
-      return_desc = #{returnDesc,jdbcType=LONGVARCHAR}
+      return_desc = #{returnDesc,jdbcType=LONGVARCHAR},
+      sellted_bill_status = #{selltedBillStatus}
     where return_sn = #{returnSn,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.work.shop.oms.bean.OrderReturn">
@@ -1217,7 +1234,8 @@
       base_bv_value = #{baseBvValue,jdbcType=INTEGER},
       store_code = #{storeCode,jdbcType=VARCHAR},
       is_del = #{isDel,jdbcType=INTEGER},
-      store_name = #{storeName,jdbcType=VARCHAR}
+      store_name = #{storeName,jdbcType=VARCHAR}，
+      sellted_bill_status = #{selltedBillStatus}
     where return_sn = #{returnSn,jdbcType=VARCHAR}
   </update>
 </mapper>

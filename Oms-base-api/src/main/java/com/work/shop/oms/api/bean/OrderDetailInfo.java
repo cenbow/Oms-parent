@@ -409,6 +409,16 @@ public class OrderDetailInfo  implements Serializable{
      * 子公司名称
      */
     private String companyName;
+
+    /**
+     * 最后确认收货时间
+     */
+    private String lastDeliveryConfirmTime;
+
+    /**
+     * 订单取消原因
+     */
+    private String orderCancel;
 	
 	public int getOrderType() {
         return orderType;
@@ -976,5 +986,21 @@ public class OrderDetailInfo  implements Serializable{
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
+    }
+
+    public String getLastDeliveryConfirmTime() {
+        return lastDeliveryConfirmTime;
+    }
+
+    public void setLastDeliveryConfirmTime(String lastDeliveryConfirmTime) {
+        this.lastDeliveryConfirmTime = lastDeliveryConfirmTime;
+    }
+
+    public String getOrderCancel() {
+        return orderCancel;
+    }
+
+    public void setOrderCancel(String orderCancel) {
+        this.orderCancel = orderCancel;
     }
 }

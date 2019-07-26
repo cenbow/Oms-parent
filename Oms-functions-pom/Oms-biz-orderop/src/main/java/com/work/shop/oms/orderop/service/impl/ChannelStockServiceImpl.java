@@ -518,6 +518,11 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 			if (Constant.OI_PAY_STATUS_PAYED == master.getPayStatus()) {
 				isPay = true;
 			}
+
+			if (isPay) {
+				ri.setMessage("订单" + masterOrderSn + "已付款,不返回库存");
+				return ri;
+			}
 			
 			if (master.getShipStatus() > Constant.OI_SHIP_STATUS_UNSHIPPED) {
 				if (isPay) {

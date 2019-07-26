@@ -95,4 +95,12 @@ public interface OrderDistributeDefineMapper {
 	 */
 	@ReadOnly
 	List<OrderShipGoodsItem> getOrderDistributeOutGoodsList(Map<String, Object> map);
+
+    /**
+	 * 获取超时自动收货列表
+	 * @param map
+	 * @return
+	 */
+    @ReadOnly
+    List<String> getShipTimeoutOrderByOrder(Map<String, Object> map);
 }

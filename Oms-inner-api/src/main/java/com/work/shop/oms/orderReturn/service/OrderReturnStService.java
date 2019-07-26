@@ -9,18 +9,19 @@ import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.vo.ReturnOrderParam;
 import com.work.shop.oms.vo.SettleBillQueue;
 
-
+/**
+ * 退单服务
+ * @author QuYachu
+ */
 public interface OrderReturnStService {
-    
+
     /**
      * 退单入库
-     * @param returnSn 退单号
-     * @param actionNote 退单备注
-     * @param actionUser 操作人
-     * @param userId 操作人
-     * @return
+     * @param returnOrderParam
+     * @return ReturnInfo<String>
      */
-    public ReturnInfo<String> returnOrderStorage(ReturnOrderParam returnOrderParam);
+    ReturnInfo<String> returnOrderStorage(ReturnOrderParam returnOrderParam);
+
 //  public ReturnInfo returnOrderStorage(String returnSn,String actionNote,String actionUser,Integer userId);
     /**
      * 退单入库撤销
@@ -32,9 +33,9 @@ public interface OrderReturnStService {
      * @param returnSn 退单号
      * @param actionNote 退单备注
      * @param actionUser 操作人
-     * @return
+     * @return ReturnInfo<String>
      */
-    public ReturnInfo<String> returnOrderSettle(String returnSn,String actionNote,String actionUser);
+    ReturnInfo<String> returnOrderSettle(String returnSn, String actionNote, String actionUser);
     
     /**
      * 退单确认 + 确认后自动追单
@@ -53,15 +54,13 @@ public interface OrderReturnStService {
      * @return
      */
     public ReturnInfo<String> returnOrderUnConfirm(String returnSn,String actionNote,String actionUser);
-    
+
     /**
      * 退单已收货
-     * @param returnSn 退单号
-     * @param actionNote 退单备注
-     * @param actionUser 操作人
-     * @return
+     * @param returnOrderParam
+     * @return ReturnInfo<String>
      */
-    public ReturnInfo<String> returnOrderReceive(ReturnOrderParam returnOrderParam);
+    ReturnInfo<String> returnOrderReceive(ReturnOrderParam returnOrderParam);
     
     /**
      * 退单未收货
@@ -71,15 +70,13 @@ public interface OrderReturnStService {
      * @return
      */
     public ReturnInfo<String> returnOrderUnReceive(ReturnOrderParam returnOrderParam);
-    
+
     /**
      * 退单质检通过
-     * @param returnSn 退单号
-     * @param actionNote 退单备注
-     * @param actionUser 操作人
-     * @return
+     * @param returnOrderParam
+     * @return ReturnInfo<String>
      */
-    public ReturnInfo<String> returnOrderPass(ReturnOrderParam returnOrderParam);
+    ReturnInfo<String> returnOrderPass(ReturnOrderParam returnOrderParam);
     
     /**
      * 退单质检不通过

@@ -41,10 +41,11 @@
 	<!-- 第三方退单查询接口 -->
   	<select id="getReturnInfoPageList" parameterType="com.work.shop.oms.api.param.bean.ReturnSearchParams" resultType="com.work.shop.oms.api.bean.ReturnInfoPage">
   		select 
-			orn.return_sn returnSn,orn.master_order_sn masterOrderSn,orn.relating_order_sn relatingOrderSn ,orn.return_total_fee returnTotalFee ,
-			orn.return_reason returnReason ,orn.return_order_status returnOrderStatus,
-			orn.add_time addTime,orn.clear_time clearTime  ,oi.user_name userName,ors.return_invoice_no returnInvoiceNo,
-			ss.shipping_name shippingName
+			orn.return_sn returnSn, orn.master_order_sn masterOrderSn, orn.relating_order_sn relatingOrderSn,
+			orn.return_total_fee returnTotalFee, orn.return_reason returnReason, orn.return_order_status returnOrderStatus,
+			orn.add_time addTime, orn.clear_time clearTime, oi.user_name userName, ors.return_invoice_no returnInvoiceNo,
+			ss.shipping_name shippingName, org.seller seller, orn.pay_status payStatus, orn.ship_status shipStatus,
+			orn.sellted_bill_status selltedBillStatus
 		from  order_return orn  left join master_order_info oi on orn.master_order_sn = oi.master_order_sn
 		left join order_return_ship ors on orn.return_sn = ors.relating_return_sn
 		left join system_shipping ss on ors.return_express = ss.shipping_code
@@ -52,6 +53,21 @@
 		where 1=1 and orn.return_type in (1,2)
 			<if test="returnSn != null">
 				and orn.return_sn = #{returnSn}
+			</if>
+			<if test="returnSnList != null">
+				and orn.return_sn in
+				<foreach collection="returnSnList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="payStatus != null">
+				and orn.pay_status = #{payStatus}
+			</if>
+			<if test="shipStatus != null">
+				and orn.ship_status = #{shipStatus}
+			</if>
+			<if test="selltedBillStatus != null">
+				and orn.sellted_bill_status = #{selltedBillStatus}
 			</if>
 			<if test="userName != null">
 				and oi.user_name like  CONCAT('%','${userName}','%' )
@@ -117,6 +133,21 @@
 			<if test="returnSn != null">
 				and orn.return_sn = #{returnSn}
 			</if>
+			<if test="returnSnList != null">
+				and orn.return_sn in
+				<foreach collection="returnSnList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="payStatus != null">
+				and orn.pay_status = #{payStatus}
+			</if>
+			<if test="shipStatus != null">
+				and orn.ship_status = #{shipStatus}
+			</if>
+			<if test="selltedBillStatus != null">
+				and orn.sellted_bill_status = #{selltedBillStatus}
+			</if>
 			<if test="userName != null">
 				and oi.user_name like  CONCAT('%','${userName}','%' )
 			</if>
@@ -171,7 +202,7 @@
   	
   	<!--根据供销商编码、时间段查询该供销商所有的退单-->
   	<select id="getOrderReturnForSeller" parameterType="map" resultType="com.work.shop.oms.api.bean.OrderReturnForSellers">
-  		select orn.return_sn returnSn,orn.return_order_status returnOrderStatus
+  		select orn.return_sn returnSn, orn.return_order_status returnOrderStatus
   	    from order_return orn left join order_return_goods org on orn.return_sn =org.relating_return_sn  
 		where 1=1 and orn.return_type in (1,2)
 		<if test="returnOrderStatus != null">

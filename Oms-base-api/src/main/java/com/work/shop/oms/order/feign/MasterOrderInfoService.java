@@ -66,4 +66,11 @@ public interface MasterOrderInfoService {
      */
     @PostMapping("/order/insertOrderActionBySn")
     public void insertOrderActionBySn(OmsRequest request);
+
+    /**
+     * 更新订单推送供应链状态
+     * @param request
+     */
+    @PostMapping("/order/updatePushSupplyChain")
+    public Boolean updatePushSupplyChain(OmsRequest request);
 }

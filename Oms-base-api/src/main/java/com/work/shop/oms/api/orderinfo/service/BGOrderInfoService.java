@@ -238,7 +238,7 @@ public interface BGOrderInfoService {
 	 * @param siteCode 站点编码
 	 * @return ReturnInfo<Boolean>
 	 */
-	public ReturnInfo<Boolean> confirmReceipt(String orderSn, String invoiceNo, String actionUser, String siteCode);
+	ReturnInfo<Boolean> confirmReceipt(String orderSn, String invoiceNo, String actionUser, String siteCode);
 	
 	/**
 	 * 确认收货接口

@@ -143,4 +143,24 @@ public interface BgReturnChangeService {
      */
     @PostMapping("/order/getChangeOrderTypeNum")
     public ApiReturnData<UserOrderTypeNum> getChangeOrderTypeNum(@RequestBody PageListParam param);
+
+    /**
+     * 申请单审核（自动创建退单并确认）
+     * @param returnChangeGoodsBean
+     * @return
+     */
+    @PostMapping("/order/examinationPassed")
+    public ApiReturnData<Boolean> examinationPassed(@RequestBody CreateGoodsReturnChange returnChangeGoodsBean);
+
+    /**
+     * 申请单驳回
+     * @param channelCode 店铺编码
+     * @param returnChangeSn 申请单号
+     * @param siteCode 站点编码
+     * @return GoodsReturnChangeReturnInfo
+     */
+    @PostMapping("/order/rejectGoodsReturnChange")
+    public GoodsReturnChangeReturnInfo rejectGoodsReturnChange(@RequestParam(name="channelCode") String channelCode,
+                                                               @RequestParam(name="returnChangeSn") String returnChangeSn,
+                                                               @RequestParam(name="siteCode") String siteCode);
 }

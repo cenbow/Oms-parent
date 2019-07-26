@@ -258,6 +258,11 @@ public class MasterOrder implements Serializable{
      */
 	private Byte orderType;
 
+    /**
+     * 发票注册电话
+     */
+	private String invPhone;
+
 	private List<Integer> promotionSummry = new ArrayList<Integer>();
 
     /**
@@ -441,6 +446,11 @@ public class MasterOrder implements Serializable{
      * 是否需要审核 0不需要、1需要
      */
 	private Integer needAudit;
+
+	/**
+	 * 是否需要合同签章 0不需要、1需要
+	 */
+	private Integer needSign;
 
     /**
      * 客户合同号
@@ -1317,4 +1327,20 @@ public class MasterOrder implements Serializable{
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
     }
+
+    public String getInvPhone() {
+        return invPhone;
+    }
+
+    public void setInvPhone(String invPhone) {
+        this.invPhone = invPhone;
+    }
+
+	public Integer getNeedSign() {
+		return needSign;
+	}
+
+	public void setNeedSign(Integer needSign) {
+		this.needSign = needSign;
+	}
 }

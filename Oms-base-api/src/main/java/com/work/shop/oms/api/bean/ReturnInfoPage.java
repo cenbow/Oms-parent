@@ -4,50 +4,97 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * 退单信息
+ * @author QuYachu
+ */
 public class ReturnInfoPage implements Serializable {
 
 	private static final long serialVersionUID = 692789479987628628L;
 	
 	//退货单号、退货明细（商品名称、退货金额、退货数量、商品编码、商家货号）、发货单号、退货人姓名、退货金额、退货申请时间、退货完成时间 
-	
-	//退货单号
-	private String returnSn; 
-	
-	//主单号
+
+    /**
+     * 退货单号
+     */
+	private String returnSn;
+
+    /**
+     * 主单号
+     */
 	private String masterOrderSn;
-	
-	//子单号
+
+    /**
+     * 子单号
+     */
 	private String relatingOrderSn;
-	
-	//退货明细（商品名称、退货金额、退货数量、商品编码、商家货号）
+
+    /**
+     * 退货明细（商品名称、退货金额、退货数量、商品编码、商家货号）
+     */
 	private List<ReturnGoods> returnGoods;
-	
-	// 退货人姓名
-	private String userName;// master_order_info
-	
-	//退款金额
+
+    /**
+     * 退货人姓名
+     */
+	private String userName;
+
+    /**
+     * 退款金额
+     */
 	private Double returnTotalFee;
-	
-	//退货申请时间
+
+    /**
+     * 退货申请时间
+     */
 	private Date addTime;
-	
-	//退货完成时间 
+
+    /**
+     * 退货完成时间
+     */
 	private Date clearTime;
-	
-	//退单原因
-	private String returnReason;//order_custom_define(open_shop)
+
+    /**
+     * 退单原因
+     */
+	private String returnReason;
 	
 	private String returnReasonName;
-	
-	//退单快递单号
-	private String returnInvoiceNo;//order_return_ship
-	
-	//承运商
-	private String shippingName;//system_shipping
-	
-	//退单状态
+
+    /**
+     * 退单快递单号
+     */
+	private String returnInvoiceNo;
+
+    /**
+     * 承运商
+     */
+	private String shippingName;
+
+    /**
+     * 退单状态
+     */
 	private Integer returnOrderStatus;
+
+	/**
+	 * 退款总状态（0，未结算；1，已结算；2，待结算）
+	 */
+	private Integer payStatus;
+
+	/**
+	 * 退单发货：0未收货;1已收货未质检;2.质检通过待入库;3已入库
+	 */
+	private Integer shipStatus;
+
+	/**
+	 * 对账单状态 0未生成、1已生成
+	 */
+	private Integer selltedBillStatus;
+
+	/**
+	 * 供应商
+	 */
+	private String seller;
 
 	public String getMasterOrderSn() {
         return masterOrderSn;
@@ -152,5 +199,36 @@ public class ReturnInfoPage implements Serializable {
 	public void setReturnReasonName(String returnReasonName) {
 		this.returnReasonName = returnReasonName;
 	}
-	
+
+	public String getSeller() {
+		return seller;
+	}
+
+	public void setSeller(String seller) {
+		this.seller = seller;
+	}
+
+	public Integer getPayStatus() {
+		return payStatus;
+	}
+
+	public void setPayStatus(Integer payStatus) {
+		this.payStatus = payStatus;
+	}
+
+	public Integer getShipStatus() {
+		return shipStatus;
+	}
+
+	public void setShipStatus(Integer shipStatus) {
+		this.shipStatus = shipStatus;
+	}
+
+	public Integer getSelltedBillStatus() {
+		return selltedBillStatus;
+	}
+
+	public void setSelltedBillStatus(Integer selltedBillStatus) {
+		this.selltedBillStatus = selltedBillStatus;
+	}
 }

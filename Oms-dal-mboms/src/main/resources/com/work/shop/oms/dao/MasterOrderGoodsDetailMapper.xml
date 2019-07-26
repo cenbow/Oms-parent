@@ -551,10 +551,11 @@
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName
         FROM 
             master_order_goods t
-        LEFT JOIN 
+        LEFT JOIN
             order_depot_ship b 
         ON b.order_sn = t.order_sn 
         AND b.depot_code = t.depot_code
+        AND b.invoice_no = t.invoice_no
         AND b.is_del = 0
         LEFT JOIN 
             order_question_lack_sku_new lack
@@ -568,6 +569,28 @@
             and t.master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
         GROUP BY t.order_sn,t.extension_code,t.custom_code,t.transaction_price,t.settlement_price,t.depot_code,t.use_card
         /* maxscale route to master */;
+    </select>
+
+    <select id="getOrderGoodsDetailByOrder" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
+        SELECT
+            t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code,
+            t.extension_id, t.goods_number AS goods_number, t.goods_price, t.transaction_price, t.settlement_price, t.discount AS discount,
+            t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb,
+            t.send_number AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points,
+            t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId,
+            t.sellerUser, t.is_del, t.promotion_id, t.c2m_item, t.protect_falg, t.supplier_code,t.sales_mode,
+            t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value,
+            t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
+            t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.invoice_no invoiceNo
+        FROM
+            master_order_goods t
+        where
+            t.is_del = 0
+            and t.order_sn in
+            <foreach collection="list" item="orderSn" open="(" close=")" separator=",">
+                #{orderSn}
+            </foreach>
+        ORDER BY t.invoice_no
     </select>
     
     <select id="getMasterOrderGoodsByDepot" parameterType="com.work.shop.oms.bean.MasterOrderGoods" resultMap="MasterOrderGoodsBaseResultMap">

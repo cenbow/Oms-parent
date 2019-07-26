@@ -13,9 +13,11 @@ import javax.annotation.Resource;
 import com.work.shop.oms.api.bean.*;
 import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
+import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.GoodsReturnChangeService;
 import com.work.shop.oms.utils.DateTimeUtils;
+import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -26,12 +28,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.api.param.bean.Paging;
 import com.work.shop.oms.bean.SystemRegionAreaExample.Criteria;
-import com.work.shop.oms.common.bean.ApiReturnData;
-import com.work.shop.oms.common.bean.ConstantValues;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.common.bean.TimeUtil;
-import com.work.shop.oms.common.utils.StringUtil;
 import com.work.shop.oms.config.service.OrderPeriodDetailService;
 import com.work.shop.oms.dao.define.DefineOrderMapper;
 import com.work.shop.oms.order.response.OmsBaseResponse;
@@ -93,6 +89,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
 	@Resource
 	private GoodsReturnChangeMapper goodsReturnChangeMapper;
+
+	@Resource
+	private OrderReturnGoodsMapper orderReturnGoodsMapper;
 
 	/**
 	 * 判断查询订单列表参数
@@ -258,6 +257,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 						for (OrderShipInfo orderShip : shipList) {
 							Map<String, Object> goodsParams = new HashMap<String, Object>(6);
 							goodsParams.put("orderSn",orderShip.getOrderSn());
+							if (StringUtils.isNotBlank(orderShip.getInvoiceNo())) {
+                                goodsParams.put("invoiceNo",orderShip.getInvoiceNo());
+                            }
 							goodsParams.put("depotCode",orderShip.getDepotCode());
 							goodsParams.put("isHistory", searchParam.getIsHistory());
 							List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
@@ -644,12 +646,16 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 				shipList.add(orderShipInfo);
 			} else {
 				//已拆单时商品查询
+                boolean flag = true;
+                String lastDeliveryConfirmTime = "";
 				for (OrderShipInfo orderShip : shipList) {
 					Map<String, Object> goodsParams = new HashMap<String, Object>();
                     goodsParams.put("orderSn", orderShip.getOrderSn());
                     goodsParams.put("depotCode", orderShip.getDepotCode());
                     goodsParams.put("isHistory", isHistory);
-                    goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
+                    if (StringUtils.isNotBlank(orderShip.getInvoiceNo())) {
+                        goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
+                    }
 					List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
 					setGoodsInfo(orderGoodsList);
 					for (OrderGoodsInfo orderGoodsInfo : orderGoodsList) {
@@ -662,7 +668,19 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 						}
 					}
 					orderShip.setOrderGoodsInfo(orderGoodsList);
+
+					//获取最后收货时间,包裹收货时间不为空,只要有未收货包裹，则无整单确认收货时间
+                    if (flag && StringUtils.isNotBlank(orderShip.getDeliveryConfirmTime())) {
+                        if (StringUtils.isBlank(lastDeliveryConfirmTime) || lastDeliveryConfirmTime.compareTo(orderShip.getDeliveryConfirmTime()) < 0) {
+                            lastDeliveryConfirmTime = orderShip.getDeliveryConfirmTime();
+                        }
+                    } else {
+                        flag = false;
+                        lastDeliveryConfirmTime = "";
+                    }
 				}
+				//填充订单确认收货时间
+                orderDetailInfo.setLastDeliveryConfirmTime(lastDeliveryConfirmTime);
 				//合并相同快递单号的物流信息
 				shipList = mergeSameInvoiceNo(shipList);
 			}
@@ -753,6 +771,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		if (list == null || list.size() == 0) {
 			return;
 		}
+
+		//获取退单商品信息
+        Map<String, OrderReturnGoods> returnGoodsMap = getOrderReturnGoodsMap(orderDetailInfo.getOrderSn());
+		if (returnGoodsMap == null) {
+            returnGoodsMap = new HashMap<String, OrderReturnGoods>();
+        }
 		
 		int goodsNumber = 0;
 		for (OrderShipInfo orderShipInfo : list) {
@@ -765,14 +789,66 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 				for (OrderGoodsInfo orderGoodsInfo : goodsList) {
 					goodsNumber += orderGoodsInfo.getGoodsNum();
 					logger.info("orderDetailInfo-->goodsNumber:" + goodsNumber);
+
+					//填充退单数量
+                    String key = orderGoodsInfo.getSkuSn() + "_" + orderGoodsInfo.getExtensionCode();
+                    OrderReturnGoods returnGoods = returnGoodsMap.get(key);
+                    int canChangeNum = 0;
+                    if (returnGoods == null) {
+                        canChangeNum = orderGoodsInfo.getGoodsNum();
+                    } else {
+                        canChangeNum = orderGoodsInfo.getGoodsNum() - returnGoods.getGoodsReturnNumber();
+                        orderGoodsInfo.setReturnGoodsNum(returnGoods.getGoodsReturnNumber());
+                    }
+                    orderGoodsInfo.setCanChangeNum(canChangeNum);
 				}
 			}
 		}
 		orderDetailInfo.setGoodsNumber(goodsNumber);
 		//logger.info("orderDetailInfo:" + JSONObject.toJSONString(orderDetailInfo));
 	}
-	
-	private String encryptionMobile(String  mobile) {
+
+    /**
+     * 获取退单信息
+     * @param orderSn
+     * @return
+     */
+    private Map<String, OrderReturnGoods> getOrderReturnGoodsMap(String orderSn) {
+        OrderReturnExample returnExample = new OrderReturnExample();
+        returnExample.or().andRelatingOrderSnEqualTo(orderSn).andIsDelEqualTo(0).andReturnOrderStatusNotEqualTo((byte) 4);
+        List<OrderReturn> orderReturnList = orderReturnMapper.selectByExample(returnExample);
+        if (StringUtil.isListNull(orderReturnList)) {
+            return null;
+        }
+
+        List<String> returnSnList = new ArrayList<String>();
+        for (OrderReturn orderReturn : orderReturnList) {
+            returnSnList.add(orderReturn.getReturnSn());
+        }
+
+        OrderReturnGoodsExample goodsExample = new OrderReturnGoodsExample();
+        goodsExample.or().andRelatingReturnSnIn(returnSnList);
+        List<OrderReturnGoods> orderReturnGoodsList = orderReturnGoodsMapper.selectByExample(goodsExample);
+        if (StringUtil.isListNull(orderReturnGoodsList)) {
+            return null;
+        }
+
+        Map<String, OrderReturnGoods> map = new HashMap<String, OrderReturnGoods>();
+        for (OrderReturnGoods returnGoods : orderReturnGoodsList) {
+            String key = returnGoods.getCustomCode() + "_" + returnGoods.getExtensionCode();
+            OrderReturnGoods goods = map.get(key);
+            if (goods != null) {
+                Integer returnNum = goods.getGoodsReturnNumber() + returnGoods.getGoodsReturnNumber();
+                returnGoods.setGoodsReturnNumber(returnNum.shortValue());
+            }
+
+            map.put(key, returnGoods);
+        }
+
+        return map;
+    }
+
+    private String encryptionMobile(String  mobile) {
 		if (mobile.length() == 11) {
 			return mobile.substring(0,3) + "****" + mobile.substring(7,11);
 		} else {
@@ -1034,6 +1110,25 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		return returnInfo;
 	}
 
+    /**
+     * 判断确认收货参数
+     * @param orderSn
+     * @param actionUser
+     * @return
+     */
+	private String checkConfirmReceipt(String orderSn, String actionUser) {
+	    String msg = null;
+        if (StringUtils.isBlank(orderSn)) {
+            msg = "订单号不能为空";
+            return msg;
+        }
+        if (StringUtils.isBlank(actionUser)) {
+            msg = "actionUser不能为空";
+            return msg;
+        }
+        return msg;
+    }
+
 	/**
 	 * 确认收货
 	 * @param orderSn 订单编码
@@ -1047,14 +1142,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		logger.info("confirmReceipt.orderSn:" + orderSn + ",invoiceNo:" + invoiceNo + ",actionUser:" + actionUser);
 		ReturnInfo<Boolean> ri = new ReturnInfo<Boolean>(Constant.OS_NO);
 		try {
-			if (StringUtils.isBlank(orderSn)) {
-				ri.setMessage("订单号不能为空");
+		    String msg = checkConfirmReceipt(orderSn, actionUser);
+			if (StringUtils.isNotBlank(msg)) {
+				ri.setMessage(msg);
 				return ri;
 			}
-			if (StringUtils.isBlank(actionUser)) {
-				ri.setMessage("actionUser不能为空！");
-				return ri;
-			}
+
 			MasterOrderInfo orderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderSn);
 			if (orderInfo == null) {
 				ri.setMessage(orderSn + "订单不存在");
@@ -1074,11 +1167,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 					ri.setMessage(orderSn + "订单未全部发货，不能确认收货！");
 					return ri;
 				}
-				MasterOrderInfo updateOrderInfo = new MasterOrderInfo(); 
-				updateOrderInfo.setUpdateTime(new Date());
-				updateOrderInfo.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
-				updateOrderInfo.setMasterOrderSn(orderSn);
-				masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrderInfo);
+				// 设置订单已收货
+                setMasterOrderInfoShipReceived(orderSn);
 
 				OrderDistributeExample orderDistributeExample = new OrderDistributeExample();
 				orderDistributeExample.or().andMasterOrderSnEqualTo(orderSn);
@@ -1087,28 +1177,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 					ri.setMessage("未找到对应的交货单！");
 					return ri;
 				}
-				for (OrderDistribute orderDistribute : orderDistributeList) {
-					if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
-						continue;
-					}
-					OrderDistribute updateOrderDistribute = new OrderDistribute();
-					updateOrderDistribute.setUpdateTime(new Date());
-					updateOrderDistribute.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
-					updateOrderDistribute.setOrderSn(orderDistribute.getOrderSn());
-					orderDistributeMapper.updateByPrimaryKeySelective(updateOrderDistribute);
-					OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
-					orderDepotShipExample.or().andOrderSnEqualTo(orderDistribute.getOrderSn());
-					List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
-					for (OrderDepotShip orderDepotShip : orderDepotShipList) {
-						if (orderDepotShip.getIsDel() == 1) {
-							continue;
-						}
-						orderDepotShip.setUpdateTime(new Date());
-						orderDepotShip.setShippingStatus((byte)Constant.OS_SHIPPING_STATUS_CONFIRM);
-						orderDepotShip.setDeliveryConfirmTime(new Date());
-						orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
-					}
-				}
+				// 设置交货单已收货
+                setOrderDistributeShipReceived(orderDistributeList);
 			} else {
 				OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
 				orderDepotShipExample.or().andInvoiceNoEqualTo(invoiceNo);
@@ -1213,6 +1283,47 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		}
 		return ri;
 	}
+
+	/**
+	 * 设置订单已收货
+	 * @param masterOrderSn
+	 */
+	private void setMasterOrderInfoShipReceived(String masterOrderSn) {
+		MasterOrderInfo updateOrderInfo = new MasterOrderInfo();
+		updateOrderInfo.setUpdateTime(new Date());
+		updateOrderInfo.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
+		updateOrderInfo.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrderInfo);
+	}
+
+    /**
+     * 设置交货单已收货
+     * @param orderDistributeList
+     */
+	private void setOrderDistributeShipReceived(List<OrderDistribute> orderDistributeList) {
+        for (OrderDistribute orderDistribute : orderDistributeList) {
+            if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
+                continue;
+            }
+            OrderDistribute updateOrderDistribute = new OrderDistribute();
+            updateOrderDistribute.setUpdateTime(new Date());
+            updateOrderDistribute.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
+            updateOrderDistribute.setOrderSn(orderDistribute.getOrderSn());
+            orderDistributeMapper.updateByPrimaryKeySelective(updateOrderDistribute);
+            OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
+            orderDepotShipExample.or().andOrderSnEqualTo(orderDistribute.getOrderSn());
+            List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
+            for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+                if (orderDepotShip.getIsDel() == 1) {
+                    continue;
+                }
+                orderDepotShip.setUpdateTime(new Date());
+                orderDepotShip.setShippingStatus((byte)Constant.OS_SHIPPING_STATUS_CONFIRM);
+                orderDepotShip.setDeliveryConfirmTime(new Date());
+                orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
+            }
+        }
+    }
 
 	/**
 	 * 通过支付单号获取订单商品

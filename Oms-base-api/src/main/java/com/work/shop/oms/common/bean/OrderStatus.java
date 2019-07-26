@@ -2,6 +2,7 @@ package com.work.shop.oms.common.bean;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 订单状态信息对象
@@ -22,6 +23,8 @@ public class OrderStatus implements Serializable {
 	
 	private String adminUser = "system";
 	
+	private String adminUserId;
+
 	private Integer userId = 0;
 	
 	private Integer isHistory = 0;
@@ -79,6 +82,21 @@ public class OrderStatus implements Serializable {
      * 支付方式编码
      */
     private String payCode;
+    
+	/**
+	 * 问题单类型列表（需要返回正常单的类型添加进来）
+	 */
+	private List<Integer> questionTypes;
+
+    /**
+     * 是否更新申请单状态
+     */
+    private boolean isUpdateReturnChangeStatus;
+
+    /**
+     * 退单类型，6为申请退款
+     */
+    private Integer returnType;
 
 	public OrderStatus() {
 		super();
@@ -342,5 +360,37 @@ public class OrderStatus implements Serializable {
 
     public void setPayCode(String payCode) {
         this.payCode = payCode;
+    }
+
+	public List<Integer> getQuestionTypes() {
+		return questionTypes;
+	}
+
+	public void setQuestionTypes(List<Integer> questionTypes) {
+		this.questionTypes = questionTypes;
+	}
+
+	public String getAdminUserId() {
+		return adminUserId;
+	}
+
+	public void setAdminUserId(String adminUserId) {
+		this.adminUserId = adminUserId;
+	}
+
+    public boolean isUpdateReturnChangeStatus() {
+        return isUpdateReturnChangeStatus;
+    }
+
+    public void setUpdateReturnChangeStatus(boolean updateReturnChangeStatus) {
+        isUpdateReturnChangeStatus = updateReturnChangeStatus;
+    }
+
+    public Integer getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Integer returnType) {
+        this.returnType = returnType;
     }
 }

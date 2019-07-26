@@ -1,8 +1,11 @@
 package com.work.shop.oms.common.bean;
 
+import com.work.shop.oms.bean.MasterOrderQuestionBean;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 订单详情
@@ -69,6 +72,22 @@ public class MasterOrderDetail implements Serializable {
 	private String invoicesOrganization;// 单据组织
 	private Integer isnow;// 是否立即下发ERP
 	private Integer source;// 1:跨境订单;3:线上订单(B2C)
+
+    /**
+     * 需要合同签章 0不需要、1需要
+     */
+    private Byte needSign;
+
+    /**
+     * 签章状态 0未签章、1已签章
+     */
+    private Byte signStatus;
+
+    /**
+     * 签章合同号
+     */
+    private String signContractNum;
+
 	// 主单扩展表字段
 	private Byte agdist;// 订单二次分配总数
 	private Byte isGroup;// 是否为团购订单
@@ -96,6 +115,9 @@ public class MasterOrderDetail implements Serializable {
 	private BigDecimal tax;// 发票税额
 	private Integer invoiceStatus;// 发票状态
 	private Integer deliveryStationId;// 发票ID
+    private String invPhone;
+    private Byte pushSupplyChain; //订单推送供应链，0未推送，1已推送
+
     /**
      * 是否需要审核 0不需要、1需要
      */
@@ -215,9 +237,19 @@ public class MasterOrderDetail implements Serializable {
 	private int userPayApply;
 
     /**
-     * 创建订单类型，1正常订单，2联采订单
+     * 创建订单类型，0正常订单，1联采订单
      */
 	private Integer createOrderType;
+
+    /**
+     * 公司id
+     */
+	private String companyId;
+
+    /**
+     * 交货单信息
+     */
+    private List<OrderItemDepotDetail> depotDetails;
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -1353,5 +1385,61 @@ public class MasterOrderDetail implements Serializable {
 
     public void setCreateOrderType(Integer createOrderType) {
         this.createOrderType = createOrderType;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public List<OrderItemDepotDetail> getDepotDetails() {
+        return depotDetails;
+    }
+
+    public void setDepotDetails(List<OrderItemDepotDetail> depotDetails) {
+        this.depotDetails = depotDetails;
+    }
+
+    public String getInvPhone() {
+        return invPhone;
+    }
+
+    public void setInvPhone(String invPhone) {
+        this.invPhone = invPhone;
+    }
+
+    public Byte getPushSupplyChain() {
+        return pushSupplyChain;
+    }
+
+    public void setPushSupplyChain(Byte pushSupplyChain) {
+        this.pushSupplyChain = pushSupplyChain;
+    }
+
+    public Byte getNeedSign() {
+        return needSign;
+    }
+
+    public void setNeedSign(Byte needSign) {
+        this.needSign = needSign;
+    }
+
+    public Byte getSignStatus() {
+        return signStatus;
+    }
+
+    public void setSignStatus(Byte signStatus) {
+        this.signStatus = signStatus;
+    }
+
+    public String getSignContractNum() {
+        return signContractNum;
+    }
+
+    public void setSignContractNum(String signContractNum) {
+        this.signContractNum = signContractNum;
     }
 }

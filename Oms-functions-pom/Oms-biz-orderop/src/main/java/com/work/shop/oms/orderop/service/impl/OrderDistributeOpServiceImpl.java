@@ -377,7 +377,14 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 		return info;
 	}
 
-	@SuppressWarnings("rawtypes")
+	/**
+	 * 订单结算
+	 * @param masterOrderSn
+	 * @param orderStatus message:备注;adminUser:操作人;userId:操作人唯一编号
+	 * @return ReturnInfo
+	 * @throws Exception
+	 */
+	@Override
 	public ReturnInfo settleOrder(String masterOrderSn, OrderStatus orderStatus) throws Exception {
 		logger.debug("订单结算：masterOrderSn=" + masterOrderSn + ";orderStatus=" + JSON.toJSONString(orderStatus));
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
@@ -406,7 +413,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 			return info;
 		}
 		//结算条件-订单状态验证
-		if(orderInfo.getOrderStatus().intValue() == ConstantValues.ORDER_STATUS.COMPLETE.intValue()){
+		if(orderInfo.getOrderStatus().intValue() == ConstantValues.ORDER_STATUS.INVALIDITY.intValue()){
 			info.setMessage("订单[" + masterOrderSn + "]订单已完结不可再结算");
 			return info;
 		}

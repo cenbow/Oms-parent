@@ -59,6 +59,21 @@ public class GoodsReturnChangeDetailBean implements Serializable {
      */
     private String supplierName;
 
+    /**
+     * 供应商编码
+     */
+    private String supplierCode;
+
+    /**
+     * 分仓编码
+     */
+    private String depotCode;
+
+    /**
+     * 成本价
+     */
+    private Double costPrice;
+
     public String getGoodsName() {
         return goodsName;
     }
@@ -217,5 +232,29 @@ public class GoodsReturnChangeDetailBean implements Serializable {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public String getDepotCode() {
+        return depotCode;
+    }
+
+    public void setDepotCode(String depotCode) {
+        this.depotCode = depotCode;
+    }
+
+    public String getSupplierCode() {
+        return supplierCode;
+    }
+
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
+    }
+
+    public Double getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(Double costPrice) {
+        this.costPrice = costPrice;
     }
 }

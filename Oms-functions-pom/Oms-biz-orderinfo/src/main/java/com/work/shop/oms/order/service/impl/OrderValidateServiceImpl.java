@@ -924,7 +924,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				BigDecimal tr = new BigDecimal(masterGoods.getTransactionPrice().toString());
 				// 商品数量
 				BigDecimal num = new BigDecimal(masterGoods.getGoodsNumber());
-				goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num, MathContext.DECIMAL32).doubleValue());
+				goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 			}
 		}
 		return goodsTranPrice;
@@ -933,12 +933,12 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	public double addPrice(double price1, double price2) {
 		BigDecimal p1 = new BigDecimal(price1);
 		BigDecimal p2 = new BigDecimal(price2);
-		return p1.add(p2, MathContext.DECIMAL32).doubleValue();
+		return p1.add(p2).doubleValue();
 	}
 
 	public double subPrice(double price1, double price2) {
 		BigDecimal p1 = new BigDecimal(price1);
 		BigDecimal p2 = new BigDecimal(price2);
-		return p1.subtract(p2, MathContext.DECIMAL32).doubleValue();
+		return p1.subtract(p2).doubleValue();
 	}
 }

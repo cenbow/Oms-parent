@@ -20,6 +20,11 @@ public class GoodsDistribute implements Serializable{
 	 */
 	private String supplierCode;
 
+    /**
+     * 供应商名称
+     */
+	private String supplierName;
+
 	/**
 	 * 发货仓编码
 	 */
@@ -87,4 +92,12 @@ public class GoodsDistribute implements Serializable{
 	public void setDistTime(String distTime) {
 		this.distTime = distTime;
 	}
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
 }

@@ -1121,8 +1121,9 @@ public class OrderStatusUtils {
 	 * 检查订单是否可以进行正常订单操作
 	 * 返回null表示此订单可以执行正常订单操作操作，否则表示不能执行
 	 * @param orderInfo
-	 * @param orderSn
-	 * @return
+	 * @param masterOrderSn
+	 * @param actionType
+	 * @return ReturnInfo
 	 */
 	public static ReturnInfo checkConditionOfExecution(MasterOrderInfo orderInfo, String masterOrderSn, String actionType) {
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);

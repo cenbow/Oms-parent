@@ -160,6 +160,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 	 * 退单入库
 	 * @param returnOrderParam
 	 */
+	@Override
 	public ReturnInfo<String> returnOrderStorage(ReturnOrderParam returnOrderParam) {
 		logger.info("退单入库 request:"+JSON.toJSONString(returnOrderParam));
 		ReturnInfo<String> returnInfo = new ReturnInfo<String>();
@@ -314,7 +315,8 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			
 			OrderReturnShip updateOrderReturnShip = new OrderReturnShip();
 			updateOrderReturnShip.setRelatingReturnSn(orderReturn.getReturnSn());
-			updateOrderReturnShip.setCheckinStatus(ConstantValues.ORDER_RETURN_CHECKINSTATUS.PARTINPUT.byteValue());//默认部分入库
+			//默认部分入库
+			updateOrderReturnShip.setCheckinStatus(ConstantValues.ORDER_RETURN_CHECKINSTATUS.PARTINPUT.byteValue());
 			updateOrderReturnShip.setCheckinTime(new Date());
 			
 			//当为全部入库或者所有商品都已入库时，将order_return和order_return_ship入库状态修改为已入库
@@ -335,7 +337,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			orderReturnMapper.updateByPrimaryKeySelective(updateOrderReturn);
 			orderReturnShipMapper.updateByPrimaryKeySelective(updateOrderReturnShip);
 			orderRefundMapper.updateByExampleSelective(updateOrderRefund, orderRefundExample);
-			orderReturnShip = orderReturnShipMapper.selectByPrimaryKey(returnSn);
+			//orderReturnShip = orderReturnShipMapper.selectByPrimaryKey(returnSn);
 			// 针对退换单对应的换货单中的待确认付款单做已付款处理,同时将换货单总付款状态已付款处理
 			/*if(orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS
 					&& StringUtils.isNotBlank(orderReturn.getNewOrderSn()) 
@@ -610,6 +612,13 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		}
 	}
 
+	/**
+	 * 退单结算
+	 * @param returnSn 退单号
+	 * @param actionNote 退单备注
+	 * @param actionUser 操作人
+	 * @return ReturnInfo<String>
+	 */
 	@Override
 	public ReturnInfo<String> returnOrderSettle(String returnSn, String actionNote, String actionUser) {
 		logger.info("returnOrderSettle.begin..returnSn:"+returnSn+",actionNote:"+actionNote+",actionUser:"+actionUser);
@@ -620,40 +629,42 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		try {
 			//结算校验
 			OrderReturn orderReturn = orderReturnMapper.selectByPrimaryKey(returnSn);
-			if(orderReturn == null){
+			if (orderReturn == null) {
 				returnInfo.setMessage("无法获取有效地退单信息");
 				return returnInfo;
 			}
-			if(orderReturn.getReturnOrderStatus().intValue() == ConstantValues.ORDERRETURN_STATUS.COMPLETE.intValue()
+			// 退单完成、退单取消、支付状态待结算
+			if (orderReturn.getReturnOrderStatus().intValue() == ConstantValues.ORDERRETURN_STATUS.COMPLETE.intValue()
 					|| orderReturn.getReturnOrderStatus().intValue() == ConstantValues.ORDERRETURN_STATUS.INVALIDITY.intValue()
 					|| orderReturn.getPayStatus().intValue() != ConstantValues.ORDERRETURN_PAY_STATUS.WAITSETTLE){
 				returnInfo.setMessage("退单不满足结算条件");
 				return returnInfo;
 			}
 			//退款单、额外退款单 无须退款 不结算
-			if(orderReturn.getHaveRefund().intValue() == ConstantValues.YESORNO_NO.intValue()
+			if (orderReturn.getHaveRefund().intValue() == ConstantValues.YESORNO_NO.intValue()
 					&& orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_PAY.intValue()
 					&& orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_EXTRA_PAY.intValue()){
 				returnInfo.setMessage("退单款无须退款设置无法正常结算");
 				return returnInfo;
 			}
 			OrderReturnShip orderReturnShip = orderReturnShipMapper.selectByPrimaryKey(returnSn);
-			if(orderReturnShip == null){
-				returnInfo.setMessage("无法获取有效地退单发货信息");
+			if (orderReturnShip == null) {
+				returnInfo.setMessage("无法获取有效的退单发货信息");
 				return returnInfo;
 			}
 			OrderRefundExample orderRefundExample = new OrderRefundExample();
 			orderRefundExample.or().andRelatingReturnSnEqualTo(returnSn);
 			List<OrderRefund> orderRefundList = orderRefundMapper.selectByExample(orderRefundExample);
-			if(CollectionUtils.isEmpty(orderRefundList)){
-				returnInfo.setMessage("无法获取有效地退款单数据");
+			if (CollectionUtils.isEmpty(orderRefundList)) {
+				returnInfo.setMessage("无法获取有效的退款单数据");
 				return returnInfo;
 			}
-			
-			if(orderReturn.getHaveRefund().intValue() == ConstantValues.YESORNO_YES.intValue()){
+
+			// 需要退款
+			if (orderReturn.getHaveRefund().intValue() == ConstantValues.YESORNO_YES.intValue()) {
 				for (OrderRefund orderRefund : orderRefundList) {
-					if(orderRefund.getBackbalance().intValue() == ConstantValues.YESORNO_NO.intValue() && orderRefund.getReturnPay().intValue() == 3){
-						returnInfo.setMessage("退单"+returnSn+"没有退平台币，请先退平台币！");
+					if (orderRefund.getBackbalance().intValue() == ConstantValues.YESORNO_NO.intValue() && orderRefund.getReturnPay().intValue() == 3) {
+						returnInfo.setMessage("退单" + returnSn + "没有退平台币，请先退平台币！");
 						return returnInfo;
 					}
 				}
@@ -661,29 +672,29 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			OrderReturnGoodsExample orderReturnGoodsExample = new OrderReturnGoodsExample();
 			orderReturnGoodsExample.or().andRelatingReturnSnEqualTo(returnSn);
 			List<OrderReturnGoods> returnGoodsList = orderReturnGoodsMapper.selectByExample(orderReturnGoodsExample);
-			//退货单才进行商品校验
-			if(CollectionUtils.isEmpty(returnGoodsList) && orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){
+			// 退货单才进行商品校验
+			if (CollectionUtils.isEmpty(returnGoodsList) && orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){
 				returnInfo.setMessage("退单商品列表为空");
 				return returnInfo;
 			}
-//			OrderDistribute orderInfo = orderDistributeMapper.selectByPrimaryKey(orderReturn.getRelatingOrderSn());
+
 			OrderDistribute orderInfo = builtOrderInfo(orderReturn);
-			if(orderInfo == null){
+			if (orderInfo == null) {
 				returnInfo.setMessage("原订单不存在三个月，请先迁移订单后结算");
 				return returnInfo;
 			}
-			//退款单，要求原订单必须已发货
-			if(orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_PAY
+			// 退款单，要求原订单必须已发货
+			if (orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_PAY
 					&& orderInfo.getOrderStatus().intValue() != ConstantValues.ORDER_STATUS.CANCELED.intValue()
 					&& orderInfo.getShipStatus().intValue() < ConstantValues.ORDERINFO_SHIP_STATUS.SHIPED){
 				returnInfo.setMessage("退单关联原订单处于未发货状态不可进行退单结算操作");
 				return returnInfo;
 			}
 			//退货单所关联的换货单必须为无效或者已取消或者已发货状态方可进行结算操作
-			if(StringUtils.isNotBlank(orderReturn.getNewOrderSn())
+			if (StringUtils.isNotBlank(orderReturn.getNewOrderSn())
 					&& orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS){
 				MasterOrderInfo exchangeOrder = masterOrderInfoMapper.selectByPrimaryKey(orderReturn.getNewOrderSn());
-				if(exchangeOrder == null){
+				if (exchangeOrder == null) {
 					throw new RuntimeException("所关联换货单订单["+orderReturn.getNewOrderSn()+"]不存在三个月，请先迁移订单后结算");
 				}
 				if(exchangeOrder.getOrderStatus().intValue() != ConstantValues.ORDER_STATUS.CANCELED.intValue()
@@ -694,37 +705,24 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 				}
 			}
 			//验证退货单数据完整性：-入库、结算ERP
-			if(orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){
-				if(orderReturnShip.getCheckinStatus().intValue() != ConstantValues.ORDER_RETURN_CHECKINSTATUS.INPUTED){
+			if (orderReturn.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){
+				if (orderReturnShip.getCheckinStatus().intValue() != ConstantValues.ORDER_RETURN_CHECKINSTATUS.INPUTED){
 					returnInfo.setMessage("退货单待入库状态方可进行结算操作");
 					return returnInfo;
 				}
 				ReturnInfo<String> checkReturn = orderSettleService.checkReturnSettle(returnSn);
-				if(checkReturn.getIsOk() < ConstantValues.YESORNO_YES){
-					returnInfo.setMessage("退货单结算验证失败："+checkReturn.getMessage());
+				if (checkReturn.getIsOk() < ConstantValues.YESORNO_YES) {
+					returnInfo.setMessage("退货单结算验证失败：" + checkReturn.getMessage());
 					return returnInfo;
 				}
 			}
 			//更新退单和退款单信息
-			OrderReturn updateOrderReturn = new OrderReturn();
-			updateOrderReturn.setReturnSn(returnSn);
-			updateOrderReturn.setReturnOrderStatus(ConstantValues.ORDERRETURN_STATUS.COMPLETE);
-			updateOrderReturn.setPayStatus(ConstantValues.ORDERRETURN_PAY_STATUS.SETTLED);
-			updateOrderReturn.setClearTime(new Date());
-			orderReturnMapper.updateByPrimaryKeySelective(updateOrderReturn);
+            processOrderReturnFinish(returnSn);
 			//批量更新付款单-已结算
-			OrderRefundExample refundExample = new OrderRefundExample();
-			refundExample.or().andRelatingReturnSnEqualTo(returnSn);
-			OrderRefund updateOrderRefund = new OrderRefund();
-			updateOrderRefund.setReturnPayStatus(ConstantValues.ORDERRETURN_PAY_STATUS.SETTLED);
-			updateOrderRefund.setUpdateTime(new Date());
-			orderReturn.setClearTime(new Date());
-			if(orderReturn.getInitClearTime() == null){
-				orderReturn.setInitClearTime(new Date());
-			}
-			orderRefundMapper.updateByExampleSelective(updateOrderRefund, refundExample);
+            processOrderRefundFinish(orderReturn);
+
 			//操作日志
-			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "结算："+actionNote,actionUser);
+			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(),"结算：" + actionNote, actionUser);
 			returnInfo.setIsOk(Constant.OS_YES);
 			returnInfo.setMessage("退单结算成功");
 		} catch (Exception e) {
@@ -733,6 +731,42 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		}
 		return returnInfo;
 	}
+
+    /**
+     * 处理退单结算完成
+     * @param returnSn
+     */
+	private void processOrderReturnFinish(String returnSn) {
+        //更新退单和退款单信息
+        OrderReturn updateOrderReturn = new OrderReturn();
+        updateOrderReturn.setReturnSn(returnSn);
+        // 已完成
+        updateOrderReturn.setReturnOrderStatus(ConstantValues.ORDERRETURN_STATUS.COMPLETE);
+        // 已结算
+        updateOrderReturn.setPayStatus(ConstantValues.ORDERRETURN_PAY_STATUS.SETTLED);
+        // 结算时间
+        updateOrderReturn.setClearTime(new Date());
+        orderReturnMapper.updateByPrimaryKeySelective(updateOrderReturn);
+    }
+
+    /**
+     * 处理退单退款单结算完成
+     * @param orderReturn
+     */
+    private void processOrderRefundFinish(OrderReturn orderReturn) {
+        //批量更新付款单-已结算
+        OrderRefundExample refundExample = new OrderRefundExample();
+        refundExample.or().andRelatingReturnSnEqualTo(orderReturn.getReturnSn());
+        OrderRefund updateOrderRefund = new OrderRefund();
+        // 已结算
+        updateOrderRefund.setReturnPayStatus(ConstantValues.ORDERRETURN_PAY_STATUS.SETTLED);
+        updateOrderRefund.setUpdateTime(new Date());
+        orderReturn.setClearTime(new Date());
+        if (orderReturn.getInitClearTime() == null) {
+            orderReturn.setInitClearTime(new Date());
+        }
+        orderRefundMapper.updateByExampleSelective(updateOrderRefund, refundExample);
+    }
 
 	@Override
 	public ReturnInfo<String> returnOrderConfirm(String returnSn, String actionNote, String actionUser) {
@@ -1116,23 +1150,14 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		example.or().andRegionIdIn(Arrays.asList(arr));
 		return systemRegionAreaMapper.selectByExample(example);
 	}
-	
-	//订单校验参数构造
+
+    /**
+     * 根据退单创建订单信息
+     * @param orderReturn
+     * @return OrderDistribute
+     */
 	private OrderDistribute builtOrderInfo(OrderReturn orderReturn) {
 		OrderDistribute orderDistribute = new OrderDistribute();
-		/*if(StringUtils.isBlank(orderReturn.getRelatingOrderSn())){
-			MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderReturn.getMasterOrderSn());
-			orderDistribute.setRelatingReturnSn(orderReturn.getReturnSn());
-			orderDistribute.setShipStatus(masterOrderInfo.getShipStatus());
-			orderDistribute.setOrderStatus(masterOrderInfo.getOrderStatus());
-			orderDistribute.setBonus(masterOrderInfo.getBonus());
-			orderDistribute.setOrderType(masterOrderInfo.getOrderType());
-			orderDistribute.setMasterOrderSn(masterOrderInfo.getMasterOrderSn());
-			orderDistribute.setOrderFrom(masterOrderInfo.getOrderFrom());
-			orderDistribute.setReferer(masterOrderInfo.getReferer());
-		}else{
-			orderDistribute = orderDistributeMapper.selectByPrimaryKey(orderReturn.getRelatingOrderSn());
-		}*/
 		MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderReturn.getMasterOrderSn());
 		orderDistribute.setRelatingReturnSn(orderReturn.getReturnSn());
 		orderDistribute.setShipStatus(masterOrderInfo.getShipStatus());
@@ -1217,11 +1242,15 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		return returnInfo;
 	}
 
+	/**
+	 * 退单收货
+	 * @param returnOrderParam
+	 * @return ReturnInfo<String>
+	 */
 	@Override
 	public ReturnInfo<String> returnOrderReceive(ReturnOrderParam returnOrderParam) {
 		String returnSn = returnOrderParam.getReturnSn();
-//	  String goodsId = returnOrderParam.getGoodsId();
-		logger.info("returnOrderReceive.begin:"+JSON.toJSONString(returnOrderParam));
+		logger.info("returnOrderReceive.begin:" + JSON.toJSONString(returnOrderParam));
 		ReturnInfo<String> returnInfo = new ReturnInfo<String>();
 		returnInfo.setIsOk(ConstantValues.YESORNO_NO);
 		returnInfo.setMessage("操作失败");
@@ -1230,17 +1259,17 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		try{
 			//退单验证
 			OrderReturn orderReturn = orderReturnMapper.selectByPrimaryKey(returnSn);
-			if(orderReturn == null){
+			if (orderReturn == null) {
 				throw new RuntimeException("退单数据不存在");
 			}
-			if(orderReturn.getReturnOrderStatus().intValue() == ConstantValues.ORDERRETURN_STATUS.INVALIDITY){
+			if (orderReturn.getReturnOrderStatus().intValue() == ConstantValues.ORDERRETURN_STATUS.INVALIDITY) {
 				throw new RuntimeException("退单无效无法进行操作");
 			}
 			OrderReturnShip orderReturnShip = orderReturnShipMapper.selectByPrimaryKey(returnSn);
-			if(orderReturnShip == null){
+			if (orderReturnShip == null) {
 				throw new RuntimeException("退单发货数据不存在");
 			}
-			if(orderReturnShip.getIsGoodReceived().intValue() == ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED.intValue()){
+			if (orderReturnShip.getIsGoodReceived().intValue() == ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED.intValue()) {
 				throw new RuntimeException("退单已处于已收货状态");
 			}
 			
@@ -1251,82 +1280,50 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			OrderReturnGoodsExample orderReturnGoodsExample = new OrderReturnGoodsExample();
 			orderReturnGoodsExample.or().andRelatingReturnSnEqualTo(returnSn);
 			List<OrderReturnGoods> returnGoodsList = orderReturnGoodsMapper.selectByExample(orderReturnGoodsExample);
-			if(CollectionUtils.isEmpty(returnGoodsList)){
+			if (CollectionUtils.isEmpty(returnGoodsList)) {
 				throw new RuntimeException("退货商品列表为空");
 			}
 			StringBuffer buff = new StringBuffer();
-			if(!returnOrderParam.isPullInAll()){
-				for(StorageGoods storageGoods : storageGoodsList){
+			if (!returnOrderParam.isPullInAll()) {
+				for (StorageGoods storageGoods : storageGoodsList) {
 					buff.append(storageGoods.getId());
 					buff.append(",");
 					
-					if(storageGoods.getProdScanNum() <= 0){
+					if (storageGoods.getProdScanNum() <= 0) {
 						throw new RuntimeException("商品质检数量不能小于或等于0");
 					}
 					
 					OrderReturnGoods returnGood = orderReturnGoodsMapper.selectByPrimaryKey(storageGoods.getId());
-					if(null == returnGood){
-						throw new RuntimeException("收货商品"+storageGoods.getId()+"不存在！");
-					}else{
-						/*if(returnGood.getIsGoodReceived().intValue() == ConstantValues.ORDERRETURN_ORDER_TYPE.YES.intValue()){
-							throw new RuntimeException("退单："+returnSn+"中商品goodsSn:"+returnGood.getGoodsSn()+"已经是已收货状态！");
-						}*/
-						
+					if (null == returnGood) {
+						throw new RuntimeException("收货商品" + storageGoods.getId() + "不存在！");
+					} else {
 						updateReturnGoods.setId(returnGood.getId());
-						
-						if(storageGoods.getProdScanNum() + returnGood.getProdscannum()>= returnGood.getGoodsReturnNumber()){
+						if (storageGoods.getProdScanNum() + returnGood.getProdscannum() >= returnGood.getGoodsReturnNumber()) {
 							//商品行--商品全部已收货
 							updateReturnGoods.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED.byteValue());
-						}else {
+						} else {
 							//商品行--商品部分收货
 							updateReturnGoods.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.PARTRECEIVED.byteValue());
 						}
-//					  updateReturnGoods.setProdscannum(BigDecimal.valueOf(storageGoods.getProdScanNum() + returnGood.getProdscannum()).shortValue());
 						orderReturnGoodsMapper.updateByPrimaryKeySelective(updateReturnGoods);
 					}
 				}
 				//检查是否为退单唯一一个没有收货的商品
 				returnGoodsList = orderReturnGoodsMapper.selectByExample(orderReturnGoodsExample);
-				for(OrderReturnGoods orderReturnGoods:returnGoodsList){
-					if(orderReturnGoods.getIsGoodReceived().intValue() != ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED.intValue()){
+				for (OrderReturnGoods orderReturnGoods:returnGoodsList) {
+					if (orderReturnGoods.getIsGoodReceived().intValue() != ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED.intValue()) {
 						lastPullInGood = false ;
 						break;
 					}
 				}
-				
-				
-			}else{
+			} else {
 				//所有商品入库（退单整体收货）
-				for(OrderReturnGoods goods:returnGoodsList){
-					if(goods.getIsGoodReceived().intValue() != ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED){
-						updateReturnGoods = new OrderReturnGoods();
-						updateReturnGoods.setId(goods.getId());
-						updateReturnGoods.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED);
-						orderReturnGoodsMapper.updateByPrimaryKeySelective(updateReturnGoods);
-					}
-				}
-				logger.info("退单"+returnSn+"商品收货：所有商品收货状态更改成功");
+				returnGoodsAll(returnGoodsList);
+				logger.info("退单" + returnSn + "商品收货：所有商品收货状态更改成功");
 			}
 			
 			//退单保存
-			OrderReturnShip updateOrderReturnShip = new OrderReturnShip();
-			updateOrderReturnShip.setRelatingReturnSn(returnSn);
-			//默认部分收货
-			updateOrderReturnShip.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.PARTRECEIVED);
-			updateOrderReturnShip.setReceivedTime(new Date());
-			updateOrderReturnShip.setUpdateTime(new Date());
-			
-			//当为全部入库或者所有商品都收货时，将order_return_ship收货状态修改为已收货
-			if(returnOrderParam.isPullInAll() || lastPullInGood){
-				updateOrderReturnShip.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED);
-			}
-			
-			orderReturnShipMapper.updateByPrimaryKeySelective(updateOrderReturnShip);
-			
-
-			//日志保存
-			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "已收货："+returnOrderParam.getActionNote(),returnOrderParam.getUserName());
-			
+			processOrderReturnShip(orderReturn, returnOrderParam, lastPullInGood);
 			returnInfo.setIsOk(ConstantValues.YESORNO_YES);
 			returnInfo.setMessage("操作成功");
 		} catch (Exception e) {
@@ -1335,6 +1332,48 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			returnInfo.setMessage("操作失败:"+e.getMessage());
 		}
 		return returnInfo;
+	}
+
+	/**
+	 * 整单商品入库
+	 * @param returnGoodsList
+	 */
+	private void returnGoodsAll(List<OrderReturnGoods> returnGoodsList) {
+		//所有商品入库（退单整体收货）
+		for (OrderReturnGoods goods : returnGoodsList) {
+			if (goods.getIsGoodReceived().intValue() != ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED) {
+				OrderReturnGoods updateReturnGoods = new OrderReturnGoods();
+				updateReturnGoods.setId(goods.getId());
+				updateReturnGoods.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED);
+				orderReturnGoodsMapper.updateByPrimaryKeySelective(updateReturnGoods);
+			}
+		}
+	}
+
+	/**
+	 * 处理退货入库单状态
+	 * @param orderReturn
+	 * @param returnOrderParam
+	 * @param lastPullInGood
+	 */
+	private void processOrderReturnShip(OrderReturn orderReturn, ReturnOrderParam returnOrderParam, boolean lastPullInGood) {
+		//退单保存
+		String returnSn = orderReturn.getReturnSn();
+		OrderReturnShip updateOrderReturnShip = new OrderReturnShip();
+		updateOrderReturnShip.setRelatingReturnSn(returnSn);
+		// 默认部分收货
+		updateOrderReturnShip.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.PARTRECEIVED);
+		updateOrderReturnShip.setReceivedTime(new Date());
+		updateOrderReturnShip.setUpdateTime(new Date());
+
+		//当为全部入库或者所有商品都收货时，将order_return_ship收货状态修改为已收货
+		if (returnOrderParam.isPullInAll() || lastPullInGood){
+			updateOrderReturnShip.setIsGoodReceived(ConstantValues.ORDERRETURN_GOODS_RECEIVED.RECEIVED);
+		}
+		orderReturnShipMapper.updateByPrimaryKeySelective(updateOrderReturnShip);
+		//日志保存
+		orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "已收货：" + returnOrderParam.getActionNote(), returnOrderParam.getUserName());
+
 	}
 
 	@Override
@@ -1461,10 +1500,14 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		return returnInfo;
 	}
 
+	/**
+	 * 退单质检通过
+	 * @param returnOrderParam
+	 * @return ReturnInfo<String>
+	 */
 	@Override
 	public ReturnInfo<String> returnOrderPass(ReturnOrderParam returnOrderParam) {
 		String returnSn = returnOrderParam.getReturnSn();
-//	  String goodsId =returnOrderParam.getGoodsId();
 		logger.info("returnOrderPass.begin:"+JSON.toJSONString(returnOrderParam));
 		ReturnInfo<String> returnInfo = new ReturnInfo<String>();
 		returnInfo.setIsOk(ConstantValues.YESORNO_NO);
@@ -1474,15 +1517,15 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		try{
 			//退单验证
 			OrderReturn orderReturn = orderReturnMapper.selectByPrimaryKey(returnSn);
-			if(orderReturn == null){
+			if (orderReturn == null) {
 				throw new RuntimeException("退单数据不存在");
 			}
 			OrderReturnShip orderReturnShip = orderReturnShipMapper.selectByPrimaryKey(returnSn);
-			if(orderReturnShip == null){
+			if (orderReturnShip == null) {
 				throw new RuntimeException("退单发货数据不存在");
 			}
 			
-			if(orderReturnShip.getQualityStatus() == ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.intValue()){
+			if (orderReturnShip.getQualityStatus() == ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.intValue()) {
 				throw new RuntimeException("退单已处于质检通过状态");
 			}
 			//校验商品信息
@@ -1492,87 +1535,48 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			OrderReturnGoodsExample orderReturnGoodsExample = new OrderReturnGoodsExample();
 			orderReturnGoodsExample.or().andRelatingReturnSnEqualTo(returnSn);
 			List<OrderReturnGoods> returnGoodsList = orderReturnGoodsMapper.selectByExample(orderReturnGoodsExample);
-			if(CollectionUtils.isEmpty(returnGoodsList)){
+			if (CollectionUtils.isEmpty(returnGoodsList)) {
 				throw new RuntimeException("退货商品列表为空");
 			}
 			StringBuffer buff = new StringBuffer();
-			if(!returnOrderParam.isPullInAll()){
+			if (!returnOrderParam.isPullInAll()) {
 				for(StorageGoods storageGoods : storageGoodsList){
 					buff.append(storageGoods.getId());
 					buff.append(",");
 					
-					if(storageGoods.getProdScanNum() <= 0){
+					if (storageGoods.getProdScanNum() <= 0) {
 						throw new RuntimeException("商品质检数量不能小于或等于0");
 					}
 					
 					OrderReturnGoods returnGood = orderReturnGoodsMapper.selectByPrimaryKey(storageGoods.getId());
-					if(null == returnGood){
+					if (null == returnGood) {
 						throw new RuntimeException("质检商品"+storageGoods.getId()+"不存在！");
-					}else{
-						/*if(returnGood.getQualityStatus().intValue() == ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.intValue()){
-							throw new RuntimeException("退单："+returnSn+"中商品goodsSn:"+returnGood.getGoodsSn()+"已经是质检通过状态！");
-						}*/
-						
+					} else {
 						updateReturnGoods.setId(returnGood.getId());
-						
-						if(storageGoods.getProdScanNum() + returnGood.getProdscannum() >= returnGood.getGoodsReturnNumber()){
+						if (storageGoods.getProdScanNum() + returnGood.getProdscannum() >= returnGood.getGoodsReturnNumber()) {
 							//商品行--商品全部质检通过
 							updateReturnGoods.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.byteValue());
-						}else {
+						} else {
 							//商品行--商品部分质检通过
 							updateReturnGoods.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PARTPASS.byteValue());
 						}
-//					  updateReturnGoods.setProdscannum(BigDecimal.valueOf(storageGoods.getProdScanNum() + returnGood.getProdscannum()).shortValue());
 						orderReturnGoodsMapper.updateByPrimaryKeySelective(updateReturnGoods);
 					}
 				}
 				//检查是否为退单商品是否已全部质检通过
 				returnGoodsList = orderReturnGoodsMapper.selectByExample(orderReturnGoodsExample);
-				for(OrderReturnGoods orderReturnGoods:returnGoodsList){
+				for (OrderReturnGoods orderReturnGoods:returnGoodsList) {
 					if(orderReturnGoods.getQualityStatus().intValue() != ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.intValue()){
 						lastPullInGood = false ;
 						break;
 					}
 				}
-				
-				
-			}else{
+			} else {
 				//所有商品已质检（退单整体已质检）
-				for(OrderReturnGoods goods:returnGoodsList){
-					if(goods.getQualityStatus().intValue() != ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS){
-						updateReturnGoods = new OrderReturnGoods();
-						updateReturnGoods.setId(goods.getId());
-						updateReturnGoods.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS);
-						orderReturnGoodsMapper.updateByPrimaryKeySelective(updateReturnGoods);
-					}
-				}
+				processReturnOrderGoodsPass(returnGoodsList);
 				logger.info("退单"+returnSn+"商品已质检：所有商品质检状态更改成功");
 			}
-			
-			//退单保存
-			OrderReturnShip updateOrderReturnShip = new OrderReturnShip();
-			updateOrderReturnShip.setRelatingReturnSn(returnSn);
-			updateOrderReturnShip.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PARTPASS.intValue());//部分质检通过
-			if(orderReturnShip.getCheckinStatus().intValue() != ConstantValues.ORDER_RETURN_CHECKINSTATUS.PARTINPUT){
-				updateOrderReturnShip.setCheckinStatus(ConstantValues.ORDER_RETURN_CHECKINSTATUS.WAITINPUT.byteValue());
-			}
-			updateOrderReturnShip.setQualityTime(new Date());
-			updateOrderReturnShip.setUpdateTime(new Date());
-			
-			//当为全部已质检或者所有商品都已质检时，将order_return_ship质检状态修改为已质检
-			if(returnOrderParam.isPullInAll() || lastPullInGood){
-				updateOrderReturnShip.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.intValue());
-			}
-			
-			orderReturnShipMapper.updateByPrimaryKeySelective(updateOrderReturnShip);
-			
-//		  OrderReturn updateOrderReturn = new OrderReturn();
-//		  updateOrderReturn.setReturnSn(returnSn);
-//		  updateOrderReturn.setUpdateTime(new Date());
-//		  updateOrderReturn.setShipStatus(ConstantValues.ORDERRETURN_SHIP_STATUSS.WAITSTORAGE);
-//		  orderReturnMapper.updateByPrimaryKeySelective(updateOrderReturn);
-			
-
+			processReturnOrderGoodsQuality(orderReturn, orderReturnShip, returnOrderParam, lastPullInGood);
 			//日志保存
 			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "质检通过："+returnOrderParam.getActionNote(),returnOrderParam.getUserName());
 			
@@ -1584,6 +1588,49 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			returnInfo.setMessage("操作失败:"+e.getMessage());
 		}
 		return returnInfo;
+	}
+
+	/**
+	 * 处理退单商品质检通过
+	 * @param returnGoodsList
+	 */
+	private void processReturnOrderGoodsPass(List<OrderReturnGoods> returnGoodsList) {
+		for (OrderReturnGoods goods : returnGoodsList) {
+			if (goods.getQualityStatus().intValue() != ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS) {
+				OrderReturnGoods updateReturnGoods = new OrderReturnGoods();
+				updateReturnGoods.setId(goods.getId());
+				updateReturnGoods.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS);
+				orderReturnGoodsMapper.updateByPrimaryKeySelective(updateReturnGoods);
+			}
+		}
+	}
+
+	/**
+	 * 处理退单商品质检通过
+	 * @param orderReturn
+	 * @param orderReturnShip
+	 * @param returnOrderParam
+	 * @param lastPullInGood
+	 */
+	private void processReturnOrderGoodsQuality(OrderReturn orderReturn, OrderReturnShip orderReturnShip, ReturnOrderParam returnOrderParam, boolean lastPullInGood) {
+		//退单保存
+		String returnSn = orderReturn.getReturnSn();
+		OrderReturnShip updateOrderReturnShip = new OrderReturnShip();
+		updateOrderReturnShip.setRelatingReturnSn(returnSn);
+		//部分质检通过
+		updateOrderReturnShip.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PARTPASS.intValue());
+		if (orderReturnShip.getCheckinStatus().intValue() != ConstantValues.ORDER_RETURN_CHECKINSTATUS.PARTINPUT) {
+			updateOrderReturnShip.setCheckinStatus(ConstantValues.ORDER_RETURN_CHECKINSTATUS.WAITINPUT.byteValue());
+		}
+		updateOrderReturnShip.setQualityTime(new Date());
+		updateOrderReturnShip.setUpdateTime(new Date());
+
+		//当为全部已质检或者所有商品都已质检时，将order_return_ship质检状态修改为已质检
+		if (returnOrderParam.isPullInAll() || lastPullInGood){
+			updateOrderReturnShip.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PASS.intValue());
+		}
+
+		orderReturnShipMapper.updateByPrimaryKeySelective(updateOrderReturnShip);
 	}
 
 	@Override
@@ -1923,7 +1970,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			orderReturnMapper.updateByPrimaryKeySelective(updateOrderReturn);
 			
 			//日志保存
-			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "锁定："+actionNote,actionUser);
+			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "锁定",actionUser);
 			
 			returnInfo.setIsOk(ConstantValues.YESORNO_YES);
 			returnInfo.setMessage("操作成功");
@@ -1959,10 +2006,10 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			orderReturn.setLockStatus(0);
 			orderReturn.setLockTime(null);
 			orderReturn.setUpdateTime(new Date());
-			orderReturnMapper.updateByPrimaryKey(orderReturn);
+			orderReturnMapper.updateByPrimaryKeySelective(orderReturn);
 			
 			//日志保存
-			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "解锁："+actionNote,actionUser);
+			orderActionService.addOrderReturnAction(orderReturn.getReturnSn(), "解锁",actionUser);
 			
 			returnInfo.setIsOk(ConstantValues.YESORNO_YES);
 			returnInfo.setMessage("操作成功");

@@ -12,10 +12,16 @@ import com.work.shop.oms.api.bean.OrderReturnForSellers;
 public class SellerBean implements Serializable {
 
 	private static final long serialVersionUID = -1343386052574452952L;
-	
-	private String seller;//供应商编码
-	
-	private List<OrderReturnForSellers> orderReturnForSellers;//供应商所对应的退单数据
+
+	/**
+	 * 供应商编码
+	 */
+	private String seller;
+
+	/**
+	 * 供应商所对应的退单数据
+	 */
+	private List<OrderReturnForSellers> orderReturnForSellers;
 
 	public String getSeller() {
 		return seller;

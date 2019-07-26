@@ -8,8 +8,12 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
+import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.*;
+import com.work.shop.oms.utils.CommonUtils;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -17,31 +21,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
-import com.work.shop.oms.common.bean.ConstantValues;
-import com.work.shop.oms.common.bean.DistributeShippingBean;
-import com.work.shop.oms.common.bean.MasterOrderDetail;
-import com.work.shop.oms.common.bean.OrderItemAction;
-import com.work.shop.oms.common.bean.OrderItemActionDetail;
-import com.work.shop.oms.common.bean.OrderItemDepotDetail;
-import com.work.shop.oms.common.bean.OrderItemDetail;
-import com.work.shop.oms.common.bean.OrderItemGoodsDetail;
-import com.work.shop.oms.common.bean.OrderItemPayDetail;
-import com.work.shop.oms.common.bean.OrderItemStatusUtils;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.common.bean.ShippingInfo;
-import com.work.shop.oms.dao.DistributeActionMapper;
-import com.work.shop.oms.dao.MasterOrderActionMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsDetailMapper;
-import com.work.shop.oms.dao.MasterOrderInfoDetailMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayTypeDetailMapper;
-import com.work.shop.oms.dao.OrderDepotShipDetailMapper;
-import com.work.shop.oms.dao.OrderDistributeDetailMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.OrderReturnGoodsDetailMapper;
-import com.work.shop.oms.dao.OrderReturnMapper;
-import com.work.shop.oms.dao.SystemShippingMapper;
 import com.work.shop.oms.order.request.OmsBaseRequest;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
@@ -119,6 +98,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 	@Resource
 	private MasterOrderInfoExtendService masterOrderInfoExtendService;
 
+    @Resource
+    private MasterOrderInfoService masterOrderInfoService;
+
 	/**
 	 * 获取订单详情
 	 * @param request 查询参数
@@ -142,7 +124,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				response.setMessage("查询订单数据不存在");
 				return response;
 			}
-			OrderItemDetail itemDetail = new OrderItemDetail();
+
+            OrderItemDetail itemDetail = new OrderItemDetail();
 			cloneGoods(itemDetail, masterOrderInfo);
 			response.setItemDetail(itemDetail);
 			
@@ -153,6 +136,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             }
             adminUser.setUserId(actionUserId);
 			adminUser.setUserName(request.getActionUser());
+			//获取配送信息
+            List<OrderItemDepotDetail> depotDetails = orderDepotShipDetailMapper.getOrderItemDepotDetail(masterOrderSn);
+            masterOrderInfo.setDepotDetails(depotDetails);
 			OrderItemStatusUtils orderItemStatusUtils = new OrderItemStatusUtils(masterOrderInfo, adminUser);
 			//获取已退货量
 			OrderReturnExample orderReturnExample = new OrderReturnExample();
@@ -208,11 +194,65 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				}
 				//给配送状态名称赋值
 				bean.setShippingStatusName(getDepotShipStatusName(bean.getShippingStatus()));
-			}
+            }
 			response.setGoodsDetails(itemList);
+
 			//获取配送信息
-			List<OrderItemDepotDetail> depotDetails = orderDepotShipDetailMapper.getOrderItemDepotDetail(masterOrderSn);
+            List<OrderItemDepotInfo> orderItemDepotInfos = new ArrayList<OrderItemDepotInfo>();
+			if (StringUtil.isListNotNull(depotDetails)) {
+			    List<String> orderSns = new ArrayList<String>();
+                for (OrderItemDepotDetail depotDetail : depotDetails) {
+                    orderSns.add(depotDetail.getOrderSn());
+                }
+
+                Map<String, List<OrderItemGoodsDetail>> goodsMap = new HashMap<String, List<OrderItemGoodsDetail>>();
+                List<OrderItemGoodsDetail> detailByOrder = masterOrderGoodsDetailMapper.getOrderGoodsDetailByOrder(orderSns);
+                if (StringUtil.isListNotNull(detailByOrder)) {
+
+                    for (OrderItemGoodsDetail detail : detailByOrder) {
+                        String orderSn = detail.getOrderSn();
+                        String invoiceNo = detail.getInvoiceNo();
+                        String key = orderSn + "_" + invoiceNo;
+                        List<OrderItemGoodsDetail> orderItemGoodsDetails = goodsMap.get(key);
+                        if (StringUtil.isListNull(orderItemGoodsDetails)) {
+                            orderItemGoodsDetails = new ArrayList<OrderItemGoodsDetail>();
+                        }
+                        orderItemGoodsDetails.add(detail);
+                        goodsMap.put(key, orderItemGoodsDetails);
+                    }
+
+                }
+
+                //交货单号分组交货单
+                for (OrderItemDepotDetail depotDetail : depotDetails) {
+                    String orderSn = depotDetail.getOrderSn();
+                    String invoiceNo = depotDetail.getInvoiceNo();
+                    String key = orderSn + "_" + invoiceNo;
+                    depotDetail.setGoodsDetailList(goodsMap.get(key));
+                }
+                Map<String, List<OrderItemDepotDetail>> depotMap = new HashMap<String, List<OrderItemDepotDetail>>();
+                for (OrderItemDepotDetail detail : depotDetails) {
+                    String orderSn = detail.getOrderSn();
+                    List<OrderItemDepotDetail> orderItemDepotDetails = depotMap.get(orderSn);
+                    if (StringUtil.isListNull(orderItemDepotDetails)) {
+                        orderItemDepotDetails = new ArrayList<OrderItemDepotDetail>();
+                    }
+                    orderItemDepotDetails.add(detail);
+                    depotMap.put(orderSn, orderItemDepotDetails);
+                }
+
+                if (depotMap != null && depotMap.size() > 0) {
+                    for (String orderSn : depotMap.keySet()) {
+                        OrderItemDepotInfo depotInfo = new OrderItemDepotInfo();
+                        depotInfo.setOrderSn(orderSn);
+                        depotInfo.setDepotDetails(depotMap.get(orderSn));
+                        orderItemDepotInfos.add(depotInfo);
+                    }
+                }
+
+            }
 			response.setDepotDetails(depotDetails);
+            response.setOrderItemDepotInfos(orderItemDepotInfos);
 
 			List<OrderItemAction> itemActions = new ArrayList<OrderItemAction>();
 			
@@ -248,6 +288,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			response.setItemActions(itemActions);
 			List<OrderItemPayDetail> payDetails = masterOrderPayTypeDetailMapper.getOrderItemPayDetail(masterOrderSn);
 			response.setPayDetails(payDetails);
+            response.setSuccess(true);
+            response.setMessage("查询成功");
 		} catch (Exception e) {
 			logger.error("订单[" + masterOrderSn + "]查询异常" + e.getMessage(), e);
 			response.setMessage("订单查询异常" + e.getMessage());
@@ -730,13 +772,19 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				response.setMessage("查询订单数据不存在");
 				return response;
 			}
+			List<Integer> integers = new ArrayList<>();
+			integers.add(0);
+			integers.add(1);
 			OrderStatus orderStatus = new OrderStatus();
 			orderStatus.setMasterOrderSn(master.getMasterOrderSn());
 			orderStatus.setAdminUser(request.getActionUser());
-			orderStatus.setType("2");
+			orderStatus.setQuestionTypes(integers);
 			orderStatus.setMessage(request.getMessage());
 			ReturnInfo<String> info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
+                //返回正常单，订单推送供应链
+                logger.info("返回正常单:" + masterOrderSn + "订单推送供应链");
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
 				response.setSuccess(true);
 				response.setMessage("订单返回正常单成功");
 			} else {
@@ -1021,6 +1069,104 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		return response;
 	}
 
+	/**
+	 * 合同签章完成
+	 * @param request 请求参数
+	 * @return OrderManagementResponse
+	 */
+	@Override
+	public OrderManagementResponse orderSignCompleted(OrderManagementRequest request) {
+		logger.info("合同签章完成 request:" + JSON.toJSONString(request));
+		OrderManagementResponse response = new OrderManagementResponse();
+		response.setSuccess(false);
+		response.setMessage("合同签章完成失败");
+		String msg = checkCommonOrderManagementRequest(request);
+		if (StringUtils.isNotBlank(msg)) {
+			response.setMessage(msg);
+			return response;
+		}
+		String masterOrderSn = request.getMasterOrderSn();
+		try {
+			List<Integer> integers = new ArrayList<>();
+			// 问题单类型、待审核问题单
+			integers.add(3);
+			OrderStatus orderStatus = new OrderStatus();
+			orderStatus.setMasterOrderSn(masterOrderSn);
+			orderStatus.setAdminUser(request.getActionUser());
+			orderStatus.setAdminUserId(request.getActionUserId());
+			orderStatus.setQuestionTypes(integers);
+			orderStatus.setMessage(request.getMessage());
+
+            ReturnInfo<String> info = null;
+            //交货单直接更新采购单签章状态和合同号
+            if (masterOrderSn.contains(Constant.ORDER_DISTRIBUTE_BEFORE)) {
+                //更新采购单合同号
+                info = updatePushSupplyChain(masterOrderSn, request.getContractNo());
+
+            } else {
+                //订单号返回正常单
+                info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
+                if (info != null && Constant.OS_YES == info.getIsOk()) {
+                    // 变更合同签章状态为
+                    updateSignStatus(masterOrderSn, request.getContractNo());
+                }
+            }
+
+			if (info != null && Constant.OS_YES == info.getIsOk()) {
+				response.setSuccess(true);
+				response.setMessage("合同签章完成成功");
+			} else {
+				response.setMessage("合同签章完成失败：" + (info == null ? "返回结果为空" : info.getMessage()));
+			}
+		} catch (Exception e) {
+			logger.error(masterOrderSn + "合同签章完成失败：" + e.getMessage(), e);
+			response.setMessage("合同签章完成失败：" + e.getMessage());
+		}
+		return response;
+	}
+
+    /**
+     * 采购单更新合同号和签章状态
+     * @param masterOrderSn
+     * @param contractNo
+     * @return
+     */
+    private ReturnInfo<String> updatePushSupplyChain(String masterOrderSn, String contractNo) {
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setPurchaseOrderCode(masterOrderSn);
+        purchaseOrder.setSignComplete((byte) 1);
+        purchaseOrder.setContractNo(contractNo);
+        purchaseOrder.setSignCompleteTime(new Date());
+        return purchaseOrderService.updatePushSupplyChain(purchaseOrder);
+    }
+
+    /**
+     * 判断是否需要审核
+     * @param masterOrderInfo
+     * @return boolean
+     */
+	private boolean checkNeedAudit(MasterOrderInfo masterOrderInfo) {
+        Integer needAudit = masterOrderInfo.getNeedAudit();
+        if (needAudit == null) {
+            needAudit = 0;
+        }
+        if (needAudit == 0) {
+            return true;
+        }
+
+        if (needAudit == 1) {
+            Integer auditStatus = masterOrderInfo.getAuditStatus();
+            if (auditStatus == null) {
+                auditStatus = 0;
+            }
+            if (auditStatus == 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * 订单审核通过
      * @param request 请求参数
@@ -1039,19 +1185,40 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         }
 		String masterOrderSn = request.getMasterOrderSn();
 		try {
+            MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
+            if (checkNeedAudit(masterOrderInfo)) {
+                response.setSuccess(true);
+                response.setMessage("订单审单完成成功");
+                return response;
+            }
+
+			List<Integer> integers = new ArrayList<>();
+			// 问题单类型、待审核问题单
+			integers.add(2);
 			OrderStatus orderStatus = new OrderStatus();
 			orderStatus.setMasterOrderSn(masterOrderSn);
 			orderStatus.setAdminUser(request.getActionUser());
-			orderStatus.setType("2");
+			orderStatus.setAdminUserId(request.getActionUserId());
+			orderStatus.setQuestionTypes(integers);
 			orderStatus.setMessage(request.getMessage());
 			ReturnInfo<String> info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
 				response.setSuccess(true);
 				response.setMessage("订单审单完成成功");
+                // 变更审单状态为已审核
+                updateAuditStatus(masterOrderSn);
 				//账期支付填充最后支付时间
-                masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
-				// 创建采购单
-				purchaseOrderService.purchaseOrderCreateByMaster(request);
+				masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
+                // 是否账期支付, 0期立即扣款
+                masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+
+                //订单推送供应链
+                logger.info("订单审核成功:" + masterOrderSn + "订单推送供应链");
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
+                // 需要合同签章的，先设置问题单
+                if (masterOrderInfo.getNeedSign() == 1 && masterOrderInfo.getSignStatus() == 0) {
+                    orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
+                }
 			} else {
 				response.setMessage("订单审单完成失败：" + (info == null ? "返回结果为空" : info.getMessage()));
 			}
@@ -1087,7 +1254,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			orderStatus.setAdminUser(request.getActionUser());
 			orderStatus.setMessage("订单驳回,备注：" + request.getMessage());
 			// 不创建退单
-			orderStatus.setType("0");
+			orderStatus.setType("1");
 			// 取消原因
 			orderStatus.setCode("8011");
 			ReturnInfo<String> info = orderCommonService.cancelOrderByMasterSn(masterOrderSn, orderStatus);
@@ -1180,7 +1347,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             String note = "账期支付扣款失败处理！错误信息:" + request.getMessage();
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, note, Constant.OS_STRING_SYSTEM);
             // 处理失败，设置问题单
-            orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "账期支付扣款异常", "9980"));
+            //orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "账期支付扣款异常", "9980"));
             response.setSuccess(true);
             response.setMessage("操作成功");
         } catch (Exception e) {
@@ -1262,4 +1429,34 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		}
 		return returnTypeName;
 	}
+
+    /**
+     * 更新订单审核状态标志
+     * @param masterOrderSn
+     */
+	private void updateAuditStatus(String masterOrderSn) {
+		MasterOrderInfo updateOrder = new MasterOrderInfo();
+		updateOrder.setMasterOrderSn(masterOrderSn);
+		updateOrder.setUpdateTime(new Date());
+		// 已审核
+		updateOrder.setAuditStatus(1);
+		masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrder);
+	}
+
+    /**
+     * 更新订单合同签章状态标志
+     * @param masterOrderSn
+     */
+    private void updateSignStatus(String masterOrderSn, String contractNo) {
+        MasterOrderInfo updateOrder = new MasterOrderInfo();
+        updateOrder.setMasterOrderSn(masterOrderSn);
+        updateOrder.setUpdateTime(new Date());
+        // 已签章
+        updateOrder.setSignStatus(1);
+        updateOrder.setSignCompleteTime(new Date());
+        updateOrder.setSignContractNum(contractNo);
+        masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrder);
+    }
+
+
 }

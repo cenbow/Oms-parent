@@ -71,6 +71,31 @@ public class CreateGoodsReturnChange implements Serializable {
      */
     private Integer returnSum;
 
+    /**
+     * 申请退款总金额
+     */
+    private Double changeReturnTotalFee;
+
+    /**
+     * 申请退款商品总金额
+     */
+    private Double changeReturnGoodsTotalFee;
+
+    /**
+     * 运费
+     */
+    private Double shipFee;
+
+    /**
+     * 退红包金额
+     */
+    private Double returnBouns;
+
+    /**
+     * 是否整单退，0为否，1为是,未发货
+     */
+    private int isAll = 0;
+
     public String getActionUser() {
         return actionUser;
     }
@@ -165,5 +190,45 @@ public class CreateGoodsReturnChange implements Serializable {
 
     public void setReturnSum(Integer returnSum) {
         this.returnSum = returnSum;
+    }
+
+    public Double getChangeReturnTotalFee() {
+        return changeReturnTotalFee;
+    }
+
+    public void setChangeReturnTotalFee(Double changeReturnTotalFee) {
+        this.changeReturnTotalFee = changeReturnTotalFee;
+    }
+
+    public Double getChangeReturnGoodsTotalFee() {
+        return changeReturnGoodsTotalFee;
+    }
+
+    public void setChangeReturnGoodsTotalFee(Double changeReturnGoodsTotalFee) {
+        this.changeReturnGoodsTotalFee = changeReturnGoodsTotalFee;
+    }
+
+    public Double getShipFee() {
+        return shipFee;
+    }
+
+    public void setShipFee(Double shipFee) {
+        this.shipFee = shipFee;
+    }
+
+    public Double getReturnBouns() {
+        return returnBouns;
+    }
+
+    public void setReturnBouns(Double returnBouns) {
+        this.returnBouns = returnBouns;
+    }
+
+    public int getIsAll() {
+        return isAll;
+    }
+
+    public void setIsAll(int isAll) {
+        this.isAll = isAll;
     }
 }

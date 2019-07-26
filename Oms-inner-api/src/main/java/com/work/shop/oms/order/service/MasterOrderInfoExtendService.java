@@ -61,4 +61,11 @@ public interface MasterOrderInfoExtendService {
      * @return
      */
     ApiReturnData<Boolean> checkAccountPeriodPay(int payId);
+
+    /**
+     * 更新订单推送供应链状态
+     * @param masterOrderSn
+     * @return
+     */
+    boolean updatePushSupplyChain(String masterOrderSn);
 }

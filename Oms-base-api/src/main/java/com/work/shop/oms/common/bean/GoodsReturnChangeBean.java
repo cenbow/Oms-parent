@@ -142,6 +142,7 @@ public class GoodsReturnChangeBean extends GoodsReturnChange implements Serializ
 		case 1: return "待沟通";
 		case 2: return "已完成";
 		case 3: return "待处理";
+        case 4: return "已驳回";
 		default:return "";
 		}
 	}

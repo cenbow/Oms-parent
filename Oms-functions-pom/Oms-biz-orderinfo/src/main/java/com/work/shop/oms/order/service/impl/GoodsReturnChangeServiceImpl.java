@@ -124,6 +124,8 @@ public class GoodsReturnChangeServiceImpl implements GoodsReturnChangeService {
                         break;
                     case 3:str.append("“待处理”");
                         break;
+                    case 4:str.append("已驳回");
+                        break;
                     default:str.append(goodsReturnChange.getStatus());
                         break;
                     }
@@ -136,6 +138,8 @@ public class GoodsReturnChangeServiceImpl implements GoodsReturnChangeService {
                     case 2:str.append("“已完成”");
                         break;
                     case 3:str.append("“待处理”");
+                        break;
+                    case 4:str.append("“已驳回”");
                         break;
                     default:str.append(status);
                         break;
@@ -158,7 +162,7 @@ public class GoodsReturnChangeServiceImpl implements GoodsReturnChangeService {
                     }
                     goodsReturnChangeAction.setActionNote(str.toString()+"</br>");
                     goodsReturnChange.setStatus(status);
-                    goodsReturnChangeMapper.updateByPrimaryKey(goodsReturnChange);
+                    goodsReturnChangeMapper.updateByPrimaryKeySelective(goodsReturnChange);
                 }else{
                     //只提交备注
                     goodsReturnChangeAction.setStatus(goodsReturnChange.getStatus());

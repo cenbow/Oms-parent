@@ -2,6 +2,7 @@ package com.work.shop.oms.vo;
 
 import java.io.Serializable;
 import java.util.List;
+
 /**
  * 接收退单操作动作param
  * @author cage
@@ -10,17 +11,31 @@ import java.util.List;
 public class ReturnOrderParam implements Serializable {
 
 	private static final long serialVersionUID = -135657135944865832L;
-	
-	private String returnSn;//退单号
-	
-//	private String goodsId;//商品id
+
+	/**
+	 * 退单号
+	 */
+	private String returnSn;
+
+	/**
+	 * 退单商品
+	 */
 	private List<StorageGoods> storageGoods;
-	
-	private String actionNote;//操作备注
-	
-	private Integer userId;//操作人id
-	
-	private String userName;//操作人名字
+
+	/**
+	 * 操作备注
+	 */
+	private String actionNote;
+
+	/**
+	 * 操作人id
+	 */
+	private Integer userId;
+
+	/**
+	 * 操作人名字
+	 */
+	private String userName;
 	
 	private boolean pullInAll;
 	

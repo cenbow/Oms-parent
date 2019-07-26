@@ -2,12 +2,8 @@ package com.work.shop.oms.orderReturn.service;
 
 import java.util.List;
 
-import com.work.shop.oms.api.param.bean.CreateOrderReturnBean;
-import com.work.shop.oms.api.param.bean.ReturnSearchParams;
-import com.work.shop.oms.api.param.bean.ReturnShipUpdateInfo;
-import com.work.shop.oms.api.param.bean.ReturnStorageParam;
-import com.work.shop.oms.api.param.bean.SellerParam;
-import com.work.shop.oms.api.param.bean.WmsData;
+import com.work.shop.oms.api.bean.ReturnInfoPage;
+import com.work.shop.oms.api.param.bean.*;
 import com.work.shop.oms.bean.OrderReturn;
 import com.work.shop.oms.bean.OrderReturnShip;
 import com.work.shop.oms.bean.SettleOrderInfo;
@@ -16,17 +12,20 @@ import com.work.shop.oms.common.bean.CreateReturnVO;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 
+/**
+ * 退单服务
+ * @author QuYachu
+ */
 public interface OrderReturnService {
-    
-    
+
     /**
      * 根据订单信息生成退单信息，返回退单单号
      * 供手工生成退单调用
      * @param param
-     * @return
+     * @return ReturnInfo<String>
      * 发货单、付款单数据不用传递有接口自动计算填充，只用关注退单和商品列表即可
      */
-    public ReturnInfo<String> createOrderReturn(CreateOrderReturnBean param);
+    ReturnInfo<String> createOrderReturn(CreateOrderReturnBean param);
     
     /**
      * 手工更新退单信息
@@ -99,22 +98,22 @@ public interface OrderReturnService {
      * @param params
      * @return ApiReturnData
      */
-    ApiReturnData getReturnInfoPageList(ReturnSearchParams params);
+    ApiReturnData<Paging<ReturnInfoPage>> getReturnInfoPageList(ReturnSearchParams params);
     
     
     /**
      * 第三方平台通过供应商查询对应的退单及退单状态数据
      * @param params
-     * @return
+     * @return ApiReturnData
      */
-    public ApiReturnData getOrderReturnForSeller(SellerParam params);
+    ApiReturnData<List<SellerBean>> getOrderReturnForSeller(SellerParam params);
     
     /**
      * 第三方平台 退单商品分供应商入库
      * @param returnStorageParam
      * @return
      */
-    public ApiReturnData returnStorageBySeller(ReturnStorageParam returnStorageParam);
+    ApiReturnData returnStorageBySeller(ReturnStorageParam returnStorageParam);
     
     /**
      * 更新订单对应所有退单的快递单号和快递公司编码

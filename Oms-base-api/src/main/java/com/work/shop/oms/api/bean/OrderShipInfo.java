@@ -19,7 +19,7 @@ public class OrderShipInfo implements Serializable {
     /**
      * 配送状态0，未发货；1，已发货；2，已收货；3，备货中；4备货完成，6,门店收货10，快递取件；11，运输中；12，派件中；13，客户签收；14，客户拒签；15，货物遗失；16，货物损毁
      */
-	private Integer shippingStatus;
+	private Integer shippingStatus = 0;
 //	private String bestTime;//最佳收货时间
 	private List<OrderGoodsInfo> orderGoodsInfo;//包裹商品集合
 	public String getShippingName() {

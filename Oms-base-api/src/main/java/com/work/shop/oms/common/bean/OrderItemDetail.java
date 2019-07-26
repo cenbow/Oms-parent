@@ -94,6 +94,7 @@ public class OrderItemDetail implements Serializable {
 	private BigDecimal tax;//发票税额
 	private Integer invoiceStatus;//发票状态
 	private Integer deliveryStationId;//发票ID
+    private String invPhone;//发票注册电话
 	//主单地址信息表字段
 	private String consignee;//收货人的姓名
 	private String country;//收货人的国家
@@ -220,6 +221,11 @@ public class OrderItemDetail implements Serializable {
      * 创建订单类型，1正常订单，2联采订单
      */
     private Integer createOrderType;
+
+    /**
+     * 公司id
+     */
+    private String companyId;
 	
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -1451,5 +1457,21 @@ public class OrderItemDetail implements Serializable {
 
     public void setCreateOrderType(Integer createOrderType) {
         this.createOrderType = createOrderType;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getInvPhone() {
+        return invPhone;
+    }
+
+    public void setInvPhone(String invPhone) {
+        this.invPhone = invPhone;
     }
 }
