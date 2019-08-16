@@ -144,33 +144,18 @@
 			<artifactId>spring-cloud-starter-feign</artifactId>
 		</dependency>
 	</dependencies>
+
 	<profiles>
 		<profile>
 			<id>www</id>
 			<properties>
-				<package.environment>conf/www</package.environment>
+				<spring.profiles.active>www</spring.profiles.active>
 			</properties>
-			<!-- 
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			--> 
 		</profile>
-		<profile>
-            <id>mall</id>
-            <properties>
-                <package.environment>conf/mall</package.environment>
-            </properties>
-            <!-- 
-            <activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			--> 
-        </profile>
 		<profile>
 			<id>dev</id>
 			<properties>
-				<package.environment>conf/dev</package.environment>
+				<spring.profiles.active>dev</spring.profiles.active>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
@@ -179,24 +164,11 @@
 		<profile>
 			<id>test</id>
 			<properties>
-				<package.environment>conf/test</package.environment>
-			</properties>
-			<!-- --> 
-
-		</profile>
-		<profile>
-			<id>clone</id>
-			<properties>
-				<package.environment>conf/clone</package.environment>
-			</properties>
-		</profile>
-		<profile>
-			<id>yace</id>
-			<properties>
-				<package.environment>conf/yace</package.environment>
+				<spring.profiles.active>test</spring.profiles.active>
 			</properties>
 		</profile>
 	</profiles>
+
 	<build>
 		<finalName>Oms</finalName>
 		<plugins>
@@ -215,6 +187,20 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>resource.properties</exclude>
+					<exclude>application.yml</exclude>
+				</excludes>
+			</resource>
+
+			<resource>
+				<directory>conf/${spring.profiles.active}/</directory>
+			</resource>
+		</resources>
 	</build>
 
 </project>

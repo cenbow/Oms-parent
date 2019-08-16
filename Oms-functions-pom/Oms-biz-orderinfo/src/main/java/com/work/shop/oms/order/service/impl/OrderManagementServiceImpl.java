@@ -1104,12 +1104,14 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 info = updatePushSupplyChain(masterOrderSn, request.getContractNo());
 
             } else {
+                // 变更合同签章状态为
+                updateSignStatus(masterOrderSn, request.getContractNo());
                 //订单号返回正常单
                 info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
-                if (info != null && Constant.OS_YES == info.getIsOk()) {
-                    // 变更合同签章状态为
-                    updateSignStatus(masterOrderSn, request.getContractNo());
-                }
+                //账期支付填充最后支付时间
+                masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
+                // 是否账期支付, 0期立即扣款
+                masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
             }
 
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
@@ -1207,10 +1209,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				response.setMessage("订单审单完成成功");
                 // 变更审单状态为已审核
                 updateAuditStatus(masterOrderSn);
-				//账期支付填充最后支付时间
-				masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
-                // 是否账期支付, 0期立即扣款
-                masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
 
                 //订单推送供应链
                 logger.info("订单审核成功:" + masterOrderSn + "订单推送供应链");
@@ -1218,7 +1216,12 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 // 需要合同签章的，先设置问题单
                 if (masterOrderInfo.getNeedSign() == 1 && masterOrderInfo.getSignStatus() == 0) {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
-                }
+                } else {
+					//账期支付填充最后支付时间
+					masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
+					// 是否账期支付, 0期立即扣款
+					masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+				}
 			} else {
 				response.setMessage("订单审单完成失败：" + (info == null ? "返回结果为空" : info.getMessage()));
 			}
@@ -1254,7 +1257,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			orderStatus.setAdminUser(request.getActionUser());
 			orderStatus.setMessage("订单驳回,备注：" + request.getMessage());
 			// 不创建退单
-			orderStatus.setType("1");
+			orderStatus.setType("2");
+			// 不创建退单
+			orderStatus.setReturnType(7);
 			// 取消原因
 			orderStatus.setCode("8011");
 			ReturnInfo<String> info = orderCommonService.cancelOrderByMasterSn(masterOrderSn, orderStatus);

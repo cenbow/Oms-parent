@@ -1246,7 +1246,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 			distributeActionService.addOrderAction(param.getRelatingOrderSn(),"关联新退单成功:" + returnSn, param.getActionUser());
 		}*/
 		// 插入新退单Action
-		orderActionService.addOrderReturnAction(param.getOrderReturnSn(),"退单生成成功:"+StringUtils.trimToEmpty(param.getActionNote()), param.getActionUser());
+		orderActionService.addOrderReturnAction(param.getOrderReturnSn(),"退单生成成功:"+StringUtils.trimToEmpty(param.getActionNote()), param.getActionUser(), 2);
 
 		//当退单物流中有承运商和快递单号时，添加物流监控
 		if(StringUtils.isNotBlank(ormOrderReturnShip.getReturnExpress()) && StringUtils.isNotBlank(ormOrderReturnShip.getReturnInvoiceNo())){
@@ -1341,6 +1341,8 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 		orderReturn.setAddTime(param.getAddTime());
 		orderReturn.setUpdateTime(param.getAddTime());
 		orderReturn.setActionUser(" ");
+        orderReturn.setRelatingChangeSn(param.getCreateOrderReturn().getRelatingChangeSn());
+        orderReturn.setOrderSn(param.getCreateOrderReturn().getOrderSn());
 		return orderReturn;
 	}
 	
@@ -2495,8 +2497,12 @@ public class OrderReturnServiceImpl implements OrderReturnService {
         //1、将退单原因code置换为name;2、获取商品数据
         for (ReturnInfoPage returnInfoPage : returnInfoPageList) {
             if (null != returnInfoPage.getReturnReason()) {
+                String returnReasonName = returnInfoPage.getReturnReason();
                 OrderCustomDefine orderCustomDefine = orderCustomDefineMapper.selectByPrimaryKey(returnInfoPage.getReturnReason());
-                returnInfoPage.setReturnReasonName(orderCustomDefine.getName());
+                if (orderCustomDefine != null) {
+                    returnReasonName = orderCustomDefine.getName();
+                }
+                returnInfoPage.setReturnReasonName(returnReasonName);
             }
 
             //获取商品数据

@@ -145,6 +145,24 @@ public class OrderActionServiceImpl implements OrderActionService{
 
     /**
      * 添加退单日志
+     * @param returnSn 退单号
+     * @param actionNote 备注
+     * @param actionUser 操做人
+     * @param logType  日志类型
+     * @return
+     */
+    @Override
+    public OrderReturnAction addOrderReturnAction(String returnSn, String actionNote, String actionUser, int logType) {
+        OrderReturnAction actionRequest = new OrderReturnAction();
+        actionRequest.setReturnSn(returnSn);
+        actionRequest.setActionNote(actionNote);
+        actionRequest.setActionUser(actionUser);
+        actionRequest.setLogType((byte) logType);
+        return addOrderReturnAction(actionRequest);
+    }
+
+    /**
+     * 添加退单日志
      * @param actionRequest
      * @return
      */

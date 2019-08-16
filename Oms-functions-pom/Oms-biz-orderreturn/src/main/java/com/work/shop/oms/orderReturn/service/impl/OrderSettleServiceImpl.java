@@ -319,7 +319,7 @@ public class OrderSettleServiceImpl implements OrderSettleService {
 	 * @return
 	 */
 	@Override
-	public ReturnInfo<String> MasterOrderSettle(SettleParamObj paramObj) {
+	public ReturnInfo<String> masterOrderSettle(SettleParamObj paramObj) {
 		logger.info("主单结算 start.paramObj:"+JSON.toJSONString(paramObj));
 		Assert.notNull(paramObj, "paramObj is null");
 		//主单号
@@ -1736,7 +1736,7 @@ public class OrderSettleServiceImpl implements OrderSettleService {
 			paramObj.setBussType(Constant.ERP_BUSS_TYPE_SETTLE);
 			paramObj.setTools(false);
 			paramObj.setUserId("system");
-			ReturnInfo returnVal = this.MasterOrderSettle(paramObj);
+			ReturnInfo returnVal = this.masterOrderSettle(paramObj);
 			logger.info(">>>>普通订单结算" + orderInfo.getMasterOrderSn() + " Oms结算数据推送成功,returnVal:"+JSON.toJSONString(returnVal));
 			if(returnVal == null || returnVal.getIsOk() < 1){
 				throw new RuntimeException(returnVal.getMessage());

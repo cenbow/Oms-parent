@@ -73,6 +73,11 @@ public class OrderQueryRequest implements Serializable {
 
     private String message;
 
+    /**
+     * 支付方式id
+     */
+    private String payId;
+
     public Integer getPageNo() {
 		return pageNo;
 	}
@@ -327,5 +332,13 @@ public class OrderQueryRequest implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getPayId() {
+        return payId;
+    }
+
+    public void setPayId(String payId) {
+        this.payId = payId;
     }
 }

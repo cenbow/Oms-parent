@@ -122,6 +122,11 @@ public class OrderGoodsItem implements Serializable {
 	 */
 	private String address;
 
+    /**
+     * 支付方式
+     */
+    private String payMethod;
+
 	public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
@@ -393,5 +398,12 @@ public class OrderGoodsItem implements Serializable {
 	public void setAddress(String address) {
 		this.address = address;
 	}
-	
+
+    public String getPayMethod() {
+        return payMethod;
+    }
+
+    public void setPayMethod(String payMethod) {
+        this.payMethod = payMethod;
+    }
 }

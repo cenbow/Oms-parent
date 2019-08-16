@@ -495,4 +495,48 @@ public class BgOrderInfoController {
 
         return apiReturnData;
     }
+
+    /**
+     * 延长收货
+     * @param searchParam 请请信息
+     * @return ApiReturnData<Boolean>
+     */
+    @PostMapping("/extendedReceipt")
+    public ApiReturnData<Boolean> extendedReceipt(@RequestBody PageListParam searchParam) {
+
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("操作失败");
+
+        try {
+            apiReturnData = bgOrderInfoService.extendedReceipt(searchParam);
+        } catch (Exception e) {
+            logger.error("延长收货异常:" + JSONObject.toJSONString(searchParam), e);
+            apiReturnData.setMessage("操作异常");
+        }
+
+        return apiReturnData;
+    }
+
+    /**
+     * 统计用户退单数量
+     * @param searchParam
+     * @return
+     */
+    @PostMapping("/getUserOrderReturnType")
+    public ApiReturnData<UserOrderTypeNum> getUserOrderReturnType(@RequestBody PageListParam searchParam) {
+
+        ApiReturnData<UserOrderTypeNum> apiReturnData = new ApiReturnData<UserOrderTypeNum>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("统计用户退单数量失败");
+
+        try {
+            apiReturnData = bgOrderInfoService.getUserOrderReturnType(searchParam);
+        } catch (Exception e) {
+            logger.error("统计用户退单数量异常:" + JSONObject.toJSONString(searchParam), e);
+            apiReturnData.setMessage("统计用户退单数量异常");
+        }
+
+        return apiReturnData;
+    }
 }

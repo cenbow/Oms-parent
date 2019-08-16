@@ -13,10 +13,13 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.oms.orderReturn.service.OrderSettleService;
 import com.work.shop.oms.utils.*;
 import com.work.shop.oms.utils.TimeUtil;
+import com.work.shop.oms.vo.SettleParamObj;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +114,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	@Resource
 	private MasterOrderInfoService masterOrderInfoService;
 
+	@Resource
+	private OrderSettleService orderSettleService;
+
 	/**
 	 * 判断订单拆交货单信息
 	 * @param masterOrderSn 订单号
@@ -196,6 +202,20 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	}
 
     /**
+     * 联采订单自动结算完成
+     * @param masterOrderSn
+     */
+	private void processOrderFinishByGroup(String masterOrderSn) {
+        SettleParamObj paramObj = new SettleParamObj();
+        paramObj.setBussType(1);
+        paramObj.setDealCode(masterOrderSn);
+        paramObj.setTools(false);
+        paramObj.setUserId("系统结算");
+        ReturnInfo<String> info = orderSettleService.masterOrderSettle(paramObj);
+        logger.info("联采订单自动结算完成:" + JSONObject.toJSONString(paramObj));
+    }
+
+    /**
      * 处理订单分配后续处理
      * @param master 订单信息
      * @param orderSns 订单交货单列表
@@ -203,7 +223,16 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
      */
 	private void processOrderDistributeFollow(MasterOrderInfo master, List<String> orderSns, OrderDepotResult depotResult) {
 
-	    String masterOrderSn = master.getMasterOrderSn();
+		String masterOrderSn = master.getMasterOrderSn();
+
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+		Short orderType = masterOrderInfoExtend.getOrderType();
+
+		if (orderType == null || orderType == 1) {
+			// 如果是联采订单
+            processOrderFinishByGroup(masterOrderSn);
+			return;
+		}
 
         // 需要审核订单设置待审核问题单
         if (master.getNeedAudit() == 1 && master.getAuditStatus() == 0) {
@@ -220,6 +249,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                 if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
                 } else {
+                    // 不需要审批的订单，下发账期支付扣款
+                    // 是否账期支付, 0期立即扣款
+                    masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
                     for (String orderSn : orderSns) {
                         OrderManagementRequest request = new OrderManagementRequest();
                         request.setShipSn(orderSn);
@@ -228,13 +260,8 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                     }
                 }
             }
-            // 不需要审批的订单，下发账期支付扣款
-			// 是否账期支付, 0期立即扣款
-			masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
         }
 
-        MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
-        Short orderType = masterOrderInfoExtend.getOrderType();
         if (orderType == null || orderType == 0) {
             // 通知统一库存分配库存
             uniteStockService.distOccupy(masterOrderSn);

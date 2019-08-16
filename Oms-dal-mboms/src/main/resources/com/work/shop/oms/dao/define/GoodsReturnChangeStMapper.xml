@@ -56,7 +56,8 @@
         mog.buy_unit buyUnit,
         mog.supplier_name supplierName,
         mog.supplier_code supplierCode,
-        mog.cost_price costPrice
+        mog.cost_price costPrice,
+        mog.order_sn orderSn
         from goods_return_change_detail grcd
         left join master_order_goods mog
         on grcd.order_sn = mog.master_order_sn and grcd.custom_code = mog.custom_code and grcd.extension_code = mog.extension_code
@@ -64,6 +65,6 @@
         <foreach collection="changeSnList" item="returnChangeSn" open="(" close=")" separator=",">
             #{returnChangeSn}
         </foreach>
-        group by grcd.custom_code, grcd.extension_code
+        group by grcd.returnchange_sn, mog.order_sn, mog.custom_code, mog.extension_code, mog.customer_material_code
     </select>
 </mapper>

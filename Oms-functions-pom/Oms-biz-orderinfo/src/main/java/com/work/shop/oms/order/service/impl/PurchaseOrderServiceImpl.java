@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.MasterOrderDetail;
-import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
@@ -12,6 +11,7 @@ import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.order.service.PurchaseOrderService;
 import com.work.shop.oms.utils.Constant;
+import com.work.shop.oms.utils.MathOperation;
 import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -176,8 +176,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         updateOrderDistribute(distribute);
 
 		//采购单推送供应链，超时为甲方，供应商为乙方
-        //只要不是需要签章，没有签章完成的订单都下发，并且未推送过
-        boolean flag = order.getPushSupplyChain() == 0 && !(master.getNeedSign() == 1 && master.getSignStatus() == 0);
+        //只要不是需要签章，没有签章完成的订单都下发
+        boolean flag = master.getNeedSign() != 1 || master.getSignStatus() != 0;
         if (flag) {
             pushJointPurchasing(master.getMasterOrderSn(), request.getActionUser(), request.getActionUserId(), distribute.getSupplierCode(), 1);
         }
@@ -231,6 +231,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private void fillOrderPrice(PurchaseOrder record, List<PurchaseOrderLine> lines) {
         int goodsCount = 0;
         BigDecimal totalPrice = new BigDecimal(0);
+        BigDecimal totalUntaxPrice = new BigDecimal(0);
         for (PurchaseOrderLine line : lines) {
             Short goodsNumber = line.getGoodsNumber();
             if (goodsNumber == null) {
@@ -240,12 +241,26 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             goodsCount += goodsNumber;
             BigDecimal price = line.getPrice();
             if (price != null) {
-                totalPrice = totalPrice.add(price.multiply(new BigDecimal(goodsNumber)));
+                // 未税商品总价
+                BigDecimal goodsTotalPrice = price.multiply(new BigDecimal(goodsNumber));
+                totalUntaxPrice = totalUntaxPrice.add(goodsTotalPrice);
+
+                // 进项税
+                BigDecimal inputTax = line.getInputTax();
+                if (inputTax != null && inputTax.doubleValue() > 0) {
+                    BigDecimal rate = MathOperation.div(inputTax.add(BigDecimal.valueOf(100)), BigDecimal.valueOf(100), 2);
+                    BigDecimal totalFee = MathOperation.mul(goodsTotalPrice, rate, 2);
+                    totalPrice = totalPrice.add(totalFee);
+                } else {
+                    totalPrice = totalPrice.add(goodsTotalPrice);
+                }
             }
 
         }
         //商品数量
         record.setGoodsCount(goodsCount);
+        // 订单未税总价
+        record.setTotalUntaxFee(totalUntaxPrice);
         //订单总价
         record.setTotalFee(totalPrice);
     }
@@ -322,8 +337,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 			line.setGoodsNumber(item.getGoodsNumber());
 			line.setGoodsThumb(item.getGoodsThumb());
 			line.setGoodsSizeName(item.getGoodsSizeName());
-            line.setPrice(item.getCostPrice());
+            line.setPrice(MathOperation.setScale(item.getCostPrice(), 2));
             line.setSupplierCode(item.getSupplierCode());
+            line.setInputTax(item.getInputTax());
+            line.setOutputTax(item.getOutputTax());
 			orderLines.add(line);
 		}
 		return orderLines;
@@ -344,7 +361,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
 	public void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, int type) {
         //校验订单类型；联采订单供应商编码不能为空，普通订单必须为企业用户
-        logger.info("订单推送供应链信息：订单号" + masterOrderSn + ",供应商编码" + supplierCode);
+        logger.info("订单推送供应链信息：订单号" + masterOrderSn + ",供应商编码" + supplierCode + ",推送类型" + type);
         Map<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("masterOrderSn", masterOrderSn);
         paramMap.put("isHistory", 0);
@@ -363,7 +380,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         Integer createOrderType = master.getCreateOrderType();
         //联采订单，或交货单
-        if (createOrderType == 1 || type == 1) {
+        if (createOrderType == 1 || (type == 1 && master.getNeedSign() == 1)) {
             if (StringUtils.isBlank(supplierCode)) {
                 logger.error(masterOrderSn + "订单推送供应链推送：供应商编码为空");
                 return;

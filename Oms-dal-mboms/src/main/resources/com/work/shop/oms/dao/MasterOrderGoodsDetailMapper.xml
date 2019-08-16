@@ -538,7 +538,7 @@
   <select id="getOrderGoodsDetail" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
         SELECT 
             t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code, 
-            t.extension_id, SUM(t.goods_number) AS goods_number, t.goods_price, t.transaction_price, t.settlement_price, SUM(t.discount) AS discount, 
+            t.extension_id, SUM(t.goods_number) AS goods_number, t.goods_price, t.transaction_price, t.settlement_price, t.discount AS discount,
             t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb, 
             SUM(t.send_number) AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points, 
             t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId, 
@@ -548,7 +548,8 @@
             b.invoice_no,b.shipping_status,b.delivery_time,b.pickup_date,
             t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value, SUM(lack.lack_num) AS lack_num,
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
-            t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName
+            t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.customer_material_name customerMaterialName,
+            t.buyer_no buyerNo, t.buyer_line_no buyerLineNo
         FROM 
             master_order_goods t
         LEFT JOIN

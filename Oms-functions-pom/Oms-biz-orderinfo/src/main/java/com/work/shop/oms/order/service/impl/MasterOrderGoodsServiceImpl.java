@@ -273,6 +273,12 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         masterOrderGoods.setCustomerMaterialCode(masterGoods.getCustomerMaterialCode());
         //供应商名称
         masterOrderGoods.setSupplierName(masterGoods.getSupplierName());
+        //物料描述
+        masterOrderGoods.setCustomerMaterialName(masterGoods.getCustomerMaterialName());
+        //采购申请编号
+        masterOrderGoods.setBuyerNo(masterGoods.getBuyerNo());
+        //采购申请行号
+        masterOrderGoods.setBuyerLineNo(masterGoods.getBuyerLineNo());
     }
 
 	/**

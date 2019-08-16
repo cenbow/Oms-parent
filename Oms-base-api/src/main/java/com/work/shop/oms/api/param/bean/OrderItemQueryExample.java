@@ -300,6 +300,11 @@ public class OrderItemQueryExample {
             addCriterion("oi.order_status not in", values, "orderStatus");
             return (Criteria) this;
         }
+
+        public Criteria andOrderAndPay() {
+            addCriterion("oi.master_order_sn = mop.master_order_sn");
+            return (Criteria) this;
+        }
         
         public Criteria andIsGroupEqualTo(Integer value) {
             addCriterion("oie.is_group =", value, "isGroup");
@@ -847,6 +852,11 @@ public class OrderItemQueryExample {
         
         public Criteria andSourceEqualTo(Integer value) {
             addCriterion("common.source =", value, "source");
+            return (Criteria) this;
+        }
+
+        public Criteria andPayIdEqualTo(String value) {
+            addCriterion("mop.pay_id =", value, "value");
             return (Criteria) this;
         }
     }

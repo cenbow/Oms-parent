@@ -32,7 +32,7 @@ public interface OrderSettleService {
      * @param paramObj
      * @return ReturnInfo<String>
      */
-    ReturnInfo<String> MasterOrderSettle(SettleParamObj paramObj);
+    ReturnInfo<String> masterOrderSettle(SettleParamObj paramObj);
     
     /**
      * 订单结算撤销

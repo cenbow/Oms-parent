@@ -180,6 +180,21 @@ public class OrderItemGoodsDetail implements Serializable {
      */
     private String supplierName;
 
+    /**
+     * 供应商描述
+     */
+    private String customerMaterialName;
+
+    /**
+     * 采购申请编号
+     */
+    private String buyerNo;
+
+    /**
+     * 采购申请行号
+     */
+    private String buyerLineNo;
+
 	public Long getGoodsId() {
 		return goodsId;
 	}
@@ -931,5 +946,29 @@ public class OrderItemGoodsDetail implements Serializable {
 
     public void setSubTotalStr(String subTotalStr) {
         this.subTotalStr = subTotalStr;
+    }
+
+    public String getCustomerMaterialName() {
+        return customerMaterialName;
+    }
+
+    public void setCustomerMaterialName(String customerMaterialName) {
+        this.customerMaterialName = customerMaterialName;
+    }
+
+    public String getBuyerNo() {
+        return buyerNo;
+    }
+
+    public void setBuyerNo(String buyerNo) {
+        this.buyerNo = buyerNo;
+    }
+
+    public String getBuyerLineNo() {
+        return buyerLineNo;
+    }
+
+    public void setBuyerLineNo(String buyerLineNo) {
+        this.buyerLineNo = buyerLineNo;
     }
 }

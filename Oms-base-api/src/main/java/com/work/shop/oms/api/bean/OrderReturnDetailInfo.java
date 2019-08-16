@@ -25,6 +25,11 @@ public class OrderReturnDetailInfo implements Serializable {
 	private int  progressStatus;//流程状态          1 => '申请退货',   2 => '美邦收货', 3 => '商品质检',  4 => '退货完成',
 
     /**
+     * 收货人名称
+     */
+    private String consignee;
+
+    /**
      * 联系人
      */
     private String contactUser;
@@ -76,6 +81,11 @@ public class OrderReturnDetailInfo implements Serializable {
      *  客户合同号
      */
     private String customerContractNum;
+
+    /**
+     * 退货状态
+     */
+    private String shipStatus;
 
 	public String getOrderReturnSn() {
 		return orderReturnSn;
@@ -276,5 +286,21 @@ public class OrderReturnDetailInfo implements Serializable {
 
     public void setCustomerContractNum(String customerContractNum) {
         this.customerContractNum = customerContractNum;
+    }
+
+    public String getConsignee() {
+        return consignee;
+    }
+
+    public void setConsignee(String consignee) {
+        this.consignee = consignee;
+    }
+
+    public String getShipStatus() {
+        return shipStatus;
+    }
+
+    public void setShipStatus(String shipStatus) {
+        this.shipStatus = shipStatus;
     }
 }

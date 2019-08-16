@@ -2206,7 +2206,7 @@ public class OrderReturnController extends BaseController {
 					logger.info("退单returnSn:"+returnSn+"入库推送ERP结果：isOk:"+returnInfo.getIsOk()+"message:"+returnInfo.getMessage()+"用时："+(System.currentTimeMillis()-time)+"毫秒,paramObj:"+JSON.toJSONString(paramObj));
 				}else if(bussType == ConstantValues.ORDER_SELLTE_BUSSMODE.SELLTE){//结算
 					if(orderType == ConstantValues.YESORNO_NO){//订单结算
-						returnInfo = orderSettleService.MasterOrderSettle(paramObj);
+						returnInfo = orderSettleService.masterOrderSettle(paramObj);
 						logger.info("订单OrderSn:"+returnSn+"结算推送ERP结果：isOk:"+returnInfo.getIsOk()+"message:"+returnInfo.getMessage()+"用时："+(System.currentTimeMillis()-time)+"毫秒,paramObj:"+JSON.toJSONString(paramObj));
 					}else if (orderType == ConstantValues.YESORNO_YES){//退单结算
 						returnInfo = orderSettleService.settleReturnOrder(paramObj);

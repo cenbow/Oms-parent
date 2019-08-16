@@ -253,7 +253,7 @@ public class GoodsReturnChangeAction implements Serializable {
         } else if (status == 3) {
             return "待处理";
         } else if (status == 4) {
-            return "待处理";
+            return "已驳回";
         }
         return statusStr;
     }

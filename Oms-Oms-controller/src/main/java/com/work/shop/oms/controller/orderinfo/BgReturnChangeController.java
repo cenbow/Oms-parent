@@ -224,11 +224,12 @@ public class BgReturnChangeController {
     @PostMapping("/cancelGoodsReturnChange")
     public GoodsReturnChangeReturnInfo cancelGoodsReturnChange(@RequestParam(name="channelCode") String channelCode,
                                                                @RequestParam(name="returnChangeSn") String returnChangeSn,
-                                                               @RequestParam(name="siteCode") String siteCode) {
+                                                               @RequestParam(name="siteCode") String siteCode,
+                                                               @RequestParam(name="actionUser") String actionUser) {
         GoodsReturnChangeReturnInfo returnBean = new GoodsReturnChangeReturnInfo();
 
         try {
-            returnBean = bgReturnChangeService.cancelGoodsReturnChange(channelCode, returnChangeSn, siteCode);
+            returnBean = bgReturnChangeService.cancelGoodsReturnChange(channelCode, returnChangeSn, siteCode, actionUser);
         } catch (Exception e) {
             logger.error("取消申请单异常", e);
             returnBean.setMessage("取消异常");

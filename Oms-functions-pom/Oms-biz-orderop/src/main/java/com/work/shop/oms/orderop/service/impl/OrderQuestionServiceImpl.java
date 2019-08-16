@@ -185,8 +185,10 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		List<OrderDistribute> questionDistributes = new ArrayList<OrderDistribute>();
 		// 待审核问题单新增一种问题单类型
 		int questionType = 0;
-		if ("17".equals(define.getCode())) {
+		if (Constant.QUESTION_CODE_REVIEW.equals(define.getCode())) {
 			questionType = 2;
+		} else if (Constant.QUESTION_CODE_SIGN.equals(define.getCode())) {
+			questionType = 3;
 		}
 		/* 执行前提检查 */
 		for (OrderDistribute distribute : distributes) {
@@ -926,9 +928,11 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
      */
 	private DistributeQuestion createQuestion(OrderDistribute distribute, Date now, OrderCustomDefine orderCustomDefine) {
 		int questionType = 0;
-		if ("17".equals(orderCustomDefine.getCode())) {
-			questionType = 2;
-		}
+        if (Constant.QUESTION_CODE_REVIEW.equals(orderCustomDefine.getCode())) {
+            questionType = 2;
+        } else if (Constant.QUESTION_CODE_SIGN.equals(orderCustomDefine.getCode())) {
+            questionType = 3;
+        }
 		DistributeQuestion orderQuestion = new DistributeQuestion();
 		orderQuestion.setAddTime(now);
 		orderQuestion.setQuestionDesc(orderCustomDefine.getName());
@@ -939,9 +943,9 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 	}
 	
 	
-	private void saveAction(OrderDistribute distribute, String message, String actiomUser) {
+	private void saveAction(OrderDistribute distribute, String message, String actionUser) {
 		DistributeAction orderAction = distributeActionService.createQrderAction(distribute);
-		orderAction.setActionUser(actiomUser);
+		orderAction.setActionUser(actionUser);
 		orderAction.setActionNote(message);
 		distributeActionService.saveOrderAction(orderAction);
 	}

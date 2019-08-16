@@ -2244,10 +2244,12 @@
 			oie.user_bank_no userBankNo,
             oie.user_pay_apply userPayApply,
             oie.order_type createOrderType,
-            oi.instead_user_id instead_user_id
-		FROM master_order_info oi,
+            oi.instead_user_id instead_user_id,
+            mop.pay_name as payMethod
+        FROM master_order_info oi,
             master_order_address_info oai,
-            master_order_info_extend oie
+            master_order_info_extend oie,
+            master_order_pay mop
 		<if test="_parameter != null" >
 	        <include refid="Example_Where_Clause" />
 	    </if>
@@ -2267,7 +2269,8 @@
     	FROM
         	master_order_info oi,
         	master_order_address_info oai,
-        	master_order_info_extend oie
+        	master_order_info_extend oie,
+            master_order_pay mop
     	<if test="_parameter != null" >
         	<include refid="Example_Where_Clause" />
     	</if>
@@ -2312,11 +2315,13 @@
             mog.input_tax as inputTax,
             mog.output_tax as outputTax,
             mog.cost_price as costPrice,
-            mog.box_gauge as boxGauge
+            mog.box_gauge as boxGauge,
+            mop.pay_name as payMethod
 		FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
-            master_order_goods mog
+            master_order_goods mog,
+            master_order_pay mop
 		<if test="_parameter != null" >
 	        <include refid="Example_Where_Clause" />
 	    </if>
@@ -2341,7 +2346,8 @@
 	        	master_order_info oi,
 	        	master_order_address_info oai,
 	        	master_order_info_extend oie,
-	        	master_order_goods mog
+	        	master_order_goods mog,
+                master_order_pay mop
 	    	<if test="_parameter != null" >
 	        	<include refid="Example_Where_Clause" />
 	    	</if>

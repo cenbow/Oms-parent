@@ -142,6 +142,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 		example.setUserOg(true);
 		criteria.andOrderAndAddress();
 		criteria.andOrderAndExtend();
+		criteria.andOrderAndPay();
 		
 		// 导出数据列表类型 0订单列表、1订单商品列表
 		int exportType = request.getExportType();
@@ -311,7 +312,13 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			Date date = calendar.getTime();
 			criteria.andAddTimeGreaterThanOrEqualTo(date);
 		}
-		try {
+
+        String payId = request.getPayId();
+		if (StringUtils.isNotBlank(payId)) {
+            criteria.andPayIdEqualTo(payId);
+        }
+
+        try {
 			int totalProperty = 0;
 			if (exportType == 1) {
 				// 订单商品列表

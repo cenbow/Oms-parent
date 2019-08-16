@@ -78,6 +78,11 @@ public class OrderReturnPageInfo implements Serializable{
      * 客户合同号
      */
     private String customerContractNum;
+
+    /**
+     * 退货状态
+     */
+    private String shipStatus;
 	
 	public String getOrderSn() {
 		return orderSn;
@@ -211,5 +216,13 @@ public class OrderReturnPageInfo implements Serializable{
 
     public void setCustomerContractNum(String customerContractNum) {
         this.customerContractNum = customerContractNum;
+    }
+
+    public String getShipStatus() {
+        return shipStatus;
+    }
+
+    public void setShipStatus(String shipStatus) {
+        this.shipStatus = shipStatus;
     }
 }

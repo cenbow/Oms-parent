@@ -172,6 +172,11 @@ public class PurchaseOrder {
     private BigDecimal totalFee;
 
     /**
+     * 订单未税总价
+     */
+    private BigDecimal totalUntaxFee;
+
+    /**
      * 是否签章完成，0否1是
      */
     private Byte signComplete;
@@ -701,5 +706,13 @@ public class PurchaseOrder {
 
     public void setSignCompleteTime(Date signCompleteTime) {
         this.signCompleteTime = signCompleteTime;
+    }
+
+    public BigDecimal getTotalUntaxFee() {
+        return totalUntaxFee;
+    }
+
+    public void setTotalUntaxFee(BigDecimal totalUntaxFee) {
+        this.totalUntaxFee = totalUntaxFee;
     }
 }

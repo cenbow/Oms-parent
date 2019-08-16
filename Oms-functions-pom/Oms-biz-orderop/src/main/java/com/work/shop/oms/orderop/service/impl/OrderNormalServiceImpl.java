@@ -677,13 +677,17 @@ public class OrderNormalServiceImpl implements OrderNormalService {
             // 拆单处理
             orderDistributeJmsTemplate.send(new TextMessageCreator(masterOrderSn));
         } else if (master.getSplitStatus().equals(Constant.SPLIT_STATUS_SPLITED)) {
-            // 创建采购单
-            OrderManagementRequest request = new OrderManagementRequest();
-            request.setMasterOrderSn(masterOrderSn);
-            request.setMessage("返回正常单-创建采购单");
-            request.setActionUser(orderStatus.getAdminUser());
-            request.setActionUserId(orderStatus.getAdminUserId());
-            purchaseOrderService.purchaseOrderCreateByMaster(request);
+			if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
+				// 需要等待签章
+			} else {
+				// 创建采购单
+				OrderManagementRequest request = new OrderManagementRequest();
+				request.setMasterOrderSn(masterOrderSn);
+				request.setMessage("返回正常单-创建采购单");
+				request.setActionUser(orderStatus.getAdminUser());
+				request.setActionUserId(orderStatus.getAdminUserId());
+				purchaseOrderService.purchaseOrderCreateByMaster(request);
+			}
         }
     }
 

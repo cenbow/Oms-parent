@@ -258,6 +258,11 @@ public class OrderItem implements Serializable{
      * 创建订单类型，1正常订单，2联采订单
      */
     private Integer createOrderType;
+
+    /**
+     * 支付方式
+     */
+    private String payMethod;
 	
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -663,5 +668,13 @@ public class OrderItem implements Serializable{
 
     public void setCreateOrderType(Integer createOrderType) {
         this.createOrderType = createOrderType;
+    }
+
+    public String getPayMethod() {
+        return payMethod;
+    }
+
+    public void setPayMethod(String payMethod) {
+        this.payMethod = payMethod;
     }
 }

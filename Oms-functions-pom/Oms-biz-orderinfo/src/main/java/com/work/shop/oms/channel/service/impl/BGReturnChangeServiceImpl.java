@@ -264,10 +264,11 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
      * @param channelCode 店铺编码
      * @param returnChangeSn 申请单号
      * @param siteCode 站点编码
+     * @param actionUser 操作人
      * @return GoodsReturnChangeReturnInfo
      */
     @Override
-    public GoodsReturnChangeReturnInfo cancelGoodsReturnChange(String channelCode, String returnChangeSn, String siteCode) {
+    public GoodsReturnChangeReturnInfo cancelGoodsReturnChange(String channelCode, String returnChangeSn, String siteCode, String actionUser) {
         logger.info("渠道请求取消api调用开始:returnChangeSn=" + returnChangeSn + "渠道号：" + channelCode + ";siteCode=" + siteCode);
         GoodsReturnChangeReturnInfo goodsReturnChangeReturnInfo = new GoodsReturnChangeReturnInfo();
         if (channelCode == null||channelCode.length() == 0) {
@@ -297,7 +298,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             }
             goodsReturnChangeMapper.updateByExampleSelective(goodsReturnChange, example);
             GoodsReturnChangeAction action = new GoodsReturnChangeAction();
-            action.setActionUser(channelCode);
+            action.setActionUser(actionUser);
             action.setStatus(0);
             action.setOrderSn(list.get(0).getOrderSn());
             action.setActionNote("系统提交：渠道"+channelCode+"请求取消申请单！");
@@ -1620,6 +1621,9 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                         //待处理
                     } else if (status == 3) {
                         userOrderTypeNum.setProcessNum(num);
+                        //已驳回
+                    } else if (status == 4) {
+                        userOrderTypeNum.setRejectNum(num);
                     }
                 }
 
@@ -1671,7 +1675,6 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
         GoodsReturnChange goodsReturnChange = null;
         String msg = "";
-
         try {
             //校验订单信息
             MasterOrderInfoExample infoExample = new MasterOrderInfoExample();
@@ -1694,6 +1697,8 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 return apiReturnData;
             }
             goodsReturnChange = goodsReturnChanges.get(0);
+            createGoodsReturnChange.setReason(goodsReturnChange.getReason());
+            createGoodsReturnChange.setExplain(goodsReturnChange.getExplain());
 
             //审核，自动创建退单，申请单自动完成
             logger.info("申请售后自动创建退单");
@@ -1724,7 +1729,10 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             GoodsReturnChangeAction action = new GoodsReturnChangeAction();
             action.setActionUser(actionUser);
             // 状态
-            action.setStatus(goodsReturnChange.getStatus());
+            GoodsReturnChange change = goodsReturnChangeMapper.selectByPrimaryKey(goodsReturnChange.getId());
+            if (change != null) {
+                action.setStatus(change.getStatus());
+            }
             action.setOrderSn(goodsReturnChange.getOrderSn());
             action.setActionNote(msg);
             action.setLogTime(new Date());
@@ -1832,6 +1840,35 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
     }
 
     /**
+     * 根据申请单号查询申请单详情,根据交货单号分组
+     * @param changeSn
+     * @return
+     */
+    private Map<String, List<GoodsReturnChangeDetailBean>> getDetailListByChangeSn(String changeSn) {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        List<String> changeSnList = new ArrayList<String>();
+        changeSnList.add(changeSn);
+        paramMap.put("changeSnList", changeSnList);
+        List<GoodsReturnChangeDetailBean> changDetailList = goodsReturnChangeStMapper.getGoodsReturnChangDetail(paramMap);
+        if (StringUtil.isListNull(changDetailList)) {
+            return null;
+        }
+
+        Map<String, List<GoodsReturnChangeDetailBean>> map = new HashMap<String, List<GoodsReturnChangeDetailBean>>();
+        for (GoodsReturnChangeDetailBean detail : changDetailList) {
+            String orderSn = detail.getOrderSn();
+            List<GoodsReturnChangeDetailBean> returnChangeDetails = map.get(orderSn);
+            if (returnChangeDetails == null) {
+                returnChangeDetails = new ArrayList<GoodsReturnChangeDetailBean>();
+            }
+            returnChangeDetails.add(detail);
+            map.put(orderSn, returnChangeDetails);
+        }
+
+        return map;
+    }
+
+    /**
      * 根据申请单号查询申请单详情
      * @param changeSnList
      * @return
@@ -1880,10 +1917,21 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
         } else if (shipStatus > 1) {
             //填充退单商品
-            List<GoodsReturnChangeDetailBean> details = fillReturnGoods(bean);
-            //已发货之后，创建退单，自动确认
-            logger.info("申请售后：已发货之后，创建退单，自动确认");
-            createReturnOrderJms(bean, details, 1);
+            Map<String, List<GoodsReturnChangeDetailBean>> detailMap = fillReturnGoods(bean);
+            if (detailMap == null || detailMap.size() < 1) {
+                return;
+            }
+
+
+            Set<String> keySet = detailMap.keySet();
+            for (String orderSn : keySet) {
+                List<GoodsReturnChangeDetailBean> changeDetailBeans = detailMap.get(orderSn);
+                //已发货之后，创建退单，自动确认
+                logger.info("交货单号" + orderSn + "申请售后：已发货之后，创建退单，自动确认");
+                bean.setDistributeSn(orderSn);
+                createReturnOrderJms(bean, changeDetailBeans, 1);
+            }
+
         }
     }
 
@@ -1892,50 +1940,52 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
      * @param bean
      * @return
      */
-    private List<GoodsReturnChangeDetailBean> fillReturnGoods(CreateGoodsReturnChange bean) {
+    private Map<String, List<GoodsReturnChangeDetailBean>> fillReturnGoods(CreateGoodsReturnChange bean) {
         if (bean == null || StringUtils.isBlank(bean.getReturnChangeSn())) {
             return null;
         }
 
         //获取申请单商品详情
         String returnChangeSn = bean.getReturnChangeSn();
-        List<String> changeSnList = new ArrayList<String>();
-        changeSnList.add(returnChangeSn);
-        Map<String, List<GoodsReturnChangeDetailBean>> detailListMap = getDetailList(changeSnList);
-        if (detailListMap == null || StringUtil.isListNull(detailListMap.get(returnChangeSn))) {
+        Map<String, List<GoodsReturnChangeDetailBean>> detailListMap = getDetailListByChangeSn(returnChangeSn);
+        if (detailListMap == null || detailListMap.size() < 1) {
             return null;
         }
-        List<GoodsReturnChangeDetailBean> detailBeanList = detailListMap.get(returnChangeSn);
 
         //计算退单价格
         BigDecimal returnFee = new BigDecimal(0);
         BigDecimal returnGoodsFee = new BigDecimal(0);
         BigDecimal returnBouns = new BigDecimal(0);
-        for (GoodsReturnChangeDetailBean detailBean : detailBeanList) {
-            //申请商品数量
-            Integer returnSum = detailBean.getReturnSum();
-            if (returnSum == null || returnSum == 0) {
-                continue;
+
+        Set<String> keySet = detailListMap.keySet();
+        for (String orderSn : keySet) {
+            List<GoodsReturnChangeDetailBean> detailBeanList = detailListMap.get(orderSn);
+            for (GoodsReturnChangeDetailBean detailBean : detailBeanList) {
+                //申请商品数量
+                Integer returnSum = detailBean.getReturnSum();
+                if (returnSum == null || returnSum == 0) {
+                    continue;
+                }
+
+                //计算申请退货总金额
+                BigDecimal changefee = detailBean.getSettlementPrice().multiply(new BigDecimal(returnSum));
+                returnFee = returnFee.add(changefee);
+
+                //计算申请退货商品总金额
+                BigDecimal changeGoodsfee = detailBean.getSettlementPrice().multiply(new BigDecimal(returnSum));
+                returnGoodsFee = returnGoodsFee.add(changeGoodsfee);
+
+                //计算红包合计
+                BigDecimal bouns = detailBean.getShareBonus().multiply(new BigDecimal(returnSum));
+                returnBouns = returnBouns.add(bouns);
+
             }
-
-            //计算申请退货总金额
-            BigDecimal changefee = detailBean.getSettlementPrice().multiply(new BigDecimal(returnSum));
-            returnFee = returnFee.add(changefee);
-
-            //计算申请退货商品总金额
-            BigDecimal changeGoodsfee = detailBean.getGoodsPrice().multiply(new BigDecimal(returnSum));
-            returnGoodsFee = returnGoodsFee.add(changeGoodsfee);
-
-            //计算红包合计
-            BigDecimal bouns = detailBean.getShareBonus().multiply(new BigDecimal(returnSum));
-            returnBouns = returnBouns.add(bouns);
-
         }
 
         bean.setChangeReturnTotalFee(returnFee.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
         bean.setChangeReturnGoodsTotalFee(returnGoodsFee.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
         bean.setReturnBouns(returnBouns.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-        return detailBeanList;
+        return detailListMap;
     }
 
     /**
@@ -1975,12 +2025,15 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             orderReturn.setProcessType((byte) 1);
             orderReturn.setRelatingOrderSn(bean.getOrderSn());
             orderReturn.setReturnGoodsMoney(bean.getChangeReturnGoodsTotalFee());
-            orderReturn.setReturnReason("R01");
             orderReturn.setReturnSettlementType((byte) 1);
             orderReturn.setReturnTotalFee(bean.getChangeReturnTotalFee());
             orderReturn.setReturnType((byte) 1);
             returnBean.setCreateOrderReturn(orderReturn);
             orderReturn.setReturnBonusMoney(bean.getReturnBouns());
+            orderReturn.setReturnReason(bean.getReasonStr());
+            orderReturn.setReturnDesc(bean.getExplain());
+            orderReturn.setRelatingChangeSn(bean.getReturnChangeSn());
+            orderReturn.setOrderSn(bean.getDistributeSn());
 //            orderReturn.setReturnShipping(bean.getShipFee());
 
             //退单商品
@@ -2004,6 +2057,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 returnGoods.setSettlementPrice(detail.getSettlementPrice().doubleValue());
                 returnGoods.setMarketPrice(detail.getMarketPrice().doubleValue());
                 returnGoods.setSeller(detail.getSupplierCode());
+                returnGoods.setCostPrice(detail.getCostPrice());
                 orderReturnGoodsList.add(returnGoods);
             }
             returnBean.setCreateOrderReturnGoodsList(orderReturnGoodsList);
@@ -2023,7 +2077,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             });
 
         } catch (Exception e) {
-            logger.error("创建退单失败");
+            logger.error("创建退单失败" + JSONObject.toJSONString(bean), e);
         }
     }
 

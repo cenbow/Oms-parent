@@ -135,11 +135,22 @@ public class MathOperation {
 	*/
 	public static double div(double v1, double v2, int scale) {
 		if (scale < 0) {
-		throw new IllegalArgumentException("请指定小数点精度，不能小于0");
+			throw new IllegalArgumentException("请指定小数点精度，不能小于0");
 		}
 		BigDecimal b1 = new BigDecimal(Double.toString(v1));
 		BigDecimal b2 = new BigDecimal(Double.toString(v2));
 		return b1.divide(b2, scale, BigDecimal.ROUND_HALF_UP).doubleValue();
+	}
+
+	/**
+	 * 保留指定小数位的除法
+	 * @param b1
+	 * @param b2
+	 * @param scale
+	 * @return
+	 */
+	public static BigDecimal div(BigDecimal b1, BigDecimal b2, int scale) {
+		return b1.divide(b2, scale, BigDecimal.ROUND_HALF_UP);
 	}
 	
 	/**
@@ -268,6 +279,10 @@ public class MathOperation {
 	public static double returnNegate(double v) {
 		BigDecimal b = new BigDecimal(v);
 		return b.negate().doubleValue();
+	}
+
+	public static BigDecimal setScale(BigDecimal v, int scale) {
+		return v.setScale(scale, RoundingMode.HALF_UP);
 	}
 	
 	/**

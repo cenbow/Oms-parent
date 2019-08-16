@@ -118,7 +118,8 @@ public interface BgReturnChangeService {
     @PostMapping("/order/cancelGoodsReturnChange")
     GoodsReturnChangeReturnInfo cancelGoodsReturnChange(@RequestParam(name="channelCode") String channelCode,
                                                         @RequestParam(name="returnChangeSn") String returnChangeSn,
-                                                        @RequestParam(name="siteCode") String siteCode);
+                                                        @RequestParam(name="siteCode") String siteCode,
+                                                        @RequestParam(name="actionUser") String actionUser);
 
     /**
      * 删除申请单

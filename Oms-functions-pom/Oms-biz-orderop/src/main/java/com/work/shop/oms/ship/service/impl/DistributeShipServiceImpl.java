@@ -1603,7 +1603,14 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 if (deliveryTime == null) {
                     continue;
                 }
-                Date lastConfirmTime = TimeUtil.getBeforeSecond(deliveryTime, periodTime);
+
+				Date lastConfirmTime = TimeUtil.getBeforeSecond(deliveryTime, periodTime);
+                // 是否延时收货
+				Integer isReceipt = depotShip.getIsReceipt();
+                if (isReceipt != null && isReceipt == 1) {
+					lastConfirmTime = TimeUtil.getBeforeSecond(deliveryTime, 2 * periodTime);
+				}
+
                 Date date = new Date();
                 if (lastConfirmTime.getTime() > date.getTime()) {
                     continue;

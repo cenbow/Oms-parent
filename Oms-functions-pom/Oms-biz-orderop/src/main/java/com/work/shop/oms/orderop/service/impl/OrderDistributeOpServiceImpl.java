@@ -443,7 +443,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 		paramObj.setDealCode(masterOrderSn);
 		paramObj.setTools(false);
 		paramObj.setUserId(orderStatus.getAdminUser());
-		info = orderSettleService.MasterOrderSettle(paramObj);
+		info = orderSettleService.masterOrderSettle(paramObj);
 		return info;
 	}
 

@@ -74,6 +74,11 @@ public class GoodsReturnChangeDetailBean implements Serializable {
      */
     private Double costPrice;
 
+    /**
+     * 交货单号
+     */
+    private String orderSn;
+
     public String getGoodsName() {
         return goodsName;
     }
@@ -256,5 +261,13 @@ public class GoodsReturnChangeDetailBean implements Serializable {
 
     public void setCostPrice(Double costPrice) {
         this.costPrice = costPrice;
+    }
+
+    public String getOrderSn() {
+        return orderSn;
+    }
+
+    public void setOrderSn(String orderSn) {
+        this.orderSn = orderSn;
     }
 }

@@ -604,9 +604,8 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		    // 需要创建退单
 			if (ConstantValues.CREATE_RETURN.YES.equals(orderStatus.getType())) {
 			    if (master.getPayStatus() == Constant.OI_PAY_STATUS_PAYED && (master.getMoneyPaid().doubleValue() >= 0 || master.getSurplus().doubleValue() > 0)) {
-                    // 已付款订单
+			    	// 已付款订单
                     List<CreateOrderReturnGoods> returnGoodsList = processOrderReturnGoods(master, useCards);
-
                     ReturnInfo<List<OrderReturn>> orderReturnInfo = orderReturnService.geteffectiveReturns(masterOrderSn);
                     if (orderReturnInfo != null && orderReturnInfo.getIsOk() == Constant.OS_YES
                             && StringUtil.isListNull(orderReturnInfo.getData())) {
@@ -648,13 +647,21 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                     processOrderCancelSurplus(master);
 				}
 			} else {
-				// 未支付订单取消
-				List<String> orderUseCardList = getOrderGoodsCards(masterOrderSn);
-				if (orderUseCardList != null && orderUseCardList.size() > 0) {
-					useCards.addAll(orderUseCardList);
-				}
-				// 库存冻结取消
-                orderStatus.setStockRealese(true);
+                Integer returnType = orderStatus.getReturnType();
+                if (returnType != null && returnType == 7) {
+                    // 订单取消，不创建退单
+                    // 通知统一库存释放
+                    uniteStockService.realese(masterOrderSn);
+                } else {
+
+                    // 未支付订单取消
+                    List<String> orderUseCardList = getOrderGoodsCards(masterOrderSn);
+                    if (orderUseCardList != null && orderUseCardList.size() > 0) {
+                        useCards.addAll(orderUseCardList);
+                    }
+                    // 库存冻结取消
+                    orderStatus.setStockRealese(true);
+                }
 			}
 			
 			// 取消订单

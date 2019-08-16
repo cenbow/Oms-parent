@@ -41,12 +41,13 @@
 	<!-- 第三方退单查询接口 -->
   	<select id="getReturnInfoPageList" parameterType="com.work.shop.oms.api.param.bean.ReturnSearchParams" resultType="com.work.shop.oms.api.bean.ReturnInfoPage">
   		select 
-			orn.return_sn returnSn, orn.master_order_sn masterOrderSn, orn.relating_order_sn relatingOrderSn,
+			orn.return_sn returnSn, orn.master_order_sn masterOrderSn, orn.order_sn relatingOrderSn,
 			orn.return_total_fee returnTotalFee, orn.return_reason returnReason, orn.return_order_status returnOrderStatus,
 			orn.add_time addTime, orn.clear_time clearTime, oi.user_name userName, ors.return_invoice_no returnInvoiceNo,
 			ss.shipping_name shippingName, org.seller seller, orn.pay_status payStatus, orn.ship_status shipStatus,
 			orn.sellted_bill_status selltedBillStatus
-		from  order_return orn  left join master_order_info oi on orn.master_order_sn = oi.master_order_sn
+		from  order_return orn
+        left join master_order_info oi on orn.relating_order_sn = oi.master_order_sn
 		left join order_return_ship ors on orn.return_sn = ors.relating_return_sn
 		left join system_shipping ss on ors.return_express = ss.shipping_code
 		left join order_return_goods org on orn.return_sn = org.relating_return_sn

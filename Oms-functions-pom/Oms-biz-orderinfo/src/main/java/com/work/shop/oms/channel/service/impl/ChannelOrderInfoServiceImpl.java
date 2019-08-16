@@ -257,9 +257,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 						for (OrderShipInfo orderShip : shipList) {
 							Map<String, Object> goodsParams = new HashMap<String, Object>(6);
 							goodsParams.put("orderSn",orderShip.getOrderSn());
-							if (StringUtils.isNotBlank(orderShip.getInvoiceNo())) {
-                                goodsParams.put("invoiceNo",orderShip.getInvoiceNo());
+                            String invoiceNo = orderShip.getInvoiceNo();
+                            if (invoiceNo == null) {
+                                invoiceNo = "";
                             }
+                            goodsParams.put("invoiceNo",orderShip.getInvoiceNo());
 							goodsParams.put("depotCode",orderShip.getDepotCode());
 							goodsParams.put("isHistory", searchParam.getIsHistory());
 							List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
@@ -272,6 +274,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 						//合并相同快递单号的物流信息
 						shipList = mergeSameInvoiceNo(shipList);
 					}
+
+					//校验是否可以延长收货
+                    checkReceipt(orderPageInfo, shipList);
 					orderPageInfo.setOrderShipInfo(shipList);
 				}
 				orderPageInfo.setGoodsCount(goodsCount);
@@ -288,7 +293,43 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		return apiReturnData;
 	}
 
-	/**
+    /**
+     * 订单列表校验是否可以延长收货
+     * @param orderPageInfo
+     * @param shipList
+     * @return
+     */
+    private void checkReceipt(OrderPageInfo orderPageInfo, List<OrderShipInfo> shipList) {
+        if (orderPageInfo == null || StringUtil.isListNull(shipList)) {
+            return;
+        }
+
+        int orderStatus = orderPageInfo.getOrderStatus();
+        int payStatus = orderPageInfo.getPayStatus();
+        int shipStatus = orderPageInfo.getShipStatus();
+        //订单（未确认、已取消、已完成）、未支付、未发货、已收货，不可延长收货
+        if (orderStatus != 1 || payStatus == 0 || shipStatus == 0 || shipStatus == 5) {
+            return;
+        }
+
+        boolean flag = false;
+        for (OrderShipInfo shipInfo : shipList) {
+            Integer isReceipt = shipInfo.getIsReceipt();
+            Integer shippingStatus = shipInfo.getShippingStatus();
+            //有非（未发货、已收货、门店收货、客户签收、已延长收货的）可以延长收货
+            if (shippingStatus != 0 && shippingStatus != 2 && shippingStatus != 6 && shippingStatus != 13 && isReceipt == 0) {
+                flag = true;
+                break;
+            }
+        }
+
+        if (flag) {
+            orderPageInfo.setReceipt(true);
+        }
+
+    }
+
+    /**
 	 * 查询订单退单列表
 	 * @param searchParam 查询参数
 	 * @return ApiReturnData
@@ -381,6 +422,10 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 				apiReturnData.setMessage("没有相应的退单消息！");
 				return apiReturnData;
 			}
+			if (StringUtils.isBlank(orderReturnDetailInfo.getContactUser())) {
+                orderReturnDetailInfo.setContactUser(orderReturnDetailInfo.getConsignee());
+            }
+
 			//流程状态 1 => '申请退货',   2 => '收货', 3 => '商品质检',  4 => '退货完成',
 			if (orderReturnDetailInfo.getPayStatus() == 1) {
 				orderReturnDetailInfo.setProgressStatus(4);
@@ -401,6 +446,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             OrderReturnActionExample example = new OrderReturnActionExample();
             example.or().andReturnSnEqualTo(orderReturnSn);
             List<OrderReturnAction> returnActions = orderReturnActionMapper.selectByExample(example);
+            fillShow(returnActions);
             orderReturnDetailInfo.setActions(returnActions);
 
             apiReturnData.setIsOk(Constant.OS_STR_YES);
@@ -412,7 +458,28 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		return apiReturnData;
 	}
 
-	/**
+    /**
+     * 填充是否显示
+     * @param returnActions
+     */
+    private void fillShow(List<OrderReturnAction> returnActions) {
+        if (StringUtil.isListNull(returnActions)) {
+            return;
+        }
+
+        String statusStr = "";
+        for (OrderReturnAction action : returnActions) {
+            String actionStatusStr = action.getStatusStr();
+            if (StringUtils.isBlank(actionStatusStr) || statusStr.equals(actionStatusStr)) {
+                continue;
+            }
+
+            action.setShow(true);
+            statusStr = actionStatusStr;
+        }
+    }
+
+    /**
 	 * 查询换单详情
 	 * @param orderSn 订单编码
 	 * @param isHistory 是否历史
@@ -653,8 +720,10 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                     goodsParams.put("orderSn", orderShip.getOrderSn());
                     goodsParams.put("depotCode", orderShip.getDepotCode());
                     goodsParams.put("isHistory", isHistory);
-                    if (StringUtils.isNotBlank(orderShip.getInvoiceNo())) {
+                    if (StringUtils.isNotEmpty(orderShip.getInvoiceNo())) {
                         goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
+                    } else {
+                        goodsParams.put("invoiceNo", "");
                     }
 					List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
 					setGoodsInfo(orderGoodsList);
@@ -777,7 +846,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		if (returnGoodsMap == null) {
             returnGoodsMap = new HashMap<String, OrderReturnGoods>();
         }
-		
+
+        Map<String, Integer> canChangeNumMap = new HashMap<String, Integer>();
 		int goodsNumber = 0;
 		for (OrderShipInfo orderShipInfo : list) {
 			if (orderShipInfo == null) {
@@ -794,13 +864,22 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                     String key = orderGoodsInfo.getSkuSn() + "_" + orderGoodsInfo.getExtensionCode();
                     OrderReturnGoods returnGoods = returnGoodsMap.get(key);
                     int canChangeNum = 0;
-                    if (returnGoods == null) {
+                    Integer canNum = canChangeNumMap.get(key);
+                    if (canNum == null) {
+                        if (returnGoods == null) {
+                            canChangeNum = orderGoodsInfo.getGoodsNum();
+                        } else {
+                            canChangeNum = orderGoodsInfo.getGoodsNum() - returnGoods.getGoodsReturnNumber();
+                        }
+                    } else if (canNum >= 0) {
                         canChangeNum = orderGoodsInfo.getGoodsNum();
                     } else {
-                        canChangeNum = orderGoodsInfo.getGoodsNum() - returnGoods.getGoodsReturnNumber();
-                        orderGoodsInfo.setReturnGoodsNum(returnGoods.getGoodsReturnNumber());
+                        canChangeNum = orderGoodsInfo.getGoodsNum() + canNum;
                     }
-                    orderGoodsInfo.setCanChangeNum(canChangeNum);
+
+                    canChangeNumMap.put(key, canChangeNum);
+                    orderGoodsInfo.setCanChangeNum(canChangeNum < 0 ? 0 : canChangeNum);
+                    orderGoodsInfo.setReturnGoodsNum(orderGoodsInfo.getGoodsNum() - orderGoodsInfo.getCanChangeNum());
 				}
 			}
 		}
@@ -1950,6 +2029,299 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		
 		return returnData;
 	}
+
+    /**
+     * 延长收货
+     * @param searchParam
+     * @return
+     */
+    @Override
+    public ApiReturnData<Boolean> extendedReceipt(PageListParam searchParam) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("延长收货失败");
+
+        if (searchParam == null) {
+            apiReturnData.setMessage("参数不能为空");
+            return apiReturnData;
+        }
+
+        String orderSn = searchParam.getOrderSn();
+        if (StringUtils.isBlank(orderSn)) {
+            apiReturnData.setMessage("订单号不能为空");
+            return apiReturnData;
+        }
+
+        String siteCode = searchParam.getSiteCode();
+        if (StringUtils.isBlank(siteCode)) {
+            apiReturnData.setMessage("站点不能为空");
+            return apiReturnData;
+        }
+
+        String userId = searchParam.getUserId();
+        if (StringUtils.isBlank(userId)) {
+            apiReturnData.setMessage("操作人不能为空");
+            return apiReturnData;
+        }
+        try {
+            //校验订单信息
+            MasterOrderInfo orderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderSn);
+            if (orderInfo == null) {
+                apiReturnData.setMessage(orderSn + "订单不存在");
+                return apiReturnData;
+            }
+            if (orderInfo.getShipStatus().intValue() == Constant.OI_SHIP_STATUS_UNSHIPPED) {
+                apiReturnData.setMessage(orderSn + "订单未发货");
+                return apiReturnData;
+            }
+
+            if (orderInfo.getShipStatus().intValue() == Constant.OI_SHIP_STATUS_ALLRECEIVED) {
+                apiReturnData.setMessage(orderSn + "订单已收货");
+                return apiReturnData;
+            }
+
+            String invoiceNo = searchParam.getInvoiceNo();
+            if (StringUtils.isNotBlank(invoiceNo)) {
+                //需要打印单个日志
+                searchParam.setFlag(true);
+                apiReturnData = extendedReceiptByInvoiceNo(searchParam);
+            } else {
+                //根据主订单延长发货
+                apiReturnData = extendedReceiptByMasterOrderSn(searchParam);
+            }
+        } catch (Exception e) {
+            logger.error(orderSn + "延长收货异常" + JSONObject.toJSONString(searchParam), e);
+            apiReturnData.setMessage("延长收货异常");
+        }
+        return apiReturnData;
+    }
+
+    /**
+     * 主订单单延长收货
+     * @param searchParam
+     * @return
+     */
+    private ApiReturnData<Boolean> extendedReceiptByMasterOrderSn(PageListParam searchParam) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("延长收货失败");
+
+        String orderSn = searchParam.getOrderSn();
+        OrderDistributeExample distributeExample = new OrderDistributeExample();
+        distributeExample.or().andMasterOrderSnEqualTo(orderSn).andIsDelEqualTo(0);
+        List<OrderDistribute> orderDistributes = orderDistributeMapper.selectByExample(distributeExample);
+        if (StringUtil.isListNull(orderDistributes)) {
+            apiReturnData.setMessage(orderSn + "订单无交货单信息");
+            return apiReturnData;
+        }
+
+        //获取发货单信息
+        List<String> distributeSns = new ArrayList<String>();
+        for (OrderDistribute orderDistribute : orderDistributes) {
+            distributeSns.add(orderDistribute.getOrderSn());
+        }
+        List<Byte> notShipStatusList = new ArrayList<Byte>();
+        notShipStatusList.add((byte) 0);
+        notShipStatusList.add((byte) 2);
+        notShipStatusList.add((byte) 6);
+        notShipStatusList.add((byte) 13);
+
+        OrderDepotShipExample shipExample = new OrderDepotShipExample();
+        shipExample.or().andOrderSnIn(distributeSns).andIsDelEqualTo(0).andIsReceiptEqualTo(0)
+            .andShippingStatusNotIn(notShipStatusList);
+        List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(shipExample);
+        if (StringUtil.isListNull(orderDepotShipList)) {
+            apiReturnData.setMessage(orderSn + "订单无可延长收货包裹");
+            return apiReturnData;
+        }
+        String message = orderSn + "延长收货成功失败";
+        String errMsg = "";
+        for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+            //不需要打印单个日志
+            searchParam.setFlag(false);
+            searchParam.setDistributeOrderSn(orderDepotShip.getOrderSn());
+            searchParam.setDepotCode(orderDepotShip.getDepotCode());
+            searchParam.setInvoiceNo(orderDepotShip.getInvoiceNo());
+            ApiReturnData<Boolean> returnData = extendedReceiptByInvoiceNo(searchParam);
+            if (returnData != null && Constant.OS_STR_NO.equals(returnData.getIsOk())) {
+                errMsg += returnData.getMessage() + ";";
+            }
+        }
+        apiReturnData.setIsOk("1");
+        apiReturnData.setMessage("延长收货成功");
+        message = "延长收货成功";
+        if (StringUtils.isNotBlank(errMsg)) {
+            message += ":" + errMsg;
+        }
+        masterOrderActionService.insertOrderActionBySn(orderSn, message, searchParam.getUserId());
+        return apiReturnData;
+    }
+
+    /**
+     * 发货单延长收货
+     * @param searchParam
+     * @return
+     */
+    @Override
+    public ApiReturnData<Boolean> extendedReceiptByInvoiceNo(PageListParam searchParam) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("延长收货失败");
+
+        if (searchParam == null) {
+            apiReturnData.setMessage("参数不能为空");
+            return apiReturnData;
+        }
+
+        String orderSn = searchParam.getOrderSn();
+        if (StringUtils.isBlank(orderSn)) {
+            apiReturnData.setMessage("订单号不能为空");
+            return apiReturnData;
+        }
+
+        String invoiceNo = searchParam.getInvoiceNo();
+        if (StringUtils.isBlank(invoiceNo)) {
+            apiReturnData.setMessage("快递单号不能为空");
+            return apiReturnData;
+        }
+
+        String depotCode = searchParam.getDepotCode();
+        if (StringUtils.isBlank(depotCode)) {
+            apiReturnData.setMessage("发货仓库不能为空");
+            return apiReturnData;
+        }
+
+        String distributeOrderSn = searchParam.getDistributeOrderSn();
+        if (StringUtils.isBlank(distributeOrderSn)) {
+            apiReturnData.setMessage("交货单号不能为空");
+            return apiReturnData;
+        }
+
+        String userId = searchParam.getUserId();
+        if (StringUtils.isBlank(userId)) {
+            apiReturnData.setMessage("操作人不能为空");
+            return apiReturnData;
+        }
+
+        //延长收货
+        String message = invoiceNo +  "延长收货失败";
+        try {
+            //校验订单信息
+            MasterOrderInfo orderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderSn);
+            if (orderInfo == null) {
+                apiReturnData.setMessage(orderSn + "订单不存在");
+                return apiReturnData;
+            }
+            if (orderInfo.getShipStatus().intValue() == Constant.OI_SHIP_STATUS_UNSHIPPED) {
+                apiReturnData.setMessage(orderSn + "订单未发货");
+                return apiReturnData;
+            }
+
+            //校验发货单信息
+            OrderDepotShip depotShip = new OrderDepotShip();
+            depotShip.setOrderSn(distributeOrderSn);
+            depotShip.setDepotCode(depotCode);
+            depotShip.setInvoiceNo(invoiceNo);
+            OrderDepotShip orderDepotShip = orderDepotShipMapper.selectByPrimaryKey(depotShip);
+            if (orderDepotShip == null) {
+                apiReturnData.setMessage("发货单不存在");
+                return apiReturnData;
+            }
+            Byte shippingStatus = orderDepotShip.getShippingStatus();
+            if (shippingStatus == 0) {
+                apiReturnData.setMessage("发货单未发货");
+                return apiReturnData;
+            }
+
+            if (shippingStatus == 2) {
+                apiReturnData.setMessage("发货单已收货");
+                return apiReturnData;
+            }
+
+            if (shippingStatus == 13) {
+                apiReturnData.setMessage("客户已签收");
+                return apiReturnData;
+            }
+
+            //校验是否已延长收货
+            if (orderDepotShip.getIsReceipt() == 1) {
+                apiReturnData.setMessage("发货单已延长收货");
+                return apiReturnData;
+            }
+
+            depotShip.setIsReceipt(1);
+            int i = orderDepotShipMapper.updateByPrimaryKeySelective(depotShip);
+            if (i > 0) {
+                message = invoiceNo +  "延长收货成功";
+                apiReturnData.setMessage(invoiceNo + "延长收货成功");
+                apiReturnData.setIsOk(Constant.OS_STR_YES);
+                apiReturnData.setData(true);
+            } else {
+                apiReturnData.setMessage(invoiceNo + "延长收货失败");
+            }
+
+        } catch (Exception e) {
+            logger.error(invoiceNo + "延长收货异常" + JSONObject.toJSONString(searchParam), e);
+            message = invoiceNo + "延长收货异常";
+            apiReturnData.setMessage("延长收货异常");
+        } finally {
+            if (searchParam != null && searchParam.isFlag()) {
+                masterOrderActionService.insertOrderActionBySn(orderSn, message, userId);
+            }
+        }
+        return apiReturnData;
+    }
+
+    /**
+     * 统计用户退单数量
+     * @param searchParam 参数
+     *  userId 用户id
+     *  siteCode 站点编码
+     * @return ApiReturnData<UserOrderTypeNum>
+     */
+    @Override
+    public ApiReturnData<UserOrderTypeNum> getUserOrderReturnType(PageListParam searchParam) {
+        ApiReturnData<UserOrderTypeNum> apiReturnData = new ApiReturnData<UserOrderTypeNum>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("获取失败");
+
+        String siteCode = searchParam.getSiteCode();
+        if (StringUtils.isBlank(siteCode)) {
+            apiReturnData.setMessage("站点为空");
+            return apiReturnData;
+        }
+
+        String userId = searchParam.getUserId();
+        if (StringUtils.isBlank(userId)) {
+            apiReturnData.setMessage("用户id为空");
+            return apiReturnData;
+        }
+
+        try {
+            Map<String, Object> paramMap = new HashMap<String, Object>();
+            paramMap.put("siteCode", siteCode);
+            paramMap.put("userId", userId);
+            //校验处理状态（1.退货中；2.退货成功；3.退款成功）
+            UserOrderTypeNum userOrderTypeNum = new UserOrderTypeNum();
+            paramMap.put("returnProcessStatus", 1);
+            userOrderTypeNum.setProcessReturnNum(defineOrderMapper.selectUserOrderReturnInfoCount(paramMap));
+
+            paramMap.put("returnProcessStatus", 2);
+            userOrderTypeNum.setReturnSuccessNum(defineOrderMapper.selectUserOrderReturnInfoCount(paramMap));
+
+            paramMap.put("returnProcessStatus", 3);
+            userOrderTypeNum.setRefundSuccessNum(defineOrderMapper.selectUserOrderReturnInfoCount(paramMap));
+
+            apiReturnData.setIsOk(Constant.OS_STR_YES);
+            apiReturnData.setMessage("统计用户退单数量成功");
+            apiReturnData.setData(userOrderTypeNum);
+
+        } catch (Exception e) {
+            logger.error("统计用户退单数量异常", e);
+        }
+
+        return apiReturnData;
+    }
 	
 	/**
 	 * 获取未支付订单, 人工可以取消时间
