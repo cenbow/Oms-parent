@@ -11,6 +11,9 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import com.work.shop.oms.bean.*;
+import com.work.shop.oms.order.service.MasterOrderGoodsService;
+import com.work.shop.oms.utils.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,32 +41,6 @@ import com.work.shop.oms.api.param.bean.SellerParam;
 import com.work.shop.oms.api.param.bean.WmsData;
 import com.work.shop.oms.api.param.bean.WmsReturnData;
 import com.work.shop.oms.api.param.bean.WmsReturnGoods;
-import com.work.shop.oms.bean.ErpWarehouseList;
-import com.work.shop.oms.bean.ErpWarehouseListExample;
-import com.work.shop.oms.bean.MasterOrderAddressInfo;
-import com.work.shop.oms.bean.MasterOrderAddressInfoExample;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.OrderCustomDefine;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderGoods;
-import com.work.shop.oms.bean.OrderRefund;
-import com.work.shop.oms.bean.OrderRefundExample;
-import com.work.shop.oms.bean.OrderReturn;
-import com.work.shop.oms.bean.OrderReturnExample;
-import com.work.shop.oms.bean.OrderReturnGoods;
-import com.work.shop.oms.bean.OrderReturnGoodsExample;
-import com.work.shop.oms.bean.OrderReturnShip;
-import com.work.shop.oms.bean.OrderReturnShipExample;
-import com.work.shop.oms.bean.ProductBarcodeListExample;
-import com.work.shop.oms.bean.SettleOrderInfo;
-import com.work.shop.oms.bean.SystemPayment;
-import com.work.shop.oms.bean.SystemPaymentExample;
-import com.work.shop.oms.bean.SystemReturnSn;
-import com.work.shop.oms.bean.SystemShipping;
-import com.work.shop.oms.bean.SystemShippingExample;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.channel.service.ChannelInfoService;
 import com.work.shop.oms.common.bean.ApiReturnData;
@@ -103,11 +80,6 @@ import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.service.BrandUtilService;
 import com.work.shop.oms.service.MessageService;
 import com.work.shop.oms.shoppay.service.ShopPayService;
-import com.work.shop.oms.utils.CommonUtils;
-import com.work.shop.oms.utils.Constant;
-import com.work.shop.oms.utils.ConstantsUtil;
-import com.work.shop.oms.utils.OrderUtils;
-import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.vo.ReturnOrderParam;
 import com.work.shop.oms.vo.StorageGoods;
 
@@ -131,21 +103,28 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 	
 	@Resource
 	private RedisClient redisClient;
+
 	@Resource
 	BrandUtilService brandUtil;
 	
 	//@Resource
 	private UserPointsService userPointsService;
+
 	@Resource
 	private SystemReturnSnMapper systemReturnSnMapper;
+
 	@Resource
 	private MasterOrderInfoMapper masterOrderInfoMapper;
+
 	@Resource
 	private MasterOrderActionService masterOrderActionService;
+
 	@Resource
 	private MasterOrderPayMapper masterOrderPayMapper;
+
 	@Resource
 	private MasterOrderAddressInfoMapper masterOrderAddressInfoMapper;
+
 	@Resource
 	private ErpWarehouseListMapper erpWarehouseListMapper;
 
@@ -154,6 +133,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 
 	@Resource
 	private ChannelInfoService channelInfoService;
+
 	@Resource
 	private OrderActionService orderActionService;
 
@@ -162,8 +142,12 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 
 	@Resource(name = "shopPayServiceImpl")
 	private ShopPayService shopPayService;
+
 	@Resource
 	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+	@Resource
+	private MasterOrderGoodsService masterOrderGoodsService;
 
 	@Override
 	public ReturnInfo<String> orderReturnFinish(OrderStatus orderStatus) {
@@ -2523,13 +2507,26 @@ public class OrderReturnServiceImpl implements OrderReturnService {
             if (null != returnSearchParams.getSeller()) {
                 criteria.andSellerEqualTo(returnSearchParams.getSeller());
             }
-            List<OrderReturnGoods>orderReturnGoodsList = orderReturnGoodsMapper.selectByExample(example);
+            List<OrderReturnGoods> orderReturnGoodsList = orderReturnGoodsMapper.selectByExample(example);
             List<ReturnGoods> returnGoodsList = new ArrayList<ReturnGoods>();
             if (CollectionUtils.isNotEmpty(orderReturnGoodsList)) {
+            	// 获取订单商品
+                String masterOrderSn = returnInfoPage.getMasterOrderSn();
+                Map<String, MasterOrderGoods> masterOrderGoodsMap = getOrderGoodsList(masterOrderSn);
+
+                BigDecimal returnTotalSettlementPrice = BigDecimal.valueOf(0);
+                BigDecimal returnTotalSettlementUntaxPrice = BigDecimal.valueOf(0);
                 for (OrderReturnGoods orderReturnGoods : orderReturnGoodsList) {
                     ReturnGoods returnGoods = new ReturnGoods();
                     returnGoods.setId(orderReturnGoods.getId());
-                    returnGoods.setCustomCode(orderReturnGoods.getCustomCode());
+
+                    String customCode = orderReturnGoods.getCustomCode();
+                    returnGoods.setCustomCode(customCode);
+                    MasterOrderGoods masterOrderGoods = masterOrderGoodsMap.get(customCode);
+                    if (masterOrderGoods != null) {
+                        returnGoods.setInputTax(masterOrderGoods.getInputTax());
+                    }
+
 					returnGoods.setGoodsSn(orderReturnGoods.getGoodsSn());
                     returnGoods.setGoodsName(orderReturnGoods.getGoodsName());
 					returnGoods.setGoodsThumb(orderReturnGoods.getGoodsThumb());
@@ -2537,17 +2534,58 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 					returnGoods.setGoodsColorName(orderReturnGoods.getGoodsColorName());
                     returnGoods.setGoodsSizeName(orderReturnGoods.getGoodsSizeName());
                     returnGoods.setSettlementPrice(CommonUtils.roundDouble(orderReturnGoods.getSettlementPrice().doubleValue(),2));
-					returnGoods.setCostPrice(orderReturnGoods.getCostPrice());
+
+                    // 协议价
+					BigDecimal costPrice = orderReturnGoods.getCostPrice();
+                    if (costPrice != null) {
+                        int goodsReturnNumber = orderReturnGoods.getGoodsReturnNumber();
+                        costPrice = MathOperation.setScale(costPrice, 2);
+                        returnGoods.setCostPrice(costPrice);
+                        BigDecimal totalCostPrice = MathOperation.mul(costPrice, BigDecimal.valueOf(goodsReturnNumber));
+                        returnTotalSettlementUntaxPrice = returnTotalSettlementUntaxPrice.add(totalCostPrice);
+
+                        BigDecimal totalTaxPrice = totalCostPrice;
+                        BigDecimal inputTax = masterOrderGoods.getInputTax();
+                        if (inputTax != null && inputTax.doubleValue() > 0) {
+                            inputTax = inputTax.add(BigDecimal.valueOf(100));
+                            BigDecimal taxPrice = costPrice.multiply(inputTax);
+                            totalTaxPrice = MathOperation.mul(taxPrice, BigDecimal.valueOf(goodsReturnNumber));
+                            totalTaxPrice = MathOperation.div(totalTaxPrice, BigDecimal.valueOf(100), 2);
+                        }
+                        returnTotalSettlementPrice = returnTotalSettlementPrice.add(totalTaxPrice);
+                    }
+
                     returnGoods.setIsGoodReceived(orderReturnGoods.getIsGoodReceived().intValue());
                     returnGoods.setCheckinStatus(orderReturnGoods.getCheckinStatus().intValue());
                     returnGoods.setQualityStatus(orderReturnGoods.getQualityStatus().intValue());
                     returnGoods.setBarcode(orderReturnGoods.getBarcode());
                     returnGoodsList.add(returnGoods);
                 }
+
+                returnInfoPage.setReturnTotalSettlementUnTaxPrice(returnTotalSettlementUntaxPrice.doubleValue());
+                returnInfoPage.setReturnTotalSettlementPrice(returnTotalSettlementPrice.doubleValue());
             }
+
             //添加关联商品数据
             returnInfoPage.setReturnGoods(returnGoodsList);
         }
+    }
+
+    /**
+     * 获取订单商品列表
+     * @param masterOrderSn
+     * @return Map<String, MasterOrderGoods>
+     */
+    private Map<String, MasterOrderGoods> getOrderGoodsList(String masterOrderSn) {
+        List<MasterOrderGoods> orderGoodsList = masterOrderGoodsService.selectByMasterOrderSn(masterOrderSn);
+
+        Map<String, MasterOrderGoods> orderGoodsMap = new HashMap<String, MasterOrderGoods>();
+        for (MasterOrderGoods masterOrderGoods : orderGoodsList) {
+            String customCode = masterOrderGoods.getCustomCode();
+            orderGoodsMap.put(customCode, masterOrderGoods);
+        }
+
+        return orderGoodsMap;
     }
 
 	/**

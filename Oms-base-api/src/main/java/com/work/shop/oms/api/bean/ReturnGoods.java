@@ -31,6 +31,11 @@ public class ReturnGoods implements Serializable {
      */
 	private BigDecimal costPrice;
 
+    /**
+     * 进项税
+     */
+	private BigDecimal inputTax;
+
 	/**
 	 * 商品sku编码
 	 */
@@ -204,5 +209,13 @@ public class ReturnGoods implements Serializable {
 
     public void setCostPrice(BigDecimal costPrice) {
         this.costPrice = costPrice;
+    }
+
+    public BigDecimal getInputTax() {
+        return inputTax;
+    }
+
+    public void setInputTax(BigDecimal inputTax) {
+        this.inputTax = inputTax;
     }
 }

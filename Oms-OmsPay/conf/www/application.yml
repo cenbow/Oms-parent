@@ -31,3 +31,9 @@ spring:
 logging:
   config:
     classpath: log4j.xml
+
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
+  eager-load:
+    enabled: true

@@ -89,7 +89,12 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		info.setIsOk(Constant.OS_YES);
 		return info;
 	}
-	
+
+	/**
+	 * 通过订单编码获取订单商品列表
+	 * @param masterOrderSn 订单编码
+	 * @return List<MasterOrderGoods>
+	 */
 	@Override
 	public List<MasterOrderGoods> selectByMasterOrderSn(String masterOrderSn) {
 		if (StringUtil.isEmpty(masterOrderSn)) {

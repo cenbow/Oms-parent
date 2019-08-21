@@ -44,6 +44,16 @@ public class ReturnInfoPage implements Serializable {
      */
 	private Double returnTotalFee;
 
+	/**
+	 * 退款结算金额
+	 */
+	private Double returnTotalSettlementPrice;
+
+    /**
+     * 退款结算未税金额
+     */
+	private Double returnTotalSettlementUnTaxPrice;
+
     /**
      * 退货申请时间
      */
@@ -231,4 +241,20 @@ public class ReturnInfoPage implements Serializable {
 	public void setSelltedBillStatus(Integer selltedBillStatus) {
 		this.selltedBillStatus = selltedBillStatus;
 	}
+
+    public Double getReturnTotalSettlementPrice() {
+        return returnTotalSettlementPrice;
+    }
+
+    public void setReturnTotalSettlementPrice(Double returnTotalSettlementPrice) {
+        this.returnTotalSettlementPrice = returnTotalSettlementPrice;
+    }
+
+    public Double getReturnTotalSettlementUnTaxPrice() {
+        return returnTotalSettlementUnTaxPrice;
+    }
+
+    public void setReturnTotalSettlementUnTaxPrice(Double returnTotalSettlementUnTaxPrice) {
+        this.returnTotalSettlementUnTaxPrice = returnTotalSettlementUnTaxPrice;
+    }
 }
