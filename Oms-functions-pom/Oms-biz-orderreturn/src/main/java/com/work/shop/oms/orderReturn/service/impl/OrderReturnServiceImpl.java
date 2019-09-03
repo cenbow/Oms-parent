@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.order.service.MasterOrderGoodsService;
 import com.work.shop.oms.utils.*;
@@ -792,13 +793,8 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 			//已经生成退款单
 			List<String> haveReturnReturnSnList = new ArrayList<String>();
 			//退单商品
-			/*List<CreateOrderReturnGoods> osCreateGoods = new ArrayList<CreateOrderReturnGoods>();
-			for(com.work.shop.oms.common.bean.CreateOrderReturnGoods createOrderReturnGoods : createReturnVO.getOrderReturnGoodsList()){
-				CreateOrderReturnGoods newCreateOrderReturnGoods = new CreateOrderReturnGoods();
-				BeanUtils.copyProperties(newCreateOrderReturnGoods, createOrderReturnGoods);
-				osCreateGoods.add(newCreateOrderReturnGoods);
-			}*/
 			List<CreateOrderReturnGoods> goodsList = processReturnPayGoods(createReturnVO.getMasterOrderSn(), createReturnVO.getReturnSource(), haveReturnReturnSnList,createReturnVO.getOrderReturnGoodsList());
+
 			// 退商品总金额
 			Double returnGoodsMoney = NumberUtil.getDoubleByValue(createReturnVO.getReturnMoney() - createReturnVO.getReturnShipping(), 2);
 			// 退款金额平摊到退单商品上
@@ -1205,12 +1201,14 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 		logger.info("processOrderReturnGoods->orderSn:"+param.getRelatingOrderSn()+",ormOrderReturnGoodsList:"+ JSON.toJSONString(ormOrderReturnGoodsList));
 		ormOrderReturn.setBvValue(param.getBvValue());
 		ormOrderReturn.setBaseBvValue(param.getBaseBvValue());
-		ormOrderReturn.setAddTime(new Date());//取消退单添加退单时间
+        //取消退单添加退单时间
+		ormOrderReturn.setAddTime(new Date());
 		// 持久化到数据库
-		orderReturnMapper.insertSelective(ormOrderReturn); // order_return
+		orderReturnMapper.insertSelective(ormOrderReturn);
 		if (CollectionUtils.isNotEmpty(ormOrderReturnGoodsList)) {
 			for (OrderReturnGoods orderReturnGoods : ormOrderReturnGoodsList) {
 				try {
+				    logger.info("订单取消-->orderReturnGoods:" + JSONObject.toJSONString(orderReturnGoods));
 					orderReturnGoodsMapper.insertSelective(orderReturnGoods);
 				} catch (Exception e) {
 					logger.error("退单商品写入异常" + e.getMessage(), e);
@@ -1575,7 +1573,8 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				OrderReturnGoods orderReturnGoods = new OrderReturnGoods();
 				orderReturnGoods.setRelatingReturnSn(param.getOrderReturnSn());
 				orderReturnGoods.setGoodsSn(createGoods.getCustomCode().substring(0, 6));
-				orderReturnGoods.setSeller(createGoods.getSeller());//供销商编码
+                //供销商编码
+				orderReturnGoods.setSeller(createGoods.getSeller());
 				if (param.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()) {
 					orderReturnGoods.setIntegralMoney(ConstantsUtil.obj2Bigdecimal(createGoods.getIntegralMoney()));//积分使用金额
 				}
@@ -1611,12 +1610,16 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				orderReturnGoods.setBvValue(createGoods.getBvValue() == null ? "0" : createGoods.getBvValue() + "");
 				orderReturnGoods.setBaseBvValue(createGoods.getBaseBvValue());
 				if (oInfo != null) {
-					orderReturnGoods.setMasterOrderSn(oInfo.getMasterOrderSn());//主单号
-					orderReturnGoods.setOrderSn(null);//子单号
+                    //主单号
+					orderReturnGoods.setMasterOrderSn(oInfo.getMasterOrderSn());
+                    //子单号
+					orderReturnGoods.setOrderSn(null);
 				} else {
-					orderReturnGoods.setMasterOrderSn(param.getRelatingOrderSn());//主单号
+                    //主单号
+					orderReturnGoods.setMasterOrderSn(param.getRelatingOrderSn());
 				}
-				orderReturnGoods.setSalesMode(createGoods.getSalesMode().byteValue());//商品销售模式：1为自营，2为买断，3为寄售，4为直发
+                //商品销售模式：1为自营，2为买断，3为寄售，4为直发
+				orderReturnGoods.setSalesMode(createGoods.getSalesMode().byteValue());
 				
 				if(param.getReturnType().intValue() == Constant.OR_RETURN_TYPE_RETURN
 						|| param.getReturnType() == Constant.OR_RETURN_TYPE_REJECT){
@@ -1634,6 +1637,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 					orderReturnGoods.setGoodsReturnNumber(createGoods.getGoodsReturnNumber());
 					orderReturnGoods.setShareSettle(ConstantsUtil.obj2Bigdecimal(createGoods.getShareSettle()));
 					orderReturnGoods.setSettlementPrice(ConstantsUtil.obj2Bigdecimal(createGoods.getShareSettle()));
+                    orderReturnGoods.setDiscount(createGoods.getDiscount().floatValue());
 				} else {
 					//额外退款单
 					orderReturnGoods.setSettlementPrice(ConstantsUtil.obj2Bigdecimal(createGoods.getSettlementPrice()));
@@ -1660,13 +1664,13 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 	 * @return
 	 */
 	private List<OrderReturnGoods> processOrderReturnGoods(CreateOrderReturnBean param, OrderDistribute oInfo) {
-		List<CreateOrderReturnGoods> goooooodsList = param.getCreateOrderReturnGoodsList();
+		List<CreateOrderReturnGoods> goodsList = param.getCreateOrderReturnGoodsList();
 		List<OrderReturnGoods> orderReturnGoodsList = new ArrayList<OrderReturnGoods>();
 		int bvValue = 0;
 		int baseBvValue = 0;
-		if (CollectionUtils.isNotEmpty(goooooodsList)) {
+		if (CollectionUtils.isNotEmpty(goodsList)) {
 //			String orderDepotCode = param.getCreateOrderReturnShip().getDepotCode();
-			for (CreateOrderReturnGoods createGoods : goooooodsList) {
+			for (CreateOrderReturnGoods createGoods : goodsList) {
 //				String depotCode = Constant.DETAILS_DEPOT_CODE.equals(orderDepotCode)
 //						? createGoods.getOsDepotCode() : orderDepotCode;
 				String depotCode = createGoods.getOsDepotCode();
@@ -1679,7 +1683,8 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				OrderReturnGoods orderReturnGoods = new OrderReturnGoods();
 				orderReturnGoods.setRelatingReturnSn(param.getOrderReturnSn());
 				orderReturnGoods.setGoodsSn(createGoods.getCustomCode().substring(0, 6));
-				orderReturnGoods.setSeller(createGoods.getSeller());//供销商编码
+				//供销商编码
+				orderReturnGoods.setSeller(createGoods.getSeller());
 				if(param.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){
 					orderReturnGoods.setIntegralMoney(ConstantsUtil.obj2Bigdecimal(createGoods.getIntegralMoney()));//积分使用金额
 				}
@@ -1782,13 +1787,17 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 		if (CollectionUtils.isEmpty(goodsList)) {
 			throw new RuntimeException("退货商品列表为空");
 		}
-		double totalGoodsAmount = 0 ;
+
+		BigDecimal totalGoodsAmount = BigDecimal.valueOf(0);
 		for (CreateOrderReturnGoods createOrderReturnGoods : goodsList) {
-			totalGoodsAmount += createOrderReturnGoods.getSettlePrice() * createOrderReturnGoods.getGoodsReturnNumber();
+		    BigDecimal settlePrice = BigDecimal.valueOf(createOrderReturnGoods.getSettlePrice());
+            settlePrice = settlePrice.multiply(BigDecimal.valueOf(createOrderReturnGoods.getGoodsReturnNumber()));
+            totalGoodsAmount = totalGoodsAmount.add(settlePrice);
 		}
-/*	  if(totalReturnMoney > totalGoodsAmount){
-			throw new RuntimeException("退款总金额("+FormatUtil.roundDouble(totalReturnMoney,2)+")错误必须小于等于商品总财物价格之和("+FormatUtil.roundDouble(totalGoodsAmount,2)+")");
-		}*/
+
+		logger.info("shareReturnAmtForOrder--->" + totalGoodsAmount);
+
+		// 应退金额
 		double remainPromAmt = totalReturnMoney;
 		//利用统筹进行讲促销分摊到商品上
 		for (int i = 0; i < goodsList.size(); i++) {
@@ -1798,13 +1807,15 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				if(i == goodsList.size() - 1){
 					singleShareAmt = CommonUtils.roundDouble(remainPromAmt/goods.getGoodsReturnNumber().intValue(),2);
 				}else{
-					singleShareAmt = CommonUtils.roundDouble((goods.getSettlePrice() /totalGoodsAmount) * totalReturnMoney,2);
+					singleShareAmt = CommonUtils.roundDouble((goods.getSettlePrice() /totalGoodsAmount.doubleValue()) * totalReturnMoney,2);
 					remainPromAmt = CommonUtils.roundDouble(remainPromAmt - singleShareAmt * goods.getGoodsReturnNumber().intValue(),2);			 
 				}
 				goods.setShareSettle(singleShareAmt);
 				goodsList.set(i, goods);
 			}
 		}
+
+		logger.info("order return--->goodsList:" + JSONObject.toJSONString(goodsList));
 		return goodsList;
 	}
 	

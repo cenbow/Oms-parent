@@ -497,6 +497,11 @@ public class MasterOrder implements Serializable{
      */
     private String companyName;
 
+    /**
+     * 销售bd
+     */
+    private String saleBd;
+
 	public String getUserId() {
 		return userId;
 	}
@@ -1343,4 +1348,12 @@ public class MasterOrder implements Serializable{
 	public void setNeedSign(Integer needSign) {
 		this.needSign = needSign;
 	}
+
+    public String getSaleBd() {
+        return saleBd;
+    }
+
+    public void setSaleBd(String saleBd) {
+        this.saleBd = saleBd;
+    }
 }

@@ -135,6 +135,8 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 
         moie.setInvPhone(masterOrder.getInvPhone());
 
+        moie.setSaleBd(masterOrder.getSaleBd());
+
         masterOrderInfoExtendMapper.insertSelective(moie);
 	}
 

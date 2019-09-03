@@ -1122,6 +1122,12 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 			response.setMessage("实际退款金额为空");
 			return response;
 		}
+
+        String message = request.getMessage();
+        if (StringUtils.isBlank(message)) {
+            message = "普通退款：";
+        }
+
 		String actionNote = null;
 		Integer returnOrderStatus = null;
 		try {
@@ -1144,18 +1150,18 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 				orderRefund.setActualRefundAmount(request.getActualRefundAmount().setScale(2, BigDecimal.ROUND_HALF_UP));
 				orderRefund.setUpdateTime(new Date());
 				orderRefundMapper.updateByPrimaryKeySelective(orderRefund);
-				actionNote = "退单退款完成,退款金额" + request.getActualRefundAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
+				actionNote = message + "退单退款完成,退款金额" + request.getActualRefundAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
 				//退款成功
                 returnOrderStatus = 5;
 			} else {
-				actionNote = "退单退款失败,退款金额" + request.getActualRefundAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
+				actionNote = message + "退单退款失败,退款金额" + request.getActualRefundAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
 			}
 			response.setMessage("退单退款完成成功");
 			response.setSuccess(true);
 		} catch (Exception e) {
 			logger.error(returnSn + "退单退款完成失败:" + e.getMessage(), e);
 			response.setMessage("退单退款完成失败:" + e.getMessage());
-			actionNote = "退单退款完成失败:" + e.getMessage();
+			actionNote = message + "退单退款完成失败:" + e.getMessage();
 		} finally {
 			//操作日志
 			orderActionService.addOrderReturnAction(returnSn, actionNote, request.getActionUser(), returnOrderStatus);

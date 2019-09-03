@@ -165,8 +165,10 @@
 			</when>
 		</choose>
 			GROUP BY oi.master_order_sn 
-			order by oi.add_time desc 
-			limit #{start}, #{pageSize}
+			order by oi.add_time desc
+            <if test="pageSize > 0">
+                limit #{start}, #{pageSize}
+            </if>
 		)
 		a
 		left join order_return oreturn on oreturn.master_order_sn=a.orderSn AND oreturn.return_order_status != 4

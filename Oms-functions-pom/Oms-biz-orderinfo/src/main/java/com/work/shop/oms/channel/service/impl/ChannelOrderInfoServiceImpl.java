@@ -445,6 +445,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			//添加退单日志
             OrderReturnActionExample example = new OrderReturnActionExample();
             example.or().andReturnSnEqualTo(orderReturnSn);
+            example.setOrderByClause("log_time desc");
             List<OrderReturnAction> returnActions = orderReturnActionMapper.selectByExample(example);
             fillShow(returnActions);
             orderReturnDetailInfo.setActions(returnActions);

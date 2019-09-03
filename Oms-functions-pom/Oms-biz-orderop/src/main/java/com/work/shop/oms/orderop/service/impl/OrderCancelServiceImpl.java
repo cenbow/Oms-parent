@@ -619,7 +619,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                             // 订单退单
                             returnMsg = "发货时创建退单:";
                         }
-                        logger.debug("创建删除商品退款单 masterOrderSn=" + masterOrderSn + ",CreateOrderReturnBean：" + JSON.toJSONString(returnVO));
+                        //logger.debug("创建删除商品退款单 masterOrderSn=" + masterOrderSn + ",CreateOrderReturnBean：" + JSON.toJSONString(returnVO));
                         // 创建退单支付单
                         ReturnInfo ri = orderReturnService.createOrderReturnPay(returnVO);
                         if (ri == null || ri.getIsOk() == Constant.OS_NO) {
@@ -647,6 +647,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                     processOrderCancelSurplus(master);
 				}
 			} else {
+			    //logger.info("订单取消:" + JSONObject.toJSONString(orderStatus));
                 Integer returnType = orderStatus.getReturnType();
                 if (returnType != null && returnType == 7) {
                     // 订单取消，不创建退单
@@ -742,7 +743,8 @@ public class OrderCancelServiceImpl implements OrderCancelService {
         // 整单取消
         if (createType == 0) {
             returnVO.setReturnSource(ConstantValues.ORDERRETURN_REFUND_SOURCE.ORDER_CANCEL);
-            returnMoney = master.getMoneyPaid().add(master.getSurplus()).add(master.getPoints()).doubleValue();
+            //returnMoney = master.getMoneyPaid().add(master.getSurplus()).add(master.getPoints()).doubleValue();
+            returnMoney = master.getMoneyPaid().subtract(master.getTax()).doubleValue();
             returnVO.setReturnShipping(Double.valueOf(master.getShippingTotalFee().toString()));
         } else {
             // 订单退单
@@ -1166,13 +1168,13 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		returnGoods.setExtensionId(orderGoods.getExtensionId());
 		returnGoods.setOsDepotCode(orderGoods.getDepotCode());
 		returnGoods.setSettlePrice(orderGoods.getSettlementPrice().doubleValue());
-		returnGoods.setMarketPrice(orderGoods.getGoodsPrice().doubleValue());
+		returnGoods.setMarketPrice(orderGoods.getMarketPrice().doubleValue());
 		returnGoods.setGoodsPrice(orderGoods.getTransactionPrice().doubleValue());
 		returnGoods.setShareBonus(orderGoods.getShareBonus().doubleValue());
 		returnGoods.setSeller(orderGoods.getSupplierCode());
 		returnGoods.setSalesMode(orderGoods.getSalesMode().intValue());
 		returnGoods.setGoodsName(orderGoods.getGoodsName());
-		returnGoods.setDiscount(orderGoods.getDiscount().doubleValue());
+		returnGoods.setDiscount(Double.valueOf(orderGoods.getDiscount().toString()));
 		returnGoods.setSap(orderGoods.getSap());
 		returnGoods.setColorName(orderGoods.getGoodsColorName());
 		returnGoods.setSizeName(orderGoods.getGoodsSizeName());

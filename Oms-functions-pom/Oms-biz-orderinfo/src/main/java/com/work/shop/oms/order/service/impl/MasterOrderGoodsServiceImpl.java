@@ -147,7 +147,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
      */
 	private void fillGoodsBaseInfo(MasterOrderGoods masterOrderGoods, MasterGoods masterGoods) {
 
-        // 商品销售价
+        // 商品市场价
         double goodsPrice = getGoodsPrice(masterGoods);
         masterOrderGoods.setGoodsName(StringUtil.isTrimEmpty(masterGoods.getGoodsName()) ? "" : masterGoods.getGoodsName());
         masterOrderGoods.setGoodsThumb(masterGoods.getGoodsThumb());
@@ -167,7 +167,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         // 商品折扣价
         setGoodsDiscount(masterGoods, goodsPrice, masterOrderGoods);
         // 商品价格
-        masterOrderGoods.setGoodsPrice(BigDecimal.valueOf(goodsPrice));
+        masterOrderGoods.setGoodsPrice(BigDecimal.valueOf(masterGoods.getGoodsPrice()));
         // 商品市场价
         masterOrderGoods.setMarketPrice(BigDecimal.valueOf(goodsPrice));
         // 商品11位码
@@ -316,12 +316,13 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		// 商品折扣
 		double discount = 0f;
 		// 商品折扣金额 = 商品销售价 - 商品成交价
-		discount = NumberUtil.sub(goodsPrice, masterGoods.getTransactionPrice());
-		discount = NumberUtil.getDoubleByValue(discount, 4);
-		Double goodsDiscount = masterGoods.getDisCount();
+		BigDecimal price = BigDecimal.valueOf(goodsPrice);
+		BigDecimal transactionPrice = BigDecimal.valueOf(masterGoods.getTransactionPrice());
+
+		/*Double goodsDiscount = masterGoods.getDisCount();
 		if (goodsDiscount != null && goodsDiscount > 0) {
 			discount = goodsDiscount;
-		}
-		orderGoods.setDiscount(BigDecimal.valueOf(discount));
+		}*/
+		orderGoods.setDiscount(price.subtract(transactionPrice));
 	}
 }
