@@ -201,4 +201,12 @@ public interface OrderManagementService {
      */
     @PostMapping("/order/orderSignCompleted")
     OrderManagementResponse orderSignCompleted(OrderManagementRequest request);
+
+    /**
+     * 订单结算账户完成
+     * @param request
+     * @return
+     */
+    @PostMapping("/order/orderSettlementAccountCompleted")
+    OrderManagementResponse orderSettlementAccountCompleted(OrderManagementRequest request);
 }

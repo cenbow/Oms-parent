@@ -3106,7 +3106,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
      * @return
      */
 	@Override
-	public ReturnInfo<List<OrderReturn>> geteffectiveReturns(String masterOrderSn) {
+	public ReturnInfo<List<OrderReturn>> getEffectiveReturns(String masterOrderSn) {
 		ReturnInfo<List<OrderReturn>> info = new ReturnInfo<List<OrderReturn>>(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
 			logger.error("[masterOrderSn]传入参数为空！");
@@ -3118,6 +3118,26 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 		List<OrderReturn> orderReturns = orderReturnMapper.selectByExample(returnExample);
 		info.setIsOk(Constant.OS_YES);
 		info.setData(orderReturns);
+		info.setMessage("查询成功！");
+		return info;
+	}
+
+	/**
+	 * 获取订单关联退单状态信息
+	 * @param masterOrderSn
+	 * @return
+	 */
+	@Override
+	public ReturnInfo<List<OrderReturnMoneyBean>> getOrderReturnMoneyInfo(String masterOrderSn) {
+		ReturnInfo<List<OrderReturnMoneyBean>> info = new ReturnInfo<List<OrderReturnMoneyBean>>(Constant.OS_NO);
+		if (StringUtils.isBlank(masterOrderSn)) {
+			info.setMessage("[masterOrderSn]传入参数为空！");
+			return info;
+		}
+
+		List<OrderReturnMoneyBean> orderReturnMoneyBeanList = orderReturnMapper.getOrderReturnSettlementList(masterOrderSn);
+		info.setIsOk(Constant.OS_YES);
+		info.setData(orderReturnMoneyBeanList);
 		info.setMessage("查询成功！");
 		return info;
 	}

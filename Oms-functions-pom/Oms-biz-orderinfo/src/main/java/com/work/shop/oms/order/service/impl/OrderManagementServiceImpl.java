@@ -1278,6 +1278,62 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		return response;
 	}
 
+	/**
+	 * 订单结算账户完成
+	 * @param request
+	 * @return
+	 */
+	@Override
+	public OrderManagementResponse orderSettlementAccountCompleted(OrderManagementRequest request) {
+		OrderManagementResponse response = new OrderManagementResponse();
+		response.setSuccess(false);
+		response.setMessage("处理失败");
+
+        String msg = checkCommonOrderManagementRequest(request);
+        if (StringUtils.isNotBlank(msg)) {
+            response.setMessage(msg);
+            return response;
+        }
+
+        String masterOrderSn = request.getMasterOrderSn();
+
+        try {
+            MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
+            masterOrderInfoExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+            List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
+            if (null == masterOrderInfoList || masterOrderInfoList.size() != 1) {
+                response.setMessage("订单信息异常！");
+                return response;
+            }
+
+            List<MasterOrderInfoExtend> infoExtends = masterOrderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
+            if (infoExtends == null || infoExtends.size() <1) {
+                response.setMessage("订单信息异常");
+                return response;
+            }
+
+            String message = "结算账户结算成功状态异常";
+            // 成功
+            boolean payStatus = masterOrderInfoExtendService.updateMasterSettlementAccount(masterOrderSn);
+            if (payStatus) {
+                message = "结算账户结算成功";
+                response.setSuccess(true);
+                response.setMessage("操作成功");
+            }
+
+            String requestMessage = request.getMessage();
+            if (requestMessage == null) {
+            	requestMessage = "";
+			}
+            masterOrderActionService.insertOrderActionBySn(masterOrderSn, message + requestMessage, request.getActionUser());
+        } catch (Exception e) {
+            logger.error(masterOrderSn + "结算账户结算状态失败：" + e.getMessage(), e);
+            response.setMessage("结算账户结算状态失败：" + e.getMessage());
+        }
+
+		return response;
+	}
+
     /**
      * 账期支付扣款成功
      * @param request

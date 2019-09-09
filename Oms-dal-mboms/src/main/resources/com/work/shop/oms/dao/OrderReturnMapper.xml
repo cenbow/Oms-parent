@@ -1274,4 +1274,14 @@
       order_sn = #{orderSn}
     where return_sn = #{returnSn,jdbcType=VARCHAR}
   </update>
+
+    <select id="getOrderReturnSettlementList" parameterType="String" resultType="com.work.shop.oms.bean.OrderReturnMoneyBean">
+      select orn.return_sn as returnPaySn,
+      orf.return_fee as returnFee,
+      orf.backBalance as backBalance
+      from order_return orn, order_refund orf
+      where orn.return_sn = orf.relating_return_sn
+      and orn.return_order_status != 4
+      and orn.relating_order_sn = #{masterOrderSn}
+    </select>
 </mapper>

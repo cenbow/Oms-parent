@@ -35,9 +35,19 @@ public class OrderReturnBean implements Serializable {
     private BigDecimal returnMoney;
 
     /**
-     * 类型 1信用额度2账期支付
+     * 类型 1信用额度2账期支付 3结算账户
      */
     private int type;
+
+    /**
+     * 是否已结算 0未结算、1已结算
+     */
+    private int settlement;
+
+    /**
+     * 交易流水号
+     */
+    private String payNo;
 
     public String getMasterOrderSn() {
         return masterOrderSn;
@@ -85,5 +95,21 @@ public class OrderReturnBean implements Serializable {
 
     public void setCompanyId(String companyId) {
         this.companyId = companyId;
+    }
+
+    public int getSettlement() {
+        return settlement;
+    }
+
+    public void setSettlement(int settlement) {
+        this.settlement = settlement;
+    }
+
+    public String getPayNo() {
+        return payNo;
+    }
+
+    public void setPayNo(String payNo) {
+        this.payNo = payNo;
     }
 }

@@ -43,6 +43,13 @@ public interface MasterOrderInfoExtendService {
 	boolean updateMasterPayPeriod(String masterOrderSn);
 
 	/**
+	 * 更新订单结算账户结算状态
+	 * @param masterOrderSn
+	 * @return boolean
+	 */
+	boolean updateMasterSettlementAccount(String masterOrderSn);
+
+	/**
 	 * 订单创建完成
 	 * @param masterOrderSn
 	 */

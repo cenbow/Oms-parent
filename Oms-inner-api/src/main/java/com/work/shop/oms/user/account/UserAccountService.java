@@ -1,5 +1,6 @@
 package com.work.shop.oms.user.account;
 
+import com.work.shop.oms.bean.AccountSettlementOrderBean;
 import com.work.shop.oms.bean.UserAccountBean;
 import com.work.shop.oms.common.bean.ReturnInfo;
 
@@ -15,4 +16,11 @@ public interface UserAccountService {
      * @return ReturnInfo<Boolean>
      */
     ReturnInfo<Boolean> doReduceUserAccount(UserAccountBean userAccountBean);
+
+    /**
+     * 处理用户结算账户
+     * @param accountSettlementOrderBean
+     * @return
+     */
+    ReturnInfo<Boolean> doUserSettlementAccount(AccountSettlementOrderBean accountSettlementOrderBean);
 }

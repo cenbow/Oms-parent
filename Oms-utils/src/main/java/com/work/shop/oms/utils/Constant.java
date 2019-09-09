@@ -1047,9 +1047,14 @@ public class Constant {
     public static final String DRP_HLA_POST_API_NAME = "drp.hla.post.api.name";
 
     /**
-     * 支付方式
+     * 支付方式 账期
      */
-    public static final int PAYMENT_ZHANGQI_ID=35;
+    public static final int PAYMENT_ZHANGQI_ID = 35;
+
+	/**
+	 * 支付方式 结算账户
+	 */
+	public static final int PAYMENT_SETTLEMENT_ID = 45;
     
     /**
      * 问题单类型 0：普通问题单；1：缺货问题单；2：审核问题单；3签章问题单

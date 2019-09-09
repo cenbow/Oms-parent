@@ -135,7 +135,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		if (ConstantValues.METHOD_SOURCE_TYPE.POS.equals(orderStatus.getSource())) {
 			orderStatus.setMessage("POS取消：" + orderStatus.getMessage());
 		} else if (ConstantValues.METHOD_SOURCE_TYPE.FRONT.equals(orderStatus.getSource())) {
-			orderStatus.setMessage("前台取消：" + orderStatus.getMessage());
+			orderStatus.setMessage("前台取消：" + orderStatus.getMessage() == null ? "" : orderStatus.getMessage());
 		} else if (ConstantValues.METHOD_SOURCE_TYPE.ERP.equals(orderStatus.getSource())) {
 			orderStatus.setMessage("ERP订单：" + orderStatus.getMessage());
 		} else {
@@ -606,7 +606,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 			    if (master.getPayStatus() == Constant.OI_PAY_STATUS_PAYED && (master.getMoneyPaid().doubleValue() >= 0 || master.getSurplus().doubleValue() > 0)) {
 			    	// 已付款订单
                     List<CreateOrderReturnGoods> returnGoodsList = processOrderReturnGoods(master, useCards);
-                    ReturnInfo<List<OrderReturn>> orderReturnInfo = orderReturnService.geteffectiveReturns(masterOrderSn);
+                    ReturnInfo<List<OrderReturn>> orderReturnInfo = orderReturnService.getEffectiveReturns(masterOrderSn);
                     if (orderReturnInfo != null && orderReturnInfo.getIsOk() == Constant.OS_YES
                             && StringUtil.isListNull(orderReturnInfo.getData())) {
 
@@ -1017,7 +1017,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 			ri.setMessage("订单" + orderSn + "的货物已发，不能在进行取消操作！");
 			return ri;
 		}
-		ReturnInfo<List<OrderReturn>> returnInfo = this.orderReturnService.geteffectiveReturns(master.getMasterOrderSn());
+		ReturnInfo<List<OrderReturn>> returnInfo = this.orderReturnService.getEffectiveReturns(master.getMasterOrderSn());
 		if (returnInfo != null && returnInfo.getIsOk() == Constant.OS_YES && StringUtil.isListNotNull(returnInfo.getData())) {
 			ri.setMessage("订单" + orderSn + "已创建退单，不能在进行取消操作！");
 			return ri;

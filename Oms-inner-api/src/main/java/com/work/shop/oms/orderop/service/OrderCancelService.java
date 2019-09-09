@@ -58,5 +58,5 @@ public interface OrderCancelService {
 	 * 订单退款消息发送
 	 * @param orderReturnMoneyBean
 	 */
-	public void doOrderReturnMoney(OrderReturnMoneyBean orderReturnMoneyBean);
+	void doOrderReturnMoney(OrderReturnMoneyBean orderReturnMoneyBean);
 }

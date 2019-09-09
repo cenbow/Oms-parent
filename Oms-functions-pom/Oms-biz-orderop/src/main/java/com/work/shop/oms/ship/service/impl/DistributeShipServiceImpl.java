@@ -15,7 +15,9 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.utils.CachedBeanCopier;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -30,25 +32,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.work.shop.oms.api.express.feign.OrderExpressService;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.MasterOrderAddressInfo;
-import com.work.shop.oms.bean.MasterOrderAddressInfoExample;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderGoodsExample;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.OrderDepotShip;
-import com.work.shop.oms.bean.OrderDepotShipExample;
-import com.work.shop.oms.bean.OrderDepotShipKey;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.SystemMsgTemplate;
-import com.work.shop.oms.bean.SystemShipping;
-import com.work.shop.oms.bean.SystemShippingExample;
-import com.work.shop.oms.bean.WkSfGdn;
-import com.work.shop.oms.bean.WkSfGdnExample;
-import com.work.shop.oms.bean.WkSfGdnInfo;
-import com.work.shop.oms.bean.WkSfGdnInfoExample;
-import com.work.shop.oms.bean.WkSfGdnTmp;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
 import com.work.shop.oms.common.bean.ChannelDeliveryQueue;
@@ -152,6 +135,9 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 	private SystemShippingMapper systemShippingMapper;
 	@Resource
 	private JmsSendQueueService jmsSendQueueService;
+
+	@Resource
+	private MasterOrderInfoService masterOrderInfoService;
 
 	private ThreadLocal<Boolean> isSend = new ThreadLocal<Boolean>();
 	
@@ -1567,11 +1553,36 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, message, actionUser);
 			ri.setIsOk(Constant.OS_YES);
 			ri.setMessage("收货确认更新完成！");
+            processMasterShipResult(masterOrderSn);
 		} catch (Exception e) {
 			logger.error(masterOrderSn + "收货确认更新失败:" + e.getMessage() , e);
 			ri.setMessage("收货确认更新失败:" + e.toString());
 		}
 		return ri;
+	}
+
+    /**
+     * 处理订单确认收货结果
+     * @param masterOrderSn
+     */
+	private void processMasterShipResult(String masterOrderSn) {
+
+	    MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
+	    if (masterOrderInfo == null) {
+	        return;
+        }
+
+        int shipStatus = masterOrderInfo.getShipStatus();
+	    int orderStatus = masterOrderInfo.getOrderStatus();
+	    logger.info("processMasterShipResult:--shipStatus:" + shipStatus + ",orderStatus:" + orderStatus);
+	    if (orderStatus != Constant.OD_ORDER_STATUS_CANCLED && shipStatus == Constant.OI_SHIP_STATUS_ALLRECEIVED) {
+            // 下发MQ
+            AccountSettlementOrderBean accountSettlementOrderBean = new AccountSettlementOrderBean();
+            accountSettlementOrderBean.setOrderNo(masterOrderSn);
+
+            logger.info("processMasterShipResult:--order_sn_account_settlement:" + JSONObject.toJSONString(accountSettlementOrderBean));
+            jmsSendQueueService.sendQueueMessage(MqConfig.order_sn_account_settlement, JSON.toJSONString(accountSettlementOrderBean));
+        }
 	}
 
     /**

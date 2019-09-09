@@ -12,6 +12,9 @@ import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.config.service.OrderCustomDefineService;
 import com.work.shop.oms.dao.*;
+import com.work.shop.oms.dao.define.OrderReturnSearchMapper;
+import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
+import com.work.shop.oms.order.service.MasterOrderPayService;
 import com.work.shop.oms.utils.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -109,6 +112,15 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	@Resource
 	private OrderCustomDefineService orderCustomDefineService;
 
+	@Resource
+	private OrderReturnSearchMapper orderReturnSearchMapper;
+
+	@Resource
+	private MasterOrderInfoExtendService masterOrderInfoExtendService;
+
+	@Resource
+	private MasterOrderPayService masterOrderPayService;
+
 	/**
 	 * 退单详情
 	 * @param request 请求参数
@@ -159,9 +171,9 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
 		ReturnCommonVO returnCommon = fullApplyReturnInfo(orderReturn, orderReturnShip, channelInfo);
 		//商品数据
-		OrderReturnGoodsExample orderReturnGoodsExample = new OrderReturnGoodsExample();
-		orderReturnGoodsExample.or().andRelatingReturnSnEqualTo(returnSn);
-		List<OrderReturnGoods> orderReturnGoodsList = orderReturnGoodsMapper.selectByExample(orderReturnGoodsExample);
+        Map<String, Object> param = new HashMap<String, Object>(1);
+        param.put("returnSn", returnSn);
+		List<OrderReturnGoods> orderReturnGoodsList = orderReturnSearchMapper.getReturnGoodsByReturnSn(param);
 		List<ReturnGoodsVO> returnGoodsVOList = new ArrayList<ReturnGoodsVO>();
 		if (CollectionUtils.isNotEmpty(orderReturnGoodsList)) {
 			for (OrderReturnGoods orderReturnGoods : orderReturnGoodsList) {
@@ -1313,7 +1325,55 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
         orderReturnAction.setReturnPayStatus(orderReturn.getPayStatus()== null ?0:orderReturn.getPayStatus().intValue());
         orderReturnActionMapper.insertSelective(orderReturnAction);
 
+        // 结算账户
+        if (orderReturnBean.getType() == 3) {
+            fillOrderReturnBeanBySettlementAccount(orderReturn, orderReturnBean);
+        } else if (orderReturnBean.getType() == 1) {
+			fillOrderReturnBeanByUserAccount(orderReturn, orderReturnBean);
+		}
+
         orderCancelService.doOrderReturnMoneyByCommon(orderReturnBean);
+    }
+
+	/**
+	 * 设置信用额度退款信息
+	 * @param orderReturn
+	 * @param orderReturnBean
+	 */
+	private void fillOrderReturnBeanByUserAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
+		String masterOrderSn = orderReturnBean.getMasterOrderSn();
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
+
+		if (masterOrderInfoExtend == null) {
+			return;
+		}
+
+		orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
+	}
+
+    /**
+     * 设置账期支付退款信息
+     * @param orderReturn
+     * @param orderReturnBean
+     */
+    private void fillOrderReturnBeanBySettlementAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
+        String masterOrderSn = orderReturnBean.getMasterOrderSn();
+        MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
+
+        if (masterOrderInfoExtend == null) {
+            return;
+        }
+
+        orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
+        orderReturnBean.setSettlement(masterOrderInfoExtend.getSettlementAccount());
+
+        List<MasterOrderPay> orderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
+        if (orderPayList == null || orderPayList.size() == 0) {
+            return;
+        }
+
+        MasterOrderPay masterOrderPay = orderPayList.get(0);
+        orderReturnBean.setPayNo(masterOrderPay.getPayNote());
     }
 
 	/**
@@ -1495,7 +1555,8 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setGoodsSizeName(orderReturnGoods.getGoodsSizeName());
 		returnGoodsVO.setCustomCode(orderReturnGoods.getCustomCode());
 		returnGoodsVO.setMarketPrice(orderReturnGoods.getMarketPrice().doubleValue());
-		returnGoodsVO.setGoodsPrice(orderReturnGoods.getGoodsPrice().doubleValue());
+		returnGoodsVO.setGoodsPrice(orderReturnGoods.getSalePrice().doubleValue());
+        returnGoodsVO.setTransactionPrice(orderReturnGoods.getGoodsPrice().doubleValue());
 		returnGoodsVO.setSettlementPrice(orderReturnGoods.getSettlementPrice().doubleValue());
 		returnGoodsVO.setShareBonus(orderReturnGoods.getShareBonus().doubleValue());
 		returnGoodsVO.setGoodsBuyNumber(orderReturnGoods.getGoodsBuyNumber().intValue());
@@ -1575,8 +1636,9 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setExtensionId(orderGoods.getExtensionId());
 		returnGoodsVO.setExtensionCode(orderGoods.getExtensionCode());
 		returnGoodsVO.setGoodsSn(orderGoods.getGoodsSn());
-		returnGoodsVO.setMarketPrice(orderGoods.getGoodsPrice().doubleValue());
-		returnGoodsVO.setGoodsPrice(orderGoods.getTransactionPrice().doubleValue());
+		returnGoodsVO.setMarketPrice(orderGoods.getMarketPrice().doubleValue());
+		returnGoodsVO.setGoodsPrice(orderGoods.getGoodsPrice().doubleValue());
+        returnGoodsVO.setTransactionPrice(orderGoods.getTransactionPrice().doubleValue());
 		returnGoodsVO.setSettlementPrice(orderGoods.getSettlementPrice().doubleValue());
 		returnGoodsVO.setShareBonus(orderGoods.getShareBonus().doubleValue());
 		returnGoodsVO.setGoodsBuyNumber(orderGoods.getGoodsNumber().intValue());

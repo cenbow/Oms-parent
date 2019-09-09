@@ -51,6 +51,7 @@
       <result column="inv_phone" jdbcType="VARCHAR" property="invPhone" />
       <result column="push_supply_chain" jdbcType="TINYINT" property="pushSupplyChain" />
       <result column="sale_bd" jdbcType="VARCHAR" property="saleBd" />
+      <result column="settlement_account" property="settlementAccount" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <!--
@@ -129,7 +130,7 @@
     inv_payee, inv_content, inv_type, tax, invoice_status, delivery_station_id, free_post_type, 
     free_post_card, free_post_fee, inv_taxer, order_index, tax_rate, inv_bank, is_del, rider_time,
     customer_contract_num, order_type, last_pay_date, company_code, company_name, pay_period_status,
-      inv_phone, push_supply_chain, sale_bd
+      inv_phone, push_supply_chain, sale_bd, settlement_account
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.MasterOrderInfoExtendExample" resultMap="BaseResultMap">
     <!--
@@ -202,7 +203,7 @@
       tax, invoice_status, delivery_station_id, 
       free_post_type, free_post_card, free_post_fee, inv_taxer, order_index,
       tax_rate, inv_bank, is_del, rider_time, customer_contract_num, order_type,
-      last_pay_date, company_code, company_name, pay_period_status, sale_bd
+      last_pay_date, company_code, company_name, pay_period_status, sale_bd, settlement_account
       )
     values (#{masterOrderSn,jdbcType=VARCHAR}, #{agdist,jdbcType=TINYINT}, #{isGroup,jdbcType=TINYINT}, 
       #{isAdvance,jdbcType=TINYINT}, #{isShop,jdbcType=INTEGER}, #{shopId,jdbcType=VARCHAR}, 
@@ -217,7 +218,7 @@
       #{invTaxer}, #{orderIndex},
       #{taxRate,jdbcType=VARCHAR}, #{invBank,jdbcType=VARCHAR}, #{isDel,jdbcType=INTEGER}, #{riderTime,jdbcType=VARCHAR},
       #{customerContractNum}, #{orderType}, #{lastPayDate}, #{companyCode}, #{companyName}, #{payPeriodStatus},
-      #{saleBd}
+      #{saleBd}, #{settlementAccount}
       )
   </insert>
 
@@ -374,6 +375,9 @@
         <if test="saleBd != null">
             sale_bd,
         </if>
+        <if test="settlementAccount != null">
+            settlement_account,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="masterOrderSn != null">
@@ -526,6 +530,9 @@
         <if test="saleBd != null">
             #{saleBd},
         </if>
+        <if test="settlementAccount != null">
+            #{settlementAccount},
+        </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="com.work.shop.oms.bean.MasterOrderInfoExtendExample" resultType="java.lang.Integer">
@@ -677,6 +684,9 @@
         <if test="record.saleBd != null">
             sale_bd = #{record.saleBd},
         </if>
+        <if test="record.settlementAccount != null">
+            settlement_account = #{record.settlementAccount},
+        </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -729,7 +739,8 @@
       company_name = #{record.companyName},
       pay_period_status = #{record.payPeriodStatus},
       push_supply_chain = #{record.pushSupplyChain},
-      sale_bd = #{record.saleBd}
+      sale_bd = #{record.saleBd},
+      settlement_account = #{record.settlementAccount}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -864,6 +875,9 @@
         <if test="saleBd != null">
             sale_bd = #{saleBd},
         </if>
+        <if test="settlementAccount != null">
+            settlement_account = #{settlementAccount},
+        </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
@@ -913,7 +927,8 @@
       company_name = #{companyName},
       pay_period_status = #{payPeriodStatus},
       push_supply_chain = #{pushSupplyChain},
-      sale_bd = #{saleBd}
+      sale_bd = #{saleBd},
+      settlement_account = #{settlementAccount}
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
 </mapper>

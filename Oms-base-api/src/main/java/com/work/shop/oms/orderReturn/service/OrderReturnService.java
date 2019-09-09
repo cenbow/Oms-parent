@@ -5,6 +5,7 @@ import java.util.List;
 import com.work.shop.oms.api.bean.ReturnInfoPage;
 import com.work.shop.oms.api.param.bean.*;
 import com.work.shop.oms.bean.OrderReturn;
+import com.work.shop.oms.bean.OrderReturnMoneyBean;
 import com.work.shop.oms.bean.OrderReturnShip;
 import com.work.shop.oms.bean.SettleOrderInfo;
 import com.work.shop.oms.common.bean.ApiReturnData;
@@ -161,9 +162,16 @@ public interface OrderReturnService {
     
     
     /**
-     * 退单完结通知
+     * 获取有效退单列表
      * @param masterOrderSn
      * @return
      */
-    public ReturnInfo<List<OrderReturn>> geteffectiveReturns(String masterOrderSn);
+    ReturnInfo<List<OrderReturn>> getEffectiveReturns(String masterOrderSn);
+
+    /**
+     * 获取订单关联退单状态信息
+     * @param masterOrderSn
+     * @return
+     */
+    ReturnInfo<List<OrderReturnMoneyBean>> getOrderReturnMoneyInfo(String masterOrderSn);
 }

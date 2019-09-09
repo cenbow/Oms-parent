@@ -314,15 +314,16 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 	 */
 	private void setGoodsDiscount(MasterGoods masterGoods, double goodsPrice, MasterOrderGoods orderGoods) {
 		// 商品折扣
-		double discount = 0f;
+		BigDecimal discount = BigDecimal.valueOf(0);
 		// 商品折扣金额 = 商品销售价 - 商品成交价
-		BigDecimal price = BigDecimal.valueOf(goodsPrice);
+		/*BigDecimal price = BigDecimal.valueOf(goodsPrice);
 		BigDecimal transactionPrice = BigDecimal.valueOf(masterGoods.getTransactionPrice());
+		orderGoods.setDiscount(price.subtract(transactionPrice));*/
 
-		/*Double goodsDiscount = masterGoods.getDisCount();
+		Double goodsDiscount = masterGoods.getDisCount();
 		if (goodsDiscount != null && goodsDiscount > 0) {
-			discount = goodsDiscount;
-		}*/
-		orderGoods.setDiscount(price.subtract(transactionPrice));
+            discount = new BigDecimal(goodsDiscount.toString());
+		}
+		orderGoods.setDiscount(discount);
 	}
 }

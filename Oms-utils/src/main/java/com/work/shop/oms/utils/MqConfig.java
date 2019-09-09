@@ -48,4 +48,14 @@ public class MqConfig {
      * 订单超时自动签收
      */
 	public static final String order_sn_receive = "order_sn_receive";
+
+	/**
+	 * 处理订单结算处理
+	 */
+	public static final String order_sn_account_settlement = "order_sn_account_settlement";
+
+	/**
+	 * 订单结算账户
+	 */
+	public static final String order_account_settlement = "order_account_settlement";
 }

@@ -1,6 +1,7 @@
 package com.work.shop.oms.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 订单退金额
@@ -35,6 +36,16 @@ public class OrderReturnMoneyBean implements Serializable {
 	 * 退款金额
 	 */
 	private String returnOrderAmount;
+
+	/**
+	 * 退款金额
+	 */
+	private BigDecimal returnFee;
+
+	/**
+	 * 退款状体
+	 */
+	private int backBalance;
 
 	public String getSiteCode() {
 		return siteCode;
@@ -75,5 +86,20 @@ public class OrderReturnMoneyBean implements Serializable {
 	public void setReturnOrderAmount(String returnOrderAmount) {
 		this.returnOrderAmount = returnOrderAmount;
 	}
-	
+
+	public BigDecimal getReturnFee() {
+		return returnFee;
+	}
+
+	public void setReturnFee(BigDecimal returnFee) {
+		this.returnFee = returnFee;
+	}
+
+	public int getBackBalance() {
+		return backBalance;
+	}
+
+	public void setBackBalance(int backBalance) {
+		this.backBalance = backBalance;
+	}
 }

@@ -207,6 +207,30 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
     }
 
     /**
+     * 更新订单结算账户结算状态
+     * @param masterOrderSn
+     * @return boolean
+     */
+    @Override
+    public boolean updateMasterSettlementAccount(String masterOrderSn) {
+        boolean bl = false;
+        try {
+            MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
+            extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            extend.setSettlementAccount(1);
+            int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
+
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("设置订单结算账户结算状态异常:" + masterOrderSn, e);
+        }
+
+        return bl;
+    }
+
+    /**
      * 填充账期支付最后支付单时间
      * @param masterOrderSn 订单号
      * @param startDate 开始时间

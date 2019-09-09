@@ -242,4 +242,25 @@
 		<!-- 2到3个消费者 -->
 		<property name="concurrency" value="2-3"></property>
 	</bean>
+
+	<!-- 订单结算账户结算处理 -->
+	<bean id="order_sn_account_settlement" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_sn_account_settlement" />
+	</bean>
+
+	<bean id="orderSnAccountSettlementMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderSnAccountSettlementConsumer" />
+		</constructor-arg>
+	</bean>
+
+	<!-- Spring jmsContainer -->
+	<bean id="orderSnAccountSettlementJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_sn_account_settlement" />
+		<property name="messageListener" ref="orderSnAccountSettlementMessageListener" />
+		<!-- 2到3个消费者 -->
+		<property name="concurrency" value="2-3"></property>
+	</bean>
+
 </beans>
