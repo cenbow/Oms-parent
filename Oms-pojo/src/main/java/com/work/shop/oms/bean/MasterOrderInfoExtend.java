@@ -335,6 +335,11 @@ public class MasterOrderInfoExtend {
     private String companyName;
 
     /**
+     * 公司类型 1内部公司、2外部公司
+     */
+    private Integer companyType;
+
+    /**
      * 账期是否扣款(0未扣、1已扣)
      */
     private int payPeriodStatus;
@@ -1253,5 +1258,13 @@ public class MasterOrderInfoExtend {
 
     public void setSettlementAccount(int settlementAccount) {
         this.settlementAccount = settlementAccount;
+    }
+
+    public Integer getCompanyType() {
+        return companyType;
+    }
+
+    public void setCompanyType(Integer companyType) {
+        this.companyType = companyType;
     }
 }

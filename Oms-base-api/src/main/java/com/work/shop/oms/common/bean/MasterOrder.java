@@ -497,6 +497,11 @@ public class MasterOrder implements Serializable{
      */
     private String companyName;
 
+	/**
+	 * 公司类型 1内部公司、2外部公司
+	 */
+	private Integer companyType;
+
     /**
      * 销售bd
      */
@@ -1356,4 +1361,12 @@ public class MasterOrder implements Serializable{
     public void setSaleBd(String saleBd) {
         this.saleBd = saleBd;
     }
+
+	public Integer getCompanyType() {
+		return companyType;
+	}
+
+	public void setCompanyType(Integer companyType) {
+		this.companyType = companyType;
+	}
 }

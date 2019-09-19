@@ -182,7 +182,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			paramMap.put("isHistory", isHistory);
 			//查询主单信息（主单表、扩展表、地址信息表）
 			MasterOrderDetail masterOrderInfo = masterOrderInfoDetailMapper.selectMasOrdDetByMasterOrderSn(paramMap);
-			if(masterOrderInfo==null){
+			if (masterOrderInfo == null) {
 				return masterOrderInfoVO;
 			}
 			//主单问题单原因类型描述

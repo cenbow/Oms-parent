@@ -1078,4 +1078,9 @@ public class Constant {
      * 交货单号前缀
      */
     public static final String ORDER_DISTRIBUTE_BEFORE = "S";
+
+    /**
+     * 默认店铺
+     */
+    public static final String DEFAULT_SHOP = "hbis";
 }

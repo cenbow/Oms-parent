@@ -534,6 +534,9 @@
     <result column="tax" jdbcType="DECIMAL" property="tax" />
     <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
     <result column="box_gauge" property="boxGauge" />
+    <result column="input_tax" property="inputTax" />
+    <result column="output_tax" property="outputTax" />
+    <result column="cost_price" property="costPrice" />
   </resultMap>
   
   <select id="getOrderGoodsDetail" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
@@ -550,7 +553,7 @@
             t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value, SUM(lack.lack_num) AS lack_num,
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.customer_material_name customerMaterialName,
-            t.buyer_no buyerNo, t.buyer_line_no buyerLineNo
+            t.buyer_no buyerNo, t.buyer_line_no buyerLineNo, t.input_tax inputTax, t.output_tax outputTax, t.cost_price costPrice
         FROM 
             master_order_goods t
         LEFT JOIN

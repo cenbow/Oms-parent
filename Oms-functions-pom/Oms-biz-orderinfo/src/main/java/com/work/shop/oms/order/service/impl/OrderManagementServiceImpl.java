@@ -102,6 +102,64 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     private MasterOrderInfoService masterOrderInfoService;
 
 	/**
+	 * 获取操作用户
+	 * @param request
+	 * @return
+	 */
+	private AdminUser getOrderItemGetAdminUser(OrderManagementRequest request) {
+		AdminUser adminUser = new AdminUser();
+		String actionUserId = request.getActionUserId();
+		if (actionUserId.length() > 9) {
+			actionUserId = actionUserId.substring(0, 9);
+		}
+		adminUser.setUserId(actionUserId);
+		adminUser.setUserName(request.getActionUser());
+
+		return adminUser;
+	}
+
+    /**
+     * 获取订单详情操作日志
+     * @param masterOrderSn
+     * @return
+     */
+	private List<OrderItemAction> getOrderItemGetAction(String masterOrderSn) {
+        List<OrderItemAction> itemActions = new ArrayList<OrderItemAction>();
+
+        MasterOrderActionExample actionExample = new MasterOrderActionExample();
+        actionExample.setOrderByClause("action_id desc");
+        actionExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+        List<MasterOrderAction> actions = masterOrderActionMapper.selectByExampleWithBLOBs(actionExample);
+        if (StringUtil.isListNotNull(actions)) {
+            List<OrderItemActionDetail> actionDetails = new ArrayList<OrderItemActionDetail>();
+            List<OrderItemActionDetail> commiteActionDetails = new ArrayList<OrderItemActionDetail>();
+            for (MasterOrderAction action : actions) {
+                OrderItemActionDetail actionDetail = new OrderItemActionDetail();
+                cloneGoods(actionDetail, action);
+                if (actionDetail.getLogType() == 0) {
+                    actionDetails.add(actionDetail);
+                } else {
+                    commiteActionDetails.add(actionDetail);
+                }
+
+            }
+            OrderItemAction itemAction = new OrderItemAction();
+            itemAction.setName("订单日志");
+            itemAction.setOrderSn(masterOrderSn);
+            itemAction.setActionDetails(actionDetails);
+            itemActions.add(itemAction);
+
+            itemAction = new OrderItemAction();
+            itemAction.setName("沟通");
+            itemAction.setOrderSn(masterOrderSn);
+            itemAction.setActionDetails(commiteActionDetails);
+            itemActions.add(itemAction);
+        }
+
+        return itemActions;
+    }
+
+	/**
 	 * 获取订单详情
 	 * @param request 查询参数
 	 * @return OrderManagementResponse
@@ -129,13 +187,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			cloneGoods(itemDetail, masterOrderInfo);
 			response.setItemDetail(itemDetail);
 			
-			AdminUser adminUser = new AdminUser();
-            String actionUserId = request.getActionUserId();
-            if (actionUserId.length() > 9) {
-                actionUserId = actionUserId.substring(0,9);
-            }
-            adminUser.setUserId(actionUserId);
-			adminUser.setUserName(request.getActionUser());
+			AdminUser adminUser = getOrderItemGetAdminUser(request);
 			//获取配送信息
             List<OrderItemDepotDetail> depotDetails = orderDepotShipDetailMapper.getOrderItemDepotDetail(masterOrderSn);
             masterOrderInfo.setDepotDetails(depotDetails);
@@ -254,38 +306,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			response.setDepotDetails(depotDetails);
             response.setOrderItemDepotInfos(orderItemDepotInfos);
 
-			List<OrderItemAction> itemActions = new ArrayList<OrderItemAction>();
-			
-			MasterOrderActionExample actionExample = new MasterOrderActionExample();
-			actionExample.setOrderByClause("action_id desc");
-			actionExample.or().andMasterOrderSnEqualTo(masterOrderSn);
-			List<MasterOrderAction> actions = masterOrderActionMapper.selectByExampleWithBLOBs(actionExample);
-			if (StringUtil.isListNotNull(actions)) {
-				List<OrderItemActionDetail> actionDetails = new ArrayList<OrderItemActionDetail>();
-                List<OrderItemActionDetail> commiteActionDetails = new ArrayList<OrderItemActionDetail>();
-				for (MasterOrderAction action : actions) {
-					OrderItemActionDetail actionDetail = new OrderItemActionDetail();
-					cloneGoods(actionDetail, action);
-					if (actionDetail.getLogType() == 0) {
-                        actionDetails.add(actionDetail);
-                    } else {
-                        commiteActionDetails.add(actionDetail);
-                    }
-
-				}
-				OrderItemAction itemAction = new OrderItemAction();
-				itemAction.setName("订单日志");
-				itemAction.setOrderSn(masterOrderSn);
-				itemAction.setActionDetails(actionDetails);
-                itemActions.add(itemAction);
-
-                itemAction = new OrderItemAction();
-                itemAction.setName("沟通");
-                itemAction.setOrderSn(masterOrderSn);
-                itemAction.setActionDetails(commiteActionDetails);
-				itemActions.add(itemAction);
-			}
+			List<OrderItemAction> itemActions = getOrderItemGetAction(masterOrderSn);
 			response.setItemActions(itemActions);
+
 			List<OrderItemPayDetail> payDetails = masterOrderPayTypeDetailMapper.getOrderItemPayDetail(masterOrderSn);
 			response.setPayDetails(payDetails);
             response.setSuccess(true);

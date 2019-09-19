@@ -153,6 +153,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 	 */
 	private ReturnInfo<String> commonOrderCreate(MasterOrderDetail master, OrderDistribute distribute, OrderManagementRequest request) {
 		ReturnInfo<String> info = new ReturnInfo<>(Constant.OS_NO, "采购单创建失败");
+
+		String orderFrom = master.getOrderFrom();
+		if (!Constant.DEFAULT_SHOP.equals(orderFrom)) {
+			info.setMessage("店铺订单,不需要转采购订单");
+			return info;
+		}
 		List<PurchaseOrderLine> lines = mergeOrderLines(distribute.getOrderSn());
 		if (StringUtil.isListNull(lines)) {
 			info.setMessage("商品明细为空");
