@@ -178,7 +178,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					//合并支付查询
 					ReturnInfo<MergeOrderPay> reInfo = payService.createMergePay(masterOrderSnList);
 					if (reInfo.getIsOk() == 0 ) {
-						throw new Exception("创建合并支付单数据异常！"+reInfo.getMessage());
+						throw new Exception("创建合并支付单数据异常！" + reInfo.getMessage());
 					}
 					MergeOrderPay mergeOrderPay = reInfo.getData();
 					if (null == mergeOrderPay) {

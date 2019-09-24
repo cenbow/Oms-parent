@@ -467,6 +467,8 @@
             orn.return_order_status returnOrderStatus,
             orn.ship_status shipStatus,
             orn.return_reason returnReason,
+            orn.channel_code shopCode,
+            orn.shop_name shopName,
             moie.customer_contract_num customerContractNum,
 			DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') orderCreateTime
 		from
@@ -760,6 +762,8 @@
             orn.action_user actionUser,
             orn.return_order_status returnOrderStatus,
             orn.ship_status shipStatus,
+            orn.channel_code shopCode,
+            orn.shop_name shopName,
             moai.consignee consignee,
             grc.contact_name contactUser,
             grc.contact_mobile contactMobile,

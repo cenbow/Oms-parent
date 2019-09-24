@@ -228,7 +228,9 @@
         grc.reason reason,
 	    og.transaction_price,
         og.goods_size_name,
-        og.goods_color_name
+        og.goods_color_name,
+        grc.shop_code channelCode,
+        grc.shop_name channelName
     from goods_return_change grc
     <if test="isHistory==1">
      LEFT join master_order_goods_history

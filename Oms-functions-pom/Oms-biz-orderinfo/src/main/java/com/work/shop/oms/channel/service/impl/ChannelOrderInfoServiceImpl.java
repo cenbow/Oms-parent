@@ -1524,42 +1524,46 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 
-		String masterOrderSn = searchParam.getOrderSn();
+		String orderSn = searchParam.getOrderSn();
 		try {
 			String userId = searchParam.getUserId();
 
-			MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
-			masterOrderInfoExample.or().andMasterOrderSnEqualTo(masterOrderSn).andUserIdEqualTo(userId);
-			List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
-			if (null == masterOrderInfoList || masterOrderInfoList.size() != 1) {
-				apiReturnData.setMessage("订单数据异常，不能操作！");
-				return apiReturnData;
-			}
+			List<String> masterOrderSnList = Arrays.asList(orderSn.split(","));
 
-			MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
-			extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
-			List<MasterOrderInfoExtend> infoExtends = masterOrderInfoExtendMapper.selectByExample(extendExample);
-			if (infoExtends == null || infoExtends.size() <1) {
-				apiReturnData.setMessage("订单信息异常");
-				return apiReturnData;
-			}
+			for (String masterOrderSn : masterOrderSnList) {
+				MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
+				masterOrderInfoExample.or().andMasterOrderSnEqualTo(masterOrderSn).andUserIdEqualTo(userId);
+				List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
+				if (null == masterOrderInfoList || masterOrderInfoList.size() != 1) {
+					apiReturnData.setMessage("订单数据异常，不能操作！");
+					return apiReturnData;
+				}
 
-			// 已付款银行卡号
-			String userBankNo = searchParam.getRemarks();
-			MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
-			extend.setUserPayApply(2);
-			if (StringUtil.isNotNull(userBankNo)) {
-				extend.setUserBankNo(userBankNo);
-			}
-			masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
-			apiReturnData.setIsOk(Constant.OS_STR_YES);
-			apiReturnData.setData(true);
-			apiReturnData.setMessage("操作成功");
+				MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
+				extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+				List<MasterOrderInfoExtend> infoExtends = masterOrderInfoExtendMapper.selectByExample(extendExample);
+				if (infoExtends == null || infoExtends.size() < 1) {
+					apiReturnData.setMessage("订单信息异常");
+					return apiReturnData;
+				}
 
-			masterOrderActionService.insertOrderActionBySn(masterOrderSn, "提交已支付申请", userId);
+				// 已付款银行卡号
+				String userBankNo = searchParam.getRemarks();
+				MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+				extend.setUserPayApply(2);
+				if (StringUtil.isNotNull(userBankNo)) {
+					extend.setUserBankNo(userBankNo);
+				}
+				masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
+				apiReturnData.setIsOk(Constant.OS_STR_YES);
+				apiReturnData.setData(true);
+				apiReturnData.setMessage("操作成功");
+
+				masterOrderActionService.insertOrderActionBySn(masterOrderSn, "提交已支付申请", userId);
+			}
 		} catch (Exception e) {
 			apiReturnData.setMessage("订单申请已支付异常！");
-			logger.error("订单申请已支付：masterOrderSn=" + masterOrderSn, e);
+			logger.error("订单申请已支付：masterOrderSn=" + orderSn, e);
 		}
 
 		return apiReturnData;

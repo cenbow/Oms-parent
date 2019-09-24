@@ -87,6 +87,16 @@ public class OrderReturnDetailInfo implements Serializable {
      */
     private String shipStatus;
 
+    /**
+     * 店铺编码
+     */
+    private String shopCode;
+
+    /**
+     * 店铺名称
+     */
+    private String shopName;
+
 	public String getOrderReturnSn() {
 		return orderReturnSn;
 	}
@@ -302,5 +312,21 @@ public class OrderReturnDetailInfo implements Serializable {
 
     public void setShipStatus(String shipStatus) {
         this.shipStatus = shipStatus;
+    }
+
+    public String getShopCode() {
+        return shopCode;
+    }
+
+    public void setShopCode(String shopCode) {
+        this.shopCode = shopCode;
+    }
+
+    public String getShopName() {
+        return shopName;
+    }
+
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
     }
 }

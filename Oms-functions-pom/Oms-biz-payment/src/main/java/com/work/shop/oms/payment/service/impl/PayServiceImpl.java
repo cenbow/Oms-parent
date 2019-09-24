@@ -216,34 +216,39 @@ public class PayServiceImpl implements PayService {
 		return returnInfo;
 	}
 
+	/**
+	 * 创建多订单合并支付
+	 * @param masterOrderSnList
+	 * @return
+	 */
 	@Override
 	public ReturnInfo<MergeOrderPay> createMergePay(List<String> masterOrderSnList){
 		logger.info("开始创建合并支付单:"+masterOrderSnList.toString());
-		BigDecimal totalfee = new BigDecimal(0.000);
-		String masterOrderPaySnStr="";
+		BigDecimal totalFee = new BigDecimal(0.000);
+		String masterOrderPaySnStr = "";
 		ReturnInfo<MergeOrderPay> returnInfo = new ReturnInfo<MergeOrderPay>(); 
 		try {
-		if(null==masterOrderSnList||masterOrderSnList.size()==0){
-			throw new Exception("创建合并支付单，订单号参数为空！");
-		}
-		byte payId=1;
-		List<Date> payLasttimeList=new ArrayList<Date>();
-			for(String masterOrderSn:masterOrderSnList){
+            if (null == masterOrderSnList || masterOrderSnList.size() == 0) {
+                throw new Exception("创建合并支付单，订单号参数为空！");
+            }
+            byte payId = 1;
+            List<Date> payLasttimeList = new ArrayList<Date>();
+			for (String masterOrderSn : masterOrderSnList) {
 				MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
 				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo((byte) Constant.OP_PAY_STATUS_UNPAYED);
 				List<MasterOrderPay> masterOrderPayList = masterOrderPayMapper.selectByExample(masterOrderPayExample);
-				if(null==masterOrderPayList||masterOrderPayList.size()!=1){
+				if (null == masterOrderPayList || masterOrderPayList.size() != 1) {
 					throw new Exception("订单"+masterOrderSn+"的支付单数据异常！");
 				}
-				totalfee=totalfee.add(new BigDecimal(masterOrderPayList.get(0).getPayTotalfee().doubleValue()));
+                totalFee = totalFee.add(new BigDecimal(masterOrderPayList.get(0).getPayTotalfee().doubleValue()));
 				masterOrderPaySnStr+=masterOrderPayList.get(0).getMasterPaySn()+",";
 				payLasttimeList.add(masterOrderPayList.get(0).getPayLasttime());
 				payId=masterOrderPayList.get(0).getPayId();
 			}
-			MergeOrderPay mergeOrderPay= new MergeOrderPay();
+			MergeOrderPay mergeOrderPay = new MergeOrderPay();
 			mergeOrderPay.setCreatTime(new Date());
 			mergeOrderPay.setMasterPaySn(masterOrderPaySnStr.substring(0, masterOrderPaySnStr.length()-1));
-			mergeOrderPay.setMergePayFee(totalfee.setScale(2, BigDecimal.ROUND_HALF_UP));
+			mergeOrderPay.setMergePayFee(totalFee.setScale(2, BigDecimal.ROUND_HALF_UP));
 			mergeOrderPay.setPayId(payId);
 			mergeOrderPay.setPayName("支付宝");
 			mergeOrderPay.setPayStatus((byte)Constant.OP_MERGE_PAY_STATUS_UNPAYED);
