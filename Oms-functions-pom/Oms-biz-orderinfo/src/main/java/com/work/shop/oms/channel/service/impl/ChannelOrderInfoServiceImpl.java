@@ -178,6 +178,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			params.put("materielNo", searchParam.getMaterielNo());
 		}
 
+		//签章状态
+		if (searchParam.getSignStatus() != null) {
+            params.put("signStatus", searchParam.getSignStatus());
+        }
+
 		return params;
 	}
 

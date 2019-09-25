@@ -123,6 +123,11 @@
 		<if test="contractNum != null">
 			and oie.customer_contract_num = #{contractNum}
 		</if>
+        <!-- 签章状态 -->
+        <if test="signStatus != null">
+            and oi.sign_status = #{signStatus}
+        </if>
+
 		<!--app列表只显示订单 --> 
 		<choose>
 			<when test="type == 1">

@@ -132,6 +132,11 @@ public class PageListParam implements Serializable{
      */
 	private String distributeOrderSn;
 
+    /**
+     * 签章状态，0未签章1已签章
+     */
+	private Integer signStatus;
+
 	public String getUserId() {
 		return userId;
 	}
@@ -362,6 +367,14 @@ public class PageListParam implements Serializable{
 
     public void setDistributeOrderSn(String distributeOrderSn) {
         this.distributeOrderSn = distributeOrderSn;
+    }
+
+    public Integer getSignStatus() {
+        return signStatus;
+    }
+
+    public void setSignStatus(Integer signStatus) {
+        this.signStatus = signStatus;
     }
 
     @Override
