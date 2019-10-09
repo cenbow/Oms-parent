@@ -374,7 +374,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 			}
 			returnGoodsVOList.add(returnGoodsVO);
 			settlementPrice += orderGoods.getSettlementPrice().multiply(new BigDecimal(orderGoods.getGoodsNumber())).doubleValue();
-			totalGoodsMoney += new BigDecimal(returnGoodsVO.getGoodsPrice()).multiply(new BigDecimal(returnGoodsVO.getCanReturnCount())).doubleValue();
+			totalGoodsMoney += new BigDecimal(returnGoodsVO.getTransactionPrice()).multiply(new BigDecimal(returnGoodsVO.getCanReturnCount())).doubleValue();
 		}
         returnGoodsVOList = mergeReturnGoods(returnGoodsVOList, detailVoList);
 
@@ -1601,18 +1601,10 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	private ReturnGoodsVO fullApplyReturnGoods(MasterOrderGoods orderGoods, ReturnCommonVO returnCommon, Map<String,Integer> haveReturnGoodsMap, String returnType) {
 		ReturnGoodsVO returnGoodsVO = new ReturnGoodsVO();
 		//已退货数量
-		String returnKey = orderGoods.getCustomCode() + orderGoods.getExtensionCode() + orderGoods.getExtensionId() + orderGoods.getDepotCode();
 		String returnKey2 = orderGoods.getCustomCode() + orderGoods.getExtensionCode() + orderGoods.getDepotCode();
-		if (MapUtils.isNotEmpty(haveReturnGoodsMap) && haveReturnGoodsMap.containsKey(returnKey)) {
-			if (haveReturnGoodsMap.get(returnKey) > haveReturnGoodsMap.get(returnKey2)) {
-				haveReturnGoodsMap.put(returnKey, 0); 
-			}
-			returnGoodsVO.setHavedReturnCount(haveReturnGoodsMap.get(returnKey));
-			haveReturnGoodsMap.put(returnKey2, haveReturnGoodsMap.get(returnKey2) - haveReturnGoodsMap.get(returnKey));
-		} else if(MapUtils.isNotEmpty(haveReturnGoodsMap) && haveReturnGoodsMap.containsKey(returnKey2)) {
-			returnGoodsVO.setHavedReturnCount(haveReturnGoodsMap.get(returnKey2));
-			haveReturnGoodsMap.put(returnKey2, 0);
-		} else {
+        if(MapUtils.isNotEmpty(haveReturnGoodsMap) && haveReturnGoodsMap.containsKey(returnKey2)){
+            returnGoodsVO.setHavedReturnCount(haveReturnGoodsMap.get(returnKey2));
+        } else {
 			returnGoodsVO.setHavedReturnCount(0);
 		}
 		//可退货量为零

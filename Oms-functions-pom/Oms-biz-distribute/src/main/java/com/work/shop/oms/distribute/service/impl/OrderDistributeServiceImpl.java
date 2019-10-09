@@ -251,7 +251,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                 } else {
                     // 不需要审批的订单，下发账期支付扣款
                     // 是否账期支付, 0期立即扣款
-                    masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+                    //masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
                     for (String orderSn : orderSns) {
                         OrderManagementRequest request = new OrderManagementRequest();
                         request.setShipSn(orderSn);

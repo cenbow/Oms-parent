@@ -1125,16 +1125,15 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             if (masterOrderSn.contains(Constant.ORDER_DISTRIBUTE_BEFORE)) {
                 //更新采购单合同号
                 info = updatePushSupplyChain(masterOrderSn, request.getContractNo());
-
             } else {
                 // 变更合同签章状态为
                 updateSignStatus(masterOrderSn, request.getContractNo());
                 //订单号返回正常单
                 info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
                 //账期支付填充最后支付时间
-                masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
+                //masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
                 // 是否账期支付, 0期立即扣款
-                masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+                //masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
             }
 
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
@@ -1241,9 +1240,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
                 } else {
 					//账期支付填充最后支付时间
-					masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
+					//masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
 					// 是否账期支付, 0期立即扣款
-					masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+					//masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
 				}
 			} else {
 				response.setMessage("订单审单完成失败：" + (info == null ? "返回结果为空" : info.getMessage()));

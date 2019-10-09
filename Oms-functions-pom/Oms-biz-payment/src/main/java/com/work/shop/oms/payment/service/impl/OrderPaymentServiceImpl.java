@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,47 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 	
 	@Resource
 	private OrderManagementService orderManagementService;
+
+    /**
+     * 获取指定的支付总金额
+     * @param masterOrderSnList
+     * @return
+     */
+    @Override
+	public ApiReturnData<OrderPayInfo> getOrderPayMoneyInfo(List<String> masterOrderSnList) {
+		ApiReturnData<OrderPayInfo> apiReturnData = new ApiReturnData<OrderPayInfo>();
+		apiReturnData.setIsOk(Constant.OS_STR_NO);
+
+		try {
+			if (masterOrderSnList == null || masterOrderSnList.size() == 0) {
+                apiReturnData.setMessage("订单号为空");
+                return apiReturnData;
+            }
+
+            OrderPayInfo orderPayInfo = new OrderPayInfo();
+			BigDecimal totalMoney = BigDecimal.valueOf(0);
+            for (String masterOrderSn : masterOrderSnList) {
+                MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+                if (null == masterOrderInfo) {
+                    apiReturnData.setMessage("无效的订单号");
+                    return apiReturnData;
+                }
+                // 支付总费用
+                totalMoney = totalMoney.add(masterOrderInfo.getPayTotalFee());
+            }
+
+            orderPayInfo.setPayTotalfee(totalMoney.doubleValue());
+
+            apiReturnData.setMessage("成功");
+            apiReturnData.setData(orderPayInfo);
+            apiReturnData.setIsOk(Constant.OS_STR_YES);
+		} catch (Exception e) {
+		    logger.error("获取订单: " + JSONObject.toJSONString(masterOrderSnList) + "支付信息异常", e);
+            apiReturnData.setMessage("查询异常");
+        }
+
+        return apiReturnData;
+	}
 
 	/**
 	 * 获取订单支付信息
@@ -346,7 +388,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					payReturn.setIsOk(Constant.YESORNO_NO);
 					payReturn.setMessage("合并付款单" + paySn+ "不存在，不能进行付款操作！");
 				}
-				actionNote.append("订单合并支付，合并支付单：" + paySn + "，合并实际支付金额：" + amountToPay + "合并支付需支付金额：" + op.getMergePayFee().doubleValue());
+				//actionNote.append("订单合并支付，合并支付单：" + paySn + "，合并实际支付金额：" + amountToPay + "合并支付需支付金额：" + op.getMergePayFee().doubleValue());
 				op.setPayFee(new BigDecimal(amountToPay));
 				op.setPayNote(actionNote.toString());
 				op.setUserPayTime(new Date());
@@ -527,6 +569,45 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		
 		return ri;
 	}
+
+    /**
+     * 根据支付单号获取对应的订单号
+     * @param paySn 支付单号
+     * @return ApiReturnData<List<String>>
+     */
+    @Override
+    public ApiReturnData<List<MasterOrderPay>> getOrderPaySnByMergePaySn(String paySn) {
+        logger.info("根据支付单号查询订单号：paySn=" + paySn);
+        ApiReturnData<List<MasterOrderPay>> data = new ApiReturnData<List<MasterOrderPay>>();
+        data.setIsOk(Constant.OS_STR_NO);
+
+        try {
+            if (StringUtils.isBlank(paySn)) {
+                data.setMessage("参数错误！");
+                return data;
+            } else {
+
+                List<MasterOrderPay> orderPayList = new ArrayList<MasterOrderPay>(Constant.DEFAULT_LIST_SIZE);
+
+                // 合并付款单编号-> 获取对于的付款单编号
+                MergeOrderPay mergePay = mergeOrderPayMapper.selectByPrimaryKey(paySn);
+                String[] masterPaySns = mergePay.getMasterPaySn().split(Constant.STRING_SPLIT_COMMA);
+                for (String masterPaySn : masterPaySns) {
+                    MasterOrderPay masterPay = masterOrderPayMapper.selectByPrimaryKey(masterPaySn);
+                    orderPayList.add(masterPay);
+                }
+
+                data.setData(orderPayList);
+                data.setIsOk(Constant.OS_STR_YES);
+                data.setMessage("查询成功！");
+            }
+        } catch (Exception e) {
+            logger.error("查询支付单异常,paySn:" + paySn,e);
+            data.setMessage("查询支付单异常,paySn:" + paySn);
+        }
+
+        return data;
+    }
 
 	/**
 	 * 根据支付单号获取对应的订单号

@@ -61,6 +61,13 @@ public interface MasterOrderInfoService {
 	ReturnInfo<Boolean> processOrderPayPeriod(String masterOrderSn);
 
 	/**
+	 * 设置账期支付支付时间和扣款
+	 * @param masterOrderInfo
+	 * @return
+	 */
+	ReturnInfo<Boolean> processOrderPayPeriod(MasterOrderInfo masterOrderInfo);
+
+	/**
 	 * 定时任务处理到期账期支付扣款
 	 * @param orderAccountPeriod
 	 * @return

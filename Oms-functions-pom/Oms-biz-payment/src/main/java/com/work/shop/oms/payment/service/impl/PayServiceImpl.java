@@ -232,34 +232,40 @@ public class PayServiceImpl implements PayService {
                 throw new Exception("创建合并支付单，订单号参数为空！");
             }
             byte payId = 1;
-            List<Date> payLasttimeList = new ArrayList<Date>();
+            byte payStatus = 0;
+            List<Date> payLastTimeList = new ArrayList<Date>();
 			for (String masterOrderSn : masterOrderSnList) {
 				MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
-				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo((byte) Constant.OP_PAY_STATUS_UNPAYED);
+				//masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo((byte) Constant.OP_PAY_STATUS_UNPAYED);
+                // 不查询未付款
+                masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 				List<MasterOrderPay> masterOrderPayList = masterOrderPayMapper.selectByExample(masterOrderPayExample);
 				if (null == masterOrderPayList || masterOrderPayList.size() != 1) {
-					throw new Exception("订单"+masterOrderSn+"的支付单数据异常！");
+					throw new Exception("订单" + masterOrderSn + "的支付单数据异常！");
 				}
-                totalFee = totalFee.add(new BigDecimal(masterOrderPayList.get(0).getPayTotalfee().doubleValue()));
-				masterOrderPaySnStr+=masterOrderPayList.get(0).getMasterPaySn()+",";
-				payLasttimeList.add(masterOrderPayList.get(0).getPayLasttime());
-				payId=masterOrderPayList.get(0).getPayId();
+				MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
+                totalFee = totalFee.add(masterOrderPay.getPayTotalfee());
+				masterOrderPaySnStr += masterOrderPay.getMasterPaySn() + ",";
+				payLastTimeList.add(masterOrderPay.getPayLasttime());
+				payId = masterOrderPay.getPayId();
+                payStatus = masterOrderPay.getPayStatus();
 			}
 			MergeOrderPay mergeOrderPay = new MergeOrderPay();
 			mergeOrderPay.setCreatTime(new Date());
-			mergeOrderPay.setMasterPaySn(masterOrderPaySnStr.substring(0, masterOrderPaySnStr.length()-1));
+			mergeOrderPay.setMasterPaySn(masterOrderPaySnStr.substring(0, masterOrderPaySnStr.length() - 1));
 			mergeOrderPay.setMergePayFee(totalFee.setScale(2, BigDecimal.ROUND_HALF_UP));
 			mergeOrderPay.setPayId(payId);
 			mergeOrderPay.setPayName("支付宝");
-			mergeOrderPay.setPayStatus((byte)Constant.OP_MERGE_PAY_STATUS_UNPAYED);
-			InetAddress ia=InetAddress.getLocalHost();
-			String localip=ia.getHostAddress();
-			if(StringUtil.isNull(localip)){
-				localip="00";
+			mergeOrderPay.setPayStatus(payStatus);
+			InetAddress ia = InetAddress.getLocalHost();
+			String localIp = ia.getHostAddress();
+			if (StringUtil.isNull(localIp)) {
+				localIp = "00";
 			}
-			String mergePaySn=Constant.OP_BEGIN_WITH_MFK+new Date().getTime()+localip.substring(localip.length()-1);
+			String mergePaySn = Constant.OP_BEGIN_WITH_MFK + System.currentTimeMillis() + localIp.substring(localIp.length() - 1);
 			mergeOrderPay.setMergePaySn(mergePaySn);
-			mergeOrderPay.setPayLasttime(payLasttimeList.size()==1?payLasttimeList.get(0):getMaxDate(payLasttimeList));									// 付款最后期限
+			// 付款最后期限
+			mergeOrderPay.setPayLasttime(payLastTimeList.size() == 1 ? payLastTimeList.get(0) : getMaxDate(payLastTimeList));
 			mergeOrderPayMapper.insertSelective(mergeOrderPay);
 			logger.info("创建合并支付单："+mergePaySn);
 			returnInfo.setIsOk(Constant.OS_YES);
@@ -272,7 +278,7 @@ public class PayServiceImpl implements PayService {
 	}
 
 	/**
-	 * 支付
+	 * 订单支付成功
 	 * @param orderStatus
 	 * @return
 	 */
@@ -540,6 +546,7 @@ public class PayServiceImpl implements PayService {
 	 * @param actionUser
 	 * @return
 	 */
+	@Override
 	public ReturnInfo changeOrderPayMethod(String paySn, Integer newPayId, String actionUser) {
 		logger.info("修改支付方式：paySn=" + paySn + ",newPayId=" + newPayId);
 		ReturnInfo returnInfo = new ReturnInfo();
@@ -633,16 +640,15 @@ public class PayServiceImpl implements PayService {
 	
 	/**
 	 * 通过支付编码，查找支付名字
-	 * 
-	 * @param paycode 支付编码
+	 * @param payCode 支付编码
 	 * @return SystemPayment
 	 */
-	private SystemPayment selectSystemPaymentByCode(String paycode) {
-		if (StringUtils.isEmpty(paycode)) {
+	private SystemPayment selectSystemPaymentByCode(String payCode) {
+		if (StringUtils.isEmpty(payCode)) {
 			return null;
 		}
 		SystemPaymentExample example = new SystemPaymentExample();
-		example.or().andPayCodeEqualTo(paycode);
+		example.or().andPayCodeEqualTo(payCode);
 		List<SystemPayment> payments = systemPaymentMapper.selectByExample(example);
 		if (null == payments || payments.isEmpty()) {
 			return null;

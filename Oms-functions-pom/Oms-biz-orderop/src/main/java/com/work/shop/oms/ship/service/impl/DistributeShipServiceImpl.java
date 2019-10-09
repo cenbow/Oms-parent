@@ -17,6 +17,7 @@ import javax.jms.TextMessage;
 
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.utils.CachedBeanCopier;
+import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -93,32 +94,46 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
 	@Resource
 	DistributeActionService distributeActionService;
+
 	@Resource
 	private SystemMsgTemplateMapper systemMsgTemplateMapper;
+
 	@Resource
 	OrderDepotShipMapper orderDepotShipMapper;
+
 	@Resource
 	ChannelShopMapper channelShopMapper;
+
 	//@Resource
 	SMSService sMSService;
+
 	@Resource
 	MasterOrderGoodsMapper masterOrderGoodsMapper;
+
 	@Resource
 	private OrderExpressService orderExpressService;
+
 	@Resource
 	private MasterOrderAddressInfoMapper masterOrderAddressInfoMapper;
+
 	@Resource
 	private WkSfGdnMapper wkSfGdnMapper;
+
 	@Resource
 	private WkSfGdnInfoMapper wkSfGdnInfoMapper;
+
 	@Resource
 	private WkSfGdnTmpMapper wkSfGdnTmpMapper;
+
 	@Resource
 	private OrderDistributeMapper orderDistributeMapper;
+
 	@Resource
 	private SystemShippingService systemShippingService;
+
 	@Resource(name = "noticeShipProducerJmsTemplate")
 	private JmsTemplate noticeShipProducerJmsTemplate;
+
 	@Resource
 	private MasterOrderInfoMapper masterOrderInfoMapper;
 
@@ -129,20 +144,27 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 	private OrderConfirmService orderConfirmService;
 	@Resource
 	private MasterOrderActionService masterOrderActionService;
+
 	@Resource(name = "orderDeliveryJmsTemplate")
 	private JmsTemplate orderDeliveryJmsTemplate;
+
 	@Resource
 	private SystemShippingMapper systemShippingMapper;
+
 	@Resource
 	private JmsSendQueueService jmsSendQueueService;
 
 	@Resource
 	private MasterOrderInfoService masterOrderInfoService;
 
+	@Resource
+	private MasterOrderInfoExtendService masterOrderInfoExtendService;
+
 	private ThreadLocal<Boolean> isSend = new ThreadLocal<Boolean>();
 	
 	// 操作类型 0：不变 1：新增 
 	private static final int oper_type_no = 0;
+
 	private static final int oper_type_add = 1;
 	
 	@Override
@@ -1572,6 +1594,9 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 	        return;
         }
 
+        // 订单确认收货, 设置账期支付时间
+        masterOrderInfoService.processOrderPayPeriod(masterOrderInfo);
+
         int shipStatus = masterOrderInfo.getShipStatus();
 	    int orderStatus = masterOrderInfo.getOrderStatus();
 	    logger.info("processMasterShipResult:--shipStatus:" + shipStatus + ",orderStatus:" + orderStatus);
@@ -1848,6 +1873,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 				return response;
 			}
 			orderSn = request.getOrderSn();
+
 			if (StringUtil.isTrimEmpty(orderSn)) {
 				response.setMessage("参数[request.orderSn] 不能为空");
 				return response;

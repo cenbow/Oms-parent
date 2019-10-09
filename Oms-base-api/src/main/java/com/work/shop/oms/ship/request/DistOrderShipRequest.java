@@ -9,7 +9,7 @@ import com.work.shop.oms.ship.bean.DistOrderPackages;
  * 供应商订单发货请求参数
  * @author QuYachu
  */
-public class DistOrderShipRequest extends OmsRequest{
+public class DistOrderShipRequest extends OmsRequest {
 
 	/**
 	 * 
