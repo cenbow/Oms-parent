@@ -247,11 +247,24 @@ public class MasterOrderDetail implements Serializable {
 	private String companyId;
 
     /**
+     * bd编码
+     */
+	private String insteadUserId;
+
+    /**
      * 交货单信息
      */
     private List<OrderItemDepotDetail> depotDetails;
 
-	public String getMasterOrderSn() {
+    public String getInsteadUserId() {
+        return insteadUserId;
+    }
+
+    public void setInsteadUserId(String insteadUserId) {
+        this.insteadUserId = insteadUserId;
+    }
+
+    public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
 

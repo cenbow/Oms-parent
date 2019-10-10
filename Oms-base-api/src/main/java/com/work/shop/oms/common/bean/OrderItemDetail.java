@@ -226,8 +226,21 @@ public class OrderItemDetail implements Serializable {
      * 公司id
      */
     private String companyId;
-	
-	public String getMasterOrderSn() {
+
+    /**
+     * bd编码
+     */
+    private String insteadUserId;
+
+    public String getInsteadUserId() {
+        return insteadUserId;
+    }
+
+    public void setInsteadUserId(String insteadUserId) {
+        this.insteadUserId = insteadUserId;
+    }
+
+    public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
 	

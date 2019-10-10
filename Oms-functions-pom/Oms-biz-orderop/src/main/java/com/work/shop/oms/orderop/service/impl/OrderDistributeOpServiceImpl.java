@@ -134,7 +134,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 	 */
 	@Override
 	public ReturnInfo lockOrder(String masterOrderSn, OrderStatus orderStatus) throws OrderException {
-		logger.debug("订单锁定 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
+		logger.info("订单锁定 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (null  == masterOrderSn || masterOrderSn.trim().isEmpty()) {
 			logger.error("传入的订单编号参数为空！");
@@ -183,7 +183,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 	 */
 	@Override
 	public ReturnInfo unLockOrder(String masterOrderSn, OrderStatus orderStatus) throws OrderException {
-		logger.debug("订单解锁 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
+		logger.info("订单解锁 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
 			logger.error("传入的订单编号参数为空！");
@@ -203,8 +203,11 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 		}
 		// 判断是否被非admin的当前人锁定
 		if (orderStatus.getAdminUser() != null && !orderStatus.getAdminUser().trim().equals("admin")
-				&& !orderStatus.getAdminUser().trim().equals(Constant.OS_STRING_SYSTEM)) {
+				&& !orderStatus.getAdminUser().trim().equals(Constant.OS_STRING_SYSTEM)
+            && !master.getLockStatus().equals(orderStatus.getUserId())) {
 
+            ri.setMessage("订单" + masterOrderSn + "非当前用户锁定，无法解锁");
+            return ri;
 		}
 		try {
 			MasterOrderInfo newOrderInfo = new MasterOrderInfo();

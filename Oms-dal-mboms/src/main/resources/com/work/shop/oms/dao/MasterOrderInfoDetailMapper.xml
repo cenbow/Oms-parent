@@ -271,6 +271,7 @@
 	  	  a.user_pay_apply userPayApply,
           a.order_type createOrderType,
           a.company_code companyId,
+          t.instead_user_id insteadUserId,
           a.inv_phone invPhone,
           a.push_supply_chain pushSupplyChain,
           b.inv_consignee invConsignee,
