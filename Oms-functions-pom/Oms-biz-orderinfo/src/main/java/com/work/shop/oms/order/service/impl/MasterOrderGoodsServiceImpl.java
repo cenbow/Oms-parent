@@ -284,6 +284,13 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         masterOrderGoods.setBuyerNo(masterGoods.getBuyerNo());
         //采购申请行号
         masterOrderGoods.setBuyerLineNo(masterGoods.getBuyerLineNo());
+
+        //加价金额
+        BigDecimal goodsAddPrice = masterGoods.getGoodsAddPrice();
+        if (goodsAddPrice != null) {
+            masterOrderGoods.setGoodsAddPrice(goodsAddPrice);
+        }
+
     }
 
 	/**

@@ -70,6 +70,7 @@
       <result column="customer_material_name" jdbcType="VARCHAR" property="customerMaterialName" />
       <result column="buyer_no" jdbcType="VARCHAR" property="buyerNo" />
       <result column="buyer_line_no" jdbcType="VARCHAR" property="buyerLineNo" />
+      <result column="goods_add_price" jdbcType="DECIMAL" property="goodsAddPrice" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.work.shop.oms.bean.MasterOrderGoods">
     <!--
@@ -158,7 +159,7 @@
     goods_sn, sales_mode, channel_send_number, sap, bv_value, expected_ship_date, tax, 
     tax_rate, base_bv_value, input_tax, output_tax, cost_price, box_gauge, distribution_category, 
     seller_custom_code, seller_goods_sn, min_buy_num, customer_material_code, buy_unit, 
-    delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no
+    delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price
   </sql>
   <sql id="Blob_Column_List">
     <!--
@@ -267,7 +268,7 @@
       box_gauge, distribution_category, seller_custom_code, 
       seller_goods_sn, min_buy_num, customer_material_code, 
       buy_unit, delivery_cycle, invoice_no, 
-      goods_prop, supplier_name, customer_material_name, buyer_no, buyer_line_no)
+      goods_prop, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price)
     values (#{id,jdbcType=BIGINT}, #{depotCode,jdbcType=VARCHAR}, #{masterOrderSn,jdbcType=VARCHAR}, 
       #{orderSn,jdbcType=VARCHAR}, #{goodsName,jdbcType=VARCHAR}, #{customCode,jdbcType=VARCHAR}, 
       #{extensionCode,jdbcType=VARCHAR}, #{extensionId,jdbcType=VARCHAR}, #{goodsNumber,jdbcType=SMALLINT}, 
@@ -289,7 +290,7 @@
       #{sellerGoodsSn,jdbcType=VARCHAR}, #{minBuyNum,jdbcType=INTEGER}, #{customerMaterialCode,jdbcType=VARCHAR}, 
       #{buyUnit,jdbcType=VARCHAR}, #{deliveryCycle,jdbcType=VARCHAR}, #{invoiceNo,jdbcType=VARCHAR}, 
       #{goodsProp,jdbcType=LONGVARCHAR}, #{supplierName,jdbcType=VARCHAR}, #{customerMaterialName}),
-      #{buyerNo,jdbcType=VARCHAR}, #{buyerLineNo})
+      #{buyerNo,jdbcType=VARCHAR}, #{buyerLineNo}, #{goodsAddPrice})
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.MasterOrderGoods">
     <!--
@@ -493,6 +494,9 @@
         <if test="buyerLineNo != null">
             buyer_line_no,
         </if>
+        <if test="goodsAddPrice != null">
+            goods_add_price,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -689,6 +693,9 @@
         </if>
         <if test="buyerLineNo != null">
             #{buyerLineNo,jdbcType=VARCHAR},
+        </if>
+        <if test="goodsAddPrice != null">
+            #{goodsAddPrice},
         </if>
     </trim>
   </insert>
@@ -904,6 +911,9 @@
         <if test="record.buyerLineNo != null">
             buyer_line_no = #{record.buyerLineNo,jdbcType=VARCHAR},
         </if>
+        <if test="record.goodsAddPrice != null">
+            goods_add_price = #{record.goodsAddPrice},
+        </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -979,7 +989,8 @@
       supplier_name = #{record.supplierName,jdbcType=VARCHAR},
       customer_material_name = #{record.customerMaterialName,jdbcType=VARCHAR},
       buyer_no = #{record.buyerNo,jdbcType=VARCHAR},
-      buyer_line_no = #{record.buyerLineNo,jdbcType=VARCHAR}
+      buyer_line_no = #{record.buyerLineNo,jdbcType=VARCHAR},
+      goods_add_price = #{record.goodsAddPrice}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -1053,7 +1064,8 @@
       supplier_name = #{record.supplierName,jdbcType=VARCHAR},
       customer_material_name = #{record.customerMaterialName,jdbcType=VARCHAR},
       buyer_no = #{record.buyerNo,jdbcType=VARCHAR},
-      buyer_line_no = #{record.buyerLineNo,jdbcType=VARCHAR}
+      buyer_line_no = #{record.buyerLineNo,jdbcType=VARCHAR},
+      goods_add_price = #{record.goodsAddPrice}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -1257,6 +1269,9 @@
         <if test="buyerLineNo != null">
             buyer_line_no = #{buyerLineNo,jdbcType=VARCHAR},
         </if>
+        <if test="goodsAddPrice != null">
+            goods_add_price = #{goodsAddPrice},
+        </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -1329,7 +1344,8 @@
       supplier_name = #{supplierName,jdbcType=VARCHAR},
       customer_material_name = #{customerMaterialName,jdbcType=VARCHAR},
       buyer_no = #{buyerNo,jdbcType=VARCHAR},
-      buyer_line_no = #{buyerLineNo,jdbcType=VARCHAR}
+      buyer_line_no = #{buyerLineNo,jdbcType=VARCHAR},
+      goods_add_price = #{goodsAddPrice}
     where id = #{id,jdbcType=BIGINT}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.work.shop.oms.bean.MasterOrderGoods">
@@ -1400,7 +1416,8 @@
       supplier_name = #{supplierName,jdbcType=VARCHAR},
       customer_material_name = #{customerMaterialName,jdbcType=VARCHAR},
       buyer_no = #{buyerNo,jdbcType=VARCHAR},
-      buyer_line_no = #{buyerLineNo,jdbcType=VARCHAR}
+      buyer_line_no = #{buyerLineNo,jdbcType=VARCHAR},
+      goods_add_price = #{goodsAddPrice}
     where id = #{id,jdbcType=BIGINT}
   </update>
   

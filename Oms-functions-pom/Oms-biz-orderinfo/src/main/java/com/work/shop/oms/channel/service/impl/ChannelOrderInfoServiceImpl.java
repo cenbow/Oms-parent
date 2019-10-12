@@ -1608,11 +1608,17 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
             MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
             masterOrderInfoExample.or().andMasterOrderSnEqualTo(orderSn);
-            List<MasterOrderInfo> masterOrderInfos = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
-            if (masterOrderInfos == null || masterOrderInfos.size() < 1) {
+            List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
+            if (masterOrderInfoList == null || masterOrderInfoList.size() < 1) {
                 apiReturnData.setMessage("该订单不存在");
                 return apiReturnData;
             }
+
+			MasterOrderInfo masterOrderInfo = masterOrderInfoList.get(0);
+            if (!userId.equalsIgnoreCase(masterOrderInfo.getUserId())) {
+				apiReturnData.setMessage("不能操作该订单");
+				return apiReturnData;
+			}
 
             MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
             extendExample.or().andMasterOrderSnEqualTo(orderSn);

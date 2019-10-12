@@ -320,7 +320,20 @@ public class OrderItemGoodsDetail implements Serializable {
 	 */
 	private BigDecimal costPrice;
 
-	public Long getGoodsId() {
+    /**
+     * 加价金额
+     */
+	private BigDecimal goodsAddPrice;
+
+    public BigDecimal getGoodsAddPrice() {
+        return goodsAddPrice;
+    }
+
+    public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
+        this.goodsAddPrice = goodsAddPrice;
+    }
+
+    public Long getGoodsId() {
 		return goodsId;
 	}
 

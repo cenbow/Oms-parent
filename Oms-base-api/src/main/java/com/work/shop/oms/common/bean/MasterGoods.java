@@ -268,6 +268,11 @@ public class MasterGoods implements Serializable {
      */
 	private String buyerLineNo;
 
+    /**
+     * 商品加价金额
+     */
+	private BigDecimal goodsAddPrice;
+
     public Double getShareBonus() {
 		return shareBonus;
 	}
@@ -682,5 +687,13 @@ public class MasterGoods implements Serializable {
 
     public void setBuyerLineNo(String buyerLineNo) {
         this.buyerLineNo = buyerLineNo;
+    }
+
+    public BigDecimal getGoodsAddPrice() {
+        return goodsAddPrice;
+    }
+
+    public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
+        this.goodsAddPrice = goodsAddPrice;
     }
 }
