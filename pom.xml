@@ -284,13 +284,13 @@
 			<dependency>
 				<groupId>com.work.shop.cloud</groupId>
 				<artifactId>CloudShopCenter-bean</artifactId>
-				<version>1.2.1</version>
+				<version>1.2.9</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.work.shop.cloud</groupId>
 				<artifactId>CloudShopCenter-feign</artifactId>
-				<version>0.0.3</version>
+				<version>0.0.11</version>
 			</dependency>
 
             <dependency>

@@ -1325,10 +1325,11 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
         orderReturnAction.setReturnPayStatus(orderReturn.getPayStatus()== null ?0:orderReturn.getPayStatus().intValue());
         orderReturnActionMapper.insertSelective(orderReturnAction);
 
+        int returnType = orderReturnBean.getType();
         // 结算账户
-        if (orderReturnBean.getType() == 3) {
+        if (returnType == 3) {
             fillOrderReturnBeanBySettlementAccount(orderReturn, orderReturnBean);
-        } else if (orderReturnBean.getType() == 1) {
+        } else if (returnType == 1 || returnType == 4) {
 			fillOrderReturnBeanByUserAccount(orderReturn, orderReturnBean);
 		}
 

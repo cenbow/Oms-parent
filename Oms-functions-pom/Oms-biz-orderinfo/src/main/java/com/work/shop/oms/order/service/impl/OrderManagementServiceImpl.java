@@ -176,7 +176,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			Map<String, Object> paramMap = new HashMap<String, Object>(4);
 			paramMap.put("masterOrderSn", masterOrderSn);
 			paramMap.put("isHistory", 0);
-			//查询主单信息（主单表、扩展表、地址信息表）
+
+            String depotCode = request.getDepotCode();
+            if (StringUtils.isNotBlank(depotCode)) {
+                paramMap.put("depotCode", depotCode);
+            }
+
+            //查询主单信息（主单表、扩展表、地址信息表）
 			MasterOrderDetail masterOrderInfo = masterOrderInfoDetailMapper.selectMasOrdDetByMasterOrderSn(paramMap);
 			if (masterOrderInfo == null) {
 				response.setMessage("查询订单数据不存在");

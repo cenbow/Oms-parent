@@ -35,7 +35,7 @@ public class OrderReturnBean implements Serializable {
     private BigDecimal returnMoney;
 
     /**
-     * 类型 1信用额度2账期支付 3结算账户
+     * 类型 1信用额度2账期支付 3结算账户、4保函
      */
     private int type;
 

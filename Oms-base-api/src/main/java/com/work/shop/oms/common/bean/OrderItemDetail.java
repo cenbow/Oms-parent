@@ -232,6 +232,19 @@ public class OrderItemDetail implements Serializable {
      */
     private String insteadUserId;
 
+    /**
+     * bd编码
+     */
+    private String saleBd;
+
+    public String getSaleBd() {
+        return saleBd;
+    }
+
+    public void setSaleBd(String saleBd) {
+        this.saleBd = saleBd;
+    }
+
     public String getInsteadUserId() {
         return insteadUserId;
     }

@@ -399,10 +399,12 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		List<MasterOrderPay> masterOrderPayList = masterOrderPayMapper.selectByExample(payExample);
 		if (masterOrderPayList != null && masterOrderPayList.size() > 0) {
 			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
-			if (masterOrderPay.getPayId().intValue() == 39) {
+
+			int payId = masterOrderPay.getPayId().intValue();
+			if (payId == Constant.PAYMENT_XINYONG_ID || payId == Constant.PAYMENT_BAOHAN_ID) {
 
 				BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
-				// 信用支付
+				// 信用支付、保函支付
 				UserAccountBean userAccountBean = new UserAccountBean();
 				userAccountBean.setOrderNo(masterOrderSn);
 				userAccountBean.setUserId(orderInfo.getUserId());
@@ -411,15 +413,21 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				userAccountBean.setMoney(payTotalFee);
 				ReturnInfo<Boolean> accountReturnInfo = userAccountService.doReduceUserAccount(userAccountBean);
 
+				String accountText = "";
+				if (payId == Constant.PAYMENT_XINYONG_ID) {
+                    accountText = "铁付通";
+                } else if (payId == Constant.PAYMENT_BAOHAN_ID) {
+                    accountText = "银行保函";
+                }
 				if (accountReturnInfo != null && accountReturnInfo.getIsOk() == Constant.OS_YES) {
-					String note = "订单创建-信用额度("+ payTotalFee + ")消费成功！";
+					String note = "订单创建-" + accountText + "("+ payTotalFee + ")消费成功！";
 					masterOrderActionService.insertOrderActionBySn(masterOrderSn, note, Constant.OS_STRING_SYSTEM);
 				} else {
-                    String note = "订单创建-信用额度("+ payTotalFee + ")消费失败！错误信息:" + accountReturnInfo.getMessage();
+                    String note = "订单创建-" + accountText + "("+ payTotalFee + ")消费失败！错误信息:" + accountReturnInfo.getMessage();
                     masterOrderActionService.insertOrderActionBySn(masterOrderSn, note, Constant.OS_STRING_SYSTEM);
                     // 处理失败，设置问题单
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "用户" + orderInfo.getUserId()
-                            + "扣减信用额度异常", "9979"));
+                            + "扣减" + accountText + "异常", "9979"));
                     orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 				}
 			}

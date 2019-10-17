@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.cloud.account.UserAccountRequestBean;
 import com.work.shop.cloud.api.bean.ResultMsgBean;
+import com.work.shop.cloud.bean.account.UserBankAccountInfo;
 import com.work.shop.cloud.bean.usercompany.UserAccountInfo;
 import com.work.shop.cloud.feign.account.UserAccountInfoFeign;
 import com.work.shop.oms.bean.*;
@@ -74,15 +75,36 @@ public class UserAccountServiceImpl implements UserAccountService {
             userAccountRequestBean.setMoney(userAccountBean.getMoney());
             userAccountRequestBean.setOrderNo(orderNo);
             userAccountRequestBean.setActionUser(userAccountBean.getActionUser());
-            ResultMsgBean<UserAccountInfo> resultMsgBean = userAccountInfoFeign.doUserAccountInfo(userAccountRequestBean);
-            if (resultMsgBean != null && Constant.OS_YES == resultMsgBean.getIsOk()) {
+
+            boolean accountResult = false;
+            String message = null;
+            int accountType = userAccountBean.getAccountType();
+            if (accountType == 0) {
+                ResultMsgBean<UserAccountInfo> resultMsgBean = userAccountInfoFeign.doUserAccountInfo(userAccountRequestBean);
+
+                if (resultMsgBean != null && Constant.OS_YES == resultMsgBean.getIsOk()) {
+                    accountResult = true;
+                } else {
+                    message = resultMsgBean.getMsg();
+                }
+            } else if (accountType == 1) {
+                ResultMsgBean<UserBankAccountInfo> resultMsgBean = userAccountInfoFeign.doUserBankAccountInfo(userAccountRequestBean);
+
+                if (resultMsgBean != null && Constant.OS_YES == resultMsgBean.getIsOk()) {
+                    accountResult = true;
+                } else {
+                    message = resultMsgBean.getMsg();
+                }
+            }
+
+            if (accountResult) {
                 returnInfo.setMessage("处理成功");
                 returnInfo.setIsOk(Constant.OS_YES);
                 returnInfo.setData(true);
                 return returnInfo;
             } else {
-                logger.error("处理用户账户信息失败:" + JSONObject.toJSONString(userAccountRequestBean) + ",resultMsgBean:" + JSONObject.toJSONString(resultMsgBean));
-                returnInfo.setMessage(resultMsgBean.getMsg());
+                logger.error("处理用户账户信息失败:" + JSONObject.toJSONString(userAccountRequestBean) + ",resultMsgBean:" + message);
+                returnInfo.setMessage(message);
             }
         } catch (Exception e) {
             logger.error("处理用户账户信息异常:", e);
