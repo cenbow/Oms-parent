@@ -411,6 +411,10 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				userAccountBean.setType(2);
 				userAccountBean.setActionUser("oms");
 				userAccountBean.setMoney(payTotalFee);
+
+				if (payId == Constant.PAYMENT_BAOHAN_ID) {
+					userAccountBean.setAccountType(1);
+				}
 				ReturnInfo<Boolean> accountReturnInfo = userAccountService.doReduceUserAccount(userAccountBean);
 
 				String accountText = "";
