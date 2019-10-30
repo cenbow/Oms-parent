@@ -1240,7 +1240,12 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
                 //订单推送供应链
                 logger.info("订单审核成功:" + masterOrderSn + "订单推送供应链");
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
+                int type = 0;
+                String orderFrom = masterOrderInfo.getOrderFrom();
+                if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
+					type = 2;
+				}
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, type);
                 // 需要合同签章的，先设置问题单
                 if (masterOrderInfo.getNeedSign() == 1 && masterOrderInfo.getSignStatus() == 0) {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));

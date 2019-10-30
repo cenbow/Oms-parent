@@ -16,6 +16,7 @@ import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.GoodsReturnChangeService;
+import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.utils.DateTimeUtils;
 import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
@@ -92,6 +93,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
 	@Resource
 	private OrderReturnGoodsMapper orderReturnGoodsMapper;
+
+	@Resource
+	private DistributeShipService distributeShipService;
 
 	/**
 	 * 判断查询订单列表参数
@@ -602,6 +606,152 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		}
 	}
 
+    /**
+     * 设置订单商品退单状态
+     * @param orderGoodsList
+     */
+	private void fillOrderGoodsReturnStatus(List<OrderGoodsInfo> orderGoodsList) {
+        for (OrderGoodsInfo orderGoodsInfo : orderGoodsList) {
+            Map<String, Object> returnGoodsParams = new HashMap<String, Object>(4);
+            returnGoodsParams.put("sku", orderGoodsInfo.getSkuSn());
+            returnGoodsParams.put("subOrderSn", orderGoodsInfo.getSubOrderSn());
+            List<ReturnGoodsStatus> returnGoodsStatusList = defineOrderMapper.selectReturnGoodsStatus(returnGoodsParams);
+            if (returnGoodsStatusList != null && returnGoodsStatusList.size() > 0) {
+                orderGoodsInfo.setGoodsStatus(returnGoodsStatusList.get(0).getReturnGoodsStatus());
+            }
+        }
+    }
+
+    /**
+     * 设置订单是否可以申请退款
+     * @param orderDetailInfo
+     */
+	private void fillOrderRefund(OrderDetailInfo orderDetailInfo) {
+        String orderPayTime = orderDetailInfo.getOrderPayTime();
+        if (StringUtils.isNotBlank(orderPayTime)) {
+            int periodDetailValue = getPeriodDetailValue(1, "6604");
+            int timeLimit = DateTimeUtils.dateDiff(orderPayTime, periodDetailValue);
+            if (orderDetailInfo.getPayStatus() == Constant.OI_PAY_STATUS_PAYED
+                    && orderDetailInfo.getShipStatus() == Constant.OI_SHIP_STATUS_UNSHIPPED && timeLimit != 1) {
+                orderDetailInfo.setRefund(true);
+            }
+        }
+    }
+
+    /**
+     * 填充订单收货地址信息
+     * @param orderDetailInfo
+     */
+	private void fillOrderAddressInfo(OrderDetailInfo orderDetailInfo) {
+        String country = "";
+        String province = "";
+        String city = "";
+        String district = "";
+        String street = "";
+        String shippingAddress = "";
+        if (orderDetailInfo != null) {
+            orderDetailInfo.setEncryptMobile(orderDetailInfo.getMobile().length() > 11 ? orderDetailInfo.getMobile() : orderDetailInfo.getMobile());
+            String mobile = orderDetailInfo.getMobile();
+            orderDetailInfo.setMobile(encryptionMobile(mobile));
+            if (orderDetailInfo.getAddress() != null) {
+                SystemRegionArea countryArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCountry());
+                if (countryArea != null) {
+                    country = countryArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getProvince() != null && orderDetailInfo.getProvince().length() > 0) {
+                SystemRegionArea provinceArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getProvince());
+                if (provinceArea != null) {
+                    province = provinceArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getCity() != null && orderDetailInfo.getCity().length() > 0) {
+                SystemRegionArea cityArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCity());
+                if (cityArea != null) {
+                    city = cityArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getDistrict() != null && orderDetailInfo.getDistrict().length() > 0) {
+                SystemRegionArea districtArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getDistrict());
+                if (districtArea != null) {
+                    district = districtArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getStreet() != null && orderDetailInfo.getStreet().length() > 0) {
+                SystemRegionArea streetArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getStreet());
+                if (streetArea != null) {
+                    street = streetArea.getRegionName();
+                }
+            }
+            shippingAddress = province + city + district + street + orderDetailInfo.getAddress();
+        }
+        orderDetailInfo.setShippingAddress(shippingAddress);
+    }
+
+    /**
+     * 填充未拆单订单发货信息
+     * @param orderSn
+     * @param isHistory
+     * @return
+     */
+    private List<OrderShipInfo> fillNotSplitOrderInfo(String orderSn, String isHistory) {
+        Map<String, Object> goodsParams = new HashMap<String, Object>(4);
+        goodsParams.put("masterOrderSn", orderSn);
+        goodsParams.put("isHistory", isHistory);
+        List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
+        setGoodsInfo(orderGoodsList);
+        OrderShipInfo orderShipInfo = new OrderShipInfo();
+        orderShipInfo.setOrderGoodsInfo(orderGoodsList);
+        List<OrderShipInfo> shipList = new ArrayList<OrderShipInfo>();
+        shipList.add(orderShipInfo);
+
+        return shipList;
+    }
+
+    /**
+     * 填充已拆单订单发货信息
+     * @param orderDetailInfo
+     * @param shipList
+     * @param isHistory
+     * @return
+     */
+    private List<OrderShipInfo> fillSplitOrderInfo(OrderDetailInfo orderDetailInfo, List<OrderShipInfo> shipList, String isHistory) {
+        //已拆单时商品查询
+        boolean flag = true;
+        String lastDeliveryConfirmTime = "";
+        for (OrderShipInfo orderShip : shipList) {
+            Map<String, Object> goodsParams = new HashMap<String, Object>(8);
+            goodsParams.put("orderSn", orderShip.getOrderSn());
+            goodsParams.put("depotCode", orderShip.getDepotCode());
+            goodsParams.put("isHistory", isHistory);
+            if (StringUtils.isNotEmpty(orderShip.getInvoiceNo())) {
+                goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
+            } else {
+                goodsParams.put("invoiceNo", "");
+            }
+            List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
+            setGoodsInfo(orderGoodsList);
+            // 设置订单商品退单状态
+            fillOrderGoodsReturnStatus(orderGoodsList);
+            orderShip.setOrderGoodsInfo(orderGoodsList);
+
+            //获取最后收货时间,包裹收货时间不为空,只要有未收货包裹，则无整单确认收货时间
+            if (flag && StringUtils.isNotBlank(orderShip.getDeliveryConfirmTime())) {
+                if (StringUtils.isBlank(lastDeliveryConfirmTime) || lastDeliveryConfirmTime.compareTo(orderShip.getDeliveryConfirmTime()) < 0) {
+                    lastDeliveryConfirmTime = orderShip.getDeliveryConfirmTime();
+                }
+            } else {
+                flag = false;
+                lastDeliveryConfirmTime = "";
+            }
+        }
+        //填充订单确认收货时间
+        orderDetailInfo.setLastDeliveryConfirmTime(lastDeliveryConfirmTime);
+        //合并相同快递单号的物流信息
+        shipList = mergeSameInvoiceNo(shipList);
+        return shipList;
+    }
+
 	/**
 	 * 订单详情
 	 * @param orderSn 订单编码
@@ -612,16 +762,16 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<OrderDetailInfo> orderInfoDetail(String orderSn, String isHistory, String userId, String siteCode) {
-		logger.info("平台前台查询订单详情：order=" + orderSn + ",isHistory=" + isHistory);
+
 		ApiReturnData<OrderDetailInfo> apiReturnData = new ApiReturnData<OrderDetailInfo>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 		try {
 			if (StringUtils.isBlank(orderSn)) {
-				apiReturnData.setMessage("orderSn不能为空！");
+				apiReturnData.setMessage("订单号不能为空！");
 				return apiReturnData;
 			}
 			if (StringUtils.isBlank(siteCode)) {
-				apiReturnData.setMessage("siteCode不能为空！");
+				apiReturnData.setMessage("站点不能为空！");
 				return apiReturnData;
 			}
 			if (StringUtils.isBlank(isHistory)) {
@@ -645,119 +795,26 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			setOrderStatus(orderDetailInfo);
 
 			//校验是否可以申请退单
-            String orderPayTime = orderDetailInfo.getOrderPayTime();
-            if (StringUtils.isNotBlank(orderPayTime)) {
-                int periodDetailValue = getPeriodDetailValue(1, "6604");
-                int timeLimit = DateTimeUtils.dateDiff(orderPayTime, periodDetailValue);
-                if (orderDetailInfo.getPayStatus() == Constant.OI_PAY_STATUS_PAYED
-						&& orderDetailInfo.getShipStatus() == Constant.OI_SHIP_STATUS_UNSHIPPED && timeLimit != 1) {
-                    orderDetailInfo.setRefund(true);
-                }
-            }
+            fillOrderRefund(orderDetailInfo);
 
 			// 订单未支付, 订单前端可以取消的最后时间
 			String orderCancelTime = getOrderCancelTime(orderDetailInfo.getOrderCreateTime());
 			orderDetailInfo.setOrderCancelTime(orderCancelTime);
 
-			String country = "";
-			String province = "";
-			String city = "";
-			String district = "";
-			String street = "";
-			String shippingAddress = "";
-			if (orderDetailInfo != null) {
-				orderDetailInfo.setEncryptMobile(orderDetailInfo.getMobile().length() > 11 ? orderDetailInfo.getMobile() : orderDetailInfo.getMobile());
-				String mobile = orderDetailInfo.getMobile();
-				orderDetailInfo.setMobile(encryptionMobile(mobile));
-				if (orderDetailInfo.getAddress() != null) {
-					SystemRegionArea countryArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCountry());
-					if (countryArea != null) {
-						country = countryArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getProvince() != null && orderDetailInfo.getProvince().length() > 0) {
-					SystemRegionArea provinceArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getProvince());
-					if (provinceArea != null) {
-						province = provinceArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getCity() != null && orderDetailInfo.getCity().length() > 0) {
-					SystemRegionArea cityArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCity());
-					if (cityArea != null) {
-						city = cityArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getDistrict() != null && orderDetailInfo.getDistrict().length() > 0) {
-					SystemRegionArea districtArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getDistrict());
-					if (districtArea != null) {
-						district = districtArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getStreet() != null && orderDetailInfo.getStreet().length() > 0) {
-					SystemRegionArea streetArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getStreet());
-					if (streetArea != null) {
-						street = streetArea.getRegionName();
-					}
-				}
-				shippingAddress = province + city + district + street + orderDetailInfo.getAddress();
-			}
-			orderDetailInfo.setShippingAddress(shippingAddress);
+			// 填充订单地址信息
+            fillOrderAddressInfo(orderDetailInfo);
+
 			Map<String, Object> shipParams = new HashMap<String, Object>(4);
 			shipParams.put("orderSn", orderSn);
 			shipParams.put("isHistory", isHistory);
 			List<OrderShipInfo> shipList = defineOrderMapper.selectOrderShipInfo(shipParams);
-			//未拆单时商品查询
+
 			if (shipList == null || shipList.size() == 0 || shipList.get(0) == null) {
-				Map<String, Object> goodsParams = new HashMap<String, Object>(4);
-				goodsParams.put("masterOrderSn", orderSn);
-				goodsParams.put("isHistory", isHistory);
-				List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
-				setGoodsInfo(orderGoodsList);
-				OrderShipInfo orderShipInfo = new OrderShipInfo();
-				orderShipInfo.setOrderGoodsInfo(orderGoodsList);
-				shipList = new ArrayList<OrderShipInfo>();
-				shipList.add(orderShipInfo);
+                //未拆单时商品查询
+				shipList = fillNotSplitOrderInfo(orderSn, isHistory);
 			} else {
 				//已拆单时商品查询
-                boolean flag = true;
-                String lastDeliveryConfirmTime = "";
-				for (OrderShipInfo orderShip : shipList) {
-					Map<String, Object> goodsParams = new HashMap<String, Object>();
-                    goodsParams.put("orderSn", orderShip.getOrderSn());
-                    goodsParams.put("depotCode", orderShip.getDepotCode());
-                    goodsParams.put("isHistory", isHistory);
-                    if (StringUtils.isNotEmpty(orderShip.getInvoiceNo())) {
-                        goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
-                    } else {
-                        goodsParams.put("invoiceNo", "");
-                    }
-					List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
-					setGoodsInfo(orderGoodsList);
-					for (OrderGoodsInfo orderGoodsInfo : orderGoodsList) {
-						Map<String, Object> returnGoodsParams = new HashMap<String, Object>();
-                        returnGoodsParams.put("sku", orderGoodsInfo.getSkuSn());
-                        returnGoodsParams.put("subOrderSn", orderGoodsInfo.getSubOrderSn());
-						List<ReturnGoodsStatus> returnGoodsStatusList = defineOrderMapper.selectReturnGoodsStatus(returnGoodsParams);
-						if (returnGoodsStatusList != null && returnGoodsStatusList.size() > 0) {
-							orderGoodsInfo.setGoodsStatus(returnGoodsStatusList.get(0).getReturnGoodsStatus()); 
-						}
-					}
-					orderShip.setOrderGoodsInfo(orderGoodsList);
-
-					//获取最后收货时间,包裹收货时间不为空,只要有未收货包裹，则无整单确认收货时间
-                    if (flag && StringUtils.isNotBlank(orderShip.getDeliveryConfirmTime())) {
-                        if (StringUtils.isBlank(lastDeliveryConfirmTime) || lastDeliveryConfirmTime.compareTo(orderShip.getDeliveryConfirmTime()) < 0) {
-                            lastDeliveryConfirmTime = orderShip.getDeliveryConfirmTime();
-                        }
-                    } else {
-                        flag = false;
-                        lastDeliveryConfirmTime = "";
-                    }
-				}
-				//填充订单确认收货时间
-                orderDetailInfo.setLastDeliveryConfirmTime(lastDeliveryConfirmTime);
-				//合并相同快递单号的物流信息
-				shipList = mergeSameInvoiceNo(shipList);
+				shipList = fillSplitOrderInfo(orderDetailInfo, shipList, isHistory);
 			}
 			orderDetailInfo.setOrderShipInfo(shipList);
 			setOrderGoodsInfo(orderDetailInfo);
@@ -815,7 +872,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	
 		return apiReturnData;
 	}
-	
+
+    /**
+     * 设置商品编码
+     * @param orderGoodsList
+     */
 	private void setGoodsInfo(List<OrderGoodsInfo>  orderGoodsList){
 		if (CollectionUtils.isNotEmpty(orderGoodsList)) {
 			for (OrderGoodsInfo orderGoods : orderGoodsList) {
@@ -841,7 +902,6 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 * @param orderDetailInfo
 	 */
 	private void setOrderGoodsInfo(OrderDetailInfo orderDetailInfo) {
-		//logger.info("orderDetailInfo:" + JSONObject.toJSONString(orderDetailInfo));
 		List<OrderShipInfo> list = orderDetailInfo.getOrderShipInfo();
 		if (list == null || list.size() == 0) {
 			return;
@@ -850,10 +910,10 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		//获取退单商品信息
         Map<String, OrderReturnGoods> returnGoodsMap = getOrderReturnGoodsMap(orderDetailInfo.getOrderSn());
 		if (returnGoodsMap == null) {
-            returnGoodsMap = new HashMap<String, OrderReturnGoods>();
+            returnGoodsMap = new HashMap<String, OrderReturnGoods>(Constant.DEFAULT_MAP_SIZE);
         }
 
-        Map<String, Integer> canChangeNumMap = new HashMap<String, Integer>();
+        Map<String, Integer> canChangeNumMap = new HashMap<String, Integer>(Constant.DEFAULT_MAP_SIZE);
 		int goodsNumber = 0;
 		for (OrderShipInfo orderShipInfo : list) {
 			if (orderShipInfo == null) {
@@ -864,7 +924,6 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			if (goodsList != null && goodsList.size() > 0) {
 				for (OrderGoodsInfo orderGoodsInfo : goodsList) {
 					goodsNumber += orderGoodsInfo.getGoodsNum();
-					logger.info("orderDetailInfo-->goodsNumber:" + goodsNumber);
 
 					//填充退单数量
                     String key = orderGoodsInfo.getSkuSn() + "_" + orderGoodsInfo.getExtensionCode();
@@ -890,7 +949,6 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			}
 		}
 		orderDetailInfo.setGoodsNumber(goodsNumber);
-		//logger.info("orderDetailInfo:" + JSONObject.toJSONString(orderDetailInfo));
 	}
 
     /**
@@ -940,28 +998,32 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			return mobile;
 		}
 	}
-	
-	//合并订单相同快递单号记录
+
+	/**
+	 * 合并订单相同快递单号记录
+	 * @param shipList
+	 * @return List<OrderShipInfo>
+	 */
 	private List<OrderShipInfo> mergeSameInvoiceNo(List<OrderShipInfo> shipList) {
-		Map<String,Object> map = new HashMap<String, Object>();
+		Map<String,Object> map = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
 		List<OrderShipInfo> returnList = new ArrayList<OrderShipInfo>();
 		for (OrderShipInfo orderShipInfo : shipList) {
 			String key = orderShipInfo.getInvoiceNo();
-			if(!map.containsKey(key)){
+			if (!map.containsKey(key)) {
 				map.put(key, orderShipInfo);
-			}else{
-				OrderShipInfo shipInfo =  (OrderShipInfo) map.get(key);
-				if(CollectionUtils.isEmpty(shipInfo.getOrderGoodsInfo())){
+			} else {
+				OrderShipInfo shipInfo = (OrderShipInfo) map.get(key);
+				if (CollectionUtils.isEmpty(shipInfo.getOrderGoodsInfo())) {
 					shipInfo.setOrderGoodsInfo(new ArrayList<OrderGoodsInfo>());
 				}
-				for(OrderGoodsInfo orderGoodsInfo :orderShipInfo.getOrderGoodsInfo()){
+				for (OrderGoodsInfo orderGoodsInfo :orderShipInfo.getOrderGoodsInfo()) {
 					shipInfo.getOrderGoodsInfo().add(orderGoodsInfo);
 				}
 				map.put(key, shipInfo);
 			}
 		}
 		
-		for(Map.Entry<String,Object> entry:map.entrySet()){
+		for (Map.Entry<String,Object> entry:map.entrySet()) {
 			returnList.add((OrderShipInfo) entry.getValue());
 		}
 		return returnList;
@@ -1359,6 +1421,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			}
 
 			masterOrderActionService.insertOrderActionBySn(orderSn, "客户确认收货！", actionUser);
+
+            distributeShipService.processMasterShipResult(orderSn);
 			ri.setIsOk(ConstantValues.YESORNO_YES);
 			ri.setMessage("确认收货更新完成！");
 			ri.setData(true);

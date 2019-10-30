@@ -65,29 +65,37 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 
 	@Resource
 	OrderDistributeMapper orderDistributeMapper;
+
 	@Resource
 	OrderCustomDefineMapper orderCustomDefineMapper;
+
 	@Resource
 	MasterOrderQuestionMapper masterOrderQuestionMapper;
+
 	@Resource(name="masterOrderActionServiceImpl")
 	MasterOrderActionService masterOrderActionService;
+
 	@Resource
 	MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
 	@Resource
 	OrderActionService orderActionService;
+
 	@Resource
 	DistributeActionService distributeActionService;
+
 	@Resource
 	private MasterOrderGoodsMapper masterOrderGoodsMapper;
+
 	@Resource
 	private MasterOrderInfoMapper masterOrderInfoMapper;
+
 	@Resource
 	private UserPointsService userPointsService;
 
 	@Resource(name = "orderNormalService")
 	private OrderNormalService orderNormalService;
 
-	//@Resource(name = "cardCartSearchServiceApi")
 	private CardCartSearchServiceApi cardCartSearchServiceApi;
 
 	@Resource
@@ -98,17 +106,22 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 
 	@Resource(name = "redisClient")
 	private RedisClient redisClient;
+
 	@Resource(name = "orderStockRealeseJmsTemplate")
 	private JmsTemplate orderStockRealeseJmsTemplate;
+
 	@Resource(name = "shopPayServiceImpl")
 	private ShopPayService shopPayService;
+
 	@Resource
 	private JmsSendQueueService jmsSendQueueService;
+
 	@Resource(name = "uniteStockServiceImpl")
 	private UniteStockService uniteStockService;
 	
 	@Resource
 	private OrderRefundMapper orderRefundMapper;
+
 	@Resource
 	DistributeQuestionMapper distributeQuestionMapper;
 
@@ -315,7 +328,11 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		}
 		return info;
 	}
-	
+
+	/**
+	 * 处理并发缓存key
+	 * @param redisKey
+	 */
 	public void clearRedis(String redisKey) {
 		if (StringUtil.isNotEmpty(redisKey)) {
 			try {
@@ -619,7 +636,6 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                             // 订单退单
                             returnMsg = "发货时创建退单:";
                         }
-                        //logger.debug("创建删除商品退款单 masterOrderSn=" + masterOrderSn + ",CreateOrderReturnBean：" + JSON.toJSONString(returnVO));
                         // 创建退单支付单
                         ReturnInfo ri = orderReturnService.createOrderReturnPay(returnVO);
                         if (ri == null || ri.getIsOk() == Constant.OS_NO) {
@@ -647,14 +663,12 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                     processOrderCancelSurplus(master);
 				}
 			} else {
-			    //logger.info("订单取消:" + JSONObject.toJSONString(orderStatus));
                 Integer returnType = orderStatus.getReturnType();
                 if (returnType != null && returnType == 7) {
                     // 订单取消，不创建退单
                     // 通知统一库存释放
                     uniteStockService.realese(masterOrderSn);
                 } else {
-
                     // 未支付订单取消
                     List<String> orderUseCardList = getOrderGoodsCards(masterOrderSn);
                     if (orderUseCardList != null && orderUseCardList.size() > 0) {
@@ -997,13 +1011,14 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 	/**
 	 * 检查订单是否可以进行取消操作
 	 * 返回null表示此订单可以执行取消操作，否则表示不能执行
-	 * @param orderInfo
+	 * @param master
 	 * @param orderSn
+     * @param sourceType
 	 * @return
 	 */
 	private ReturnInfo checkMasterConditionOfExecution(MasterOrderInfo master, String orderSn, String sourceType) {
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
-		/* 参数检验 */
+
 		if (master == null) {
 			ri.setMessage("在近三个月的记录中，" + orderSn + "的订单信息没有取得!");
 			return ri;

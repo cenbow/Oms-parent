@@ -108,8 +108,7 @@ public class OrderStatus implements Serializable {
 		this.adminUser = adminUser;
 	}
 
-	public OrderStatus(String orderSn, String message, String adminUser,
-			Integer userId) {
+	public OrderStatus(String orderSn, String message, String adminUser, Integer userId) {
 		super();
 		this.orderSn = orderSn;
 		this.message = message;

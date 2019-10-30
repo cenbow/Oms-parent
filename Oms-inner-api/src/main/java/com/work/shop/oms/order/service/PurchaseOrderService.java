@@ -16,6 +16,7 @@ public interface PurchaseOrderService {
 	/**
 	 * 采购单创建(交货单)
 	 * @param request
+	 * @return ReturnInfo<String>
 	 */
 	ReturnInfo<String> purchaseOrderCreate(OrderManagementRequest request);
 	
@@ -38,8 +39,8 @@ public interface PurchaseOrderService {
 
     /**
      * 更新采购单签章状态
-     * @param orderStatus
-     * @return
+     * @param purchaseOrder
+     * @return ReturnInfo<String>
      */
     ReturnInfo<String> updatePushSupplyChain(PurchaseOrder purchaseOrder);
 
@@ -47,5 +48,5 @@ public interface PurchaseOrderService {
      * 根据主键更新采购单
      * @param purchaseOrder
      */
-    public void updatePurchaseOrder(PurchaseOrder purchaseOrder);
+    void updatePurchaseOrder(PurchaseOrder purchaseOrder);
 }

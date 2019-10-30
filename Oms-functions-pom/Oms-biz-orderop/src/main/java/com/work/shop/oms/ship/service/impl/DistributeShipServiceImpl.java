@@ -1587,7 +1587,8 @@ public class DistributeShipServiceImpl implements DistributeShipService {
      * 处理订单确认收货结果
      * @param masterOrderSn
      */
-	private void processMasterShipResult(String masterOrderSn) {
+    @Override
+	public void processMasterShipResult(String masterOrderSn) {
 
 	    MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
 	    if (masterOrderInfo == null) {

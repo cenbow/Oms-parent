@@ -364,9 +364,7 @@
 		where os.order_sn in (select order_sn from order_distribute where master_order_sn=#{orderSn,jdbcType=VARCHAR});
 	</select>
 
-	<select id="selectOrderGoodsInfo"
-		resultType="com.work.shop.oms.api.bean.OrderGoodsInfo"
-		parameterType="Map">
+	<select id="selectOrderGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
 		select
 		og.order_sn subOrderSn,
 		og.goods_price goodsPrice,
@@ -395,6 +393,8 @@
         og.min_buy_num minBuyNum,
         og.buy_unit buyUnit,
         og.customer_material_code customerMaterialCode,
+		og.buyer_no as buyerNo,
+		og.buyer_line_no as buyerLineNo,
         og.distribution_category distributionCategory,
 		og.depot_code depotCode
 		from
@@ -427,7 +427,7 @@
             and og.invoice_no=#{invoiceNo,jdbcType=VARCHAR}
         </if>
 		and og.is_del=0
-		GROUP BY og.custom_code,og.extension_code;
+		GROUP BY og.custom_code, og.extension_code;
 	</select>
 
     <select id="selectByWhere" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">

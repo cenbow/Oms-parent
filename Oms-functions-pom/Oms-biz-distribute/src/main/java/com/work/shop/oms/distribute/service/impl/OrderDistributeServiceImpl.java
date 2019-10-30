@@ -209,7 +209,12 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
                 //订单推送供应链
                 logger.info("拆单完成后:" + masterOrderSn + "订单推送供应链");
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, 0);
+				int type = 0;
+				String orderFrom = master.getOrderFrom();
+				if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
+					type = 2;
+				}
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, type);
 
                 // 需要合同签章的，先设置问题单
                 if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {

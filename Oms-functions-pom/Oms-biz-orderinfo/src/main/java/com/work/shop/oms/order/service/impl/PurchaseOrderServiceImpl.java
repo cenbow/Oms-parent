@@ -52,7 +52,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 	@Resource(name="supplierOrderSendJmsTemplate")
 	private JmsTemplate supplierOrderSendJmsTemplate;
-	
+
+	/**
+	 * 采购单创建
+	 * @param request
+	 * @return
+	 */
 	@Override
 	public ReturnInfo<String> purchaseOrderCreate(OrderManagementRequest request) {
 		logger.info("采购单创建request:"  + JSON.toJSONString(request));
@@ -181,7 +186,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		// 交货单创建拣货单标识
         updateOrderDistribute(distribute);
 
-		//采购单推送供应链，超时为甲方，供应商为乙方
+		//采购单推送供应链，超市为甲方，供应商为乙方
         //只要不是需要签章，没有签章完成的订单都下发
         boolean flag = master.getNeedSign() != 1 || master.getSignStatus() != 0;
         if (flag) {
@@ -210,7 +215,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         record.setProvince(master.getProvinceName());
         record.setCity(master.getCityName());
         record.setDistrict(master.getDistrictName());
-        record.setAddress(master.getAddress());getClass();
+        record.setAddress(master.getAddress());
         record.setZipcode(master.getZipcode());
         record.setMasterOrderSn(distribute.getMasterOrderSn());
         record.setMobile(master.getMobile());
@@ -379,9 +384,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         }
 
         //用户-》超市，校验是否已推送
-        if (master.getPushSupplyChain() != null && master.getPushSupplyChain() == 1 && type == 0) {
-            logger.error(masterOrderSn + "订单推送供应链推送：订单已推送供应链");
-            return;
+        if (master.getPushSupplyChain() != null && master.getPushSupplyChain() == 1) {
+            // 0 买家与超市、2买家与店铺
+            if (type == 0 || type == 2) {
+                logger.error(masterOrderSn + "订单推送供应链推送：订单已推送供应链");
+                return;
+            }
         }
 
         Integer createOrderType = master.getCreateOrderType();
