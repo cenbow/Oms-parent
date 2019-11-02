@@ -75,4 +75,12 @@ public interface MasterOrderInfoExtendService {
      * @return
      */
     boolean updatePushSupplyChain(String masterOrderSn);
+
+    /**
+     * 更新内行扣款成功状态
+     * @param masterOrderSn
+     * @param payPeriodPayStatus 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+     * @return
+     */
+    boolean updatePayPeriodPayStatus(String masterOrderSn, int payPeriodPayStatus);
 }

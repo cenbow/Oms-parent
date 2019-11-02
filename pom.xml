@@ -24,15 +24,12 @@
 		<module>Oms-dal-bgchanneldb</module>
 		<module>Oms-config</module>
 		<module>Oms-Oms</module>
-		<module>Oms-OmsManager</module>
 		<module>Oms-Oms-controller</module>
 		<module>Oms-functions-pom</module>
 		<module>Oms-config-base</module>
-		<!-- <module>Oms-new-api</module> -->
 		<module>Oms-OmsPay</module>
 		<module>Oms-OmsTask</module>
 		<module>Oms-inner-api</module>
-		<module>Oms-manager-controller</module>
 		<module>Oms-dal-mbstore</module>
 		<module>Oms-ExpressService</module>
 		<module>Oms-dal-bgapidb</module>

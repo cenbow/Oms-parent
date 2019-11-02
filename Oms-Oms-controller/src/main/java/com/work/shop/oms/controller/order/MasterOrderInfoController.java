@@ -1,10 +1,13 @@
 package com.work.shop.oms.controller.order;
 
 import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.bean.MasterOrderAction;
+import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.MasterOrderInfoFinishBean;
-import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.common.bean.MasterOrder;
+import com.work.shop.oms.common.bean.OrderCreateReturnInfo;
+import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
+import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.order.request.OmsRequest;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
@@ -148,5 +151,19 @@ public class MasterOrderInfoController {
             logger.error(request.getMasterOrderSn() + "更新订单推送供应链状态:" + "异常", e);
         }
         return false;
+    }
+
+    /**
+     * 通过订单编码获取订单商品列表
+     * @param masterOrderSn 订单号
+     */
+    @PostMapping("/selectGoodsByMasterOrderSn")
+    public ReturnInfo<List<MasterOrderGoods>> selectGoodsByMasterOrderSn(@RequestParam(name = "masterOrderSn") String masterOrderSn) {
+        try {
+            return masterOrderInfoService.selectGoodsByMasterOrderSn(masterOrderSn);
+        } catch (Exception e) {
+            logger.error(masterOrderSn + "更新订单推送供应链状态:" + "异常", e);
+        }
+        return null;
     }
 }

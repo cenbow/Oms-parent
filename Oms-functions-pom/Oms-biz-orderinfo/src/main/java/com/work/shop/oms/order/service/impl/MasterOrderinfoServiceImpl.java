@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -822,6 +823,33 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 		return returnInfo;
 	}
+
+    /**
+     * 通过订单编码获取订单商品列表
+     * @param masterOrderSn 订单编码
+     * @return List<MasterOrderGoods>
+     */
+    @Override
+    public ReturnInfo<List<MasterOrderGoods>> selectGoodsByMasterOrderSn(String masterOrderSn) {
+        ReturnInfo<List<MasterOrderGoods>> returnInfo = new ReturnInfo<>();
+        returnInfo.setIsOk(0);
+        returnInfo.setMessage("查询失败");
+
+        try {
+            if (StringUtils.isBlank(masterOrderSn)) {
+                returnInfo.setMessage("订单号为空");
+                return returnInfo;
+            }
+            List<MasterOrderGoods> goodsList = masterOrderGoodsService.selectByMasterOrderSn(masterOrderSn);
+            returnInfo.setMessage("查询成功");
+            returnInfo.setIsOk(1);
+            returnInfo.setData(goodsList);
+        } catch (Exception e) {
+            logger.error("根据订单号获取商品数据异常", e);
+        }
+
+        return returnInfo;
+    }
 
     /**
      * 处理订单账期支付信息

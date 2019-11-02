@@ -47,7 +47,6 @@ import com.work.shop.oms.service.OrderAmountAdjustmentService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.DateTimeUtils;
 import com.work.shop.oms.utils.PageHelper;
-import com.work.shop.united.client.dataobject.User;
 
 
 @Service("orderAmountAdjustmentService")
@@ -89,8 +88,9 @@ public class OrderAmountAdjustmentServiceImpl implements OrderAmountAdjustmentSe
 		try{
 			//获取登录用户
 			HttpSession session = request.getSession();
-			User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
-			String userName = user.getUserName();
+			/*(User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
+			String userName = user.getUserName();*/
+			String userName = "";
 			if("".equals(ids)||ids==null){
 				msg = "失败！参数获取失败！";
 			}else if("".equals(userName)||userName==null){
@@ -130,8 +130,9 @@ public class OrderAmountAdjustmentServiceImpl implements OrderAmountAdjustmentSe
 			String fileName = "订单金额调整清单_";
 			//拼用户名
 			HttpSession session = request.getSession();
-			User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
-			String userName = user.getUserName();
+			/*(User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
+			String userName = user.getUserName();*/
+			String userName = "";
 			if(!"".equals(userName)||userName!=null){
 				fileName+=userName+"_";
 			}
@@ -231,8 +232,9 @@ public class OrderAmountAdjustmentServiceImpl implements OrderAmountAdjustmentSe
 		try{
 			//获取登录者信息
 			HttpSession session = request.getSession();
-			User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
-			String userName = user.getUserName();
+			/*(User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
+			String userName = user.getUserName();*/
+			String userName = "";
 			if("".equals(userName)||userName==null){
 				msg = "失败！登录失效！请重新登录！";
 				throw new RuntimeException("用户登录信息不存在！");
@@ -393,8 +395,9 @@ public class OrderAmountAdjustmentServiceImpl implements OrderAmountAdjustmentSe
 		try{
 			//获取登录者信息
 			HttpSession session = request.getSession();
-			User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
-			String userName = user.getUserName();
+			/*(User user = (User)session.getAttribute(Constant.SESSION_USER_KEY);
+			String userName = user.getUserName();*/
+			String userName = "";
 			if("".equals(userName)||userName==null){
 				msg = "失败！登录失效！请重新登录！";
 				throw new RuntimeException("用户登录信息不存在！");

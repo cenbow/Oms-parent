@@ -2,6 +2,7 @@ package com.work.shop.oms.order.service;
 
 import java.util.List;
 
+import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.OrderAccountPeriod;
 import com.work.shop.oms.common.bean.*;
@@ -73,4 +74,11 @@ public interface MasterOrderInfoService {
 	 * @return
 	 */
 	ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod);
+
+    /**
+     * 通过订单编码获取订单商品列表
+     * @param masterOrderSn 订单编码
+     * @return List<MasterOrderGoods>
+     */
+    ReturnInfo<List<MasterOrderGoods>> selectGoodsByMasterOrderSn(String masterOrderSn);
 }

@@ -315,4 +315,29 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 
         return bl;
     }
+
+    /**
+     * 更新内行扣款成功状态
+     * @param masterOrderSn
+     * @param payPeriodPayStatus 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+     * @return
+     */
+    @Override
+    public boolean updatePayPeriodPayStatus(String masterOrderSn, int payPeriodPayStatus) {
+        boolean bl = false;
+        try {
+            MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
+            extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            extend.setPayPeriodPayStatus((byte) payPeriodPayStatus);
+            int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
+
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("更新内行扣款成功状态异常:" + masterOrderSn, e);
+        }
+
+        return bl;
+    }
 }

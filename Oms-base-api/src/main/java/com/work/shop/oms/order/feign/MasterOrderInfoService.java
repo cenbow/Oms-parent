@@ -1,14 +1,15 @@
 package com.work.shop.oms.order.feign;
 
+import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.MasterOrderInfoFinishBean;
 import com.work.shop.oms.common.bean.MasterOrder;
 import com.work.shop.oms.common.bean.OrderCreateReturnInfo;
 import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
+import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.order.request.OmsRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -73,4 +74,12 @@ public interface MasterOrderInfoService {
      */
     @PostMapping("/order/updatePushSupplyChain")
     public Boolean updatePushSupplyChain(OmsRequest request);
+
+    /**
+     * 通过订单编码获取订单商品列表
+     * @param masterOrderSn 订单编码
+     * @return List<MasterOrderGoods>
+     */
+    @PostMapping("/order/selectGoodsByMasterOrderSn")
+    ReturnInfo<List<MasterOrderGoods>> selectGoodsByMasterOrderSn(@RequestParam(name = "masterOrderSn") String masterOrderSn);
 }
