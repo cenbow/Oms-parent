@@ -9,6 +9,11 @@ import java.math.BigDecimal;
  */
 public class UserAccountBean implements Serializable {
 
+    /**
+     * 账号类型 0信用、1保函
+     */
+    private int accountType;
+
     private String userId;
 
     private BigDecimal money;
@@ -57,5 +62,13 @@ public class UserAccountBean implements Serializable {
 
     public void setActionUser(String actionUser) {
         this.actionUser = actionUser;
+    }
+
+    public int getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(int accountType) {
+        this.accountType = accountType;
     }
 }

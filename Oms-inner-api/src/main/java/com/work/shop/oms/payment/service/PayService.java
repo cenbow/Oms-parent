@@ -26,19 +26,17 @@ public interface PayService {
 	 */
 	public ReturnInfo<List<String>>  createMasterPay(String masterOrderSn, List<MasterPay> masterPayList);
 
-	/**
-	 * 创建合并支付单
-	 * @return 
-	 */
-	public ReturnInfo<MergeOrderPay> createMergePay(List<String> masterOrderSnList);
+    /**
+     * 创建合并支付单
+     * @param masterOrderSnList
+     * @return
+     */
+	ReturnInfo<MergeOrderPay> createMergePay(List<String> masterOrderSnList);
 
 	/**
-	 * 主订单支付单支付
-	 * masterOrderSn
-	 * userId
-	 * paySn
-	 * adminUser
-	 * source   POS: POS端;"OMS":OmsManager;"FRONT":前端
+	 * 订单支付成功
+	 * @param orderStatus
+	 * @return
 	 */
 	ReturnInfo<String> payStCh(OrderStatus orderStatus);
 
@@ -76,6 +74,6 @@ public interface PayService {
 	 * @param newPayId
 	 * @return
 	 */
-	public ReturnInfo changeOrderPayMethod(String paySn, Integer newPayId, String actionUser);
+	ReturnInfo changeOrderPayMethod(String paySn, Integer newPayId, String actionUser);
 
 }

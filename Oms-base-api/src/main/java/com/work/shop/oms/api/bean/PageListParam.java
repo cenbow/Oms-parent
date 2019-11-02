@@ -122,6 +122,21 @@ public class PageListParam implements Serializable{
      */
 	private String contractNum;
 
+    /**
+     * 仓库编码
+     */
+	private String depotCode;
+
+    /**
+     * 交货单号
+     */
+	private String distributeOrderSn;
+
+    /**
+     * 签章状态，0未签章1已签章
+     */
+	private Integer signStatus;
+
 	public String getUserId() {
 		return userId;
 	}
@@ -336,6 +351,30 @@ public class PageListParam implements Serializable{
 
     public void setContractNum(String contractNum) {
         this.contractNum = contractNum;
+    }
+
+    public String getDepotCode() {
+        return depotCode;
+    }
+
+    public void setDepotCode(String depotCode) {
+        this.depotCode = depotCode;
+    }
+
+    public String getDistributeOrderSn() {
+        return distributeOrderSn;
+    }
+
+    public void setDistributeOrderSn(String distributeOrderSn) {
+        this.distributeOrderSn = distributeOrderSn;
+    }
+
+    public Integer getSignStatus() {
+        return signStatus;
+    }
+
+    public void setSignStatus(Integer signStatus) {
+        this.signStatus = signStatus;
     }
 
     @Override

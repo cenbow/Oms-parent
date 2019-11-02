@@ -140,4 +140,10 @@ public interface DistributeShipService {
 	 * @return ReturnInfo<String>
 	 */
 	ReturnInfo<String> confirmationOfReceipt(DistributeShippingBean bean);
+
+	/**
+	 * 处理订单确认收货结果
+	 * @param masterOrderSn
+	 */
+	void processMasterShipResult(String masterOrderSn);
 }

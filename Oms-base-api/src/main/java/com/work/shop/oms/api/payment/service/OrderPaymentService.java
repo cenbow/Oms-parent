@@ -5,6 +5,7 @@ import java.util.List;
 import com.work.shop.oms.api.bean.OrderPayInfo;
 import com.work.shop.oms.api.param.bean.PayBackInfo;
 import com.work.shop.oms.api.param.bean.PayReturnInfo;
+import com.work.shop.oms.bean.MasterOrderPay;
 import com.work.shop.oms.common.bean.ApiReturnData;
 
 /**
@@ -23,6 +24,13 @@ public interface OrderPaymentService {
 	 * @return ApiReturnData<OrderPayInfo>
 	 */
 	ApiReturnData<OrderPayInfo> getOrderPayInfo(String paySn, List<String> masterOrderSnList);
+
+	/**
+	 * 获取指定的支付总金额
+	 * @param masterOrderSnList
+	 * @return
+	 */
+	ApiReturnData<OrderPayInfo> getOrderPayMoneyInfo(List<String> masterOrderSnList);
 
 	/**
 	 * 变更支付方式
@@ -53,5 +61,12 @@ public interface OrderPaymentService {
 	 * @return ApiReturnData<List<String>>
 	 */
 	ApiReturnData<List<String>> getOrderSnByPaySn(String paySn);
+
+	/**
+	 * 根据支付单号获取对应的订单号
+	 * @param paySn 支付单号
+	 * @return ApiReturnData<List<String>>
+	 */
+	ApiReturnData<List<MasterOrderPay>> getOrderPaySnByMergePaySn(String paySn);
 
 }

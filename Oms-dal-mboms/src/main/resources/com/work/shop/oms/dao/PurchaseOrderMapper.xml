@@ -25,9 +25,14 @@
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
     <result column="operate_user" property="operateUser" jdbcType="VARCHAR" />
-      <result column="order_type" property="orderType" jdbcType="INTEGER" />
-      <result column="goods_count" property="goodsCount" jdbcType="INTEGER" />
-      <result column="total_fee" property="totalFee" jdbcType="DECIMAL" />
+    <result column="order_type" property="orderType" jdbcType="INTEGER" />
+    <result column="goods_count" property="goodsCount" jdbcType="INTEGER" />
+    <result column="total_fee" property="totalFee" jdbcType="DECIMAL" />
+    <result column="total_untax_fee" property="totalUntaxFee" jdbcType="DECIMAL" />
+    <result column="sign_complete" property="signComplete" jdbcType="TINYINT" />
+    <result column="push_supply_chain" property="pushSupplyChain" jdbcType="TINYINT" />
+    <result column="sign_complete_time" jdbcType="TIMESTAMP" property="signCompleteTime" />
+    <result column="contract_no" jdbcType="VARCHAR" property="contractNo" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <!--
@@ -102,7 +107,8 @@
     -->
     purchase_order_code, order_sn, master_order_sn, purchase_status, user_id, vendor_code, 
     consignee, country, province, city, district, address, zipcode, tel, mobile, add_time, 
-    create_time, update_time, operate_user, order_type, goods_count, total_fee
+    create_time, update_time, operate_user, order_type, goods_count, total_fee, sign_complete,
+    push_supply_chain, sign_complete_time, contract_no, total_untax_fee
   </sql>
   <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.work.shop.oms.bean.PurchaseOrderExample" >
     <!--
@@ -168,7 +174,8 @@
       city, district, address, 
       zipcode, tel, mobile, 
       add_time, create_time, update_time, 
-      operate_user, order_type, goods_count, total_fee)
+      operate_user, order_type, goods_count, total_fee, sign_complete, push_supply_chain, sign_complete_time,
+      contract_no, total_untax_fee)
     values (#{purchaseOrderCode,jdbcType=VARCHAR}, #{orderSn,jdbcType=VARCHAR}, #{masterOrderSn,jdbcType=VARCHAR}, 
       #{purchaseStatus,jdbcType=TINYINT}, #{userId,jdbcType=VARCHAR}, #{vendorCode,jdbcType=VARCHAR}, 
       #{consignee,jdbcType=VARCHAR}, #{country,jdbcType=VARCHAR}, #{province,jdbcType=VARCHAR}, 
@@ -176,7 +183,8 @@
       #{zipcode,jdbcType=VARCHAR}, #{tel,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, 
       #{addTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
       #{operateUser,jdbcType=VARCHAR}, #{orderType,jdbcType=INTEGER}, #{goodsCount,jdbcType=INTEGER},
-      #{totalFee,jdbcType=DECIMAL})
+      #{totalFee,jdbcType=DECIMAL}, #{signComplete,jdbcType=TINYINT}, #{pushSupplyChain,jdbcType=TINYINT},
+      #{signCompleteTime,jdbcType=TIMESTAMP}, #{contractNo,jdbcType=VARCHAR}, #{totalUntaxFee})
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.PurchaseOrder" >
     <!--
@@ -251,6 +259,21 @@
         <if test="totalFee != null" >
             total_fee,
         </if>
+        <if test="signComplete != null" >
+            sign_complete,
+        </if>
+        <if test="pushSupplyChain != null" >
+            push_supply_chain,
+        </if>
+        <if test="signCompleteTime != null" >
+            sign_complete_time,
+        </if>
+        <if test="contractNo != null" >
+            contract_no,
+        </if>
+        <if test="totalUntaxFee != null" >
+            total_untax_fee,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="purchaseOrderCode != null" >
@@ -318,6 +341,21 @@
         </if>
         <if test="totalFee != null" >
             #{totalFee,jdbcType=DECIMAL},
+        </if>
+        <if test="signComplete != null" >
+            #{signComplete,jdbcType=TINYINT},
+        </if>
+        <if test="pushSupplyChain != null" >
+            #{pushSupplyChain,jdbcType=TINYINT},
+        </if>
+        <if test="signCompleteTime != null">
+            #{signCompleteTime,jdbcType=TIMESTAMP},
+        </if>
+        <if test="contractNo != null" >
+            #{contractNo,jdbcType=VARCHAR},
+        </if>
+        <if test="totalUntaxFee != null" >
+            #{totalUntaxFee},
         </if>
     </trim>
   </insert>
@@ -404,6 +442,21 @@
         <if test="record.totalFee != null" >
             operate_user = #{record.totalFee,jdbcType=DECIMAL},
         </if>
+        <if test="record.signComplete != null" >
+            sign_complete = #{record.signComplete,jdbcType=TINYINT},
+        </if>
+        <if test="record.pushSupplyChain != null" >
+            push_supply_chain = #{record.pushSupplyChain,jdbcType=TINYINT},
+        </if>
+        <if test="record.signCompleteTime != null" >
+            sign_complete_time = #{record.signCompleteTime,jdbcType=TIMESTAMP},
+        </if>
+        <if test="record.contractNo != null" >
+            contract_no = #{record.contractNo,jdbcType=VARCHAR},
+        </if>
+        <if test="record.totalUntaxFee != null" >
+            total_untax_fee = #{record.totalUntaxFee},
+        </if>
     </set>
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
@@ -436,7 +489,12 @@
       operate_user = #{record.operateUser,jdbcType=VARCHAR},
       order_type = #{record.orderType,jdbcType=INTEGER},
       goods_count = #{record.goodsCount,jdbcType=INTEGER},
-      total_fee = #{record.totalFee,jdbcType=DECIMAL}
+      total_fee = #{record.totalFee,jdbcType=DECIMAL},
+      sign_complete = #{record.signComplete,jdbcType=TINYINT},
+      push_supply_chain = #{record.pushSupplyChain,jdbcType=TINYINT},
+      sign_complete_time = #{record.signCompleteTime,jdbcType=TIMESTAMP},
+      contract_no = #{record.contractNo,jdbcType=VARCHAR},
+      total_untax_fee = #{totalUntaxFee}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -511,6 +569,21 @@
         <if test="totalFee != null" >
             total_fee = #{totalFee,jdbcType=DECIMAL},
         </if>
+        <if test="signComplete != null" >
+            sign_complete = #{signComplete,jdbcType=TINYINT},
+        </if>
+        <if test="pushSupplyChain != null" >
+            push_supply_chain = #{pushSupplyChain,jdbcType=TINYINT},
+        </if>
+        <if test="signCompleteTime != null" >
+            sign_complete_time = #{signCompleteTime,jdbcType=TIMESTAMP},
+        </if>
+        <if test="contractNo != null" >
+            contract_no = #{contractNo,jdbcType=VARCHAR},
+        </if>
+        <if test="totalUntaxFee != null" >
+            total_untax_fee = #{totalUntaxFee},
+        </if>
     </set>
     where purchase_order_code = #{purchaseOrderCode,jdbcType=VARCHAR}
   </update>
@@ -540,7 +613,12 @@
       operate_user = #{operateUser,jdbcType=VARCHAR},
       order_type = #{orderType,jdbcType=INTEGER},
       goods_count = #{goodsCount,jdbcType=INTEGER},
-      total_fee = #{totalFee,jdbcType=DECIMAL}
+      total_fee = #{totalFee,jdbcType=DECIMAL},
+      sign_complete = #{signComplete,jdbcType=TINYINT},
+      push_supply_chain = #{pushSupplyChain,jdbcType=TINYINT},
+      sign_complete_time = #{signCompleteTime,jdbcType=TIMESTAMP},
+      contract_no = #{contractNo,jdbcType=VARCHAR},
+      total_untax_fee = #{totalUntaxFee},
     where purchase_order_code = #{purchaseOrderCode,jdbcType=VARCHAR}
   </update>
 

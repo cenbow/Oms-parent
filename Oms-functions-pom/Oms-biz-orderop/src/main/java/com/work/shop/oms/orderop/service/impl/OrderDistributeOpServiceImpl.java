@@ -134,7 +134,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 	 */
 	@Override
 	public ReturnInfo lockOrder(String masterOrderSn, OrderStatus orderStatus) throws OrderException {
-		logger.debug("订单锁定 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
+		logger.info("订单锁定 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (null  == masterOrderSn || masterOrderSn.trim().isEmpty()) {
 			logger.error("传入的订单编号参数为空！");
@@ -183,7 +183,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 	 */
 	@Override
 	public ReturnInfo unLockOrder(String masterOrderSn, OrderStatus orderStatus) throws OrderException {
-		logger.debug("订单解锁 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
+		logger.info("订单解锁 : masterOrderSn=" + masterOrderSn + "; orderStatus=" + orderStatus);
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
 			logger.error("传入的订单编号参数为空！");
@@ -203,8 +203,11 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 		}
 		// 判断是否被非admin的当前人锁定
 		if (orderStatus.getAdminUser() != null && !orderStatus.getAdminUser().trim().equals("admin")
-				&& !orderStatus.getAdminUser().trim().equals(Constant.OS_STRING_SYSTEM)) {
+				&& !orderStatus.getAdminUser().trim().equals(Constant.OS_STRING_SYSTEM)
+            && !master.getLockStatus().equals(orderStatus.getUserId())) {
 
+            ri.setMessage("订单" + masterOrderSn + "非当前用户锁定，无法解锁");
+            return ri;
 		}
 		try {
 			MasterOrderInfo newOrderInfo = new MasterOrderInfo();
@@ -377,7 +380,14 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 		return info;
 	}
 
-	@SuppressWarnings("rawtypes")
+	/**
+	 * 订单结算
+	 * @param masterOrderSn
+	 * @param orderStatus message:备注;adminUser:操作人;userId:操作人唯一编号
+	 * @return ReturnInfo
+	 * @throws Exception
+	 */
+	@Override
 	public ReturnInfo settleOrder(String masterOrderSn, OrderStatus orderStatus) throws Exception {
 		logger.debug("订单结算：masterOrderSn=" + masterOrderSn + ";orderStatus=" + JSON.toJSONString(orderStatus));
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
@@ -406,7 +416,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 			return info;
 		}
 		//结算条件-订单状态验证
-		if(orderInfo.getOrderStatus().intValue() == ConstantValues.ORDER_STATUS.COMPLETE.intValue()){
+		if(orderInfo.getOrderStatus().intValue() == ConstantValues.ORDER_STATUS.INVALIDITY.intValue()){
 			info.setMessage("订单[" + masterOrderSn + "]订单已完结不可再结算");
 			return info;
 		}
@@ -436,7 +446,7 @@ public class OrderDistributeOpServiceImpl implements OrderDistributeOpService {
 		paramObj.setDealCode(masterOrderSn);
 		paramObj.setTools(false);
 		paramObj.setUserId(orderStatus.getAdminUser());
-		info = orderSettleService.MasterOrderSettle(paramObj);
+		info = orderSettleService.masterOrderSettle(paramObj);
 		return info;
 	}
 

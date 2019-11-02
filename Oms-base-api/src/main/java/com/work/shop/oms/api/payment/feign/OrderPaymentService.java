@@ -3,6 +3,7 @@ package com.work.shop.oms.api.payment.feign;
 import com.work.shop.oms.api.bean.OrderPayInfo;
 import com.work.shop.oms.api.param.bean.PayBackInfo;
 import com.work.shop.oms.api.param.bean.PayReturnInfo;
+import com.work.shop.oms.bean.MasterOrderPay;
 import com.work.shop.oms.common.bean.ApiReturnData;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,14 @@ public interface OrderPaymentService {
      */
     @PostMapping("/order/getOrderPayInfo")
     ApiReturnData<OrderPayInfo> getOrderPayInfo(@RequestParam(name="paySn", required = false) String paySn, @RequestParam(name="masterOrderSnList") List<String> masterOrderSnList);
+
+    /**
+     * 获取订单支付金额信息
+     * @param masterOrderSnList 订单编码列表
+     * @return ApiReturnData<OrderPayInfo>
+     */
+    @PostMapping("/order/getOrderPayMoneyInfo")
+    ApiReturnData<OrderPayInfo> getOrderPayMoneyInfo(@RequestParam(name="masterOrderSnList") List<String> masterOrderSnList);
 
     /**
      * 变更支付方式
@@ -63,4 +72,12 @@ public interface OrderPaymentService {
      */
     @PostMapping("/order/getOrderSnByPaySn")
     ApiReturnData<List<String>> getOrderSnByPaySn(@RequestParam(name="paySn") String paySn);
+
+    /**
+     * 根据支付单号获取对应的订单号
+     * @param paySn 支付单号
+     * @return ApiReturnData<List<String>>
+     */
+    @PostMapping("/order/getOrderPaySnByMergePaySn")
+    ApiReturnData<List<MasterOrderPay>> getOrderPaySnByMergePaySn(@RequestParam(name="paySn") String paySn);
 }

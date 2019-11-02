@@ -28,6 +28,13 @@ public interface OrderDistributeService {
 	 */
 	List<OrderDistribute> selectEffectiveDistributes(String masterOrderSn);
 
+    /**
+     * 根据交货单号获取交货单信息
+     * @param orderSn
+     * @return
+     */
+    OrderDistribute selectDistributesByOrderSn(String orderSn);
+
 	/**
 	 * 获取主订单下有效分仓发货单
 	 * 

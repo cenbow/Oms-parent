@@ -470,8 +470,8 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 	 */
 	private void fillGoodsDisSendNm(MasterOrderGoods og) {
 		og.setSendNumber(og.getGoodsNumber());
-		double disCount = NumberUtil.sub(og.getGoodsPrice().doubleValue(), og.getTransactionPrice().doubleValue());
-		og.setDiscount(BigDecimal.valueOf(disCount * og.getGoodsNumber()));
+//		double disCount = NumberUtil.sub(og.getGoodsPrice().doubleValue(), og.getTransactionPrice().doubleValue());
+//		og.setDiscount(BigDecimal.valueOf(disCount * og.getGoodsNumber()));
 	}
 
     /**

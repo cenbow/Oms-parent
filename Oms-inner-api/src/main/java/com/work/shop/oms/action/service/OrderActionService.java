@@ -103,4 +103,14 @@ public interface OrderActionService {
      * @return
      */
     public OrderReturnAction addOrderReturnAction(OrderReturnAction actionRequest);
+
+    /**
+     * 添加退单日志
+     * @param returnSn 退单号
+     * @param actionNote 备注
+     * @param actionUser 操做人
+     * @param logType  日志类型
+     * @return
+     */
+    public OrderReturnAction addOrderReturnAction(String returnSn, String actionNote, String actionUser, int logType);
 }

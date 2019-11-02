@@ -41,17 +41,34 @@
 	<!-- 第三方退单查询接口 -->
   	<select id="getReturnInfoPageList" parameterType="com.work.shop.oms.api.param.bean.ReturnSearchParams" resultType="com.work.shop.oms.api.bean.ReturnInfoPage">
   		select 
-			orn.return_sn returnSn,orn.master_order_sn masterOrderSn,orn.relating_order_sn relatingOrderSn ,orn.return_total_fee returnTotalFee ,
-			orn.return_reason returnReason ,orn.return_order_status returnOrderStatus,
-			orn.add_time addTime,orn.clear_time clearTime  ,oi.user_name userName,ors.return_invoice_no returnInvoiceNo,
-			ss.shipping_name shippingName
-		from  order_return orn  left join master_order_info oi on orn.master_order_sn = oi.master_order_sn
+			orn.return_sn returnSn, orn.master_order_sn masterOrderSn, orn.order_sn relatingOrderSn,
+			orn.return_total_fee returnTotalFee, orn.return_reason returnReason, orn.return_order_status returnOrderStatus,
+			orn.add_time addTime, orn.clear_time clearTime, oi.user_name userName, ors.return_invoice_no returnInvoiceNo,
+			ss.shipping_name shippingName, org.seller seller, orn.pay_status payStatus, orn.ship_status shipStatus,
+			orn.sellted_bill_status selltedBillStatus
+		from  order_return orn
+        left join master_order_info oi on orn.relating_order_sn = oi.master_order_sn
 		left join order_return_ship ors on orn.return_sn = ors.relating_return_sn
 		left join system_shipping ss on ors.return_express = ss.shipping_code
 		left join order_return_goods org on orn.return_sn = org.relating_return_sn
 		where 1=1 and orn.return_type in (1,2)
 			<if test="returnSn != null">
 				and orn.return_sn = #{returnSn}
+			</if>
+			<if test="returnSnList != null">
+				and orn.return_sn in
+				<foreach collection="returnSnList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="payStatus != null">
+				and orn.pay_status = #{payStatus}
+			</if>
+			<if test="shipStatus != null">
+				and orn.ship_status = #{shipStatus}
+			</if>
+			<if test="selltedBillStatus != null">
+				and orn.sellted_bill_status = #{selltedBillStatus}
 			</if>
 			<if test="userName != null">
 				and oi.user_name like  CONCAT('%','${userName}','%' )
@@ -117,6 +134,21 @@
 			<if test="returnSn != null">
 				and orn.return_sn = #{returnSn}
 			</if>
+			<if test="returnSnList != null">
+				and orn.return_sn in
+				<foreach collection="returnSnList" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="payStatus != null">
+				and orn.pay_status = #{payStatus}
+			</if>
+			<if test="shipStatus != null">
+				and orn.ship_status = #{shipStatus}
+			</if>
+			<if test="selltedBillStatus != null">
+				and orn.sellted_bill_status = #{selltedBillStatus}
+			</if>
 			<if test="userName != null">
 				and oi.user_name like  CONCAT('%','${userName}','%' )
 			</if>
@@ -171,7 +203,7 @@
   	
   	<!--根据供销商编码、时间段查询该供销商所有的退单-->
   	<select id="getOrderReturnForSeller" parameterType="map" resultType="com.work.shop.oms.api.bean.OrderReturnForSellers">
-  		select orn.return_sn returnSn,orn.return_order_status returnOrderStatus
+  		select orn.return_sn returnSn, orn.return_order_status returnOrderStatus
   	    from order_return orn left join order_return_goods org on orn.return_sn =org.relating_return_sn  
 		where 1=1 and orn.return_type in (1,2)
 		<if test="returnOrderStatus != null">
@@ -1216,5 +1248,78 @@ GROUP BY
   		and ord.return_order_status != 4
   		and ord.relating_order_sn = #{relatingOrderSn} 
   	</select>
-	
+
+
+    <resultMap id="OrderReturnGoodsResultMap" type="com.work.shop.oms.bean.OrderReturnGoods">
+    <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="relating_return_sn"  property="relatingReturnSn" />
+        <result column="custom_code"  property="customCode" />
+        <result column="goods_sn"  property="goodsSn" />
+        <result column="goods_name" property="goodsName" />
+        <result column="goods_return_number"  property="goodsReturnNumber" />
+        <result column="goods_buy_number"  property="goodsBuyNumber" />
+        <result column="charge_back_count"  property="chargeBackCount" />
+        <result column="have_return_count"  property="haveReturnCount" />
+        <result column="market_price"  property="marketPrice" />
+        <result column="goods_price"  property="goodsPrice" />
+        <result column="extension_code"  property="extensionCode" />
+        <result column="extension_id"  property="extensionId" />
+        <result column="settlement_price"  property="settlementPrice" />
+        <result column="share_bonus" property="shareBonus" />
+        <result column="share_settle"  property="shareSettle" />
+        <result column="os_depot_code"  property="osDepotCode" />
+        <result column="price_difference"  property="priceDifference" />
+        <result column="price_differ_num"  property="priceDifferNum" />
+        <result column="price_differ_reason" property="priceDifferReason" />
+        <result column="return_reason"  property="returnReason" />
+        <result column="goods_thumb"  property="goodsThumb" />
+        <result column="goods_color_name"  property="goodsColorName" />
+        <result column="goods_size_name" property="goodsSizeName" />
+        <result column="group_name"  property="groupName" />
+        <result column="is_real"  property="isReal" />
+        <result column="is_gift"  property="isGift" />
+        <result column="rank_points"  property="rankPoints" />
+        <result column="pay_points"  property="payPoints" />
+        <result column="seller"  property="seller" />
+        <result column="is_good_received"  property="isGoodReceived" />
+        <result column="checkin_status"  property="checkinStatus" />
+        <result column="quality_status"  property="qualityStatus" />
+        <result column="integral_money"  property="integralMoney" />
+        <result column="barcode"  property="barcode" />
+        <result column="remark"  property="remark" />
+        <result column="prodScanNum"  property="prodscannum" />
+        <result column="master_order_sn" property="masterOrderSn" />
+        <result column="order_sn"  property="orderSn" />
+        <result column="sales_mode"  property="salesMode" />
+        <result column="to_erp"  property="toErp" />
+        <result column="storage_time_stamp"  property="storageTimeStamp" />
+        <result column="storage_status"  property="storageStatus" />
+        <result column="storage_treate_time"  property="storageTreateTime" />
+        <result column="checkin_time"  property="checkinTime" />
+        <result column="sap"  property="sap" />
+        <result column="bv_value"  property="bvValue" />
+        <result column="discount"  property="discount" />
+        <result column="base_bv_value"  property="baseBvValue" />
+        <result column="box_gauge"  property="boxGauge" />
+        <result column="cost_price"  property="costPrice" />
+    </resultMap>
+    <sql id="Order_Return_Goods_Column_List">
+    org.id, org.relating_return_sn, org.custom_code, org.goods_sn, org.goods_name, org.goods_return_number, org.goods_buy_number,
+    org.charge_back_count, org.have_return_count, org.market_price, org.goods_price, org.extension_code, org.extension_id,
+    org.settlement_price, org.share_bonus, org.share_settle, org.os_depot_code, org.price_difference, org.price_differ_num,
+    org.price_differ_reason, org.return_reason, org.goods_thumb, org.goods_color_name, org.goods_size_name, org.group_name,
+    org.is_real, org.is_gift, org.rank_points, org.pay_points, org.seller, org.is_good_received, org.checkin_status,
+    org.quality_status, org.integral_money, org.barcode, org.remark, org.prodScanNum, org.master_order_sn, org.order_sn,
+    org.sales_mode, org.to_erp, org.storage_time_stamp, org.storage_status, org.storage_treate_time, org.checkin_time,
+    org.sap, org.bv_value, org.discount, org.base_bv_value, org.box_gauge, org.cost_price, mog.goods_price salePrice
+  </sql>
+    <select id="getReturnGoodsByReturnSn" parameterType="map" resultMap="OrderReturnGoodsResultMap">
+        select
+        <include refid="Order_Return_Goods_Column_List" />
+        from order_return_goods org
+        left join master_order_goods mog on org.master_order_sn = mog.master_order_sn and org.custom_code = mog.custom_code
+            and org.extension_code = mog.extension_code
+        where org.relating_return_sn = #{returnSn}
+        group by org.relating_return_sn, org.extension_code, org.custom_code
+    </select>
 </mapper>

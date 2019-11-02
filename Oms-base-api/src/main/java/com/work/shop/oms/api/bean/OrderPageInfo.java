@@ -254,6 +254,11 @@ public class OrderPageInfo implements Serializable{
      */
     private int userPayApply;
 
+    /**
+     * 是否可以延长收货
+     */
+    private boolean isReceipt;
+
 	public String getChannelCode() {
 		return channelCode;
 	}
@@ -637,5 +642,13 @@ public class OrderPageInfo implements Serializable{
 
     public void setUserPayApply(int userPayApply) {
         this.userPayApply = userPayApply;
+    }
+
+    public boolean isReceipt() {
+        return isReceipt;
+    }
+
+    public void setReceipt(boolean receipt) {
+        isReceipt = receipt;
     }
 }

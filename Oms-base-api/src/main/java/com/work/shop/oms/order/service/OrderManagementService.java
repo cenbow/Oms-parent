@@ -169,4 +169,18 @@ public interface OrderManagementService {
 	 * @return OrderManagementResponse
 	 */
 	OrderManagementResponse orderPayPeriodError(OrderManagementRequest request);
+
+	/**
+	 * 合同签章完成
+	 * @param request 请求参数
+	 * @return OrderManagementResponse
+	 */
+	OrderManagementResponse orderSignCompleted(OrderManagementRequest request);
+
+	/**
+	 * 订单结算账户完成
+	 * @param request
+	 * @return
+	 */
+	OrderManagementResponse orderSettlementAccountCompleted(OrderManagementRequest request);
 }

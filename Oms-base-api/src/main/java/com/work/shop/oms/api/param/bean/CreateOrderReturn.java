@@ -52,6 +52,16 @@ public class CreateOrderReturn implements java.io.Serializable {
 	private Integer refundType;
 	private Integer haveRefund;
 
+    /**
+     * 关联申请单号
+     */
+    private String relatingChangeSn;
+
+    /**
+     * 交货单号
+     */
+    private String orderSn;
+
 	public Double getTotalIntegralMoney() {
 		return totalIntegralMoney;
 	}
@@ -246,4 +256,19 @@ public class CreateOrderReturn implements java.io.Serializable {
 		this.returnDesc = returnDesc;
 	}
 
+    public String getRelatingChangeSn() {
+        return relatingChangeSn;
+    }
+
+    public void setRelatingChangeSn(String relatingChangeSn) {
+        this.relatingChangeSn = relatingChangeSn;
+    }
+
+    public String getOrderSn() {
+        return orderSn;
+    }
+
+    public void setOrderSn(String orderSn) {
+        this.orderSn = orderSn;
+    }
 }

@@ -89,8 +89,29 @@
 	LIMIT ${num}
 	]]>
   </select>
-   <!-- Task 全渠道订单发货14天后更新已收货状态 -->
-  <select id="getShipTimeoutOrder" resultType="string" parameterType="hashmap">
+
+   <!-- Task 订单发货7天后更新已收货状态 -->
+  <select id="getShipTimeoutOrderByOrder" resultType="string" parameterType="map">
+	<![CDATA[
+	SELECT oi.master_order_sn
+    from order_depot_ship os,
+      order_distribute od,
+      master_order_info oi
+    where oi.master_order_sn = od.master_order_sn
+      and od.order_sn = os.order_sn
+      and oi.order_status = 1
+      AND oi.question_status = 0
+      and oi.pay_status = 2
+      and oi.channel_code = #{siteCode}
+      and os.delivery_time <= #{dayTime}
+      and os.shipping_status = 1
+      GROUP BY oi.master_order_sn
+	  LIMIT ${limit}
+	]]>
+  </select>
+
+    <!-- Task 全渠道订单发货14天后更新已收货状态 -->
+    <select id="getShipTimeoutOrder" resultType="string" parameterType="map">
 	<![CDATA[
 	SELECT
 		oi.master_order_sn
@@ -109,6 +130,7 @@
 	LIMIT ${num}
 	]]>
   </select>
+
     <!-- Task 平台超时未付款订单取消 -->
     <select id="getPayTimeoutOrderInfo" resultType="string"  parameterType="hashmap">
 		SELECT

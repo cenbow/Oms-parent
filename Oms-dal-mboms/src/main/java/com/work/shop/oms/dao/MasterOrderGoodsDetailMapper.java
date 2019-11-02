@@ -26,11 +26,18 @@ public interface MasterOrderGoodsDetailMapper {
 
 	/**
 	 * 获取退单单商品数据（相同价格合并）
-	 * @param masterOrderSn
+	 * @param returnSn
 	 * @return
 	 */
 	public List<ReturnOrderGoods> getXOMSOrderReturnGoods(String returnSn);
 	
 	@ReadOnly
 	public List<MasterOrderGoods> getMasterOrderGoodsByDepot(MasterOrderGoods record);
+
+    /**
+     * 根据交货单号
+     * @param orderSns
+     * @return
+     */
+    public List<OrderItemGoodsDetail> getOrderGoodsDetailByOrder(List<String> list);
 }

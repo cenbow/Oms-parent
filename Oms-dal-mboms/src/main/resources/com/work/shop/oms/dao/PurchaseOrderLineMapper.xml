@@ -18,7 +18,8 @@
     <result column="goods_color_name" property="goodsColorName" jdbcType="VARCHAR" />
     <result column="goods_thumb" property="goodsThumb" jdbcType="VARCHAR" />
     <result column="supplier_code" property="supplierCode" jdbcType="VARCHAR" />
-      <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="input_tax" property="inputTax" />
+    <result column="output_tax" property="outputTax" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <!--
@@ -155,13 +156,13 @@
     insert into purchase_order_line (id, purchase_order_code, depot_code, 
       master_order_sn, goods_name, custom_code, 
       goods_sn, goods_number, goods_size_name, 
-      goods_color_name, goods_thumb, supplier_code, price
+      goods_color_name, goods_thumb, supplier_code, price, input_tax, output_tax
       )
     values (#{id,jdbcType=BIGINT}, #{purchaseOrderCode,jdbcType=VARCHAR}, #{depotCode,jdbcType=VARCHAR}, 
       #{masterOrderSn,jdbcType=VARCHAR}, #{goodsName,jdbcType=VARCHAR}, #{customCode,jdbcType=VARCHAR}, 
       #{goodsSn,jdbcType=VARCHAR}, #{goodsNumber,jdbcType=SMALLINT}, #{goodsSizeName,jdbcType=VARCHAR}, 
       #{goodsColorName,jdbcType=VARCHAR}, #{goodsThumb,jdbcType=VARCHAR}, #{supplierCode,jdbcType=VARCHAR},
-      #{price,jdbcType=DECIMAL}
+      #{price,jdbcType=DECIMAL}, #{inputTax}, #{outputTax}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.PurchaseOrderLine" >
@@ -210,6 +211,12 @@
         <if test="price != null" >
             price,
         </if>
+      <if test="inputTax != null" >
+        input_tax,
+      </if>
+      <if test="outputTax != null" >
+        output_tax,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -251,6 +258,12 @@
         <if test="price != null" >
             #{price,jdbcType=DECIMAL},
         </if>
+      <if test="inputTax != null" >
+        #{inputTax},
+      </if>
+      <if test="outputTax != null" >
+        #{outputTax},
+      </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="com.work.shop.oms.bean.PurchaseOrderLineExample" resultType="java.lang.Integer" >
@@ -309,6 +322,12 @@
         <if test="record.price != null" >
             price = #{record.price,jdbcType=DECIMAL},
         </if>
+      <if test="record.inputTax != null" >
+        price = #{record.inputTax},
+      </if>
+      <if test="record.outputTax != null" >
+        price = #{record.outputTax},
+      </if>
     </set>
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
@@ -332,7 +351,9 @@
       goods_color_name = #{record.goodsColorName,jdbcType=VARCHAR},
       goods_thumb = #{record.goodsThumb,jdbcType=VARCHAR},
       supplier_code = #{record.supplierCode,jdbcType=VARCHAR},
-      price = #{record.price,jdbcType=DECIMAL}
+      price = #{record.price,jdbcType=DECIMAL},
+      input_tax = #{record.inputTax},
+      output_tax = #{record.outputTax}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -380,6 +401,12 @@
         <if test="price != null" >
             price = #{price,jdbcType=DECIMAL},
         </if>
+        <if test="inputTax != null" >
+            input_tax = #{inputTax},
+        </if>
+        <if test="outputTax != null" >
+            output_tax = #{outputTax},
+        </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -400,7 +427,9 @@
       goods_color_name = #{goodsColorName,jdbcType=VARCHAR},
       goods_thumb = #{goodsThumb,jdbcType=VARCHAR},
       supplier_code = #{supplierCode,jdbcType=VARCHAR},
-      price = #{price,jdbcType=DECIMAL}
+      price = #{price,jdbcType=DECIMAL},
+      input_tax = #{inputTax},
+      output_tax = #{outputTax}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

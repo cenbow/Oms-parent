@@ -1157,7 +1157,7 @@ public class ConstantValues {
 	 */
 	public static class ORDERRETURN_REASON {
 		//取消生成退单
-		public static final String RETURN_PAY_REASON_CANCEL = "001";
+		public static final String RETURN_PAY_REASON_CANCEL = "订单取消";
 		//发货退单-缺货
 		public static final String RETURN_PAY_REASON_ALLSHIP = "46";
 		//删除商品生成退单

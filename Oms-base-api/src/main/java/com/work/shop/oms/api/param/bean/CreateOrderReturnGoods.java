@@ -55,6 +55,11 @@ public class CreateOrderReturnGoods implements Serializable {
 	private Integer baseBvValue;
 	
 	private Integer boxGauge;  // 箱规
+
+    /**
+     * 成本价
+     */
+    private Double costPrice;
 	
 	public String getMasterOrderSn() {
         return masterOrderSn;
@@ -285,4 +290,12 @@ public class CreateOrderReturnGoods implements Serializable {
 	public void setBoxGauge(Integer boxGauge) {
 		this.boxGauge = boxGauge;
 	}
+
+    public Double getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(Double costPrice) {
+        this.costPrice = costPrice;
+    }
 }

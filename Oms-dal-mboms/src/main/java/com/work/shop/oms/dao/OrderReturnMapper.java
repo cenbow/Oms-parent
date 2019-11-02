@@ -5,6 +5,8 @@ import com.work.shop.invocation.Writer;
 import com.work.shop.oms.bean.OrderReturn;
 import com.work.shop.oms.bean.OrderReturnExample;
 import java.util.List;
+
+import com.work.shop.oms.bean.OrderReturnMoneyBean;
 import org.apache.ibatis.annotations.Param;
 
 public interface OrderReturnMapper {
@@ -132,4 +134,12 @@ public interface OrderReturnMapper {
      */
     @Writer
     int updateByPrimaryKey(OrderReturn record);
+
+    /**
+     * 获取订单退单金额状态信息
+     * @param masterOrderSn
+     * @return
+     */
+    @ReadOnly
+    List<OrderReturnMoneyBean> getOrderReturnSettlementList(String masterOrderSn);
 }

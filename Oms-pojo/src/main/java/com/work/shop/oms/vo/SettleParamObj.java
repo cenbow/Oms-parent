@@ -13,15 +13,30 @@ public class SettleParamObj implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	private String dealCode; //单据号
-	
-	private Integer bussType;//业务类型:0入库  1结算 9入库撤销
+	/**
+	 * 单据号
+	 */
+	private String dealCode;
 
-	private boolean tools;//工具推送true
-	
-	private String userId;//操作人
-	
-	private List<StorageGoods> storageGoods;//推送erp商品
+	/**
+	 * 业务类型:0入库  1结算 9入库撤销
+	 */
+	private Integer bussType;
+
+	/**
+	 * 工具推送true
+	 */
+	private boolean tools;
+
+	/**
+	 * 操作人
+	 */
+	private String userId;
+
+	/**
+	 * 推送erp商品
+	 */
+	private List<StorageGoods> storageGoods;
 	
 	public List<StorageGoods> getStorageGoods() {
 		return storageGoods;

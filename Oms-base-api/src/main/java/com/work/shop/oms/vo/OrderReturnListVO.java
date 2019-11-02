@@ -9,6 +9,10 @@ import org.apache.commons.lang.StringUtils;
 import com.work.shop.oms.bean.OrderReturn;
 import com.work.shop.oms.common.bean.TimeUtil;
 
+/**
+ * 退单信息
+ * @author QuYachu
+ */
 public class OrderReturnListVO extends OrderReturn {
 	
 	private static final long serialVersionUID = -5427783822434109483L;
@@ -1180,6 +1184,12 @@ public class OrderReturnListVO extends OrderReturn {
 		if (this.getPayStatus() == null) {
 			return "";
 		}
+
+        //退款单
+        if (this.getReturnType() == 3) {
+            return this.getReturnOrderStatusStr();
+        }
+
 		String returnStatusStr = this.getReturnOrderStatusStr() + "," + this.payStatus(this.getPayStatus()) + ","
 				+ this.checkinStatus(this.getCheckinStatus());
 		return returnStatusStr;

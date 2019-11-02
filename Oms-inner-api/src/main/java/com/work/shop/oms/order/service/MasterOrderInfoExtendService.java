@@ -43,6 +43,13 @@ public interface MasterOrderInfoExtendService {
 	boolean updateMasterPayPeriod(String masterOrderSn);
 
 	/**
+	 * 更新订单结算账户结算状态
+	 * @param masterOrderSn
+	 * @return boolean
+	 */
+	boolean updateMasterSettlementAccount(String masterOrderSn);
+
+	/**
 	 * 订单创建完成
 	 * @param masterOrderSn
 	 */
@@ -61,4 +68,19 @@ public interface MasterOrderInfoExtendService {
      * @return
      */
     ApiReturnData<Boolean> checkAccountPeriodPay(int payId);
+
+    /**
+     * 更新订单推送供应链状态
+     * @param masterOrderSn
+     * @return
+     */
+    boolean updatePushSupplyChain(String masterOrderSn);
+
+    /**
+     * 更新内行扣款成功状态
+     * @param masterOrderSn
+     * @param payPeriodPayStatus 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+     * @return
+     */
+    boolean updatePayPeriodPayStatus(String masterOrderSn, int payPeriodPayStatus);
 }

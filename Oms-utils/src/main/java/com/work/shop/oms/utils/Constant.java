@@ -57,8 +57,8 @@ public class Constant {
 	 * YesOrNo
 	 */
 	public static final Integer YESORNO_YES = 1;
-	public static final Integer YESORNO_NO = 0;
 
+	public static final Integer YESORNO_NO = 0;
 
 	/**
 	 * 否
@@ -1047,7 +1047,50 @@ public class Constant {
     public static final String DRP_HLA_POST_API_NAME = "drp.hla.post.api.name";
 
     /**
-     * 支付方式
+     * 支付方式 账期
      */
-    public static final int PAYMENT_ZHANGQI_ID=35;
+    public static final int PAYMENT_ZHANGQI_ID = 35;
+
+	/**
+	 * 支付方式 信用
+	 */
+	public static final int PAYMENT_XINYONG_ID = 39;
+
+	/**
+	 * 支付方式 结算账户
+	 */
+	public static final int PAYMENT_SETTLEMENT_ID = 45;
+
+	/**
+	 * 支付方式 保函
+	 */
+	public static final int PAYMENT_BAOHAN_ID = 47;
+    
+    /**
+     * 问题单类型 0：普通问题单；1：缺货问题单；2：审核问题单；3签章问题单
+     */
+    public static final int QUESTION_TYPE_NORMAL = 0;
+    public static final int QUESTION_TYPE_LACK = 1;
+    public static final int QUESTION_TYPE_REVIEW = 2;
+    public static final int QUESTION_TYPE_SIGN = 3;
+
+    /**
+     * 待审批问题单
+     */
+    public static final String QUESTION_CODE_REVIEW = "17";
+
+    /**
+     * 待签章问题单
+     */
+    public static final String QUESTION_CODE_SIGN = "18";
+
+    /**
+     * 交货单号前缀
+     */
+    public static final String ORDER_DISTRIBUTE_BEFORE = "S";
+
+    /**
+     * 默认店铺
+     */
+    public static final String DEFAULT_SHOP = "hbis";
 }

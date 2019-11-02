@@ -1,7 +1,6 @@
 package com.work.shop.oms.order.service;
 
-import java.util.Map;
-
+import com.work.shop.oms.api.bean.OrderContractRequest;
 import com.work.shop.oms.bean.OrderItem;
 import com.work.shop.oms.bean.OrderRiderDistributeLog;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
@@ -17,6 +16,8 @@ import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.OrderQueryResponse;
 import com.work.shop.oms.vo.OrderReturnListVO;
 import com.work.shop.oms.vo.OrderShipVO;
+
+import java.util.Map;
 
 /**
  * 订单、退单查询管理
@@ -143,4 +144,11 @@ public interface OrderQueryService {
 	 * @param param 请求参数
 	 */
 	void getOrderDistributeOut(Map<String, Object> param);
+
+    /**
+     * 订单合同列表查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    OrderQueryResponse orderContractQuery(OrderContractRequest request);
 }

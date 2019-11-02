@@ -5,6 +5,7 @@ import com.work.shop.oms.api.bean.OrderPayInfo;
 import com.work.shop.oms.api.param.bean.PayBackInfo;
 import com.work.shop.oms.api.param.bean.PayReturnInfo;
 import com.work.shop.oms.api.payment.service.OrderPaymentService;
+import com.work.shop.oms.bean.MasterOrderPay;
 import com.work.shop.oms.common.bean.ApiReturnData;
 import com.work.shop.oms.utils.Constant;
 import org.apache.log4j.Logger;
@@ -44,6 +45,26 @@ public class OrderPaymentController {
             returnBean = orderPaymentService.getOrderPayInfo(paySn, masterOrderSnList);
         } catch (Exception e) {
             logger.error("获取订单支付信息异常paySn:" + paySn + ",masterOrderSnList:" + masterOrderSnList);
+            returnBean.setMessage("查询异常");
+        }
+
+        return returnBean;
+    }
+
+    /**
+     * 获取订单支付金额信息
+     * @param masterOrderSnList 订单编码列表
+     * @return ApiReturnData<OrderPayInfo>
+     */
+    @PostMapping("/getOrderPayMoneyInfo")
+    public ApiReturnData<OrderPayInfo> getOrderPayMoneyInfo(@RequestParam(name="masterOrderSnList") List<String> masterOrderSnList) {
+        ApiReturnData<OrderPayInfo> returnBean = new ApiReturnData<OrderPayInfo>();
+        returnBean.setIsOk(Constant.OS_STR_NO);
+
+        try {
+            returnBean = orderPaymentService.getOrderPayMoneyInfo(masterOrderSnList);
+        } catch (Exception e) {
+            logger.error("获取订单支付金额信息异常,masterOrderSnList:" + masterOrderSnList);
             returnBean.setMessage("查询异常");
         }
 
@@ -122,6 +143,25 @@ public class OrderPaymentController {
         returnBean.setIsOk(Constant.OS_STR_NO);
         try {
             returnBean = orderPaymentService.getOrderSnByPaySn(paySn);
+        } catch (Exception e) {
+            logger.error("根据支付单号获取对应的订单号：" + paySn + ",异常", e);
+            returnBean.setMessage("查询异常");
+        }
+
+        return returnBean;
+    }
+
+    /**
+     * 根据支付单号获取对应的订单号
+     * @param paySn 支付单号
+     * @return ApiReturnData<List<String>>
+     */
+    @PostMapping("/getOrderPaySnByMergePaySn")
+    public ApiReturnData<List<MasterOrderPay>> getOrderPaySnByMergePaySn(@RequestParam(name="paySn") String paySn) {
+        ApiReturnData<List<MasterOrderPay>> returnBean = new ApiReturnData<List<MasterOrderPay>>();
+        returnBean.setIsOk(Constant.OS_STR_NO);
+        try {
+            returnBean = orderPaymentService.getOrderPaySnByMergePaySn(paySn);
         } catch (Exception e) {
             logger.error("根据支付单号获取对应的订单号：" + paySn + ",异常", e);
             returnBean.setMessage("查询异常");

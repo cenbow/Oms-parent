@@ -29,9 +29,10 @@ public interface BGReturnChangeService {
 	 * @param channelCode 店铺编码
 	 * @param returnChangeSn 申请单号
 	 * @param siteCode 站点编码
+     * @param actionUser 操作人
 	 * @return GoodsReturnChangeReturnInfo
 	 */
-	public GoodsReturnChangeReturnInfo cancelGoodsReturnChange(String channelCode, String returnChangeSn, String siteCode);
+	public GoodsReturnChangeReturnInfo cancelGoodsReturnChange(String channelCode, String returnChangeSn, String siteCode, String actionUser);
 
 	/**
 	 * 退货回寄快递消息获取接口
@@ -117,4 +118,20 @@ public interface BGReturnChangeService {
      * @return
      */
     public ApiReturnData<UserOrderTypeNum> getChangeOrderTypeNum(PageListParam param);
+
+    /**
+     * 申请单审核
+     * @param returnChangeGoodsBean
+     * @return
+     */
+    public ApiReturnData<Boolean> examinationPassed(CreateGoodsReturnChange returnChangeGoodsBean);
+
+    /**
+     * 申请单驳回
+     * @param channelCode 店铺编码
+     * @param returnChangeSn 申请单号
+     * @param siteCode 站点编码
+     * @return GoodsReturnChangeReturnInfo
+     */
+    public GoodsReturnChangeReturnInfo rejectGoodsReturnChange(String channelCode, String returnChangeSn, String siteCode);
 }

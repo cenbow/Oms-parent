@@ -45,7 +45,28 @@ public class UserOrderTypeNum implements Serializable{
      * 待处理数量
      */
     private int processNum;
-	
+
+    /**
+     * 已驳回
+     */
+    private int rejectNum;
+
+    //退单类型
+    /**
+     * 退货中
+     */
+    private int processReturnNum;
+
+    /**
+     * 退货成功
+     */
+    private int returnSuccessNum;
+
+    /**
+     * 退款完成
+     */
+    private int refundSuccessNum;
+
 	public int getWaitPayNum() {
 		return waitPayNum;
 	}
@@ -113,5 +134,37 @@ public class UserOrderTypeNum implements Serializable{
 
     public void setProcessNum(int processNum) {
         this.processNum = processNum;
+    }
+
+    public int getRejectNum() {
+        return rejectNum;
+    }
+
+    public void setRejectNum(int rejectNum) {
+        this.rejectNum = rejectNum;
+    }
+
+    public int getProcessReturnNum() {
+        return processReturnNum;
+    }
+
+    public void setProcessReturnNum(int processReturnNum) {
+        this.processReturnNum = processReturnNum;
+    }
+
+    public int getReturnSuccessNum() {
+        return returnSuccessNum;
+    }
+
+    public void setReturnSuccessNum(int returnSuccessNum) {
+        this.returnSuccessNum = returnSuccessNum;
+    }
+
+    public int getRefundSuccessNum() {
+        return refundSuccessNum;
+    }
+
+    public void setRefundSuccessNum(int refundSuccessNum) {
+        this.refundSuccessNum = refundSuccessNum;
     }
 }

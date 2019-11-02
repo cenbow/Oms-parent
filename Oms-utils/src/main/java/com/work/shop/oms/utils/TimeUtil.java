@@ -215,6 +215,21 @@ public class TimeUtil {
 		long timeNum = date.getTime();
 		return timeNum/1000;
 	}
+
+	/**
+	 * 获取大于或者小于指定日期的日期
+	 * @param date 指定日期
+	 * @param second 1表示下秒|-1表示上秒
+	 * @return Date
+	 */
+	public static Date getBeforeSecond(Date date, int second) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+
+		cal.add(Calendar.SECOND, second);
+
+		return cal.getTime();
+	}
 	
 	/**
 	 * 获取大于或者小于指定日期的日期

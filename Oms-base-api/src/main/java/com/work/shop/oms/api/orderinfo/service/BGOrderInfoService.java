@@ -238,7 +238,7 @@ public interface BGOrderInfoService {
 	 * @param siteCode 站点编码
 	 * @return ReturnInfo<Boolean>
 	 */
-	public ReturnInfo<Boolean> confirmReceipt(String orderSn, String invoiceNo, String actionUser, String siteCode);
+	ReturnInfo<Boolean> confirmReceipt(String orderSn, String invoiceNo, String actionUser, String siteCode);
 	
 	/**
 	 * 确认收货接口
@@ -315,4 +315,27 @@ public interface BGOrderInfoService {
 	 * @return ApiReturnData<Boolean>
 	 */
 	ApiReturnData<Boolean> applyOrderPay(PageListParam searchParam);
+
+    /**
+     * 延长收货
+     * @param searchParam
+     * @return
+     */
+    ApiReturnData<Boolean> extendedReceipt(PageListParam searchParam);
+
+    /**
+     * 发货单延长收货
+     * @param searchParam
+     * @return
+     */
+    public ApiReturnData<Boolean> extendedReceiptByInvoiceNo(PageListParam searchParam);
+
+    /**
+     * 统计用户退单数量
+     * @param searchParam 参数
+     *  userId 用户id
+     *  siteCode 站点编码
+     * @return ApiReturnData<UserOrderTypeNum>
+     */
+    public ApiReturnData<UserOrderTypeNum> getUserOrderReturnType(PageListParam searchParam);
 }

@@ -270,9 +270,17 @@
 	  	  a.user_bank_no userBankNo,
 	  	  a.user_pay_apply userPayApply,
           a.order_type createOrderType,
+          a.company_code companyId,
+          t.instead_user_id insteadUserId,
+          a.inv_phone invPhone,
+          a.push_supply_chain pushSupplyChain,
+          a.sale_bd saleBd,
           b.inv_consignee invConsignee,
           b.inv_mobile invMobile,
-          b.inv_address invAddress
+          b.inv_address invAddress,
+          t.need_sign needSign,
+          t.sign_status signStatus,
+          t.sign_contract_num signContractNum
 		FROM
 		<if test="isHistory == 0">
 		  master_order_info t 
@@ -290,9 +298,12 @@
 		  LEFT JOIN system_region_area h  ON h.region_id = b.district
 		  LEFT JOIN channel_info cinfo ON cinfo.channel_code = t.referer
     	<where>
-    		<if test="masterOrderSn!=null and masterOrderSn!=''">
+    		<if test="masterOrderSn != null and masterOrderSn!=''">
     			and t.master_order_sn = #{masterOrderSn}
     		</if>
+            <if test="depotCode != null and depotCode != ''">
+                and t.order_from = #{depotCode}
+            </if>
     	</where> 
     </select>
   

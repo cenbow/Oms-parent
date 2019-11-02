@@ -208,4 +208,59 @@
         <!-- 2个消费者 -->
         <property name="concurrency" value="2"></property>
     </bean>
+
+    <!-- 创建退货单 -->
+    <bean id="createReturnOrderMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.work.shop.oms.jms.listener.CreateReturnOrderConsumer" />
+        </constructor-arg>
+    </bean>
+    <!-- Spring jmsContainer -->
+    <bean id="createReturnOrderJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="create_return_order" />
+        <property name="messageListener" ref="createReturnOrderMessageListener" />
+        <!-- 2个消费者 -->
+        <property name="concurrency" value="2"></property>
+    </bean>
+
+	<!-- 订单发货超时自动收货任务 -->
+	<bean id="order_sn_receive" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_sn_receive" />
+	</bean>
+
+	<bean id="orderSnReceiveMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderSnReceiveConsumer" />
+		</constructor-arg>
+	</bean>
+	<!-- Spring jmsContainer -->
+	<bean id="orderSnReceiveJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_sn_receive" />
+		<property name="messageListener" ref="orderSnReceiveMessageListener" />
+		<!-- 2到3个消费者 -->
+		<property name="concurrency" value="2-3"></property>
+	</bean>
+
+	<!-- 订单结算账户结算处理 -->
+	<bean id="order_sn_account_settlement" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_sn_account_settlement" />
+	</bean>
+
+	<bean id="orderSnAccountSettlementMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderSnAccountSettlementConsumer" />
+		</constructor-arg>
+	</bean>
+
+	<!-- Spring jmsContainer -->
+	<bean id="orderSnAccountSettlementJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="order_sn_account_settlement" />
+		<property name="messageListener" ref="orderSnAccountSettlementMessageListener" />
+		<!-- 2到3个消费者 -->
+		<property name="concurrency" value="2-3"></property>
+	</bean>
+
 </beans>

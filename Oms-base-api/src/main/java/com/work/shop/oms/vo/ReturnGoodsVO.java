@@ -19,12 +19,17 @@ public class ReturnGoodsVO implements Serializable{
 	private String goodsSizeName;//尺寸
 	private String customCode;//企业商品编码
 	private Double marketPrice;//商品价格
-	private Double goodsPrice;//成交价
+	private Double goodsPrice;//销售价
+    private Double transactionPrice;//成交价
 	private Double settlementPrice;//财务价格;
 	private Double shareBonus;	//分摊金额
 	private Double shareSettle;//财务分摊金额
 	private Integer goodsBuyNumber;//购买量
 	private Double discount = 0D;//折扣
+    /**
+     * 成本价
+     */
+    private Double costPrice;
 	
 	//退货
 	private String osDepotCode;//所属发货仓
@@ -324,5 +329,21 @@ public class ReturnGoodsVO implements Serializable{
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public Double getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(Double costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    public Double getTransactionPrice() {
+        return transactionPrice;
+    }
+
+    public void setTransactionPrice(Double transactionPrice) {
+        this.transactionPrice = transactionPrice;
     }
 }

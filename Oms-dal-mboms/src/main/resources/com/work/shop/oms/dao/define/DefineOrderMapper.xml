@@ -123,6 +123,11 @@
 		<if test="contractNum != null">
 			and oie.customer_contract_num = #{contractNum}
 		</if>
+        <!-- 签章状态 -->
+        <if test="signStatus != null">
+            and oi.sign_status = #{signStatus}
+        </if>
+
 		<!--app列表只显示订单 --> 
 		<choose>
 			<when test="type == 1">
@@ -165,8 +170,10 @@
 			</when>
 		</choose>
 			GROUP BY oi.master_order_sn 
-			order by oi.add_time desc 
-			limit #{start}, #{pageSize}
+			order by oi.add_time desc
+            <if test="pageSize > 0">
+                limit #{start}, #{pageSize}
+            </if>
 		)
 		a
 		left join order_return oreturn on oreturn.master_order_sn=a.orderSn AND oreturn.return_order_status != 4
@@ -344,6 +351,7 @@
 		DATE_FORMAT(os.delivery_time,'%Y-%m-%d %T') orderShipTime,
 		os.depot_code depotCode,
         os.shipping_status shippingStatus,
+        os.is_receipt isReceipt,
 		order_sn orderSn
 		from
 		<if test="isHistory == 0">
@@ -356,9 +364,7 @@
 		where os.order_sn in (select order_sn from order_distribute where master_order_sn=#{orderSn,jdbcType=VARCHAR});
 	</select>
 
-	<select id="selectOrderGoodsInfo"
-		resultType="com.work.shop.oms.api.bean.OrderGoodsInfo"
-		parameterType="Map">
+	<select id="selectOrderGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
 		select
 		og.order_sn subOrderSn,
 		og.goods_price goodsPrice,
@@ -368,7 +374,7 @@
 		og.custom_code skuSn,
 		og.goods_name goodsName,
 		og.goods_thumb goodsUrl,
-		sum(og.goods_number) goodsNum,
+		og.goods_number goodsNum,
 		og.goods_size_name goodsSize,
 		og.goods_color_name goodsColor,
 		og.discount discountedPrice,
@@ -387,6 +393,8 @@
         og.min_buy_num minBuyNum,
         og.buy_unit buyUnit,
         og.customer_material_code customerMaterialCode,
+		og.buyer_no as buyerNo,
+		og.buyer_line_no as buyerLineNo,
         og.distribution_category distributionCategory,
 		og.depot_code depotCode
 		from
@@ -419,7 +427,7 @@
             and og.invoice_no=#{invoiceNo,jdbcType=VARCHAR}
         </if>
 		and og.is_del=0
-		GROUP BY og.custom_code,og.extension_code;
+		GROUP BY og.custom_code, og.extension_code;
 	</select>
 
     <select id="selectByWhere" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
@@ -462,13 +470,17 @@
             grc.contact_mobile contactMobile,
             orf.backBalance backBalance,
             orn.return_order_status returnOrderStatus,
+            orn.ship_status shipStatus,
             orn.return_reason returnReason,
+            orn.channel_code shopCode,
+            orn.shop_name shopName,
             moie.customer_contract_num customerContractNum,
 			DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') orderCreateTime
 		from
 			order_return orn
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
-        left join goods_return_change grc on grc.order_sn=orn.relating_order_sn and grc.is_del=0 and grc.status=2
+        left join (SELECT contact_name, contact_mobile, order_sn FROM goods_return_change WHERE is_del=0 AND `status`=2 GROUP BY order_sn) grc
+        on grc.order_sn=orn.relating_order_sn
         left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
 		where
 			orn.user_id= #{userId,jdbcType=VARCHAR}
@@ -478,31 +490,25 @@
 			orn.return_type = 1
 		and
 			orn.process_type = 1
-		and
-			orn.return_order_status !=4
         and
-            orn.is_del = 0
-		<if test="shopCode != null">
-			and orn.channel_code = #{shopCode,jdbcType=VARCHAR}
-		</if>
+        orn.return_order_status !=4
+        and
+        orn.return_order_status !=0
+        and
+        orn.is_del = 0
+        <if test="shopCode != null">
+            and orn.channel_code = #{shopCode,jdbcType=VARCHAR}
+        </if>
         <if test="returnSn != null">
             and orn.return_sn = #{returnSn,jdbcType=VARCHAR}
         </if>
-        <if test="orderSn != null">
-            and orn.relating_order_sn = #{orderSn,jdbcType=VARCHAR}
+        <if test="type==7">
+            <!--正在退货 -->
+            and orn.pay_status in (0,2)
         </if>
-		<if test="type==7">
-			<!--正在退货 -->
-			and orn.pay_status in (0,2)
-		</if>
-		<if test="type==8">
-			<!--退货成功 -->
-			and orn.pay_status = 1
-		</if>
-        <if test="returnProcessStatus == 0">
-            <!--退单待处理 -->
-            and orn.return_order_status = 0
-            and orf.backBalance = 0
+        <if test="type==8">
+            <!--退货成功 -->
+            and orn.pay_status = 1
         </if>
         <if test="returnProcessStatus == 1">
             <!--退货中 -->
@@ -512,21 +518,21 @@
         </if>
         <if test="returnProcessStatus == 2">
             <!--退货成功 -->
-            and orn.return_order_status = 1
             and orn.ship_status = 3
-            and orf.backBalance = 0
         </if>
         <if test="returnProcessStatus == 3">
             <!--退款成功 -->
             and orf.backBalance = 1
         </if>
-		order by orn.add_time desc limit #{start},#{pageSize}
+        GROUP BY orn.return_sn
+		order by orn.add_time desc
+        limit #{start},#{pageSize}
 	</select>
 
 	<select id="selectOrderReturnGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderReturnGoodsInfo"
 		parameterType="Map">
 		select
-		sum(org.goods_return_number) goodsNum,
+		org.goods_return_number goodsNum,
 		org.goods_price transactionPrice,
 		org.goods_sn goodsSn,
 		org.custom_code skuSn,
@@ -551,40 +557,39 @@
 	<select id="selectUserOrderReturnInfoCount" resultType="java.lang.Integer"
 		parameterType="Map">
 		select count(*)
-		from
-		order_return orn
+        from
+        order_return orn
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
-        left join goods_return_change grc on grc.order_sn=orn.relating_order_sn and grc.is_del=0 and grc.status=2
-		where
-			orn.user_id= #{userId,jdbcType=VARCHAR}
-		AND
-			orn.site_code = #{siteCode,jdbcType=VARCHAR}
-		and
-			orn.return_type=1
-		and
-			orn.process_type=1
-		and
-			orn.return_order_status !=4
+        left join (SELECT contact_name, contact_mobile, order_sn FROM goods_return_change WHERE is_del=0 AND `status`=2 GROUP BY order_sn) grc
+        on grc.order_sn=orn.relating_order_sn
+        left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
+        where
+        orn.user_id= #{userId,jdbcType=VARCHAR}
+        AND
+        orn.site_code = #{siteCode,jdbcType=VARCHAR}
         and
-            orn.is_del = 0
-		<if test="shopCode != null">
-			and orn.channel_code = #{shopCode,jdbcType=VARCHAR}
-		</if>
+        orn.return_type = 1
+        and
+        orn.process_type = 1
+        and
+        orn.return_order_status !=4
+        and
+        orn.return_order_status !=0
+        and
+        orn.is_del = 0
+        <if test="shopCode != null">
+            and orn.channel_code = #{shopCode,jdbcType=VARCHAR}
+        </if>
         <if test="returnSn != null">
             and orn.return_sn = #{returnSn,jdbcType=VARCHAR}
         </if>
-		<if test="type==7">
-			<!--正在退货 -->
-			and orn.pay_status in (0,2)
-		</if>
-		<if test="type==8">
-			<!--退货成功 -->
-			and orn.pay_status = 1
-		</if>
-        <if test="returnProcessStatus == 0">
-            <!--退单待处理 -->
-            and orn.return_order_status = 0
-            and orf.backBalance = 0
+        <if test="type==7">
+            <!--正在退货 -->
+            and orn.pay_status in (0,2)
+        </if>
+        <if test="type==8">
+            <!--退货成功 -->
+            and orn.pay_status = 1
         </if>
         <if test="returnProcessStatus == 1">
             <!--退货中 -->
@@ -594,9 +599,7 @@
         </if>
         <if test="returnProcessStatus == 2">
             <!--退货成功 -->
-            and orn.return_order_status = 1
             and orn.ship_status = 3
-            and orf.backBalance = 0
         </if>
         <if test="returnProcessStatus == 3">
             <!--退款成功 -->
@@ -679,6 +682,7 @@
 			oi.shop_name channelName,
 			oi.bv_value bvValue,
 			oi.points,
+            oi.cancel_reason orderCancel,
 			oie.is_advance isAdvance,
             oie.rider_time riderTime,
             oie.last_pay_date lastPayDate,
@@ -762,6 +766,10 @@
             orn.return_reason returnReason,
             orn.action_user actionUser,
             orn.return_order_status returnOrderStatus,
+            orn.ship_status shipStatus,
+            orn.channel_code shopCode,
+            orn.shop_name shopName,
+            moai.consignee consignee,
             grc.contact_name contactUser,
             grc.contact_mobile contactMobile,
             moie.customer_contract_num customerContractNum,
@@ -771,6 +779,7 @@
         left join goods_return_change grc on grc.order_sn=orn.relating_order_sn and grc.is_del=0 and grc.status=2
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
         left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
+        left join master_order_address_info moai on moai.master_order_sn=orn.relating_order_sn
 		where orn.return_sn= #{orderReturnSn,jdbcType=VARCHAR}
 		<if test="userId != null">
 			and orn.user_id = #{userId,jdbcType=VARCHAR}

@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * 创建申请退换单信息
+ * @author Yeqingchao
  */
 public class CreateGoodsReturnChange implements Serializable {
 
@@ -52,6 +53,11 @@ public class CreateGoodsReturnChange implements Serializable {
     private Integer reason;
 
     /**
+     * 申请原因
+     */
+    private String reasonStr;
+
+    /**
      * 退换说明
      */
     private String explain;
@@ -70,6 +76,36 @@ public class CreateGoodsReturnChange implements Serializable {
      * 退单商品总数量
      */
     private Integer returnSum;
+
+    /**
+     * 申请退款总金额
+     */
+    private Double changeReturnTotalFee;
+
+    /**
+     * 申请退款商品总金额
+     */
+    private Double changeReturnGoodsTotalFee;
+
+    /**
+     * 运费
+     */
+    private Double shipFee;
+
+    /**
+     * 退红包金额
+     */
+    private Double returnBouns;
+
+    /**
+     * 是否整单退，0为否，1为是,未发货
+     */
+    private int isAll = 0;
+
+    /**
+     * 交货单号
+     */
+    private String distributeSn;
 
     public String getActionUser() {
         return actionUser;
@@ -165,5 +201,75 @@ public class CreateGoodsReturnChange implements Serializable {
 
     public void setReturnSum(Integer returnSum) {
         this.returnSum = returnSum;
+    }
+
+    public Double getChangeReturnTotalFee() {
+        return changeReturnTotalFee;
+    }
+
+    public void setChangeReturnTotalFee(Double changeReturnTotalFee) {
+        this.changeReturnTotalFee = changeReturnTotalFee;
+    }
+
+    public Double getChangeReturnGoodsTotalFee() {
+        return changeReturnGoodsTotalFee;
+    }
+
+    public void setChangeReturnGoodsTotalFee(Double changeReturnGoodsTotalFee) {
+        this.changeReturnGoodsTotalFee = changeReturnGoodsTotalFee;
+    }
+
+    public Double getShipFee() {
+        return shipFee;
+    }
+
+    public void setShipFee(Double shipFee) {
+        this.shipFee = shipFee;
+    }
+
+    public Double getReturnBouns() {
+        return returnBouns;
+    }
+
+    public void setReturnBouns(Double returnBouns) {
+        this.returnBouns = returnBouns;
+    }
+
+    public int getIsAll() {
+        return isAll;
+    }
+
+    public void setIsAll(int isAll) {
+        this.isAll = isAll;
+    }
+
+    public String getReasonStr() {
+        //1：商品质量不过关；2：商品在配送中损坏；3：商品与描述不符；4：尚未收到商品；5：其他（请具体说明）
+        if (reason == null) {
+            return "";
+        } else if (reason == 1) {
+            return "商品质量不过关";
+        } else if (reason == 2) {
+            return "商品在配送中损坏";
+        } else if (reason == 3) {
+            return "商品与描述不符";
+        } else if (reason == 4) {
+            return "尚未收到商品";
+        } else if (reason == 5) {
+            return "其他（请具体说明）";
+        }
+        return "";
+    }
+
+    public void setReasonStr(String reasonStr) {
+        this.reasonStr = reasonStr;
+    }
+
+    public String getDistributeSn() {
+        return distributeSn;
+    }
+
+    public void setDistributeSn(String distributeSn) {
+        this.distributeSn = distributeSn;
     }
 }

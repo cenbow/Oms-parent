@@ -2,6 +2,7 @@ package com.work.shop.oms.common.bean;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class OrderItemDepotDetail implements Serializable {
 	
@@ -47,6 +48,16 @@ public class OrderItemDepotDetail implements Serializable {
 	private String goodsNumber;//商品数量
 	
 	private int delivery;//修改承运商权限
+
+    /**
+     * 分仓状态：0，未分仓 1，已分仓未通知 2，已分仓已通知
+     */
+    private int depotStatus;
+
+    /**
+     * 交货单商品
+     */
+    private List<OrderItemGoodsDetail> goodsDetailList;
 	
 	public String getSupplierCode() {
 		return supplierCode;
@@ -157,5 +168,21 @@ public class OrderItemDepotDetail implements Serializable {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public List<OrderItemGoodsDetail> getGoodsDetailList() {
+        return goodsDetailList;
+    }
+
+    public void setGoodsDetailList(List<OrderItemGoodsDetail> goodsDetailList) {
+        this.goodsDetailList = goodsDetailList;
+    }
+
+    public int getDepotStatus() {
+        return depotStatus;
+    }
+
+    public void setDepotStatus(int depotStatus) {
+        this.depotStatus = depotStatus;
     }
 }

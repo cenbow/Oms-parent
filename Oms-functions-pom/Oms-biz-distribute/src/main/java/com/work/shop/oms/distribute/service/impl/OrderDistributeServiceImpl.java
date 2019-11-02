@@ -1,62 +1,32 @@
 package com.work.shop.oms.distribute.service.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.config.service.SystemPaymentService;
+import com.work.shop.oms.dao.*;
+import com.work.shop.oms.distribute.service.OrderDistributeService;
+import com.work.shop.oms.order.request.OrderManagementRequest;
+import com.work.shop.oms.order.service.DistributeActionService;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.oms.order.service.PurchaseOrderService;
+import com.work.shop.oms.orderReturn.service.OrderSettleService;
+import com.work.shop.oms.orderop.service.OrderQuestionService;
+import com.work.shop.oms.redis.RedisClient;
+import com.work.shop.oms.stock.service.UniteStockService;
 import com.work.shop.oms.utils.*;
 import com.work.shop.oms.utils.TimeUtil;
+import com.work.shop.oms.vo.GoodsDistribute;
+import com.work.shop.oms.vo.SettleParamObj;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.MasterOrderAction;
-import com.work.shop.oms.bean.MasterOrderAddressInfo;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderGoodsExample;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.OrderDepotShip;
-import com.work.shop.oms.bean.OrderDepotShipExample;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.SystemPayment;
-import com.work.shop.oms.bean.SystemRegionArea;
-import com.work.shop.oms.bean.SystemRegionAreaExample;
-import com.work.shop.oms.config.service.SystemPaymentService;
-import com.work.shop.oms.dao.MasterOrderActionMapper;
-import com.work.shop.oms.dao.MasterOrderAddressInfoMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsDetailMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsMapper;
-import com.work.shop.oms.dao.MasterOrderInfoExtendMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.OrderDepotShipMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.SystemRegionAreaMapper;
-import com.work.shop.oms.distribute.service.OrderDistributeService;
-import com.work.shop.oms.order.request.OrderManagementRequest;
-import com.work.shop.oms.order.service.DistributeActionService;
-import com.work.shop.oms.order.service.PurchaseOrderService;
-import com.work.shop.oms.orderop.service.OrderQuestionService;
-import com.work.shop.oms.redis.RedisClient;
-import com.work.shop.oms.stock.service.UniteStockService;
-import com.work.shop.oms.vo.GoodsDistribute;
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 订单交货单服务
@@ -106,10 +76,12 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	private SystemPaymentService systemPaymentService;
 	@Resource(name="orderQuestionService")
 	private OrderQuestionService orderQuestionService;
-	
-    private OrderDistributeServiceImpl() {
-    	System.out.println("OrderDistributeServiceImpl init...");
-	}
+
+	@Resource
+	private MasterOrderInfoService masterOrderInfoService;
+
+	@Resource
+	private OrderSettleService orderSettleService;
 
 	/**
 	 * 判断订单拆交货单信息
@@ -196,6 +168,20 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	}
 
     /**
+     * 联采订单自动结算完成
+     * @param masterOrderSn
+     */
+	private void processOrderFinishByGroup(String masterOrderSn) {
+        SettleParamObj paramObj = new SettleParamObj();
+        paramObj.setBussType(1);
+        paramObj.setDealCode(masterOrderSn);
+        paramObj.setTools(false);
+        paramObj.setUserId("系统结算");
+        ReturnInfo<String> info = orderSettleService.masterOrderSettle(paramObj);
+        logger.info("联采订单自动结算完成:" + JSONObject.toJSONString(paramObj));
+    }
+
+    /**
      * 处理订单分配后续处理
      * @param master 订单信息
      * @param orderSns 订单交货单列表
@@ -203,28 +189,53 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
      */
 	private void processOrderDistributeFollow(MasterOrderInfo master, List<String> orderSns, OrderDepotResult depotResult) {
 
-	    String masterOrderSn = master.getMasterOrderSn();
+		String masterOrderSn = master.getMasterOrderSn();
 
-        MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
-        Short orderType = masterOrderInfoExtend.getOrderType();
-        if (orderType == null || orderType == 0) {
-            // 通知统一库存分配库存
-            uniteStockService.distOccupy(masterOrderSn);
-        }
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+		Short orderType = masterOrderInfoExtend.getOrderType();
+
+		if (orderType == null || orderType == 1) {
+			// 如果是联采订单
+            processOrderFinishByGroup(masterOrderSn);
+			return;
+		}
 
         // 需要审核订单设置待审核问题单
-        if (master.getNeedAudit() == 1) {
-            orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待审核问题单", "17"));
+        if (master.getNeedAudit() == 1 && master.getAuditStatus() == 0) {
+            orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待审核问题单", Constant.QUESTION_CODE_REVIEW));
         } else {
             // 不需要审核正常订单 创建采购单
             if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
-                for (String orderSn : orderSns) {
-                    OrderManagementRequest request = new OrderManagementRequest();
-                    request.setShipSn(orderSn);
-                    purchaseOrderService.purchaseOrderCreate(request);
-                    distributeActionService.addOrderAction(orderSn, depotResult.getMessage());
+
+                //订单推送供应链
+                logger.info("拆单完成后:" + masterOrderSn + "订单推送供应链");
+				int type = 0;
+				String orderFrom = master.getOrderFrom();
+				if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
+					type = 2;
+				}
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, type);
+
+                // 需要合同签章的，先设置问题单
+                if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
+                    orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
+                } else {
+                    // 不需要审批的订单，下发账期支付扣款
+                    // 是否账期支付, 0期立即扣款
+                    //masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
+                    for (String orderSn : orderSns) {
+                        OrderManagementRequest request = new OrderManagementRequest();
+                        request.setShipSn(orderSn);
+                        purchaseOrderService.purchaseOrderCreate(request);
+                        distributeActionService.addOrderAction(orderSn, depotResult.getMessage());
+                    }
                 }
             }
+        }
+
+        if (orderType == null || orderType == 0) {
+            // 通知统一库存分配库存
+            uniteStockService.distOccupy(masterOrderSn);
         }
     }
 
@@ -719,6 +730,19 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		return distributes;
 	}
 
+    /**
+     * 根据交货单号获取交货单信息
+     * @param orderSn
+     * @return
+     */
+    @Override
+    public OrderDistribute selectDistributesByOrderSn(String orderSn) {
+        if (StringUtil.isTrimEmpty(orderSn)) {
+            return null;
+        }
+        return orderDistributeMapper.selectByPrimaryKey(orderSn);
+    }
+
 	@Override
 	public List<OrderDepotShip> selectEffectiveShips(String orderSn) {
 		if (StringUtil.isTrimEmpty(orderSn)) {
@@ -821,6 +845,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 			distribute.setOrderGoods(items);
 			distribute.setDepotCode(items.get(0).getDepotCode());
 			distribute.setSupplierCode(distKey);
+            distribute.setSupplierName(items.get(0).getSupplierName());
 			distributeMap.put(distKey, distribute);
 		}
 		return distributeMap;
@@ -884,6 +909,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		distribute.setGotStatus(Constant.GOT_STATUS_NO);
 
         distribute.setSupplierCode(goodsDistribute.getSupplierCode());
+        distribute.setSupplierName(goodsDistribute.getSupplierName());
 
 		// 货到付款运费传值
 		if (master.getTransType() == Constant.OI_TRANS_TYPE_PRESHIP) {

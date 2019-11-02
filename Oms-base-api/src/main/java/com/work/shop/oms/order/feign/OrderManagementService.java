@@ -183,7 +183,7 @@ public interface OrderManagementService {
      * @param request
      * @return OrderManagementResponse
      */
-    @PostMapping("/orderPayPeriodSuccess")
+    @PostMapping("/order/orderPayPeriodSuccess")
     OrderManagementResponse orderPayPeriodSuccess(OrderManagementRequest request);
 
     /**
@@ -191,6 +191,22 @@ public interface OrderManagementService {
      * @param request
      * @return OrderManagementResponse
      */
-    @PostMapping("/orderPayPeriodError")
+    @PostMapping("/order/orderPayPeriodError")
     OrderManagementResponse orderPayPeriodError(OrderManagementRequest request);
+
+    /**
+     * 合同签章完成
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @PostMapping("/order/orderSignCompleted")
+    OrderManagementResponse orderSignCompleted(OrderManagementRequest request);
+
+    /**
+     * 订单结算账户完成
+     * @param request
+     * @return
+     */
+    @PostMapping("/order/orderSettlementAccountCompleted")
+    OrderManagementResponse orderSettlementAccountCompleted(OrderManagementRequest request);
 }

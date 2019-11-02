@@ -132,6 +132,13 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         if (StringUtils.isNotBlank(masterOrder.getCompanyName())) {
             moie.setCompanyName(masterOrder.getCompanyName());
         }
+
+        moie.setInvPhone(masterOrder.getInvPhone());
+
+        moie.setSaleBd(masterOrder.getSaleBd());
+
+        moie.setCompanyType(masterOrder.getCompanyType());
+
         masterOrderInfoExtendMapper.insertSelective(moie);
 	}
 
@@ -202,6 +209,30 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
     }
 
     /**
+     * 更新订单结算账户结算状态
+     * @param masterOrderSn
+     * @return boolean
+     */
+    @Override
+    public boolean updateMasterSettlementAccount(String masterOrderSn) {
+        boolean bl = false;
+        try {
+            MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
+            extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            extend.setSettlementAccount(1);
+            int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
+
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("设置订单结算账户结算状态异常:" + masterOrderSn, e);
+        }
+
+        return bl;
+    }
+
+    /**
      * 填充账期支付最后支付单时间
      * @param masterOrderSn 订单号
      * @param startDate 开始时间
@@ -261,5 +292,52 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         }
 
         return apiReturnData;
+    }
+
+    /**
+     * 更新订单推送供应链状态
+     * @param masterOrderSn
+     * @return
+     */
+    @Override
+    public boolean updatePushSupplyChain(String masterOrderSn) {
+        boolean bl = false;
+        try {
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            extend.setMasterOrderSn(masterOrderSn);
+            extend.setPushSupplyChain((byte) 1);
+            int result = masterOrderInfoExtendMapper.updateByPrimaryKeySelective(extend);
+
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("设置订单推送供应链状态状态异常:" + masterOrderSn, e);
+        }
+
+        return bl;
+    }
+
+    /**
+     * 更新内行扣款成功状态
+     * @param masterOrderSn
+     * @param payPeriodPayStatus 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+     * @return
+     */
+    @Override
+    public boolean updatePayPeriodPayStatus(String masterOrderSn, int payPeriodPayStatus) {
+        boolean bl = false;
+        try {
+            MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
+            extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            extend.setPayPeriodPayStatus((byte) payPeriodPayStatus);
+            int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
+
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("更新内行扣款成功状态异常:" + masterOrderSn, e);
+        }
+
+        return bl;
     }
 }

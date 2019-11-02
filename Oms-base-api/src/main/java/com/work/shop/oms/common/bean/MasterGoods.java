@@ -253,7 +253,27 @@ public class MasterGoods implements Serializable {
 	 */
 	private String goodsProp;
 
-	public Double getShareBonus() {
+    /**
+     * 物料描述
+     */
+	private String customerMaterialName;
+
+    /**
+     * 采购申请编号
+     */
+	private String buyerNo;
+
+    /**
+     * 采购申请行号
+     */
+	private String buyerLineNo;
+
+    /**
+     * 商品加价金额
+     */
+	private BigDecimal goodsAddPrice;
+
+    public Double getShareBonus() {
 		return shareBonus;
 	}
 
@@ -643,5 +663,37 @@ public class MasterGoods implements Serializable {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public String getCustomerMaterialName() {
+        return customerMaterialName;
+    }
+
+    public void setCustomerMaterialName(String customerMaterialName) {
+        this.customerMaterialName = customerMaterialName;
+    }
+
+    public String getBuyerNo() {
+        return buyerNo;
+    }
+
+    public void setBuyerNo(String buyerNo) {
+        this.buyerNo = buyerNo;
+    }
+
+    public String getBuyerLineNo() {
+        return buyerLineNo;
+    }
+
+    public void setBuyerLineNo(String buyerLineNo) {
+        this.buyerLineNo = buyerLineNo;
+    }
+
+    public BigDecimal getGoodsAddPrice() {
+        return goodsAddPrice;
+    }
+
+    public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
+        this.goodsAddPrice = goodsAddPrice;
     }
 }

@@ -5,33 +5,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.work.shop.oms.bean.*;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.DistributeQuestion;
-import com.work.shop.oms.bean.DistributeQuestionDel;
-import com.work.shop.oms.bean.DistributeQuestionExample;
-import com.work.shop.oms.bean.DistributeQuestionKey;
-import com.work.shop.oms.bean.MasterOrderAction;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderQuestion;
-import com.work.shop.oms.bean.MasterOrderQuestionDel;
-import com.work.shop.oms.bean.MasterOrderQuestionExample;
-import com.work.shop.oms.bean.MasterOrderQuestionKey;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNew;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNewDel;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNewExample;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNewKey;
 import com.work.shop.oms.bimonitor.service.BIMonitorService;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.OrderStatus;
@@ -50,8 +37,10 @@ import com.work.shop.oms.dao.define.OrderDistributeDefineMapper;
 import com.work.shop.oms.distribute.service.DistributeSupplierService;
 import com.work.shop.oms.erp.service.ErpInterfaceProxy;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
+import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
+import com.work.shop.oms.order.service.PurchaseOrderService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderNormalService;
 import com.work.shop.oms.utils.Constant;
@@ -102,8 +91,11 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 	private OrderConfirmService orderConfirmService;
 	@Resource
 	private MasterOrderQuestionDelMapper masterOrderQuestionDelMapper;
+
 	@Resource(name = "orderDistributeProducerJmsTemplate")
 	private JmsTemplate orderDistributeJmsTemplate;
+	@Resource
+	private PurchaseOrderService purchaseOrderService;
 	
 	private String shopCode;
 	
@@ -114,10 +106,10 @@ public class OrderNormalServiceImpl implements OrderNormalService {
      * @param master 订单信息
      * @param distributes 交货单列表
      * @param orderStatus 订单状态
-     * @param type 订单类型 0订单、1交货单
+     * @param orderType 订单类型 0订单、1交货单
      * @return ReturnInfo
      */
-	private ReturnInfo normalOrder(MasterOrderInfo master, List<OrderDistribute> distributes, OrderStatus orderStatus, String type) {
+	private ReturnInfo normalOrder(MasterOrderInfo master, List<OrderDistribute> distributes, OrderStatus orderStatus, String orderType) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		if(master == null && distributes == null) {
 			logger.warn("[masterOrderInfo]或[distribute]不能都为空！");
@@ -154,12 +146,11 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 			}
 		}
 		// 主订单返回正常单
-		if (Constant.order_type_master.equals(type)) {
+		if (Constant.order_type_master.equals(orderType)) {
 			info = normalOrderByMaster(master.getMasterOrderSn(), master, orderStatus);
-		}
-		if (info.getIsOk() == Constant.OS_YES && Constant.order_type_distribute.equals(type)) {
+		} else if (Constant.order_type_distribute.equals(orderType)) {
 			// 子订单返回正常单
-			judgeMasterOrderNormal(masterOrderSn, master, Constant.OI_QUESTION_STATUS_NORMAL, type);
+			info = judgeMasterOrderNormal(masterOrderSn, master, orderType);
 		}
 		// 库存预售订单关闭时，需要自动确认
 		/*if (orderStatus.getSource() == ConstantValues.METHOD_SOURCE_TYPE.ERP) {
@@ -170,95 +161,183 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 	}
 
     /**
+     * 根据订单编码获取问题单列表
+     * @param masterOrderSn
+     * @return List<MasterOrderQuestion>
+     */
+	private List<MasterOrderQuestion> getMasterOrderQuestionByMasterOrderSn(String masterOrderSn) {
+        // 问题单列表
+        MasterOrderQuestionExample queryExample = new MasterOrderQuestionExample();
+        queryExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+        List<MasterOrderQuestion> allQuestions = masterOrderQuestionMapper.selectByExample(queryExample);
+        return allQuestions;
+    }
+
+    /**
      * 订单返回正常单
      * @param masterOrderSn
      * @param master
      * @param orderStatus
-     * @return
+     * @return ReturnInfo
      */
 	private ReturnInfo normalOrderByMaster(String masterOrderSn, MasterOrderInfo master, OrderStatus orderStatus) {
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
-		logger.debug("设为问题单:masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus.toString());
-		if (StringUtil.isEmpty(orderStatus.getType())) {
+		logger.debug("返回正常单:masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus.toString());
+		if (StringUtil.isListNull(orderStatus.getQuestionTypes())) {
 			logger.error(masterOrderSn + "传入操作类型为空，不能进行返回正常单操作！");
 			ri.setMessage("传入操作类型为空，不能进行返回正常单操作！");
 			return ri;
 		}
-		// 问题单判断
-		String type = orderStatus.getType();
-        // OS问题单
-		List<MasterOrderQuestion> omsQuestions = null;
-        // 物流问题单列表
-		List<MasterOrderQuestion> lackQuestions = null;
-		// 问题单判断
-		MasterOrderQuestionExample omsExample = new MasterOrderQuestionExample();
-		omsExample.or().andMasterOrderSnEqualTo(masterOrderSn).andQuestionTypeEqualTo(0);
-		omsQuestions = masterOrderQuestionMapper.selectByExample(omsExample);
-
-        // OS问题单处理标识
-		boolean omsFlg = false;
-        // 物流问题单处理标识
-		boolean lackFlg = false;
-		if (StringUtil.isListNull(omsQuestions)) {
-			omsFlg = true;
-		}
-		// 物流问题单判断
-		MasterOrderQuestionExample lackExample = new MasterOrderQuestionExample();
-		lackExample.or().andMasterOrderSnEqualTo(masterOrderSn).andQuestionTypeEqualTo(1);
-		lackQuestions = masterOrderQuestionMapper.selectByExample(lackExample);
-		if (StringUtil.isListNull(lackQuestions)) {
-			lackFlg = true;
-		}
-
-		if ("0".equals(type) || "2".equals(type)) {
-			omsFlg = true;
-		}
-		/* 物流问题单处理 */
-		if ("1".equals(type) || "2".equals(type)) {
-			lackFlg = true;
-		}
 		
+		// 问题单列表
+		List<MasterOrderQuestion> allQuestions = getMasterOrderQuestionByMasterOrderSn(masterOrderSn);
+		
+		String msg = null;
 		try {
-			if ("0".equals(type) || "2".equals(type)) {
-                processOrderQuestion(masterOrderSn, omsQuestions);
+			if (CollectionUtils.isEmpty(allQuestions)) {
+				processMasterOrderQuestion(masterOrderSn);
+                ri.setIsOk(Constant.OS_YES);
+                ri.setMessage("返回正常单成功");
+				return ri;
 			}
-			/* 物流问题单处理 */
-			if ("1".equals(type) || "2".equals(type)) {
-                processOrderQuestion(masterOrderSn, omsQuestions);
-			}
-			if (omsFlg && lackFlg) {
-				MasterOrderInfo updateMaster = new MasterOrderInfo();
-				updateMaster.setQuestionStatus(Constant.OI_QUESTION_STATUS_NORMAL);
-				updateMaster.setUpdateTime(new Date());
-				updateMaster.setMasterOrderSn(masterOrderSn);
-				// 更新订单状态
-				masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
-				// 订单操作日志记录
-				MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
-				orderAction.setActionNote(orderStatus.getMessage());
-				orderAction.setActionUser(orderStatus.getAdminUser());
-				masterOrderActionService.insertOrderActionByObj(orderAction);
-				if (master.getSplitStatus() == (byte) 0) {
-					// 拆单处理
-					orderDistributeJmsTemplate.send(new TextMessageCreator(masterOrderSn));
-				}
+
+            // 问题单判断
+            Map<Integer, Integer> questionTypeMap = getQuestionTypeMap(orderStatus.getQuestionTypes());
+			// 普通问题单
+			List<MasterOrderQuestion> normalItems = new ArrayList<>();
+			// 缺货问题单
+			List<MasterOrderQuestion> lackItems = new ArrayList<>();
+			// 审核问题单
+			List<MasterOrderQuestion> reviewItems = new ArrayList<>();
+			// 签章问题单
+			List<MasterOrderQuestion> signItems = new ArrayList<>();
+
+            QuestionOrderTypeBean questionOrderTypeBean = getQuestionOrderTypeBean(questionTypeMap, allQuestions, normalItems, lackItems, reviewItems, signItems);
+
+			// 问题单处理
+            processOrderQuestion(masterOrderSn, questionTypeMap, normalItems, lackItems, reviewItems, signItems);
+
+			if (questionOrderTypeBean.isNormalFlg() && questionOrderTypeBean.isLackFlg()
+                    && questionOrderTypeBean.isReviewFlg() && questionOrderTypeBean.isSignFlag()) {
+				processMasterOrderQuestion(masterOrderSn);
+				msg = "返回正常单成功";
+                processMasterOrderNormalFollow(master, orderStatus);
 			}
 			ri.setIsOk(Constant.OS_YES);
 			ri.setMessage("返回正常单操作成功!");
-			logger.debug("返回正常单操作成功!");
-
 		} catch (Exception e) {
 			String errorMsg = e.getMessage() == null ? "" : e.getMessage();
 			logger.error("订单[" + masterOrderSn + "]返回正常单异常：" + errorMsg, e);
 			ri.setMessage("返回正常单异常：" + errorMsg);
+			msg = "<font style=color:red;>返回正常单失败：" + ri.getMessage() + "</font>";
+		} finally {
 			// 记录操作日志异常信息
-			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
-			orderAction.setActionUser(orderStatus.getAdminUser());
-			orderAction.setActionNote("<font style=color:red;>" + ri.getMessage() + "</font>");
-			masterOrderActionService.insertOrderActionByObj(orderAction);
+            saveMasterOrderAction(master, orderStatus, msg);
+			logger.info("返回正常单" + JSON.toJSONString(ri));
 		}
 		return ri;
 	}
+
+    /**
+     * 获取问题单对应类型情况
+     * @param questionTypeMap
+     * @param allQuestions
+     * @param normalItems
+     * @param lackItems
+     * @param reviewItems
+     * @param signItems
+     * @return
+     */
+	private QuestionOrderTypeBean getQuestionOrderTypeBean(Map<Integer, Integer> questionTypeMap, List<MasterOrderQuestion> allQuestions,
+                                                           List<MasterOrderQuestion> normalItems, List<MasterOrderQuestion> lackItems,
+                                                           List<MasterOrderQuestion> reviewItems, List<MasterOrderQuestion> signItems) {
+
+        QuestionOrderTypeBean questionOrderTypeBean = new QuestionOrderTypeBean();
+        for (MasterOrderQuestion item : allQuestions) {
+            int questionType = item.getQuestionType();
+            if (questionType == Constant.QUESTION_TYPE_NORMAL) {
+                normalItems.add(item);
+                if (questionTypeMap.containsKey(item.getQuestionType())) {
+                    questionOrderTypeBean.setNormalFlg(true);
+                }
+            } else if (questionType == Constant.QUESTION_TYPE_LACK) {
+                lackItems.add(item);
+                if (questionTypeMap.containsKey(item.getQuestionType())) {
+                    questionOrderTypeBean.setLackFlg(true);
+                }
+            } else if (questionType == Constant.QUESTION_TYPE_REVIEW) {
+                reviewItems.add(item);
+                if (questionTypeMap.containsKey(item.getQuestionType())) {
+                    questionOrderTypeBean.setReviewFlg(true);
+                }
+            } else if (questionType == Constant.QUESTION_TYPE_SIGN) {
+                signItems.add(item);
+                if (questionTypeMap.containsKey(item.getQuestionType())) {
+                    questionOrderTypeBean.setSignFlag(true);
+                }
+            }
+        }
+        if (StringUtil.isListNull(normalItems)) {
+            questionOrderTypeBean.setNormalFlg(true);
+        }
+        if (StringUtil.isListNull(lackItems)) {
+            questionOrderTypeBean.setLackFlg(true);
+        }
+        if (StringUtil.isListNull(reviewItems)) {
+            questionOrderTypeBean.setReviewFlg(true);
+        }
+        if (StringUtil.isListNull(signItems)) {
+            questionOrderTypeBean.setSignFlag(true);
+        }
+
+        return questionOrderTypeBean;
+    }
+
+    /**
+     * 保存订单日志
+     * @param master
+     * @param orderStatus
+     * @param msg
+     */
+	private void saveMasterOrderAction(MasterOrderInfo master, OrderStatus orderStatus, String msg) {
+        // 记录操作日志异常信息
+        MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
+        orderAction.setActionNote(msg);
+        orderAction.setActionUser(orderStatus.getAdminUser());
+        masterOrderActionService.insertOrderActionByObj(orderAction);
+    }
+
+    /**
+     * 处理订单问题单
+     * @param masterOrderSn
+     * @param questionTypeMap
+     * @param normalItems
+     * @param lackItems
+     * @param reviewItems
+     * @param signItems
+     */
+	private void processOrderQuestion(String masterOrderSn, Map<Integer, Integer> questionTypeMap,
+                                      List<MasterOrderQuestion> normalItems,
+                                      List<MasterOrderQuestion> lackItems,
+                                      List<MasterOrderQuestion> reviewItems,
+                                      List<MasterOrderQuestion> signItems) {
+        // 普通问题单处理
+        if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_NORMAL) && StringUtil.isNotNullForList(normalItems)) {
+            processOrderQuestion(masterOrderSn, normalItems);
+        }
+        // 缺货问题单处理
+        if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_LACK) && StringUtil.isNotNullForList(lackItems)) {
+            processOrderQuestion(masterOrderSn, lackItems);
+        }
+        // 待审核问题单处理
+        if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_REVIEW) && StringUtil.isNotNullForList(reviewItems)) {
+            processOrderQuestion(masterOrderSn, reviewItems);
+        }
+        // 待签章问题单处理
+        if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_SIGN) && StringUtil.isNotNullForList(signItems)) {
+            processOrderQuestion(masterOrderSn, signItems);
+        }
+    }
 
     /**
      * 处理订单问题单
@@ -282,40 +361,42 @@ public class OrderNormalServiceImpl implements OrderNormalService {
         }
     }
 	
-	private ReturnInfo judgeMasterOrderNormal(String masterOrderSn, MasterOrderInfo master, int questionStatus, String type) {
-		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
-		if (Constant.order_type_distribute.equals(type)) {
-			OrderDistributeExample distributeExample = new OrderDistributeExample();
-			OrderDistributeExample.Criteria criteria = distributeExample.or();
-			criteria.andMasterOrderSnEqualTo(masterOrderSn);
-			List<OrderDistribute> distributes = this.orderDistributeMapper.selectByExample(distributeExample);
-			if (StringUtil.isListNull(distributes)) {
-				info.setMessage("主订单[" + masterOrderSn + "] 下子订单列表为空！");
-				return info;
-			}
-			int count = 0;
-			for (OrderDistribute orderDistribute : distributes) {
-				if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
-					count ++;
-					continue;
-				}
-				if (orderDistribute.getQuestionStatus() == questionStatus) {
-					count ++;
-					continue;
-				}
-			}
-			if (count != distributes.size()) {
-				info.setMessage("主订单[" + masterOrderSn + "] 下子订单状态不一致！");
-				return info;
-			}
-			deleteMasterOrderQuestion(masterOrderSn);
-		}
+	/**
+	 * 判断主单问题单状态
+	 * @param masterOrderSn
+	 * @param master
+	 * @param type
+	 * @return
+	 */
+	private ReturnInfo judgeMasterOrderNormal(String masterOrderSn, MasterOrderInfo master, String type) {
+		ReturnInfo info = new ReturnInfo(Constant.OS_NO, "处理失败");
 		try {
-			MasterOrderInfo updateMaster = new MasterOrderInfo();
-			updateMaster.setMasterOrderSn(masterOrderSn);
-			updateMaster.setUpdateTime(new Date());
-			updateMaster.setQuestionStatus(questionStatus);
-			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+			if (Constant.order_type_distribute.equals(type)) {
+				OrderDistributeExample distributeExample = new OrderDistributeExample();
+				OrderDistributeExample.Criteria criteria = distributeExample.or();
+				criteria.andMasterOrderSnEqualTo(masterOrderSn);
+				List<OrderDistribute> distributes = this.orderDistributeMapper.selectByExample(distributeExample);
+				if (StringUtil.isListNull(distributes)) {
+					info.setMessage("主订单[" + masterOrderSn + "] 下子订单列表为空！");
+					return info;
+				}
+				int count = 0;
+				for (OrderDistribute orderDistribute : distributes) {
+					if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED
+							|| orderDistribute.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
+						count ++;
+						continue;
+					}
+				}
+				if (count != distributes.size()) {
+					info.setMessage("主订单[" + masterOrderSn + "] 下子订单状态不一致！");
+					return info;
+				}
+				deleteMasterOrderQuestion(masterOrderSn);
+			}
+			processMasterOrderQuestion(masterOrderSn);
+			info.setIsOk(Constant.OS_YES);
+			info.setMessage("返回正常单成功");
 		} catch (Exception e) {
 			info.setMessage("主订单[" + masterOrderSn + "] 操作异常" + e.getMessage());
 			logger.error("主订单[" + masterOrderSn + "] 操作异常" + e.getMessage(), e);
@@ -331,6 +412,7 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 	 */
 	@Override
 	public ReturnInfo normalOrderByMasterSn(String masterOrderSn, OrderStatus orderStatus) {
+		logger.info("订单返回正常单：masterOrderSn=" + masterOrderSn + ";orderStatus=" + JSON.toJSONString(orderStatus));
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
 			logger.error("[masterOrderSn]不能为空！");
@@ -338,14 +420,13 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 			return info;
 		}
 		if (orderStatus == null) {
-			logger.error("[orderStatus]传入参数为空，不能进行订单返回正常单操作！");
-			info.setMessage("[orderStatus]传入参数为空，不能进行订单返回正常单操作！");
+			logger.error("[orderStatus]传入参数为空！");
+			info.setMessage("[orderStatus]传入参数为空！");
 			return info;
 		}
-		logger.debug("订单返回正常单：masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
 		MasterOrderInfo master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
 		List<OrderDistribute> distributes = null;
-		if (master.getSplitStatus() != (byte) 0) {
+		if (master.getSplitStatus().byteValue() != Constant.SPLIT_STATUS_UNSPLITED.byteValue()) {
 			// 订单下的所有符合条件的交货单
 			OrderDistributeExample distributeExample = new OrderDistributeExample();
 			OrderDistributeExample.Criteria mbCriteria = distributeExample.or();
@@ -408,182 +489,147 @@ public class OrderNormalServiceImpl implements OrderNormalService {
      * @return ReturnInfo
      */
 	private ReturnInfo normalOrderByMbDistribute(List<String> orderSns, List<OrderDistribute> distributes, OrderStatus orderStatus) {
+		logger.info("订单返回正常单 orderSns=" + orderSns + ";orderStatus=" + JSON.toJSONString(orderStatus));
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isListNull(distributes)) {
 			logger.warn("[" + orderSns + "]订单不存在，无法返回正常单");
 			info.setMessage("[" + orderSns + "]订单不存在，无法返回正常单");
 			return info;
 		}
-		logger.debug("订单返回正常单 orderSns=" + orderSns + ";orderStatus=" + orderStatus);
 		List<OrderDistribute> updateDistributes = getOrderDistributeSn(distributes);
 		if (StringUtil.isListNull(updateDistributes)) {
 			info.setIsOk(Constant.OS_YES);
 			return info;
 		}
-		logger.debug("订单返回正常单 orderSns=" + orderSns + ";orderStatus=" + orderStatus);
+		Map<Integer, Integer> questionTypeMap = getQuestionTypeMap(orderStatus.getQuestionTypes());
 		for (OrderDistribute distribute : distributes) {
 			String orderSn = distribute.getOrderSn();
-			String type = orderStatus.getType();
-            // OS问题单
-			List<DistributeQuestion> orderQuestions = null;
-            // 物流问题单列表
-			List<DistributeQuestion> orderLogisticsQuestions = null;
-			List<String> depotQuestions = new ArrayList<String>();
 			// 问题单判断
-			DistributeQuestionExample osExample = new DistributeQuestionExample();
-			osExample.or().andOrderSnEqualTo(orderSn).andQuestionTypeEqualTo(0);
-			orderQuestions = distributeQuestionMapper.selectByExample(osExample);
-            // OS问题单处理标识
-			boolean osFlg = false;
-            // 物流问题单处理标识
-			boolean logFlg = false;
-			if (!StringUtil.isNotNullForList(orderQuestions)) {
-				osFlg = true;
+			DistributeQuestionExample queryExample = new DistributeQuestionExample();
+			queryExample.or().andOrderSnEqualTo(orderSn);
+			// OS问题单
+			List<DistributeQuestion> allQuestions = distributeQuestionMapper.selectByExample(queryExample);
+			if (CollectionUtils.isEmpty(allQuestions)) {
+				processOrderDistributeQuestion(orderSn);
+				info.setIsOk(Constant.OS_YES);
+				info.setMessage("订单["+orderSns+"]订单返回正常单成功");
+				continue;
 			}
-			// 物流问题单判断
-			DistributeQuestionExample example = new DistributeQuestionExample();
-			example.or().andOrderSnEqualTo(orderSn).andQuestionTypeEqualTo(1);
-			orderLogisticsQuestions = distributeQuestionMapper.selectByExample(example);
-			if (!StringUtil.isNotNullForList(orderLogisticsQuestions)) {
-				logFlg = true;
+
+			// OS问题单处理标识
+			boolean normalFlg = false;
+			// 物流问题单处理标识
+			boolean lackFlg = false;
+			// 审核问题单
+			boolean reviewFlg = false;
+			// 签章问题单
+            boolean signFlag = false;
+			// 普通问题单
+			List<DistributeQuestion> normalItems = new ArrayList<>();
+			// 缺货问题单
+			List<DistributeQuestion> lackItems = new ArrayList<>();
+			// 审核问题单
+			List<DistributeQuestion> reviewItems = new ArrayList<>();
+            // 签章问题单
+            List<DistributeQuestion> signItems = new ArrayList<>();
+
+			for (DistributeQuestion item : allQuestions) {
+                switch (item.getQuestionType()) {
+                    case Constant.QUESTION_TYPE_NORMAL:
+                        normalItems.add(item);
+                        if (questionTypeMap.containsKey(item.getQuestionType())) {
+                            normalFlg = true;
+                        }
+                        break;
+                    case Constant.QUESTION_TYPE_LACK:
+                        lackItems.add(item);
+                        if (questionTypeMap.containsKey(item.getQuestionType())) {
+                            lackFlg = true;
+                        }
+                        break;
+                    case Constant.QUESTION_TYPE_REVIEW:
+                        reviewItems.add(item);
+                        if (questionTypeMap.containsKey(item.getQuestionType())) {
+                            reviewFlg = true;
+                        }
+                        break;
+                    case Constant.QUESTION_TYPE_SIGN:
+                        signItems.add(item);
+                        if (questionTypeMap.containsKey(item.getQuestionType())) {
+                            signFlag = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
 			}
-			Map<String, Object> monitorMap = new HashMap<String, Object>();
-			monitorMap.put("orderId", orderSn);
+			if (StringUtil.isListNull(normalItems)) {
+				normalFlg = true;
+			}
+			if (StringUtil.isListNull(lackItems)) {
+				lackFlg = true;
+			}
+			if (StringUtil.isListNull(reviewItems)) {
+				reviewFlg = true;
+			}
+            if (StringUtil.isListNull(signItems)) {
+                signFlag = true;
+            }
+			StringBuffer noteSb = new StringBuffer(orderStatus.getMessage());
 			try {
-				StringBuffer noteSb = new StringBuffer(orderStatus.getMessage());
-				/* OS问题单处理 */
-				if ("0".equals(type) || "2".equals(type)) {
-					osFlg = true;
-				}
-				/* 物流问题单处理 */
-				if ("1".equals(type) || "2".equals(type)) {
-					logFlg = true;
-				}
-				if (osFlg && logFlg) {
-					/*if(OrderAttributeUtil.doERP(distribute, 0)) {
-						logger.debug("通知ERP订单转正常单" + orderSn);
-						// 同步至ERP
-						ErpWebserviceResultBean res = new ErpWebserviceResultBean(-1, "初始化");
-						res = erpInterfaceProxy.UpdateIdtToQnOrToR(orderSn, 2, null);
-						if (res.getCode() == 4) {
-							logger.info(res.toString());
-						} else if (res.getCode() == 0 || res.getCode() > 1) {
-							// ERP返回信息:OS单号141217405721已出库,不允许转正常单
-							String msg = "OS单号"+orderSn+"已出库";
-							logger.error(res.toString());
-							if (res.getMessage().indexOf(msg) == -1) {
-								info.setMessage("订单[" + orderSn + "]通知供应商返回正常单异常" + res.toString());
-								return info;
-							}
-						}
-						logger.debug(res.toString());
-					}*/
+				// 三种问题单类型都没有订单设置正常单类型
+				if (normalFlg && lackFlg && reviewFlg && signFlag) {
+					// 如果需要通知其他系统返回正常单在此通知
 					// 返回正常单
-                    processOrderDistributeQuestion(orderSn);
+					processOrderDistributeQuestion(orderSn);
 				}
-				/* OS问题单处理 */
-				if ("0".equals(type) || "2".equals(type)) {
+				// 普通问题单处理
+				if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_NORMAL) && StringUtil.isNotNullForList(normalItems)) {
 					// 问题单信息备份到orderQuestionDel中
-					if (StringUtil.isNotNullForList(orderQuestions)) {
-						for (DistributeQuestion question : orderQuestions) {
-							depotQuestions.add(question.getQuestionCode());
-							// 通知数据商品组转正常单
-							DistributeQuestionDel del = new DistributeQuestionDel();
-							del.setOrderSn(orderSn);
-							del.setQuestionCode(question.getQuestionCode());
-							del.setQuestionDesc(question.getQuestionDesc());
-							del.setAddTime(question.getAddTime());
-							del.setQuestionDesc(question.getQuestionDesc());
-							del.setQuestionType(question.getQuestionType());
-							del.setSupplierOrderSn(question.getSupplierOrderSn());
-							this.distributeQuestionDelMapper.insertSelective(del);
-							// 删除相应问题单信息
-							DistributeQuestionKey newKey = new DistributeQuestionKey();
-							newKey.setOrderSn(orderSn);
-							newKey.setQuestionCode(question.getQuestionCode());
-							distributeQuestionMapper.deleteByPrimaryKey(newKey);
-						}
-					}
-					noteSb.append(" OS问题单返回正常单处理; ");
+					deleteOrderQuestions(orderSn, normalItems, "普通问题单返回正常单");
+					noteSb.append(" 普通问题单返回正常单处理; ");
 				}
-				if ("1".equals(type) || "2".equals(type)) {
+				// 缺货问题单处理
+				if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_LACK) && StringUtil.isNotNullForList(lackItems)) {
 					// 问题单信息备份到orderQuestionDel中
-					if (StringUtil.isNotNullForList(orderLogisticsQuestions)) {
-						for (DistributeQuestion question : orderLogisticsQuestions) {
-							depotQuestions.add(question.getQuestionCode());
-							// 通知数据商品组转正常单
-							DistributeQuestionDel del = new DistributeQuestionDel();
-							del.setOrderSn(orderSn);
-							del.setQuestionCode(question.getQuestionCode());
-							del.setQuestionDesc(question.getQuestionDesc());
-							del.setAddTime(question.getAddTime());
-							del.setQuestionDesc(question.getQuestionDesc());
-							del.setQuestionType(question.getQuestionType());
-							del.setSupplierOrderSn(question.getSupplierOrderSn());
-							this.distributeQuestionDelMapper.insertSelective(del);
-							// 删除相应问题单信息
-							DistributeQuestionKey newKey = new DistributeQuestionKey();
-							newKey.setOrderSn(orderSn);
-							newKey.setQuestionCode(question.getQuestionCode());
-							distributeQuestionMapper.deleteByPrimaryKey(newKey);
-							// 删除缺货商品
-							OrderQuestionLackSkuNewExample lackSkuNewExample = new OrderQuestionLackSkuNewExample();
-							OrderQuestionLackSkuNewExample.Criteria criteria = lackSkuNewExample.or();
-							criteria.andOrderSnEqualTo(orderSn);
-							criteria.andQuestionCodeEqualTo(question.getQuestionCode());
-							List<OrderQuestionLackSkuNew> lackSkus = orderQuestionLackSkuNewMapper.selectByExample(lackSkuNewExample);
-							if (StringUtil.isListNotNull(lackSkus)) {
-								for (OrderQuestionLackSkuNew lackSku :lackSkus) {
-									OrderQuestionLackSkuNewDel lackSkuDel = colneOrderQuestionLackSku(lackSku);
-									orderQuestionLackSkuNewDelMapper.insertSelective(lackSkuDel);
-									OrderQuestionLackSkuNewKey lackSkuNewKey = new OrderQuestionLackSkuNewKey();
-									lackSkuNewKey.setOrderSn(lackSku.getOrderSn());
-									lackSkuNewKey.setCustomCode(lackSku.getCustomCode());
-									lackSkuNewKey.setDepotCode(lackSku.getDepotCode());
-									lackSkuNewKey.setQuestionCode(lackSku.getQuestionCode());
-									lackSkuNewKey.setExtensionCode(lackSku.getExtensionCode());
-									lackSkuNewKey.setExtensionId(lackSku.getExtensionId());
-									orderQuestionLackSkuNewMapper.deleteByPrimaryKey(lackSkuNewKey);
-								}
-							}
-						}
-					}
-					noteSb.append(" OS问题单返回正常单处理; ");
+					deleteOrderQuestions(orderSn, lackItems, "缺货问题单返回正常单");
+					noteSb.append(" 缺货问题单返回正常单处理; ");
 				}
-				distributeActionService.addOrderAction(orderSn, noteSb.toString(), orderStatus.getAdminUser());
-				// 未下发ERP时调用下发ERP方法 
-				/*if (!OrderAttributeUtil.doERP(distribute, 0)) {
-					distributeSupplierService.distribute(orderSn);
-				} else if (OrderAttributeUtil.doERP(distribute, 0)
-						&& distribute.getDepotStatus() == Constant.OI_DEPOT_STATUS_UNDEPOTED) {
-					// 已下发未分仓订单，调用分配接口
-					//针对部分缺货问题单和部分缺货问题单，在返回正常单的时候，调用ERP立即分配接口
-					// callERPToDepot(orderSn, orderStatus.getAdminUser(), depotQuestions);
-				}*/
+				// 待审核问题单处理
+				if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_REVIEW) && StringUtil.isNotNullForList(reviewItems)) {
+					// 问题单信息备份到orderQuestionDel中
+					deleteOrderQuestions(orderSn, reviewItems, "待审核问题单返回正常单");
+					noteSb.append(" 待审核问题单返回正常单处理; ");
+				}
+                // 待签章问题单处理
+                if (questionTypeMap.containsKey(Constant.QUESTION_TYPE_SIGN) && StringUtil.isNotNullForList(signItems)) {
+                    // 问题单信息备份到orderQuestionDel中
+                    deleteOrderQuestions(orderSn, signItems, "待签章问题单返回正常单");
+                    noteSb.append(" 待签章问题单返回正常单处理; ");
+                }
+				info.setIsOk(Constant.OS_YES);
+				info.setMessage("订单["+orderSns+"]订单返回正常单成功");
 			} catch (Exception e) {
-				String errorMsg = e.getMessage() == null ? "" : e.getMessage();
-				logger.error("订单[" + orderSn + "]订单返回正常单异常：" + e.getMessage(), e);
-				info.setMessage("订单[" + orderSn + "]订单返回正常单成功");
-				String actionNote = "<font style=color:red;>返回正常单：异常信息" + errorMsg + "</font>";
-				distributeActionService.addOrderAction(orderSn, actionNote, orderStatus.getAdminUser());
-				return info;
+				String errorMsg = "订单[" + orderSn + "]订单返回正常单异常：" + e.getMessage();
+				logger.error(errorMsg, e);
+				info.setMessage(errorMsg);
+				noteSb = new StringBuffer("<font style=color:red;>" + errorMsg + "</font>");
+			} finally {
+				distributeActionService.addOrderAction(orderSn, noteSb.toString(), orderStatus.getAdminUser());
+				logger.debug("订单["+orderSns+"]订单返回正常单" + JSON.toJSONString(info));
 			}
 		}
-		info.setIsOk(Constant.OS_YES);
-		info.setMessage("订单["+orderSns+"]订单返回正常单成功");
-		logger.debug("订单["+orderSns+"]订单返回正常单成功");
 		return info;
 	}
 
     /**
-     * 获取交货单编码列表
+     * 获取问题交货单列表
      * @param distributes
      * @return List<OrderDistribute>
      */
 	private List<OrderDistribute> getOrderDistributeSn(List<OrderDistribute> distributes) {
         List<OrderDistribute> updateDistributes = new ArrayList<OrderDistribute>();
         for (OrderDistribute distribute : distributes) {
-            String orderSn = distribute.getOrderSn();
             if (distribute.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
                 continue;
             }
@@ -603,6 +649,46 @@ public class OrderNormalServiceImpl implements OrderNormalService {
         updateDistribute.setUpdateTime(new Date());
         updateDistribute.setOrderSn(orderSn);
         orderDistributeMapper.updateByPrimaryKeySelective(updateDistribute);
+    }
+	
+    /**
+     * 处理订单返回正常单
+     * @param masterOrderSn
+     */
+	private void processMasterOrderQuestion(String masterOrderSn) {
+		// 返回正常单
+		MasterOrderInfo updateMaster = new MasterOrderInfo();
+		updateMaster.setQuestionStatus(Constant.OI_QUESTION_STATUS_NORMAL);
+		updateMaster.setUpdateTime(new Date());
+		updateMaster.setMasterOrderSn(masterOrderSn);
+		// 更新订单状态
+		masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+    }
+
+    /**
+     * 处理订单返回正常单后续处理
+     * @param master
+     * @param orderStatus
+     */
+    private void processMasterOrderNormalFollow(MasterOrderInfo master, OrderStatus orderStatus) {
+	    String masterOrderSn = master.getMasterOrderSn();
+        // 订单操作日志记录
+        if (master.getSplitStatus().equals(Constant.SPLIT_STATUS_UNSPLITED)) {
+            // 拆单处理
+            orderDistributeJmsTemplate.send(new TextMessageCreator(masterOrderSn));
+        } else if (master.getSplitStatus().equals(Constant.SPLIT_STATUS_SPLITED)) {
+			if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
+				// 需要等待签章
+			} else {
+				// 创建采购单
+				OrderManagementRequest request = new OrderManagementRequest();
+				request.setMasterOrderSn(masterOrderSn);
+				request.setMessage("返回正常单-创建采购单");
+				request.setActionUser(orderStatus.getAdminUser());
+				request.setActionUserId(orderStatus.getAdminUserId());
+				purchaseOrderService.purchaseOrderCreateByMaster(request);
+			}
+        }
     }
 
 	/*@Override
@@ -783,6 +869,11 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 		return null;
 	}*/
 
+    /**
+     * 删除交货单问题单
+     * @param orderSn 交货单号
+     * @return ReturnInfo
+     */
 	@Override
 	public ReturnInfo deleteOrderQuestion(String orderSn) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
@@ -930,41 +1021,49 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 
 	/**
 	 * 删除问题单列表（先备份问题单、问题单商品），然后移除
-	 * 
 	 * @param orderSn
 	 * @param questionNews
 	 * @param message
 	 */
 	private void deleteOrderQuestions(String orderSn, List<DistributeQuestion> questionNews, String message) {
-		if (StringUtil.isNotNullForList(questionNews)) {
-			for (DistributeQuestion question : questionNews) {
-				DistributeQuestionDel del = new DistributeQuestionDel();
-				del.setOrderSn(question.getOrderSn());
-				del.setQuestionCode(question.getQuestionCode());
-				del.setAddTime(question.getAddTime());
-				del.setQuestionDesc(question.getQuestionDesc());
-				del.setQuestionType(question.getQuestionType());
-				this.distributeQuestionDelMapper.insertSelective(del);
-				if (question.getQuestionType() == 1) {
-					OrderQuestionLackSkuNewExample lackSkuExample = new OrderQuestionLackSkuNewExample();
-					lackSkuExample.or().andOrderSnEqualTo(orderSn).andQuestionCodeEqualTo(question.getQuestionCode());
-					List<OrderQuestionLackSkuNew> lackSkus = orderQuestionLackSkuNewMapper.selectByExample(lackSkuExample);
-					if (StringUtil.isListNotNull(lackSkus)) {
-						for (OrderQuestionLackSkuNew lackSku :lackSkus) {
-							OrderQuestionLackSkuNewDel lackSkuDel = colneOrderQuestionLackSku(lackSku);
-							orderQuestionLackSkuNewDelMapper.insertSelective(lackSkuDel);
-						}
-					}
-					OrderQuestionLackSkuNewExample skuNewExample = new OrderQuestionLackSkuNewExample();
-					skuNewExample.or().andOrderSnEqualTo(orderSn).andQuestionCodeEqualTo(question.getQuestionCode());
-					orderQuestionLackSkuNewMapper.deleteByExample(skuNewExample);
-				}
-				// 删除相应问题单信息
-				DistributeQuestionExample newExample = new DistributeQuestionExample();
-				newExample.or().andOrderSnEqualTo(orderSn).andQuestionCodeEqualTo(question.getQuestionCode());
-				distributeQuestionMapper.deleteByExample(newExample);
-			}
-		}
+
+	    if (StringUtil.isListNull(questionNews)) {
+	        return;
+        }
+
+        for (DistributeQuestion question : questionNews) {
+            // 通知数据商品组转正常单
+            DistributeQuestionDel del = new DistributeQuestionDel();
+            del.setOrderSn(orderSn);
+            del.setQuestionCode(question.getQuestionCode());
+            del.setQuestionDesc(question.getQuestionDesc());
+            del.setAddTime(question.getAddTime());
+            del.setQuestionDesc(question.getQuestionDesc());
+            del.setQuestionType(question.getQuestionType());
+            del.setSupplierOrderSn(question.getSupplierOrderSn());
+            this.distributeQuestionDelMapper.insertSelective(del);
+            // 分配缺货问题单备份缺货商品数据
+            if (question.getQuestionType() == Constant.QUESTION_TYPE_LACK) {
+                OrderQuestionLackSkuNewExample lackSkuExample = new OrderQuestionLackSkuNewExample();
+                lackSkuExample.or().andOrderSnEqualTo(orderSn).andQuestionCodeEqualTo(question.getQuestionCode());
+                List<OrderQuestionLackSkuNew> lackSkus = orderQuestionLackSkuNewMapper.selectByExample(lackSkuExample);
+                if (StringUtil.isListNotNull(lackSkus)) {
+                    for (OrderQuestionLackSkuNew lackSku :lackSkus) {
+                        OrderQuestionLackSkuNewDel lackSkuDel = colneOrderQuestionLackSku(lackSku);
+                        orderQuestionLackSkuNewDelMapper.insertSelective(lackSkuDel);
+                    }
+                }
+                OrderQuestionLackSkuNewExample skuNewExample = new OrderQuestionLackSkuNewExample();
+                skuNewExample.or().andOrderSnEqualTo(orderSn).andQuestionCodeEqualTo(question.getQuestionCode());
+                orderQuestionLackSkuNewMapper.deleteByExample(skuNewExample);
+            }
+            // 删除相应问题单信息
+            DistributeQuestionKey newKey = new DistributeQuestionKey();
+            newKey.setOrderSn(orderSn);
+            newKey.setQuestionCode(question.getQuestionCode());
+            distributeQuestionMapper.deleteByPrimaryKey(newKey);
+        }
+
 	}
 
 
@@ -1012,7 +1111,7 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 	}
 
 	/**
-	 * 判断交货单
+	 * 判断交货单,获取问题单交货单列表
 	 * @param distributes
 	 * @return ReturnInfo<List<OrderDistribute>>
 	 */
@@ -1032,5 +1131,13 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 		info.setData(updateDistributes);
 		info.setIsOk(Constant.OS_YES);
 		return info;
+	}
+	
+	public Map<Integer, Integer> getQuestionTypeMap(List<Integer> list) {
+		Map<Integer, Integer> map = new HashMap<>(3);
+		for (Integer integer : list) {
+			map.put(integer, integer);
+		}
+		return map;
 	}
 }

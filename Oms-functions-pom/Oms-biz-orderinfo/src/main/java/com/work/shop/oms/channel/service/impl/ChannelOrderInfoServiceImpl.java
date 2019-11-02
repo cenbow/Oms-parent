@@ -13,9 +13,12 @@ import javax.annotation.Resource;
 import com.work.shop.oms.api.bean.*;
 import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
+import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.GoodsReturnChangeService;
+import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.utils.DateTimeUtils;
+import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -26,12 +29,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.api.param.bean.Paging;
 import com.work.shop.oms.bean.SystemRegionAreaExample.Criteria;
-import com.work.shop.oms.common.bean.ApiReturnData;
-import com.work.shop.oms.common.bean.ConstantValues;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.common.bean.TimeUtil;
-import com.work.shop.oms.common.utils.StringUtil;
 import com.work.shop.oms.config.service.OrderPeriodDetailService;
 import com.work.shop.oms.dao.define.DefineOrderMapper;
 import com.work.shop.oms.order.response.OmsBaseResponse;
@@ -93,6 +90,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
 	@Resource
 	private GoodsReturnChangeMapper goodsReturnChangeMapper;
+
+	@Resource
+	private OrderReturnGoodsMapper orderReturnGoodsMapper;
+
+	@Resource
+	private DistributeShipService distributeShipService;
 
 	/**
 	 * 判断查询订单列表参数
@@ -179,6 +182,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			params.put("materielNo", searchParam.getMaterielNo());
 		}
 
+		//签章状态
+		if (searchParam.getSignStatus() != null) {
+            params.put("signStatus", searchParam.getSignStatus());
+        }
+
 		return params;
 	}
 
@@ -258,6 +266,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 						for (OrderShipInfo orderShip : shipList) {
 							Map<String, Object> goodsParams = new HashMap<String, Object>(6);
 							goodsParams.put("orderSn",orderShip.getOrderSn());
+                            String invoiceNo = orderShip.getInvoiceNo();
+                            if (invoiceNo == null) {
+                                invoiceNo = "";
+                            }
+                            goodsParams.put("invoiceNo",orderShip.getInvoiceNo());
 							goodsParams.put("depotCode",orderShip.getDepotCode());
 							goodsParams.put("isHistory", searchParam.getIsHistory());
 							List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
@@ -270,6 +283,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 						//合并相同快递单号的物流信息
 						shipList = mergeSameInvoiceNo(shipList);
 					}
+
+					//校验是否可以延长收货
+                    checkReceipt(orderPageInfo, shipList);
 					orderPageInfo.setOrderShipInfo(shipList);
 				}
 				orderPageInfo.setGoodsCount(goodsCount);
@@ -286,7 +302,43 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		return apiReturnData;
 	}
 
-	/**
+    /**
+     * 订单列表校验是否可以延长收货
+     * @param orderPageInfo
+     * @param shipList
+     * @return
+     */
+    private void checkReceipt(OrderPageInfo orderPageInfo, List<OrderShipInfo> shipList) {
+        if (orderPageInfo == null || StringUtil.isListNull(shipList)) {
+            return;
+        }
+
+        int orderStatus = orderPageInfo.getOrderStatus();
+        int payStatus = orderPageInfo.getPayStatus();
+        int shipStatus = orderPageInfo.getShipStatus();
+        //订单（未确认、已取消、已完成）、未支付、未发货、已收货，不可延长收货
+        if (orderStatus != 1 || payStatus == 0 || shipStatus == 0 || shipStatus == 5) {
+            return;
+        }
+
+        boolean flag = false;
+        for (OrderShipInfo shipInfo : shipList) {
+            Integer isReceipt = shipInfo.getIsReceipt();
+            Integer shippingStatus = shipInfo.getShippingStatus();
+            //有非（未发货、已收货、门店收货、客户签收、已延长收货的）可以延长收货
+            if (shippingStatus != 0 && shippingStatus != 2 && shippingStatus != 6 && shippingStatus != 13 && isReceipt == 0) {
+                flag = true;
+                break;
+            }
+        }
+
+        if (flag) {
+            orderPageInfo.setReceipt(true);
+        }
+
+    }
+
+    /**
 	 * 查询订单退单列表
 	 * @param searchParam 查询参数
 	 * @return ApiReturnData
@@ -379,6 +431,10 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 				apiReturnData.setMessage("没有相应的退单消息！");
 				return apiReturnData;
 			}
+			if (StringUtils.isBlank(orderReturnDetailInfo.getContactUser())) {
+                orderReturnDetailInfo.setContactUser(orderReturnDetailInfo.getConsignee());
+            }
+
 			//流程状态 1 => '申请退货',   2 => '收货', 3 => '商品质检',  4 => '退货完成',
 			if (orderReturnDetailInfo.getPayStatus() == 1) {
 				orderReturnDetailInfo.setProgressStatus(4);
@@ -398,7 +454,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			//添加退单日志
             OrderReturnActionExample example = new OrderReturnActionExample();
             example.or().andReturnSnEqualTo(orderReturnSn);
+            example.setOrderByClause("log_time desc");
             List<OrderReturnAction> returnActions = orderReturnActionMapper.selectByExample(example);
+            fillShow(returnActions);
             orderReturnDetailInfo.setActions(returnActions);
 
             apiReturnData.setIsOk(Constant.OS_STR_YES);
@@ -410,7 +468,28 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		return apiReturnData;
 	}
 
-	/**
+    /**
+     * 填充是否显示
+     * @param returnActions
+     */
+    private void fillShow(List<OrderReturnAction> returnActions) {
+        if (StringUtil.isListNull(returnActions)) {
+            return;
+        }
+
+        String statusStr = "";
+        for (OrderReturnAction action : returnActions) {
+            String actionStatusStr = action.getStatusStr();
+            if (StringUtils.isBlank(actionStatusStr) || statusStr.equals(actionStatusStr)) {
+                continue;
+            }
+
+            action.setShow(true);
+            statusStr = actionStatusStr;
+        }
+    }
+
+    /**
 	 * 查询换单详情
 	 * @param orderSn 订单编码
 	 * @param isHistory 是否历史
@@ -527,6 +606,152 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		}
 	}
 
+    /**
+     * 设置订单商品退单状态
+     * @param orderGoodsList
+     */
+	private void fillOrderGoodsReturnStatus(List<OrderGoodsInfo> orderGoodsList) {
+        for (OrderGoodsInfo orderGoodsInfo : orderGoodsList) {
+            Map<String, Object> returnGoodsParams = new HashMap<String, Object>(4);
+            returnGoodsParams.put("sku", orderGoodsInfo.getSkuSn());
+            returnGoodsParams.put("subOrderSn", orderGoodsInfo.getSubOrderSn());
+            List<ReturnGoodsStatus> returnGoodsStatusList = defineOrderMapper.selectReturnGoodsStatus(returnGoodsParams);
+            if (returnGoodsStatusList != null && returnGoodsStatusList.size() > 0) {
+                orderGoodsInfo.setGoodsStatus(returnGoodsStatusList.get(0).getReturnGoodsStatus());
+            }
+        }
+    }
+
+    /**
+     * 设置订单是否可以申请退款
+     * @param orderDetailInfo
+     */
+	private void fillOrderRefund(OrderDetailInfo orderDetailInfo) {
+        String orderPayTime = orderDetailInfo.getOrderPayTime();
+        if (StringUtils.isNotBlank(orderPayTime)) {
+            int periodDetailValue = getPeriodDetailValue(1, "6604");
+            int timeLimit = DateTimeUtils.dateDiff(orderPayTime, periodDetailValue);
+            if (orderDetailInfo.getPayStatus() == Constant.OI_PAY_STATUS_PAYED
+                    && orderDetailInfo.getShipStatus() == Constant.OI_SHIP_STATUS_UNSHIPPED && timeLimit != 1) {
+                orderDetailInfo.setRefund(true);
+            }
+        }
+    }
+
+    /**
+     * 填充订单收货地址信息
+     * @param orderDetailInfo
+     */
+	private void fillOrderAddressInfo(OrderDetailInfo orderDetailInfo) {
+        String country = "";
+        String province = "";
+        String city = "";
+        String district = "";
+        String street = "";
+        String shippingAddress = "";
+        if (orderDetailInfo != null) {
+            orderDetailInfo.setEncryptMobile(orderDetailInfo.getMobile().length() > 11 ? orderDetailInfo.getMobile() : orderDetailInfo.getMobile());
+            String mobile = orderDetailInfo.getMobile();
+            orderDetailInfo.setMobile(encryptionMobile(mobile));
+            if (orderDetailInfo.getAddress() != null) {
+                SystemRegionArea countryArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCountry());
+                if (countryArea != null) {
+                    country = countryArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getProvince() != null && orderDetailInfo.getProvince().length() > 0) {
+                SystemRegionArea provinceArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getProvince());
+                if (provinceArea != null) {
+                    province = provinceArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getCity() != null && orderDetailInfo.getCity().length() > 0) {
+                SystemRegionArea cityArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCity());
+                if (cityArea != null) {
+                    city = cityArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getDistrict() != null && orderDetailInfo.getDistrict().length() > 0) {
+                SystemRegionArea districtArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getDistrict());
+                if (districtArea != null) {
+                    district = districtArea.getRegionName();
+                }
+            }
+            if (orderDetailInfo.getStreet() != null && orderDetailInfo.getStreet().length() > 0) {
+                SystemRegionArea streetArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getStreet());
+                if (streetArea != null) {
+                    street = streetArea.getRegionName();
+                }
+            }
+            shippingAddress = province + city + district + street + orderDetailInfo.getAddress();
+        }
+        orderDetailInfo.setShippingAddress(shippingAddress);
+    }
+
+    /**
+     * 填充未拆单订单发货信息
+     * @param orderSn
+     * @param isHistory
+     * @return
+     */
+    private List<OrderShipInfo> fillNotSplitOrderInfo(String orderSn, String isHistory) {
+        Map<String, Object> goodsParams = new HashMap<String, Object>(4);
+        goodsParams.put("masterOrderSn", orderSn);
+        goodsParams.put("isHistory", isHistory);
+        List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
+        setGoodsInfo(orderGoodsList);
+        OrderShipInfo orderShipInfo = new OrderShipInfo();
+        orderShipInfo.setOrderGoodsInfo(orderGoodsList);
+        List<OrderShipInfo> shipList = new ArrayList<OrderShipInfo>();
+        shipList.add(orderShipInfo);
+
+        return shipList;
+    }
+
+    /**
+     * 填充已拆单订单发货信息
+     * @param orderDetailInfo
+     * @param shipList
+     * @param isHistory
+     * @return
+     */
+    private List<OrderShipInfo> fillSplitOrderInfo(OrderDetailInfo orderDetailInfo, List<OrderShipInfo> shipList, String isHistory) {
+        //已拆单时商品查询
+        boolean flag = true;
+        String lastDeliveryConfirmTime = "";
+        for (OrderShipInfo orderShip : shipList) {
+            Map<String, Object> goodsParams = new HashMap<String, Object>(8);
+            goodsParams.put("orderSn", orderShip.getOrderSn());
+            goodsParams.put("depotCode", orderShip.getDepotCode());
+            goodsParams.put("isHistory", isHistory);
+            if (StringUtils.isNotEmpty(orderShip.getInvoiceNo())) {
+                goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
+            } else {
+                goodsParams.put("invoiceNo", "");
+            }
+            List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
+            setGoodsInfo(orderGoodsList);
+            // 设置订单商品退单状态
+            fillOrderGoodsReturnStatus(orderGoodsList);
+            orderShip.setOrderGoodsInfo(orderGoodsList);
+
+            //获取最后收货时间,包裹收货时间不为空,只要有未收货包裹，则无整单确认收货时间
+            if (flag && StringUtils.isNotBlank(orderShip.getDeliveryConfirmTime())) {
+                if (StringUtils.isBlank(lastDeliveryConfirmTime) || lastDeliveryConfirmTime.compareTo(orderShip.getDeliveryConfirmTime()) < 0) {
+                    lastDeliveryConfirmTime = orderShip.getDeliveryConfirmTime();
+                }
+            } else {
+                flag = false;
+                lastDeliveryConfirmTime = "";
+            }
+        }
+        //填充订单确认收货时间
+        orderDetailInfo.setLastDeliveryConfirmTime(lastDeliveryConfirmTime);
+        //合并相同快递单号的物流信息
+        shipList = mergeSameInvoiceNo(shipList);
+        return shipList;
+    }
+
 	/**
 	 * 订单详情
 	 * @param orderSn 订单编码
@@ -537,16 +762,16 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<OrderDetailInfo> orderInfoDetail(String orderSn, String isHistory, String userId, String siteCode) {
-		logger.info("平台前台查询订单详情：order=" + orderSn + ",isHistory=" + isHistory);
+
 		ApiReturnData<OrderDetailInfo> apiReturnData = new ApiReturnData<OrderDetailInfo>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 		try {
 			if (StringUtils.isBlank(orderSn)) {
-				apiReturnData.setMessage("orderSn不能为空！");
+				apiReturnData.setMessage("订单号不能为空！");
 				return apiReturnData;
 			}
 			if (StringUtils.isBlank(siteCode)) {
-				apiReturnData.setMessage("siteCode不能为空！");
+				apiReturnData.setMessage("站点不能为空！");
 				return apiReturnData;
 			}
 			if (StringUtils.isBlank(isHistory)) {
@@ -570,101 +795,26 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			setOrderStatus(orderDetailInfo);
 
 			//校验是否可以申请退单
-            String orderPayTime = orderDetailInfo.getOrderPayTime();
-            if (StringUtils.isNotBlank(orderPayTime)) {
-                int periodDetailValue = getPeriodDetailValue(1, "6604");
-                int timeLimit = DateTimeUtils.dateDiff(orderPayTime, periodDetailValue);
-                if (orderDetailInfo.getPayStatus() == Constant.OI_PAY_STATUS_PAYED
-						&& orderDetailInfo.getShipStatus() == Constant.OI_SHIP_STATUS_UNSHIPPED && timeLimit != 1) {
-                    orderDetailInfo.setRefund(true);
-                }
-            }
+            fillOrderRefund(orderDetailInfo);
 
 			// 订单未支付, 订单前端可以取消的最后时间
 			String orderCancelTime = getOrderCancelTime(orderDetailInfo.getOrderCreateTime());
 			orderDetailInfo.setOrderCancelTime(orderCancelTime);
 
-			String country = "";
-			String province = "";
-			String city = "";
-			String district = "";
-			String street = "";
-			String shippingAddress = "";
-			if (orderDetailInfo != null) {
-				orderDetailInfo.setEncryptMobile(orderDetailInfo.getMobile().length() > 11 ? orderDetailInfo.getMobile() : orderDetailInfo.getMobile());
-				String mobile = orderDetailInfo.getMobile();
-				orderDetailInfo.setMobile(encryptionMobile(mobile));
-				if (orderDetailInfo.getAddress() != null) {
-					SystemRegionArea countryArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCountry());
-					if (countryArea != null) {
-						country = countryArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getProvince() != null && orderDetailInfo.getProvince().length() > 0) {
-					SystemRegionArea provinceArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getProvince());
-					if (provinceArea != null) {
-						province = provinceArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getCity() != null && orderDetailInfo.getCity().length() > 0) {
-					SystemRegionArea cityArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getCity());
-					if (cityArea != null) {
-						city = cityArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getDistrict() != null && orderDetailInfo.getDistrict().length() > 0) {
-					SystemRegionArea districtArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getDistrict());
-					if (districtArea != null) {
-						district = districtArea.getRegionName();
-					}
-				}
-				if (orderDetailInfo.getStreet() != null && orderDetailInfo.getStreet().length() > 0) {
-					SystemRegionArea streetArea = systemRegionAreaMapper.selectByPrimaryKey(orderDetailInfo.getStreet());
-					if (streetArea != null) {
-						street = streetArea.getRegionName();
-					}
-				}
-				shippingAddress = province + city + district + street + orderDetailInfo.getAddress();
-			}
-			orderDetailInfo.setShippingAddress(shippingAddress);
+			// 填充订单地址信息
+            fillOrderAddressInfo(orderDetailInfo);
+
 			Map<String, Object> shipParams = new HashMap<String, Object>(4);
 			shipParams.put("orderSn", orderSn);
 			shipParams.put("isHistory", isHistory);
 			List<OrderShipInfo> shipList = defineOrderMapper.selectOrderShipInfo(shipParams);
-			//未拆单时商品查询
+
 			if (shipList == null || shipList.size() == 0 || shipList.get(0) == null) {
-				Map<String, Object> goodsParams = new HashMap<String, Object>(4);
-				goodsParams.put("masterOrderSn", orderSn);
-				goodsParams.put("isHistory", isHistory);
-				List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
-				setGoodsInfo(orderGoodsList);
-				OrderShipInfo orderShipInfo = new OrderShipInfo();
-				orderShipInfo.setOrderGoodsInfo(orderGoodsList);
-				shipList = new ArrayList<OrderShipInfo>();
-				shipList.add(orderShipInfo);
+                //未拆单时商品查询
+				shipList = fillNotSplitOrderInfo(orderSn, isHistory);
 			} else {
 				//已拆单时商品查询
-				for (OrderShipInfo orderShip : shipList) {
-					Map<String, Object> goodsParams = new HashMap<String, Object>();
-                    goodsParams.put("orderSn", orderShip.getOrderSn());
-                    goodsParams.put("depotCode", orderShip.getDepotCode());
-                    goodsParams.put("isHistory", isHistory);
-                    goodsParams.put("invoiceNo", orderShip.getInvoiceNo());
-					List<OrderGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderGoodsInfo(goodsParams);
-					setGoodsInfo(orderGoodsList);
-					for (OrderGoodsInfo orderGoodsInfo : orderGoodsList) {
-						Map<String, Object> returnGoodsParams = new HashMap<String, Object>();
-                        returnGoodsParams.put("sku", orderGoodsInfo.getSkuSn());
-                        returnGoodsParams.put("subOrderSn", orderGoodsInfo.getSubOrderSn());
-						List<ReturnGoodsStatus> returnGoodsStatusList = defineOrderMapper.selectReturnGoodsStatus(returnGoodsParams);
-						if (returnGoodsStatusList != null && returnGoodsStatusList.size() > 0) {
-							orderGoodsInfo.setGoodsStatus(returnGoodsStatusList.get(0).getReturnGoodsStatus()); 
-						}
-					}
-					orderShip.setOrderGoodsInfo(orderGoodsList);
-				}
-				//合并相同快递单号的物流信息
-				shipList = mergeSameInvoiceNo(shipList);
+				shipList = fillSplitOrderInfo(orderDetailInfo, shipList, isHistory);
 			}
 			orderDetailInfo.setOrderShipInfo(shipList);
 			setOrderGoodsInfo(orderDetailInfo);
@@ -722,7 +872,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	
 		return apiReturnData;
 	}
-	
+
+    /**
+     * 设置商品编码
+     * @param orderGoodsList
+     */
 	private void setGoodsInfo(List<OrderGoodsInfo>  orderGoodsList){
 		if (CollectionUtils.isNotEmpty(orderGoodsList)) {
 			for (OrderGoodsInfo orderGoods : orderGoodsList) {
@@ -748,12 +902,18 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 * @param orderDetailInfo
 	 */
 	private void setOrderGoodsInfo(OrderDetailInfo orderDetailInfo) {
-		//logger.info("orderDetailInfo:" + JSONObject.toJSONString(orderDetailInfo));
 		List<OrderShipInfo> list = orderDetailInfo.getOrderShipInfo();
 		if (list == null || list.size() == 0) {
 			return;
 		}
-		
+
+		//获取退单商品信息
+        Map<String, OrderReturnGoods> returnGoodsMap = getOrderReturnGoodsMap(orderDetailInfo.getOrderSn());
+		if (returnGoodsMap == null) {
+            returnGoodsMap = new HashMap<String, OrderReturnGoods>(Constant.DEFAULT_MAP_SIZE);
+        }
+
+        Map<String, Integer> canChangeNumMap = new HashMap<String, Integer>(Constant.DEFAULT_MAP_SIZE);
 		int goodsNumber = 0;
 		for (OrderShipInfo orderShipInfo : list) {
 			if (orderShipInfo == null) {
@@ -764,43 +924,106 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			if (goodsList != null && goodsList.size() > 0) {
 				for (OrderGoodsInfo orderGoodsInfo : goodsList) {
 					goodsNumber += orderGoodsInfo.getGoodsNum();
-					logger.info("orderDetailInfo-->goodsNumber:" + goodsNumber);
+
+					//填充退单数量
+                    String key = orderGoodsInfo.getSkuSn() + "_" + orderGoodsInfo.getExtensionCode();
+                    OrderReturnGoods returnGoods = returnGoodsMap.get(key);
+                    int canChangeNum = 0;
+                    Integer canNum = canChangeNumMap.get(key);
+                    if (canNum == null) {
+                        if (returnGoods == null) {
+                            canChangeNum = orderGoodsInfo.getGoodsNum();
+                        } else {
+                            canChangeNum = orderGoodsInfo.getGoodsNum() - returnGoods.getGoodsReturnNumber();
+                        }
+                    } else if (canNum >= 0) {
+                        canChangeNum = orderGoodsInfo.getGoodsNum();
+                    } else {
+                        canChangeNum = orderGoodsInfo.getGoodsNum() + canNum;
+                    }
+
+                    canChangeNumMap.put(key, canChangeNum);
+                    orderGoodsInfo.setCanChangeNum(canChangeNum < 0 ? 0 : canChangeNum);
+                    orderGoodsInfo.setReturnGoodsNum(orderGoodsInfo.getGoodsNum() - orderGoodsInfo.getCanChangeNum());
 				}
 			}
 		}
 		orderDetailInfo.setGoodsNumber(goodsNumber);
-		//logger.info("orderDetailInfo:" + JSONObject.toJSONString(orderDetailInfo));
 	}
-	
-	private String encryptionMobile(String  mobile) {
+
+    /**
+     * 获取退单信息
+     * @param orderSn
+     * @return
+     */
+    private Map<String, OrderReturnGoods> getOrderReturnGoodsMap(String orderSn) {
+        OrderReturnExample returnExample = new OrderReturnExample();
+        returnExample.or().andRelatingOrderSnEqualTo(orderSn).andIsDelEqualTo(0).andReturnOrderStatusNotEqualTo((byte) 4);
+        List<OrderReturn> orderReturnList = orderReturnMapper.selectByExample(returnExample);
+        if (StringUtil.isListNull(orderReturnList)) {
+            return null;
+        }
+
+        List<String> returnSnList = new ArrayList<String>();
+        for (OrderReturn orderReturn : orderReturnList) {
+            returnSnList.add(orderReturn.getReturnSn());
+        }
+
+        OrderReturnGoodsExample goodsExample = new OrderReturnGoodsExample();
+        goodsExample.or().andRelatingReturnSnIn(returnSnList);
+        List<OrderReturnGoods> orderReturnGoodsList = orderReturnGoodsMapper.selectByExample(goodsExample);
+        if (StringUtil.isListNull(orderReturnGoodsList)) {
+            return null;
+        }
+
+        Map<String, OrderReturnGoods> map = new HashMap<String, OrderReturnGoods>();
+        for (OrderReturnGoods returnGoods : orderReturnGoodsList) {
+            String key = returnGoods.getCustomCode() + "_" + returnGoods.getExtensionCode();
+            OrderReturnGoods goods = map.get(key);
+            if (goods != null) {
+                Integer returnNum = goods.getGoodsReturnNumber() + returnGoods.getGoodsReturnNumber();
+                returnGoods.setGoodsReturnNumber(returnNum.shortValue());
+            }
+
+            map.put(key, returnGoods);
+        }
+
+        return map;
+    }
+
+    private String encryptionMobile(String  mobile) {
 		if (mobile.length() == 11) {
 			return mobile.substring(0,3) + "****" + mobile.substring(7,11);
 		} else {
 			return mobile;
 		}
 	}
-	
-	//合并订单相同快递单号记录
+
+	/**
+	 * 合并订单相同快递单号记录
+	 * @param shipList
+	 * @return List<OrderShipInfo>
+	 */
 	private List<OrderShipInfo> mergeSameInvoiceNo(List<OrderShipInfo> shipList) {
-		Map<String,Object> map = new HashMap<String, Object>();
+		Map<String,Object> map = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
 		List<OrderShipInfo> returnList = new ArrayList<OrderShipInfo>();
 		for (OrderShipInfo orderShipInfo : shipList) {
 			String key = orderShipInfo.getInvoiceNo();
-			if(!map.containsKey(key)){
+			if (!map.containsKey(key)) {
 				map.put(key, orderShipInfo);
-			}else{
-				OrderShipInfo shipInfo =  (OrderShipInfo) map.get(key);
-				if(CollectionUtils.isEmpty(shipInfo.getOrderGoodsInfo())){
+			} else {
+				OrderShipInfo shipInfo = (OrderShipInfo) map.get(key);
+				if (CollectionUtils.isEmpty(shipInfo.getOrderGoodsInfo())) {
 					shipInfo.setOrderGoodsInfo(new ArrayList<OrderGoodsInfo>());
 				}
-				for(OrderGoodsInfo orderGoodsInfo :orderShipInfo.getOrderGoodsInfo()){
+				for (OrderGoodsInfo orderGoodsInfo :orderShipInfo.getOrderGoodsInfo()) {
 					shipInfo.getOrderGoodsInfo().add(orderGoodsInfo);
 				}
 				map.put(key, shipInfo);
 			}
 		}
 		
-		for(Map.Entry<String,Object> entry:map.entrySet()){
+		for (Map.Entry<String,Object> entry:map.entrySet()) {
 			returnList.add((OrderShipInfo) entry.getValue());
 		}
 		return returnList;
@@ -1034,6 +1257,25 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		return returnInfo;
 	}
 
+    /**
+     * 判断确认收货参数
+     * @param orderSn
+     * @param actionUser
+     * @return
+     */
+	private String checkConfirmReceipt(String orderSn, String actionUser) {
+	    String msg = null;
+        if (StringUtils.isBlank(orderSn)) {
+            msg = "订单号不能为空";
+            return msg;
+        }
+        if (StringUtils.isBlank(actionUser)) {
+            msg = "actionUser不能为空";
+            return msg;
+        }
+        return msg;
+    }
+
 	/**
 	 * 确认收货
 	 * @param orderSn 订单编码
@@ -1047,14 +1289,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		logger.info("confirmReceipt.orderSn:" + orderSn + ",invoiceNo:" + invoiceNo + ",actionUser:" + actionUser);
 		ReturnInfo<Boolean> ri = new ReturnInfo<Boolean>(Constant.OS_NO);
 		try {
-			if (StringUtils.isBlank(orderSn)) {
-				ri.setMessage("订单号不能为空");
+		    String msg = checkConfirmReceipt(orderSn, actionUser);
+			if (StringUtils.isNotBlank(msg)) {
+				ri.setMessage(msg);
 				return ri;
 			}
-			if (StringUtils.isBlank(actionUser)) {
-				ri.setMessage("actionUser不能为空！");
-				return ri;
-			}
+
 			MasterOrderInfo orderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderSn);
 			if (orderInfo == null) {
 				ri.setMessage(orderSn + "订单不存在");
@@ -1074,11 +1314,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 					ri.setMessage(orderSn + "订单未全部发货，不能确认收货！");
 					return ri;
 				}
-				MasterOrderInfo updateOrderInfo = new MasterOrderInfo(); 
-				updateOrderInfo.setUpdateTime(new Date());
-				updateOrderInfo.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
-				updateOrderInfo.setMasterOrderSn(orderSn);
-				masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrderInfo);
+				// 设置订单已收货
+                setMasterOrderInfoShipReceived(orderSn);
 
 				OrderDistributeExample orderDistributeExample = new OrderDistributeExample();
 				orderDistributeExample.or().andMasterOrderSnEqualTo(orderSn);
@@ -1087,28 +1324,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 					ri.setMessage("未找到对应的交货单！");
 					return ri;
 				}
-				for (OrderDistribute orderDistribute : orderDistributeList) {
-					if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
-						continue;
-					}
-					OrderDistribute updateOrderDistribute = new OrderDistribute();
-					updateOrderDistribute.setUpdateTime(new Date());
-					updateOrderDistribute.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
-					updateOrderDistribute.setOrderSn(orderDistribute.getOrderSn());
-					orderDistributeMapper.updateByPrimaryKeySelective(updateOrderDistribute);
-					OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
-					orderDepotShipExample.or().andOrderSnEqualTo(orderDistribute.getOrderSn());
-					List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
-					for (OrderDepotShip orderDepotShip : orderDepotShipList) {
-						if (orderDepotShip.getIsDel() == 1) {
-							continue;
-						}
-						orderDepotShip.setUpdateTime(new Date());
-						orderDepotShip.setShippingStatus((byte)Constant.OS_SHIPPING_STATUS_CONFIRM);
-						orderDepotShip.setDeliveryConfirmTime(new Date());
-						orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
-					}
-				}
+				// 设置交货单已收货
+                setOrderDistributeShipReceived(orderDistributeList);
 			} else {
 				OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
 				orderDepotShipExample.or().andInvoiceNoEqualTo(invoiceNo);
@@ -1204,6 +1421,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 			}
 
 			masterOrderActionService.insertOrderActionBySn(orderSn, "客户确认收货！", actionUser);
+
+            distributeShipService.processMasterShipResult(orderSn);
 			ri.setIsOk(ConstantValues.YESORNO_YES);
 			ri.setMessage("确认收货更新完成！");
 			ri.setData(true);
@@ -1213,6 +1432,47 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		}
 		return ri;
 	}
+
+	/**
+	 * 设置订单已收货
+	 * @param masterOrderSn
+	 */
+	private void setMasterOrderInfoShipReceived(String masterOrderSn) {
+		MasterOrderInfo updateOrderInfo = new MasterOrderInfo();
+		updateOrderInfo.setUpdateTime(new Date());
+		updateOrderInfo.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
+		updateOrderInfo.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrderInfo);
+	}
+
+    /**
+     * 设置交货单已收货
+     * @param orderDistributeList
+     */
+	private void setOrderDistributeShipReceived(List<OrderDistribute> orderDistributeList) {
+        for (OrderDistribute orderDistribute : orderDistributeList) {
+            if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
+                continue;
+            }
+            OrderDistribute updateOrderDistribute = new OrderDistribute();
+            updateOrderDistribute.setUpdateTime(new Date());
+            updateOrderDistribute.setShipStatus((byte)Constant.OI_SHIP_STATUS_ALLRECEIVED);
+            updateOrderDistribute.setOrderSn(orderDistribute.getOrderSn());
+            orderDistributeMapper.updateByPrimaryKeySelective(updateOrderDistribute);
+            OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
+            orderDepotShipExample.or().andOrderSnEqualTo(orderDistribute.getOrderSn());
+            List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
+            for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+                if (orderDepotShip.getIsDel() == 1) {
+                    continue;
+                }
+                orderDepotShip.setUpdateTime(new Date());
+                orderDepotShip.setShippingStatus((byte)Constant.OS_SHIPPING_STATUS_CONFIRM);
+                orderDepotShip.setDeliveryConfirmTime(new Date());
+                orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
+            }
+        }
+    }
 
 	/**
 	 * 通过支付单号获取订单商品
@@ -1333,42 +1593,46 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 
-		String masterOrderSn = searchParam.getOrderSn();
+		String orderSn = searchParam.getOrderSn();
 		try {
 			String userId = searchParam.getUserId();
 
-			MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
-			masterOrderInfoExample.or().andMasterOrderSnEqualTo(masterOrderSn).andUserIdEqualTo(userId);
-			List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
-			if (null == masterOrderInfoList || masterOrderInfoList.size() != 1) {
-				apiReturnData.setMessage("订单数据异常，不能操作！");
-				return apiReturnData;
-			}
+			List<String> masterOrderSnList = Arrays.asList(orderSn.split(","));
 
-			MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
-			extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
-			List<MasterOrderInfoExtend> infoExtends = masterOrderInfoExtendMapper.selectByExample(extendExample);
-			if (infoExtends == null || infoExtends.size() <1) {
-				apiReturnData.setMessage("订单信息异常");
-				return apiReturnData;
-			}
+			for (String masterOrderSn : masterOrderSnList) {
+				MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
+				masterOrderInfoExample.or().andMasterOrderSnEqualTo(masterOrderSn).andUserIdEqualTo(userId);
+				List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
+				if (null == masterOrderInfoList || masterOrderInfoList.size() != 1) {
+					apiReturnData.setMessage("订单数据异常，不能操作！");
+					return apiReturnData;
+				}
 
-			// 已付款银行卡号
-			String userBankNo = searchParam.getRemarks();
-			MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
-			extend.setUserPayApply(2);
-			if (StringUtil.isNotNull(userBankNo)) {
-				extend.setUserBankNo(userBankNo);
-			}
-			masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
-			apiReturnData.setIsOk(Constant.OS_STR_YES);
-			apiReturnData.setData(true);
-			apiReturnData.setMessage("操作成功");
+				MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
+				extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+				List<MasterOrderInfoExtend> infoExtends = masterOrderInfoExtendMapper.selectByExample(extendExample);
+				if (infoExtends == null || infoExtends.size() < 1) {
+					apiReturnData.setMessage("订单信息异常");
+					return apiReturnData;
+				}
 
-			masterOrderActionService.insertOrderActionBySn(masterOrderSn, "提交已支付申请", userId);
+				// 已付款银行卡号
+				String userBankNo = searchParam.getRemarks();
+				MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+				extend.setUserPayApply(2);
+				if (StringUtil.isNotNull(userBankNo)) {
+					extend.setUserBankNo(userBankNo);
+				}
+				masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
+				apiReturnData.setIsOk(Constant.OS_STR_YES);
+				apiReturnData.setData(true);
+				apiReturnData.setMessage("操作成功");
+
+				masterOrderActionService.insertOrderActionBySn(masterOrderSn, "提交已支付申请", userId);
+			}
 		} catch (Exception e) {
 			apiReturnData.setMessage("订单申请已支付异常！");
-			logger.error("订单申请已支付：masterOrderSn=" + masterOrderSn, e);
+			logger.error("订单申请已支付：masterOrderSn=" + orderSn, e);
 		}
 
 		return apiReturnData;
@@ -1408,11 +1672,17 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
             MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
             masterOrderInfoExample.or().andMasterOrderSnEqualTo(orderSn);
-            List<MasterOrderInfo> masterOrderInfos = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
-            if (masterOrderInfos == null || masterOrderInfos.size() < 1) {
+            List<MasterOrderInfo> masterOrderInfoList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
+            if (masterOrderInfoList == null || masterOrderInfoList.size() < 1) {
                 apiReturnData.setMessage("该订单不存在");
                 return apiReturnData;
             }
+
+			MasterOrderInfo masterOrderInfo = masterOrderInfoList.get(0);
+            if (!userId.equalsIgnoreCase(masterOrderInfo.getUserId())) {
+				apiReturnData.setMessage("不能操作该订单");
+				return apiReturnData;
+			}
 
             MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
             extendExample.or().andMasterOrderSnEqualTo(orderSn);
@@ -1839,6 +2109,299 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		
 		return returnData;
 	}
+
+    /**
+     * 延长收货
+     * @param searchParam
+     * @return
+     */
+    @Override
+    public ApiReturnData<Boolean> extendedReceipt(PageListParam searchParam) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("延长收货失败");
+
+        if (searchParam == null) {
+            apiReturnData.setMessage("参数不能为空");
+            return apiReturnData;
+        }
+
+        String orderSn = searchParam.getOrderSn();
+        if (StringUtils.isBlank(orderSn)) {
+            apiReturnData.setMessage("订单号不能为空");
+            return apiReturnData;
+        }
+
+        String siteCode = searchParam.getSiteCode();
+        if (StringUtils.isBlank(siteCode)) {
+            apiReturnData.setMessage("站点不能为空");
+            return apiReturnData;
+        }
+
+        String userId = searchParam.getUserId();
+        if (StringUtils.isBlank(userId)) {
+            apiReturnData.setMessage("操作人不能为空");
+            return apiReturnData;
+        }
+        try {
+            //校验订单信息
+            MasterOrderInfo orderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderSn);
+            if (orderInfo == null) {
+                apiReturnData.setMessage(orderSn + "订单不存在");
+                return apiReturnData;
+            }
+            if (orderInfo.getShipStatus().intValue() == Constant.OI_SHIP_STATUS_UNSHIPPED) {
+                apiReturnData.setMessage(orderSn + "订单未发货");
+                return apiReturnData;
+            }
+
+            if (orderInfo.getShipStatus().intValue() == Constant.OI_SHIP_STATUS_ALLRECEIVED) {
+                apiReturnData.setMessage(orderSn + "订单已收货");
+                return apiReturnData;
+            }
+
+            String invoiceNo = searchParam.getInvoiceNo();
+            if (StringUtils.isNotBlank(invoiceNo)) {
+                //需要打印单个日志
+                searchParam.setFlag(true);
+                apiReturnData = extendedReceiptByInvoiceNo(searchParam);
+            } else {
+                //根据主订单延长发货
+                apiReturnData = extendedReceiptByMasterOrderSn(searchParam);
+            }
+        } catch (Exception e) {
+            logger.error(orderSn + "延长收货异常" + JSONObject.toJSONString(searchParam), e);
+            apiReturnData.setMessage("延长收货异常");
+        }
+        return apiReturnData;
+    }
+
+    /**
+     * 主订单单延长收货
+     * @param searchParam
+     * @return
+     */
+    private ApiReturnData<Boolean> extendedReceiptByMasterOrderSn(PageListParam searchParam) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("延长收货失败");
+
+        String orderSn = searchParam.getOrderSn();
+        OrderDistributeExample distributeExample = new OrderDistributeExample();
+        distributeExample.or().andMasterOrderSnEqualTo(orderSn).andIsDelEqualTo(0);
+        List<OrderDistribute> orderDistributes = orderDistributeMapper.selectByExample(distributeExample);
+        if (StringUtil.isListNull(orderDistributes)) {
+            apiReturnData.setMessage(orderSn + "订单无交货单信息");
+            return apiReturnData;
+        }
+
+        //获取发货单信息
+        List<String> distributeSns = new ArrayList<String>();
+        for (OrderDistribute orderDistribute : orderDistributes) {
+            distributeSns.add(orderDistribute.getOrderSn());
+        }
+        List<Byte> notShipStatusList = new ArrayList<Byte>();
+        notShipStatusList.add((byte) 0);
+        notShipStatusList.add((byte) 2);
+        notShipStatusList.add((byte) 6);
+        notShipStatusList.add((byte) 13);
+
+        OrderDepotShipExample shipExample = new OrderDepotShipExample();
+        shipExample.or().andOrderSnIn(distributeSns).andIsDelEqualTo(0).andIsReceiptEqualTo(0)
+            .andShippingStatusNotIn(notShipStatusList);
+        List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(shipExample);
+        if (StringUtil.isListNull(orderDepotShipList)) {
+            apiReturnData.setMessage(orderSn + "订单无可延长收货包裹");
+            return apiReturnData;
+        }
+        String message = orderSn + "延长收货成功失败";
+        String errMsg = "";
+        for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+            //不需要打印单个日志
+            searchParam.setFlag(false);
+            searchParam.setDistributeOrderSn(orderDepotShip.getOrderSn());
+            searchParam.setDepotCode(orderDepotShip.getDepotCode());
+            searchParam.setInvoiceNo(orderDepotShip.getInvoiceNo());
+            ApiReturnData<Boolean> returnData = extendedReceiptByInvoiceNo(searchParam);
+            if (returnData != null && Constant.OS_STR_NO.equals(returnData.getIsOk())) {
+                errMsg += returnData.getMessage() + ";";
+            }
+        }
+        apiReturnData.setIsOk("1");
+        apiReturnData.setMessage("延长收货成功");
+        message = "延长收货成功";
+        if (StringUtils.isNotBlank(errMsg)) {
+            message += ":" + errMsg;
+        }
+        masterOrderActionService.insertOrderActionBySn(orderSn, message, searchParam.getUserId());
+        return apiReturnData;
+    }
+
+    /**
+     * 发货单延长收货
+     * @param searchParam
+     * @return
+     */
+    @Override
+    public ApiReturnData<Boolean> extendedReceiptByInvoiceNo(PageListParam searchParam) {
+        ApiReturnData<Boolean> apiReturnData = new ApiReturnData<Boolean>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("延长收货失败");
+
+        if (searchParam == null) {
+            apiReturnData.setMessage("参数不能为空");
+            return apiReturnData;
+        }
+
+        String orderSn = searchParam.getOrderSn();
+        if (StringUtils.isBlank(orderSn)) {
+            apiReturnData.setMessage("订单号不能为空");
+            return apiReturnData;
+        }
+
+        String invoiceNo = searchParam.getInvoiceNo();
+        if (StringUtils.isBlank(invoiceNo)) {
+            apiReturnData.setMessage("快递单号不能为空");
+            return apiReturnData;
+        }
+
+        String depotCode = searchParam.getDepotCode();
+        if (StringUtils.isBlank(depotCode)) {
+            apiReturnData.setMessage("发货仓库不能为空");
+            return apiReturnData;
+        }
+
+        String distributeOrderSn = searchParam.getDistributeOrderSn();
+        if (StringUtils.isBlank(distributeOrderSn)) {
+            apiReturnData.setMessage("交货单号不能为空");
+            return apiReturnData;
+        }
+
+        String userId = searchParam.getUserId();
+        if (StringUtils.isBlank(userId)) {
+            apiReturnData.setMessage("操作人不能为空");
+            return apiReturnData;
+        }
+
+        //延长收货
+        String message = invoiceNo +  "延长收货失败";
+        try {
+            //校验订单信息
+            MasterOrderInfo orderInfo = masterOrderInfoMapper.selectByPrimaryKey(orderSn);
+            if (orderInfo == null) {
+                apiReturnData.setMessage(orderSn + "订单不存在");
+                return apiReturnData;
+            }
+            if (orderInfo.getShipStatus().intValue() == Constant.OI_SHIP_STATUS_UNSHIPPED) {
+                apiReturnData.setMessage(orderSn + "订单未发货");
+                return apiReturnData;
+            }
+
+            //校验发货单信息
+            OrderDepotShip depotShip = new OrderDepotShip();
+            depotShip.setOrderSn(distributeOrderSn);
+            depotShip.setDepotCode(depotCode);
+            depotShip.setInvoiceNo(invoiceNo);
+            OrderDepotShip orderDepotShip = orderDepotShipMapper.selectByPrimaryKey(depotShip);
+            if (orderDepotShip == null) {
+                apiReturnData.setMessage("发货单不存在");
+                return apiReturnData;
+            }
+            Byte shippingStatus = orderDepotShip.getShippingStatus();
+            if (shippingStatus == 0) {
+                apiReturnData.setMessage("发货单未发货");
+                return apiReturnData;
+            }
+
+            if (shippingStatus == 2) {
+                apiReturnData.setMessage("发货单已收货");
+                return apiReturnData;
+            }
+
+            if (shippingStatus == 13) {
+                apiReturnData.setMessage("客户已签收");
+                return apiReturnData;
+            }
+
+            //校验是否已延长收货
+            if (orderDepotShip.getIsReceipt() == 1) {
+                apiReturnData.setMessage("发货单已延长收货");
+                return apiReturnData;
+            }
+
+            depotShip.setIsReceipt(1);
+            int i = orderDepotShipMapper.updateByPrimaryKeySelective(depotShip);
+            if (i > 0) {
+                message = invoiceNo +  "延长收货成功";
+                apiReturnData.setMessage(invoiceNo + "延长收货成功");
+                apiReturnData.setIsOk(Constant.OS_STR_YES);
+                apiReturnData.setData(true);
+            } else {
+                apiReturnData.setMessage(invoiceNo + "延长收货失败");
+            }
+
+        } catch (Exception e) {
+            logger.error(invoiceNo + "延长收货异常" + JSONObject.toJSONString(searchParam), e);
+            message = invoiceNo + "延长收货异常";
+            apiReturnData.setMessage("延长收货异常");
+        } finally {
+            if (searchParam != null && searchParam.isFlag()) {
+                masterOrderActionService.insertOrderActionBySn(orderSn, message, userId);
+            }
+        }
+        return apiReturnData;
+    }
+
+    /**
+     * 统计用户退单数量
+     * @param searchParam 参数
+     *  userId 用户id
+     *  siteCode 站点编码
+     * @return ApiReturnData<UserOrderTypeNum>
+     */
+    @Override
+    public ApiReturnData<UserOrderTypeNum> getUserOrderReturnType(PageListParam searchParam) {
+        ApiReturnData<UserOrderTypeNum> apiReturnData = new ApiReturnData<UserOrderTypeNum>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        apiReturnData.setMessage("获取失败");
+
+        String siteCode = searchParam.getSiteCode();
+        if (StringUtils.isBlank(siteCode)) {
+            apiReturnData.setMessage("站点为空");
+            return apiReturnData;
+        }
+
+        String userId = searchParam.getUserId();
+        if (StringUtils.isBlank(userId)) {
+            apiReturnData.setMessage("用户id为空");
+            return apiReturnData;
+        }
+
+        try {
+            Map<String, Object> paramMap = new HashMap<String, Object>();
+            paramMap.put("siteCode", siteCode);
+            paramMap.put("userId", userId);
+            //校验处理状态（1.退货中；2.退货成功；3.退款成功）
+            UserOrderTypeNum userOrderTypeNum = new UserOrderTypeNum();
+            paramMap.put("returnProcessStatus", 1);
+            userOrderTypeNum.setProcessReturnNum(defineOrderMapper.selectUserOrderReturnInfoCount(paramMap));
+
+            paramMap.put("returnProcessStatus", 2);
+            userOrderTypeNum.setReturnSuccessNum(defineOrderMapper.selectUserOrderReturnInfoCount(paramMap));
+
+            paramMap.put("returnProcessStatus", 3);
+            userOrderTypeNum.setRefundSuccessNum(defineOrderMapper.selectUserOrderReturnInfoCount(paramMap));
+
+            apiReturnData.setIsOk(Constant.OS_STR_YES);
+            apiReturnData.setMessage("统计用户退单数量成功");
+            apiReturnData.setData(userOrderTypeNum);
+
+        } catch (Exception e) {
+            logger.error("统计用户退单数量异常", e);
+        }
+
+        return apiReturnData;
+    }
 	
 	/**
 	 * 获取未支付订单, 人工可以取消时间

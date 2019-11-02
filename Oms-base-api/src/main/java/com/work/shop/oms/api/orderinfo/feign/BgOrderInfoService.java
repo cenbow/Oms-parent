@@ -216,4 +216,20 @@ public interface BgOrderInfoService {
      */
     @PostMapping("/order/applyOrderPay")
     ApiReturnData<Boolean> applyOrderPay(@RequestBody PageListParam searchParam);
+
+    /**
+     * 延长收货
+     * @param searchParam
+     * @return
+     */
+    @PostMapping("/order/extendedReceipt")
+    ApiReturnData<Boolean> extendedReceipt(@RequestBody PageListParam searchParam);
+
+    /**
+     * 统计用户退单数量
+     * @param searchParam
+     * @return
+     */
+    @PostMapping("/order/getUserOrderReturnType")
+    public ApiReturnData<UserOrderTypeNum> getUserOrderReturnType(@RequestBody PageListParam searchParam);
 }

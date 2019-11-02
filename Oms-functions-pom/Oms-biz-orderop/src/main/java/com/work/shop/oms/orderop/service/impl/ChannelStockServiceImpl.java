@@ -518,6 +518,11 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 			if (Constant.OI_PAY_STATUS_PAYED == master.getPayStatus()) {
 				isPay = true;
 			}
+
+			if (isPay) {
+				ri.setMessage("订单" + masterOrderSn + "已付款,不返回库存");
+				return ri;
+			}
 			
 			if (master.getShipStatus() > Constant.OI_SHIP_STATUS_UNSHIPPED) {
 				if (isPay) {
@@ -525,9 +530,9 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 					return ri;
 				}
 			}
-			
+			// .andChannelSendNumberEqualTo((short)1);
 			MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
-			goodsExample.or().andMasterOrderSnEqualTo(masterOrderSn).andChannelSendNumberEqualTo((short)1);
+			goodsExample.or().andMasterOrderSnEqualTo(masterOrderSn).andChannelSendNumberGreaterThan((short)0);
 			List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByExample(goodsExample);
 			if (StringUtil.isListNull(goodsList)) {
 				ri.setMessage("订单[" + masterOrderSn + "] 已经占用过库存");

@@ -7,34 +7,53 @@ import java.util.List;
 import com.work.shop.oms.api.param.bean.CreateOrderReturnBean;
 import com.work.shop.oms.vo.StorageGoods;
 
+/**
+ * 退单操作请求
+ * @author QuYachu
+ */
 public class ReturnManagementRequest implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7115261779726715323L;
-	
-	private String masterOrderSn; // 订单号
-	
-	private String returnSn; // 退单号
+
+	/**
+	 * 订单号
+	 */
+	private String masterOrderSn;
+
+	/**
+	 * 退单号
+	 */
+	private String returnSn;
 	
 	private String message;
 	
 	private String actionUser;
 	
 	private String actionUserId;
-	
-	private String gotCode; // 自提码
+
+	/**
+	 * 自提码
+	 */
+	private String gotCode;
 	
 	private String returnType;
-	
-	private Boolean refundResult; // 退款结果 默认true true:成功;false:失败
-	
-	private BigDecimal actualRefundAmount; // 实际退款金额
+
+	/**
+	 * 退款结果 默认true true:成功;false:失败
+	 */
+	private Boolean refundResult;
+
+	/**
+	 * 实际退款金额
+	 */
+	private BigDecimal actualRefundAmount;
 	
 	private CreateOrderReturnBean returnBean;
-	
-	private List<StorageGoods> storageGoods; // 入库明细列表
+
+	/**
+	 * 入库明细列表
+	 */
+	private List<StorageGoods> storageGoods;
 
     /**
      * 退款金额
@@ -52,6 +71,11 @@ public class ReturnManagementRequest implements Serializable {
      * 0为不确认退单，1为确认退单
      */
     private int isConfirm;
+
+    /**
+     * 交货单号
+     */
+    private String orderSn;
 
     public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -171,5 +195,13 @@ public class ReturnManagementRequest implements Serializable {
 
     public void setIsConfirm(int isConfirm) {
         this.isConfirm = isConfirm;
+    }
+
+    public String getOrderSn() {
+        return orderSn;
+    }
+
+    public void setOrderSn(String orderSn) {
+        this.orderSn = orderSn;
     }
 }

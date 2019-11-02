@@ -1650,6 +1650,11 @@ public class OrderDepotShipExample {
             addCriterion("delivery_confirm_time not between", value1, value2, "deliveryConfirmTime");
             return (Criteria) this;
         }
+
+        public Criteria andIsReceiptEqualTo(Integer value) {
+            addCriterion("is_receipt =", value, "isReceipt");
+            return (Criteria) this;
+        }
     }
 
     /**

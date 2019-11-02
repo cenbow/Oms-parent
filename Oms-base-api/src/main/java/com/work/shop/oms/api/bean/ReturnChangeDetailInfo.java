@@ -15,6 +15,8 @@ public class ReturnChangeDetailInfo implements Serializable {
 
     private static final long serialVersionUID = 8454917455340083746L;
 
+    private Integer id;
+
     /**
      * 申请单号
      */
@@ -31,7 +33,7 @@ public class ReturnChangeDetailInfo implements Serializable {
     private String orderSn;
 
     /**
-     * 退换类型，1：退货；2：换货
+     * 退换类型，1：退货；2：换货；3维修
      */
     private Integer returnType;
 
@@ -76,7 +78,7 @@ public class ReturnChangeDetailInfo implements Serializable {
     private String shopCode;
 
     /**
-     * 申请状态：状态：0：已取消；1：待沟通；2：已完成；3：待处理
+     * 申请状态：0：已取消；1：待沟通；2：已完成；3：待处理；4：已驳回
      */
     private Integer status;
 
@@ -215,8 +217,7 @@ public class ReturnChangeDetailInfo implements Serializable {
         switch (getReturnType()) {
             case 1: return "退货";
             case 2: return "换货";
-            case 3: return "退款";
-            case 4: return "额外退款单";
+            case 3: return "维修";
             default:return "";
         }
     }
@@ -243,6 +244,7 @@ public class ReturnChangeDetailInfo implements Serializable {
             case 1: return "待沟通";
             case 2: return "已完成";
             case 3: return "待处理";
+            case 4: return "已驳回";
             default:return "";
         }
     }
@@ -265,5 +267,13 @@ public class ReturnChangeDetailInfo implements Serializable {
 
     public void setActions(List<GoodsReturnChangeAction> actions) {
         this.actions = actions;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }

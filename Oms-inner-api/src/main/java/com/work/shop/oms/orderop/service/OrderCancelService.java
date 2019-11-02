@@ -1,5 +1,6 @@
 package com.work.shop.oms.orderop.service;
 
+import com.work.shop.oms.bean.OrderReturnBean;
 import com.work.shop.oms.bean.OrderReturnMoneyBean;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
@@ -46,10 +47,16 @@ public interface OrderCancelService {
 	 * @return
 	 */
 	public ReturnInfo createReturnOrder(String masterOrderSn, OrderStatus orderStatus, int createType);
+
+	/**
+	 * 订单退款操作
+	 * @param orderReturnBean
+	 */
+	void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
 	
 	/**
 	 * 订单退款消息发送
 	 * @param orderReturnMoneyBean
 	 */
-	public void doOrderReturnMoney(OrderReturnMoneyBean orderReturnMoneyBean);
+	void doOrderReturnMoney(OrderReturnMoneyBean orderReturnMoneyBean);
 }

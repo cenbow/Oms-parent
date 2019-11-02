@@ -201,24 +201,28 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			OrderDistributeExample distributeExample = new OrderDistributeExample();
 			OrderDistributeExample.Criteria criteria = distributeExample.or();
 			criteria.andMasterOrderSnEqualTo(master.getMasterOrderSn());
-			criteria.andOrderStatusNotEqualTo((byte) Constant.OI_ORDER_STATUS_CANCLED); // 未取消的订单
-			criteria.andSupplierCodeNotEqualTo(Constant.SUPPLIER_TYPE_MB); // 供应商编码不是MB
+			// 未取消的订单
+			criteria.andOrderStatusNotEqualTo((byte) Constant.OI_ORDER_STATUS_CANCLED);
+			// 供应商编码不是MB
+			criteria.andSupplierCodeNotEqualTo(Constant.SUPPLIER_TYPE_MB);
 			thDistributes = this.orderDistributeMapper.selectByExample(distributeExample);
 			if (StringUtil.isListNotNull(thDistributes)) {
 				// 检查可以确认的子订单信息
-				ReturnInfo<List<OrderDistribute>> chaeckInfo = checkDistributeListOrderConfirm(thDistributes);
-				thDistributes = chaeckInfo.getData();
+				ReturnInfo<List<OrderDistribute>> checkInfo = checkDistributeListOrderConfirm(thDistributes);
+				thDistributes = checkInfo.getData();
 			}
 			OrderDistributeExample mbDistributeExample = new OrderDistributeExample();
 			OrderDistributeExample.Criteria mbCriteria = mbDistributeExample.or();
 			mbCriteria.andMasterOrderSnEqualTo(master.getMasterOrderSn());
-			mbCriteria.andOrderStatusNotEqualTo((byte) Constant.OI_ORDER_STATUS_CANCLED); // 未取消的订单
-			mbCriteria.andSupplierCodeEqualTo(Constant.SUPPLIER_TYPE_MB); // 供应商编码是MB
+            // 未取消的订单
+			mbCriteria.andOrderStatusNotEqualTo((byte) Constant.OI_ORDER_STATUS_CANCLED);
+            // 供应商编码是MB
+			mbCriteria.andSupplierCodeEqualTo(Constant.SUPPLIER_TYPE_MB);
 			mbDistributes = this.orderDistributeMapper.selectByExample(mbDistributeExample);
 			if (StringUtil.isListNotNull(mbDistributes)) {
 				// 检查可以确认的子订单信息
-				ReturnInfo<List<OrderDistribute>> chaeckInfo = checkDistributeListOrderConfirm(mbDistributes);
-				mbDistributes = chaeckInfo.getData();
+				ReturnInfo<List<OrderDistribute>> checkInfo = checkDistributeListOrderConfirm(mbDistributes);
+				mbDistributes = checkInfo.getData();
 			}
 		}
 		// 0 主单
@@ -747,17 +751,15 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		logger.debug("["+orderSns+"]订单确认成功");
 		return info;
 	}
-	
-	/**
-	 * 订单确认(MB供应商使用)
-	 * 
-	 * @param orderSn
-	 * @param distribute
-	 * @param define
-	 * @param orderStatus
-	 * @return
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+
+    /**
+     * 订单确认(MB供应商使用)
+     * @param orderSns 交货单编码列表
+     * @param distributes 交货单列表
+     * @param orderStatus 订单状态
+     * @param isrelive 复活标示 1为复活
+     * @return ReturnInfo
+     */
 	private ReturnInfo confirmOrderByThirdDistribute(List<String> orderSns, List<OrderDistribute> distributes,
 			OrderStatus orderStatus, int isrelive) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
@@ -767,7 +769,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			return info;
 		}
 		logger.debug("订单确认 orderSns=" + orderSns + ";orderStatus=" + orderStatus);
-		/* 执行前提检查 */
+
 		for (OrderDistribute distribute : distributes) {
 			String orderSn = distribute.getOrderSn();
 			if (OrderAttributeUtil.doERP(distribute, isrelive)) {
@@ -1001,7 +1003,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	private ReturnInfo checkMasterOrderConfirm(MasterOrderInfo master, OrderStatus orderStatus) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		String orderSn = master.getMasterOrderSn();
-		/* 执行前提检查 */
+
 		if (master.getOrderStatus() != Constant.OI_ORDER_STATUS_UNCONFIRMED) {
 			info.setMessage(" 订单[" + orderSn + "]要处于未确定状态");
 			return info;
@@ -1143,15 +1145,15 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	/**
 	 * 检查子订单是否可以确认
 	 * @param distributes
-	 * @return
+	 * @return ReturnInfo<List<OrderDistribute>>
 	 */
 	private ReturnInfo<List<OrderDistribute>> checkDistributeListOrderConfirm(List<OrderDistribute> distributes) {
 		ReturnInfo<List<OrderDistribute>> info = new ReturnInfo<List<OrderDistribute>>(Constant.OS_NO);
-		/* 执行前提检查 */
+
 		List<OrderDistribute> updateDistributes = new ArrayList<OrderDistribute>();
 		for (OrderDistribute distribute : distributes) {
 			String orderSn = distribute.getOrderSn();
-			/* 执行前提检查 */
+
 			if (distribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CONFIRMED) {
 				info.setMessage(" 订单[" + orderSn + "]要处于未确定状态");
 				continue;

@@ -91,17 +91,6 @@
 					</webResources>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>cn.tony</groupId>
-				<artifactId>tools-maven-plugin</artifactId>
-				<version>0.0.3</version>
-				<configuration>
-					<server-host>10.100.22.203</server-host>
-					<password>password01!</password>
-					<tomcatHome>/opt/tomcat</tomcatHome>
-					<finalName>OmsTask</finalName>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 </project>

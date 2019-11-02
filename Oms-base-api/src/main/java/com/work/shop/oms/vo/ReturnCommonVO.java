@@ -26,6 +26,11 @@ public class ReturnCommonVO implements Serializable{
 	 private String channelCode;//来源
 	 private String userId;//操作人
 	 private String returnReason;//退单原因
+
+    /**
+     * 退单原因
+     */
+    private String returnReasonStr;
 	 
 	 
 	 private Integer chasedOrNot;	 //是否追单
@@ -66,7 +71,17 @@ public class ReturnCommonVO implements Serializable{
 	private Integer backToCs = 0;//回退客服
 	 
 	 private Integer refundType;//0:未处理；1：删除商品退款；2：订单取消；3：订单发货
-	 
+
+    /**
+     * 是否退款
+     */
+    private int backBalance;
+
+    /**
+     * 支付方式编码
+     */
+    private String payCode;
+
 	public Integer getRefundType() {
 		return refundType;
 	}
@@ -267,4 +282,28 @@ public class ReturnCommonVO implements Serializable{
 	public void setSiteCode(String siteCode) {
 		this.siteCode = siteCode;
 	}
+
+    public String getReturnReasonStr() {
+        return returnReasonStr;
+    }
+
+    public void setReturnReasonStr(String returnReasonStr) {
+        this.returnReasonStr = returnReasonStr;
+    }
+
+    public int getBackBalance() {
+        return backBalance;
+    }
+
+    public void setBackBalance(int backBalance) {
+        this.backBalance = backBalance;
+    }
+
+    public String getPayCode() {
+        return payCode;
+    }
+
+    public void setPayCode(String payCode) {
+        this.payCode = payCode;
+    }
 }

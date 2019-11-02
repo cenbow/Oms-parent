@@ -2244,10 +2244,12 @@
 			oie.user_bank_no userBankNo,
             oie.user_pay_apply userPayApply,
             oie.order_type createOrderType,
-            oi.instead_user_id instead_user_id
-		FROM master_order_info oi,
+            oi.instead_user_id instead_user_id,
+            mop.pay_name as payMethod
+        FROM master_order_info oi,
             master_order_address_info oai,
-            master_order_info_extend oie
+            master_order_info_extend oie,
+            master_order_pay mop
 		<if test="_parameter != null" >
 	        <include refid="Example_Where_Clause" />
 	    </if>
@@ -2267,7 +2269,8 @@
     	FROM
         	master_order_info oi,
         	master_order_address_info oai,
-        	master_order_info_extend oie
+        	master_order_info_extend oie,
+            master_order_pay mop
     	<if test="_parameter != null" >
         	<include refid="Example_Where_Clause" />
     	</if>
@@ -2312,11 +2315,13 @@
             mog.input_tax as inputTax,
             mog.output_tax as outputTax,
             mog.cost_price as costPrice,
-            mog.box_gauge as boxGauge
+            mog.box_gauge as boxGauge,
+            mop.pay_name as payMethod
 		FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
-            master_order_goods mog
+            master_order_goods mog,
+            master_order_pay mop
 		<if test="_parameter != null" >
 	        <include refid="Example_Where_Clause" />
 	    </if>
@@ -2341,7 +2346,8 @@
 	        	master_order_info oi,
 	        	master_order_address_info oai,
 	        	master_order_info_extend oie,
-	        	master_order_goods mog
+	        	master_order_goods mog,
+                master_order_pay mop
 	    	<if test="_parameter != null" >
 	        	<include refid="Example_Where_Clause" />
 	    	</if>
@@ -2583,4 +2589,95 @@
 			limit ${start}, ${limit}
 		</if>
 	</select>
+
+	<!-- 获取公司账期支付 -->
+	<select id="selectCompanyPayPeriodList" resultType="com.work.shop.oms.bean.OrderAccountPeriod" parameterType="map">
+		select moi.master_order_sn masterOrderSn, moi.add_time addTime, moi.user_id userId, moie.company_code companyId
+		from master_order_info moi, master_order_info_extend moie
+		where moi.master_order_sn = moie.master_order_sn
+		and moi.order_status != 2
+		and moie.last_pay_date &lt; #{dateTime}
+		and moie.pay_period_status = 0
+	</select>
+
+    <!--订单合同查询-->
+    <select id="selectOrderContractList" parameterType="com.work.shop.oms.api.bean.OrderContractRequest" resultType="com.work.shop.oms.api.bean.OrderContractBean">
+        select master_order_sn masterOrderSn,
+        order_status orderStatus,
+        sign_status signStatus,
+        sign_contract_num signContractNum,
+        sign_complete_time signCompleteTime
+        from master_order_info
+        where need_sign = 1
+        <if test="masterOrderSn != null">
+            and master_order_sn = #{masterOrderSn}
+        </if>
+        <if test="channelCode != null">
+            and channel_code = #{channelCode}
+        </if>
+        <if test="shopCode != null">
+            and order_from = #{shopCode}
+        </if>
+        <if test="orderStatus == 0">
+            and order_status = 2
+        </if>
+        <if test="orderStatus == 1">
+            and order_status in (0,1,3)
+        </if>
+        <if test="signStatus != null">
+            and sign_status = #{signStatus}
+        </if>
+        <if test="signStatus != null">
+            and sign_status = #{signStatus}
+        </if>
+        <if test="signContractNum != null">
+            and sign_contract_num = #{signContractNum}
+        </if>
+        <if test="startTime != null">
+            and sign_complete_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and sign_complete_time &lt;= #{endTime}
+        </if>
+        order by sign_complete_time desc
+        <if test="limit > 0">
+            limit ${start}, ${limit}
+        </if>
+    </select>
+
+    <select id="countOrderContractList" parameterType="com.work.shop.oms.api.bean.OrderContractRequest" resultType="int">
+        select count(1)
+        from master_order_info
+        where need_sign = 1
+        <if test="masterOrderSn != null">
+            and master_order_sn = #{masterOrderSn}
+        </if>
+        <if test="channelCode != null">
+            and channel_code = #{channelCode}
+        </if>
+        <if test="shopCode != null">
+            and order_from = #{shopCode}
+        </if>
+        <if test="orderStatus == 0">
+            and order_status = 2
+        </if>
+        <if test="orderStatus == 1">
+            and order_status in (0,1,3)
+        </if>
+        <if test="signStatus != null">
+            and sign_status = #{signStatus}
+        </if>
+        <if test="signStatus != null">
+            and sign_status = #{signStatus}
+        </if>
+        <if test="signContractNum != null">
+            and sign_contract_num = #{signContractNum}
+        </if>
+        <if test="startTime != null">
+            and sign_complete_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and sign_complete_time &lt;= #{endTime}
+        </if>
+    </select>
 </mapper>

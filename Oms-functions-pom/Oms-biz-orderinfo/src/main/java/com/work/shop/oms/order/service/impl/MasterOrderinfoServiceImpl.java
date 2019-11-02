@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -115,6 +116,9 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 	@Resource
 	private ChannelStockService channelStockService;
+
+	@Resource
+	private MasterOrderInfoExtendService masterOrderInfoExtendService;
 
 	@Resource(name="orderAccountPeriodJmsTemplate")
 	private JmsTemplate orderAccountPeriodJmsTemplate;
@@ -348,7 +352,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 			//无需审批订单直接更新账期最后支付时间
             if (masterOrderInfo.getNeedAudit() == Constant.OS_NO) {
-                orderInfoExtendService.fillPayLastDate(masterOrderSn, masterOrderInfo.getAddTime());
+                //orderInfoExtendService.fillPayLastDate(masterOrderSn, masterOrderInfo.getAddTime());
             }
 		} catch (Exception e) {
 			error = true;
@@ -540,6 +544,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setIsnow(0);
 		// 是否需要审核
         orderInfo.setNeedAudit(masterOrder.getNeedAudit());
+        //是否需要合同签章
+        orderInfo.setNeedSign(masterOrder.getNeedSign());
 	}
 
 	/**
@@ -612,6 +618,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setTax(BigDecimal.valueOf(masterOrder.getTax()));
 		// 是否需要审核 0不需要、1需要
 		orderInfo.setNeedAudit(masterOrder.getNeedAudit());
+		// 是否需要合同签章
+		orderInfo.setNeedSign(masterOrder.getNeedSign());
 		masterOrderInfoMapper.insertSelective(orderInfo);
 		byte payStatus = orderInfo.getPayStatus() == 2 ? orderInfo.getPayStatus() : 0;
 		// 写入订单日志
@@ -705,6 +713,91 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		return validateOrder;
 	}
 
+	/**
+	 * 定时任务处理到期账期支付扣款
+	 * @param orderAccountPeriod
+	 * @return
+	 */
+	@Override
+	public ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod) {
+		ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
+		returnInfo.setIsOk(Constant.OS_NO);
+
+		try {
+			String masterOrderSn = orderAccountPeriod.getMasterOrderSn();
+			List<MasterOrderPay> masterOrderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
+			if (masterOrderPayList == null || masterOrderPayList.size() == 0) {
+				returnInfo.setMessage("订单:" + masterOrderSn + "支付单信息不存在");
+				return returnInfo;
+			}
+
+			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
+			orderAccountPeriod.setOrderMoney(masterOrderPay.getPayTotalfee());
+			orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
+			orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
+			orderAccountPeriod.setType(1);
+			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
+		} catch (Exception e) {
+			logger.error("处理订单账期支付推送问题");
+		}
+
+		return returnInfo;
+	}
+
+    /**
+     * 设置账期支付支付时间和扣款
+     * @param masterOrderInfo
+     * @return
+     */
+    @Override
+	public ReturnInfo<Boolean> processOrderPayPeriod(MasterOrderInfo masterOrderInfo) {
+		ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
+		returnInfo.setIsOk(Constant.OS_YES);
+
+		try {
+			String masterOrderSn = masterOrderInfo.getMasterOrderSn();
+			List<MasterOrderPay> masterOrderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
+			if (masterOrderPayList == null || masterOrderPayList.size() == 0) {
+				returnInfo.setMessage("订单:" + masterOrderSn + "支付单信息不存在");
+				return returnInfo;
+			}
+
+			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
+			int payId = masterOrderPay.getPayId();
+			if (Constant.PAYMENT_ZHANGQI_ID  != payId) {
+				returnInfo.setMessage("订单:" + masterOrderSn + "不是账期支付");
+				return returnInfo;
+			}
+
+			// 判断是否已设置
+            MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
+			if (masterOrderInfoExtend == null) {
+                returnInfo.setMessage("订单:" + masterOrderSn + "扩展信息不存在");
+                return returnInfo;
+            }
+            int payPeriodStatus = masterOrderInfoExtend.getPayPeriodStatus();
+			if (payPeriodStatus == 1) {
+                returnInfo.setMessage("订单:" + masterOrderSn + "账期已扣款");
+                return returnInfo;
+            }
+            processOrderAccountPay(masterOrderPay);
+			Date lastPayDate = masterOrderInfoExtend.getLastPayDate();
+			if (lastPayDate != null) {
+                returnInfo.setMessage("订单:" + masterOrderSn + "账期支付时间已设置");
+                return returnInfo;
+            }
+            //账期支付填充最后支付时间
+            masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
+
+		} catch (Exception e) {
+			logger.error("处理订单账期支付推送问题");
+			returnInfo.setIsOk(Constant.OS_NO);
+		}
+
+
+		return returnInfo;
+	}
+
     /**
      * 处理订单账期支付
      * @param masterOrderSn
@@ -730,6 +823,33 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 		return returnInfo;
 	}
+
+    /**
+     * 通过订单编码获取订单商品列表
+     * @param masterOrderSn 订单编码
+     * @return List<MasterOrderGoods>
+     */
+    @Override
+    public ReturnInfo<List<MasterOrderGoods>> selectGoodsByMasterOrderSn(String masterOrderSn) {
+        ReturnInfo<List<MasterOrderGoods>> returnInfo = new ReturnInfo<>();
+        returnInfo.setIsOk(0);
+        returnInfo.setMessage("查询失败");
+
+        try {
+            if (StringUtils.isBlank(masterOrderSn)) {
+                returnInfo.setMessage("订单号为空");
+                return returnInfo;
+            }
+            List<MasterOrderGoods> goodsList = masterOrderGoodsService.selectByMasterOrderSn(masterOrderSn);
+            returnInfo.setMessage("查询成功");
+            returnInfo.setIsOk(1);
+            returnInfo.setData(goodsList);
+        } catch (Exception e) {
+            logger.error("根据订单号获取商品数据异常", e);
+        }
+
+        return returnInfo;
+    }
 
     /**
      * 处理订单账期支付信息

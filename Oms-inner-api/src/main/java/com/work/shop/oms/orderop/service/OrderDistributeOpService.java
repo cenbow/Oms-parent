@@ -56,12 +56,12 @@ public interface OrderDistributeOpService {
 	/**
 	 * 订单结算
 	 * 
-	 * @param orderSn
+	 * @param orderSn 订单编码
 	 * @param orderStatus message:备注;adminUser:操作人;userId:操作人唯一编号
-	 * @return
+	 * @return ReturnInfo<String>
 	 * @throws Exception
 	 */
-	public ReturnInfo<String> settleOrder(String orderSn, OrderStatus orderStatus) throws Exception;
+	ReturnInfo<String> settleOrder(String orderSn, OrderStatus orderStatus) throws Exception;
 
 	/**
 	 * 订单分配

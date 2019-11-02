@@ -17,6 +17,11 @@ public class OrderManagementRequest implements Serializable {
 	private String masterOrderSn;
 
 	/**
+	 * 合同编码
+	 */
+	private String contractNo;
+
+	/**
 	 * 信息
 	 */
 	private String message;
@@ -179,4 +184,12 @@ public class OrderManagementRequest implements Serializable {
     public void setOrderType(Integer orderType) {
         this.orderType = orderType;
     }
+
+	public String getContractNo() {
+		return contractNo;
+	}
+
+	public void setContractNo(String contractNo) {
+		this.contractNo = contractNo;
+	}
 }

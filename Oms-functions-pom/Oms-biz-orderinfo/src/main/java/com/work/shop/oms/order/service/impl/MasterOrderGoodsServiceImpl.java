@@ -89,7 +89,12 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		info.setIsOk(Constant.OS_YES);
 		return info;
 	}
-	
+
+	/**
+	 * 通过订单编码获取订单商品列表
+	 * @param masterOrderSn 订单编码
+	 * @return List<MasterOrderGoods>
+	 */
 	@Override
 	public List<MasterOrderGoods> selectByMasterOrderSn(String masterOrderSn) {
 		if (StringUtil.isEmpty(masterOrderSn)) {
@@ -142,7 +147,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
      */
 	private void fillGoodsBaseInfo(MasterOrderGoods masterOrderGoods, MasterGoods masterGoods) {
 
-        // 商品销售价
+        // 商品市场价
         double goodsPrice = getGoodsPrice(masterGoods);
         masterOrderGoods.setGoodsName(StringUtil.isTrimEmpty(masterGoods.getGoodsName()) ? "" : masterGoods.getGoodsName());
         masterOrderGoods.setGoodsThumb(masterGoods.getGoodsThumb());
@@ -162,7 +167,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         // 商品折扣价
         setGoodsDiscount(masterGoods, goodsPrice, masterOrderGoods);
         // 商品价格
-        masterOrderGoods.setGoodsPrice(BigDecimal.valueOf(goodsPrice));
+        masterOrderGoods.setGoodsPrice(BigDecimal.valueOf(masterGoods.getGoodsPrice()));
         // 商品市场价
         masterOrderGoods.setMarketPrice(BigDecimal.valueOf(goodsPrice));
         // 商品11位码
@@ -273,6 +278,19 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         masterOrderGoods.setCustomerMaterialCode(masterGoods.getCustomerMaterialCode());
         //供应商名称
         masterOrderGoods.setSupplierName(masterGoods.getSupplierName());
+        //物料描述
+        masterOrderGoods.setCustomerMaterialName(masterGoods.getCustomerMaterialName());
+        //采购申请编号
+        masterOrderGoods.setBuyerNo(masterGoods.getBuyerNo());
+        //采购申请行号
+        masterOrderGoods.setBuyerLineNo(masterGoods.getBuyerLineNo());
+
+        //加价金额
+        BigDecimal goodsAddPrice = masterGoods.getGoodsAddPrice();
+        if (goodsAddPrice != null) {
+            masterOrderGoods.setGoodsAddPrice(goodsAddPrice);
+        }
+
     }
 
 	/**
@@ -303,14 +321,16 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 	 */
 	private void setGoodsDiscount(MasterGoods masterGoods, double goodsPrice, MasterOrderGoods orderGoods) {
 		// 商品折扣
-		double discount = 0f;
+		BigDecimal discount = BigDecimal.valueOf(0);
 		// 商品折扣金额 = 商品销售价 - 商品成交价
-		discount = NumberUtil.sub(goodsPrice, masterGoods.getTransactionPrice());
-		discount = NumberUtil.getDoubleByValue(discount, 4);
+		/*BigDecimal price = BigDecimal.valueOf(goodsPrice);
+		BigDecimal transactionPrice = BigDecimal.valueOf(masterGoods.getTransactionPrice());
+		orderGoods.setDiscount(price.subtract(transactionPrice));*/
+
 		Double goodsDiscount = masterGoods.getDisCount();
 		if (goodsDiscount != null && goodsDiscount > 0) {
-			discount = goodsDiscount;
+            discount = new BigDecimal(goodsDiscount.toString());
 		}
-		orderGoods.setDiscount(BigDecimal.valueOf(discount));
+		orderGoods.setDiscount(discount);
 	}
 }

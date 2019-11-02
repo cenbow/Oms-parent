@@ -30,6 +30,10 @@ import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.utils.TimeUtil;
 
+/**
+ * 骑手配送自动签收任务
+ * @author QuYachu
+ */
 @Service("autoReceiptTask")
 public class AutoReceiptTask extends ATaskServiceProcess {
 

@@ -19,6 +19,7 @@ public class ReturnItemStatusUtils implements Serializable {
 	private Integer cancel;//取消
 	private Integer settle;//结算
 	private Integer communicate;//沟通
+    private Integer downRefund;//线下退款
 
     public  ReturnItemStatusUtils() {
 
@@ -35,11 +36,50 @@ public class ReturnItemStatusUtils implements Serializable {
 		this.unconfirm = unconfirm(returnCommon, returnSn, adminUser.getUserName(), userId).getIsOk();
 		this.cancel = cancel(returnCommon, returnSn, adminUser.getUserName(), userId).getIsOk();
 		this.settle = settle(returnCommon, returnSn, adminUser.getUserName(), userId).getIsOk();
+        this.downRefund = downRefund(returnCommon, returnSn, adminUser.getUserName(), userId).getIsOk();
 		this.communicate = 1;
 	}
-	
 
-	public static boolean checkOrderShipStatus(MasterOrderDetail masterOrderInfo) {
+    /**
+     * 线下退款
+     * @param returnCommon
+     * @param returnSn
+     * @param userName
+     * @param userId
+     * @return
+     */
+    private static ReturnInfo<String> downRefund(ReturnCommonVO returnCommon, String returnSn, String userName, Integer userId) {
+        ReturnInfo<String> ri = new ReturnInfo<String>(OrderItemConstant.OS_NO);
+        ReturnInfo<String> tempRi = checkConditionOfExecution(returnCommon, returnSn, "线下退款");
+        if (tempRi != null) {
+            return tempRi;
+        }
+        if (returnCommon.getLockStatus() == OrderItemConstant.OI_LOCK_STATUS_UNLOCKED
+            || !judgeSelfLock(returnCommon.getLockStatus(), userId, userName)) {
+            ri.setMessage(" 退单" + returnSn + "要处于已锁定状态！");
+            return ri;
+        }
+        // 未结算
+        // 已确认
+        if (returnCommon.getPayStatus() == OrderItemConstant.OI_PAY_STATUS_SETTLED) {
+            ri.setMessage(" 退单" + returnSn + "已经是已结算状态");
+            return ri;
+        }
+        if (returnCommon.getReturnOrderStatus().intValue() != ConstantValues.ORDERRETURN_STATUS.CONFIRMED) {
+            ri.setMessage(" 退单" + returnSn + "要处于已确定状态");
+            return ri;
+        }
+        if (returnCommon.getBackBalance() == ConstantValues.ORDERRETURN_STATUS.CONFIRMED) {
+            ri.setMessage(" 退单" + returnSn + "已退款");
+            return ri;
+        }
+
+        ri.setIsOk(OrderItemConstant.OS_YES);
+        return ri;
+    }
+
+
+    public static boolean checkOrderShipStatus(MasterOrderDetail masterOrderInfo) {
 		return masterOrderInfo == null || masterOrderInfo.getOrderStatus() == 2 // 取消
 				|| masterOrderInfo.getOrderStatus() == 3 // 完成
 				|| masterOrderInfo.getPayStatus() == 3 // 已结算
@@ -309,4 +349,12 @@ public class ReturnItemStatusUtils implements Serializable {
 	public void setCommunicate(Integer communicate) {
 		this.communicate = communicate;
 	}
+
+    public Integer getDownRefund() {
+        return downRefund;
+    }
+
+    public void setDownRefund(Integer downRefund) {
+        this.downRefund = downRefund;
+    }
 }

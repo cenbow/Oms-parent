@@ -6,7 +6,7 @@
         insert into goods_return_change_detail (order_sn, goods_name, custom_code, extension_code, extension_id, goods_number,
         goods_price, transaction_price, settlement_price, discount, group_name, goods_size_name, goods_color_name, goods_thumb, promotion_desc,
         use_card, share_bonus, promotion_id, market_price, goods_sn, return_type, redemption, tag_type, exterior_type, gift_type, remark,
-        return_sum, returnchange_sn, return_goods_img) values
+        return_sum, returnchange_sn, return_goods_img, depot_code) values
         <foreach collection="list" item="insertList" separator=",">
             (
             #{insertList.orderSn}, #{insertList.goodsName}, #{insertList.customCode},
@@ -18,7 +18,7 @@
             #{insertList.marketPrice}, #{insertList.goodsSn}, #{insertList.returnType},
             #{insertList.redemption}, #{insertList.tagType}, #{insertList.exteriorType},
             #{insertList.giftType}, #{insertList.remark}, #{insertList.returnSum},
-            #{insertList.returnchangeSn}, #{insertList.returnGoodsImg}
+            #{insertList.returnchangeSn}, #{insertList.returnGoodsImg}, #{insertList.depotCode}
             )
         </foreach>
     </insert>
@@ -50,10 +50,14 @@
         grcd.goods_sn goodsSn,
         grcd.return_sum returnSum,
         grcd.returnchange_sn returnChangeSn,
+        grcd.depot_code depotCode,
         mog.min_buy_num minBuyNum,
         mog.customer_material_code customerMaterialCode,
         mog.buy_unit buyUnit,
-        mog.supplier_name supplierName
+        mog.supplier_name supplierName,
+        mog.supplier_code supplierCode,
+        mog.cost_price costPrice,
+        mog.order_sn orderSn
         from goods_return_change_detail grcd
         left join master_order_goods mog
         on grcd.order_sn = mog.master_order_sn and grcd.custom_code = mog.custom_code and grcd.extension_code = mog.extension_code
@@ -61,6 +65,6 @@
         <foreach collection="changeSnList" item="returnChangeSn" open="(" close=")" separator=",">
             #{returnChangeSn}
         </foreach>
-        group by grcd.custom_code, grcd.extension_code
+        group by grcd.returnchange_sn, mog.order_sn, mog.custom_code, mog.extension_code, mog.customer_material_code
     </select>
 </mapper>

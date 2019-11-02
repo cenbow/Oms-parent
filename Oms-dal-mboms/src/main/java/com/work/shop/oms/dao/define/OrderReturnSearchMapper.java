@@ -7,6 +7,7 @@ import com.work.shop.invocation.ReadOnly;
 import com.work.shop.oms.api.bean.OrderReturnForSellers;
 import com.work.shop.oms.api.bean.ReturnInfoPage;
 import com.work.shop.oms.api.param.bean.ReturnSearchParams;
+import com.work.shop.oms.bean.OrderReturnGoods;
 import com.work.shop.oms.vo.OrderReturnListVO;
 import com.work.shop.oms.vo.OrderReturnSearchExample;
 
@@ -104,4 +105,11 @@ public interface OrderReturnSearchMapper {
 	  * @return
 	  */
 	 ReturnInfoPage getOrderReturnInfo(ReturnSearchParams params);
+
+    /**
+     * 根据退单号获取退单商品（加销售价）
+     * @param params
+     * @return
+     */
+	 List<OrderReturnGoods> getReturnGoodsByReturnSn(Map<String,Object> params);
 }

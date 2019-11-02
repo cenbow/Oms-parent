@@ -59,6 +59,21 @@ public class DistributeShippingBean implements Serializable {
 	 */
 	private List<String> shipSnList;
 
+    /**
+     * 收货快递单列表
+     */
+    private List<String> invoiceNoList;
+
+	/**
+	 * 签收类型 默认0，前端收货、1系统超时自动签收
+	 */
+	private int type;
+
+    /**
+     * 周期时间
+     */
+	private int periodTime;
+
 	public Date getShipDate() {
 		return shipDate;
 	}
@@ -146,4 +161,28 @@ public class DistributeShippingBean implements Serializable {
 	public void setShipSnList(List<String> shipSnList) {
 		this.shipSnList = shipSnList;
 	}
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public int getPeriodTime() {
+        return periodTime;
+    }
+
+    public void setPeriodTime(int periodTime) {
+        this.periodTime = periodTime;
+    }
+
+    public List<String> getInvoiceNoList() {
+        return invoiceNoList;
+    }
+
+    public void setInvoiceNoList(List<String> invoiceNoList) {
+        this.invoiceNoList = invoiceNoList;
+    }
 }

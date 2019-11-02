@@ -32,10 +32,11 @@ public interface PayService {
 
     /**
      * 创建合并支付单
+     * @param masterOrderSnList
      * @return
      */
     @PostMapping("/pay/createMergePay")
-    public ReturnInfo<MergeOrderPay> createMergePay(@RequestParam(name="masterOrderSnList") List<String> masterOrderSnList);
+    ReturnInfo<MergeOrderPay> createMergePay(@RequestParam(name="masterOrderSnList") List<String> masterOrderSnList);
 
     /**
      * 主订单支付单支付

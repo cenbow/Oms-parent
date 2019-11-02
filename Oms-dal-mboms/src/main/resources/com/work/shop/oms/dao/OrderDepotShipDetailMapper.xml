@@ -114,6 +114,7 @@
 	    t.delivery_type,
 	    od.supplier_code supplierCode,
 	    od.supplier_name supplierName,
+	    od.depot_status depotStatus,
 	    SUM(b.goods_number) AS goods_number
 	FROM
 	    order_depot_ship t,
@@ -121,6 +122,7 @@
 	    order_distribute od
 	WHERE
 	    b.order_sn = t.order_sn
+	and b.invoice_no = t.invoice_no
 	and od.order_sn = t.order_sn
 	AND b.depot_code = t.depot_code
 	AND b.is_del = '0'

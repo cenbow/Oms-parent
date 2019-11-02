@@ -468,4 +468,44 @@ public class OrderManagementController {
 
         return returnBean;
     }
+
+    /**
+     * 合同签章完成
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @PostMapping("/orderSignCompleted")
+    public OrderManagementResponse orderSignCompleted(@RequestBody OrderManagementRequest request) {
+        OrderManagementResponse returnBean = new OrderManagementResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderManagementService.orderSignCompleted(request);
+        } catch (Exception e) {
+            logger.error("合同签章完成异常:" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("处理异常");
+        }
+
+        return returnBean;
+    }
+
+    /**
+     * 订单结算账户完成
+     * @param request
+     * @return
+     */
+    @PostMapping("/orderSettlementAccountCompleted")
+    public OrderManagementResponse orderSettlementAccountCompleted(@RequestBody OrderManagementRequest request) {
+        OrderManagementResponse returnBean = new OrderManagementResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderManagementService.orderSettlementAccountCompleted(request);
+        } catch (Exception e) {
+            logger.error("订单结算账户完成异常:" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("订单结算账户完成异常");
+        }
+
+        return returnBean;
+    }
 }

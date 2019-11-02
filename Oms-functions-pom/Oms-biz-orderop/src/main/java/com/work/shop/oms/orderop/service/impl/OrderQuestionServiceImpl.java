@@ -101,7 +101,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			return info;
 		}
 		OrderCustomDefine define = orderCustomDefineMapper.selectByPrimaryKey(orderStatus.getCode());
-		if(define == null) {
+		if (define == null) {
 			logger.error("指定的订单问题单编码[" + orderStatus.getCode() + "]不存在");
 			info.setMessage("指定的订单问题单编码[" + orderStatus.getCode() + "]不存在");
 			return info;
@@ -183,16 +183,23 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		}
 		logger.debug("订单设置问题单 orderSns=" + orderSns + ";orderStatus=" + orderStatus);
 		List<OrderDistribute> questionDistributes = new ArrayList<OrderDistribute>();
+		// 待审核问题单新增一种问题单类型
+		int questionType = 0;
+		if (Constant.QUESTION_CODE_REVIEW.equals(define.getCode())) {
+			questionType = 2;
+		} else if (Constant.QUESTION_CODE_SIGN.equals(define.getCode())) {
+			questionType = 3;
+		}
 		/* 执行前提检查 */
 		for (OrderDistribute distribute : distributes) {
 			String orderSn = distribute.getOrderSn();
 			ReturnInfo tInfo = checkOrderQuestion(orderSn, distribute, define, orderStatus);
 			if (tInfo.getIsOk() == Constant.OS_NO) {
-                return tInfo;
-            }
+				return tInfo;
+			}
 			// 查询是否已经是同一种问题单
 			DistributeQuestionExample orderQuestionExample = new DistributeQuestionExample();
-			orderQuestionExample.or().andOrderSnEqualTo(orderSn).andQuestionTypeEqualTo(0).andQuestionCodeEqualTo(define.getCode());
+			orderQuestionExample.or().andOrderSnEqualTo(orderSn).andQuestionTypeEqualTo(questionType).andQuestionCodeEqualTo(define.getCode());
 			List<DistributeQuestion> orderQuestions = distributeQuestionMapper.selectByExample(orderQuestionExample);
 			if (StringUtil.isListNotNull(orderQuestions)) {
 				saveAction(distribute, orderStatus.getMessage(), orderStatus.getAdminUser());
@@ -256,11 +263,19 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			ri.setMessage("订单[" + masterOrderSn + "]传入设为问题单原因为空！");
 			return ri;
 		}
+		// 待审核问题单新增一种问题单类型
+		int questionType = 0;
+		if (Constant.QUESTION_CODE_REVIEW.equals(define.getCode())) {
+			questionType = 2;
+		} else if (Constant.QUESTION_CODE_SIGN.equals(define.getCode())) {
+			questionType = 3;
+		}
+
 		// 查询是否已经是同一种问题单
 		MasterOrderQuestionExample questionExample = new MasterOrderQuestionExample();
 		questionExample.or().andMasterOrderSnEqualTo(masterOrderSn)
 			.andQuestionCodeEqualTo(orderStatus.getCode())
-			.andQuestionTypeEqualTo(0);
+			.andQuestionTypeEqualTo(questionType);
 		List<MasterOrderQuestion> orderQuestions = masterOrderQuestionMapper.selectByExample(questionExample);
 		if (StringUtil.isListNotNull(orderQuestions)) {
 			ri.setMessage("订单[" + masterOrderSn + "]已是问题单，不需要重新设置问题单！");
@@ -283,7 +298,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			masterOrderQuestion.setMasterOrderSn(masterOrderSn);
 			masterOrderQuestion.setQuestionCode(define.getCode());
 			masterOrderQuestion.setQuestionDesc(define.getName());
-			masterOrderQuestion.setQuestionType(0);
+			masterOrderQuestion.setQuestionType(questionType);
 			masterOrderQuestionMapper.insertSelective(masterOrderQuestion);
 			StringBuffer msg = new StringBuffer(orderStatus.getMessage());
 			msg.append("<br/>&nbsp;&nbsp;&nbsp;<font color=\"red\">问题单code：" + define.getCode()
@@ -456,9 +471,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			ri.setMessage("传入缺货问题单信息为空！");
 			return ri;
 		}
-		MasterOrderInfoExtend extend = this.masterOrderInfoExtendMapper.selectByPrimaryKey(distribute.getMasterOrderSn());
-		// 检查缺货商品是否在订单商品表中存在
-//		ReturnInfo checkRi = checkShortageOrderGoods(lackSkuParams, distribute, orderStatus);
+
 		ReturnInfo<List<OrderQuestionLackSkuNew>> checkRi = checkShortageGoods(lackSkuParams, distribute, orderStatus, define);
 		if (checkRi != null && checkRi.getIsOk() == Constant.OS_NO) {
 			logger.error(checkRi.getMessage());
@@ -475,7 +488,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			// 已有问题单判断
 			DistributeQuestionExample orderQuestionExample = new DistributeQuestionExample();
 			orderQuestionExample.or().andOrderSnEqualTo(orderSn)
-				.andQuestionTypeEqualTo(1).andQuestionCodeEqualTo(define.getCode());
+				.andQuestionTypeEqualTo(Constant.QUESTION_TYPE_LACK).andQuestionCodeEqualTo(define.getCode());
 			List<DistributeQuestion> orderQuestions = distributeQuestionMapper.selectByExample(orderQuestionExample);
 			// 创建问题单信息
 			if (StringUtil.isListNull(orderQuestions)) {
@@ -511,6 +524,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			updateDistribute.setQuestionTime(now);
 			updateDistribute.setUpdateTime(now);
 			updateDistribute.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+			// 9953缺货问题单
 			if ("995".equals(define.getCode()) || "996".equals(define.getCode()) || "9951".equals(define.getCode()) || "9952".equals(define.getCode())
 					|| "9953".equals(define.getCode())) {
 				updateDistribute.setOrderStatus((byte) Constant.OI_ORDER_STATUS_UNCONFIRMED);
@@ -904,21 +918,34 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		orderQuestionLackSkuNewMapper.insertSelective(newLackSku);
 		return msg.toString();
 	}
-	
+
+    /**
+     * 设置交货单问题单
+     * @param distribute
+     * @param now
+     * @param orderCustomDefine
+     * @return
+     */
 	private DistributeQuestion createQuestion(OrderDistribute distribute, Date now, OrderCustomDefine orderCustomDefine) {
+		int questionType = 0;
+        if (Constant.QUESTION_CODE_REVIEW.equals(orderCustomDefine.getCode())) {
+            questionType = 2;
+        } else if (Constant.QUESTION_CODE_SIGN.equals(orderCustomDefine.getCode())) {
+            questionType = 3;
+        }
 		DistributeQuestion orderQuestion = new DistributeQuestion();
 		orderQuestion.setAddTime(now);
 		orderQuestion.setQuestionDesc(orderCustomDefine.getName());
 		orderQuestion.setQuestionCode(orderCustomDefine.getCode());
 		orderQuestion.setOrderSn(distribute.getOrderSn());
-		orderQuestion.setQuestionType(0);
+		orderQuestion.setQuestionType(questionType);
 		return orderQuestion;
 	}
 	
 	
-	private void saveAction(OrderDistribute distribute, String message, String actiomUser) {
+	private void saveAction(OrderDistribute distribute, String message, String actionUser) {
 		DistributeAction orderAction = distributeActionService.createQrderAction(distribute);
-		orderAction.setActionUser(actiomUser);
+		orderAction.setActionUser(actionUser);
 		orderAction.setActionNote(message);
 		distributeActionService.saveOrderAction(orderAction);
 	}
@@ -1002,7 +1029,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		updateDistribute.setQuestionTime(new Date());
 		updateDistribute.setUpdateTime(new Date());
 		updateDistribute.setOrderSn(orderSn);
-		// 订单状态设置为未确认状态
+		// 订单状态设置为未确认状态  9953缺货问题单、
 		if ("995".equals(define.getCode()) || "996".equals(define.getCode()) || "9951".equals(define.getCode()) || "9952".equals(define.getCode())
 				 || "9953".equals(define.getCode())) {
 			updateDistribute.setOrderStatus((byte) Constant.OI_ORDER_STATUS_UNCONFIRMED);
@@ -1026,34 +1053,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		orderAction.setActionNote(msg.toString());
 		distributeActionService.saveOrderAction(orderAction);
 	}
-	
-	
-	/**
-	 * 检查订单是否可以进行正常订单操作
-	 * 返回null表示此订单可以执行正常订单操作操作，否则表示不能执行
-	 * @param orderInfo
-	 * @param orderSn
-	 * @return
-	 */
-	public ReturnInfo checkConditionOfExecution(MasterOrderInfo orderInfo, String masterOrderSn, String actionType) {
-		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
-		/* 参数检验 */
-		if (orderInfo == null) {
-			ri.setMessage("订单" + masterOrderSn + "在近三个月的记录中，没有取得订单信息!");
-			return ri;
-		}
-		int orderStatus = orderInfo.getOrderStatus();
-		if (orderStatus == Constant.OI_ORDER_STATUS_CANCLED) {
-			ri.setMessage("订单" + masterOrderSn + "已处于已取消状态，不能在进行" + actionType + "操作！");
-			return ri;
-		}
-		if (orderStatus == Constant.OI_ORDER_STATUS_FINISHED) {
-			ri.setMessage("订单" + masterOrderSn + "已处于完成状态，不能在进行" + actionType + "操作！");
-			return ri;
-		}
-		return null;
-	}
-	
+
 	/**
 	 * 检查订单是否可以进行正常订单操作
 	 * 返回null表示此订单可以执行正常订单操作操作，否则表示不能执行
@@ -1079,11 +1079,15 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		}
 		return null;
 	}
-	
-	
+
+	/**
+	 * 获取正常交货单列表
+	 * @param distributes
+	 * @return ReturnInfo<List<OrderDistribute>>
+	 */
 	private ReturnInfo<List<OrderDistribute>> checkDistributeListOrderQuestion(List<OrderDistribute> distributes) {
 		ReturnInfo<List<OrderDistribute>> info = new ReturnInfo<List<OrderDistribute>>(Constant.OS_NO);
-		/* 执行前提检查 */
+
 		List<OrderDistribute> updateDistributes = new ArrayList<OrderDistribute>();
 		for (OrderDistribute distribute : distributes) {
 			String orderSn = distribute.getOrderSn();
@@ -1101,8 +1105,14 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		info.setIsOk(Constant.OS_YES);
 		return info;
 	}
-	
-	@SuppressWarnings("rawtypes")
+
+    /**
+     * 合并订单状态
+     * @param masterOrderSn
+     * @param master
+     * @param orderStatus
+     * @return
+     */
 	private ReturnInfo judgeMasterOrderStatus(String masterOrderSn, MasterOrderInfo master, byte orderStatus) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		OrderDistributeExample distributeExample = new OrderDistributeExample();
@@ -1116,11 +1126,11 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 		int count = 0;
 		for (OrderDistribute orderDistribute : distributes) {
 			if (orderDistribute.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
-				count ++;
+				count++;
 				continue;
 			}
 			if (orderDistribute.getOrderStatus() == orderStatus) {
-				count ++;
+				count++;
 				continue;
 			}
 		}

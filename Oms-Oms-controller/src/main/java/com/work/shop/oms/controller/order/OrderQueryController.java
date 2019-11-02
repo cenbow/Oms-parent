@@ -1,6 +1,7 @@
 package com.work.shop.oms.controller.order;
 
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.api.bean.OrderContractRequest;
 import com.work.shop.oms.bean.OrderItem;
 import com.work.shop.oms.bean.OrderRiderDistributeLog;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
@@ -369,5 +370,25 @@ public class OrderQueryController {
         } catch (Exception e) {
             logger.error("请求处理仓库发送配送异常", e);
         }
+    }
+
+    /**
+     * 订单合同列表查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    @PostMapping("/orderContractQuery")
+    public OrderQueryResponse orderContractQuery(@RequestBody OrderContractRequest request) {
+        OrderQueryResponse returnBean = new OrderQueryResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderQueryService.orderContractQuery(request);
+        } catch (Exception e) {
+            logger.error("订单合同列表查询查询异常" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("查询异常");
+        }
+
+        return returnBean;
     }
 }

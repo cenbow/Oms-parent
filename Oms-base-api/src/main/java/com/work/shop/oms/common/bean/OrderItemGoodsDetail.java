@@ -6,16 +6,34 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 订单商品详情
+ * @author QuYachu
+ */
 public class OrderItemGoodsDetail implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8132744347474246081L;
-	private String goodsSn;// 货号
-	private String barcode;// 条形码
-	private String cardMoney;// 打折券金额
-	private String availableNumber;// 可用数量
+
+	/**
+	 * 货号
+	 */
+	private String goodsSn;
+
+	/**
+	 * 条形码
+	 */
+	private String barcode;
+
+	/**
+	 * 打折券金额
+	 */
+	private String cardMoney;
+
+	/**
+	 * 可用数量
+	 */
+	private String availableNumber;
+
 	// 发货仓字段
 	private Byte shippingId;
 	private String shippingName;
@@ -29,31 +47,112 @@ public class OrderItemGoodsDetail implements Serializable {
 	private String toUserPhone;
 	private String provincecity;
 	private String overTransCycle;
-	// 发货单字段
+
+	/**
+	 * 快递单号
+	 */
 	private String invoiceNo;
+
 	private Byte shippingStatus;
+
+	/**
+	 * 发货时间
+	 */
 	private Date deliveryTime;
+
 	private Date pickupDate;
+
 	private String shippingStatusName;
-	// 打折券列表
+
+	/**
+	 * 打折券列表
+	 */
 	private List<Map> couponList;
 
-	private String lackNum;// 缺货数量
-	private String colorCode;// 颜色码
-	private String sizeCode;// 尺码
-	private String colorName;// 颜色名
-	private String sizeName;// 尺码名
-	private Double subTotal;// 订单商品小计
-	private Short initGoodsNumber;// 初始商品数量
-	private String currSizeCode;// 当前商品尺码
-	private String currColorCode;// 当前商品颜色码
-	private String currSizeName;// 当前商品尺名名
-	private String currColorName;// 当前商品颜色名
-	private BigDecimal initIntegralMoney;// 初始积分金额
-	private Integer initLackNum;// 缺货商品数量
-	private String returnRemainNum;// 待退货数量
-	private String returnNum;// 已退数量
-	private String orderStatus;// 交货单状态
+	/**
+	 * 缺货数量
+	 */
+	private String lackNum;
+
+	/**
+	 * 颜色码
+	 */
+	private String colorCode;
+
+	/**
+	 * 尺码
+	 */
+	private String sizeCode;
+
+	/**
+	 * 颜色名
+	 */
+	private String colorName;
+
+	/**
+	 * 尺码名
+	 */
+	private String sizeName;
+
+	/**
+	 * 订单商品小计
+	 */
+	private BigDecimal subTotal;
+
+	/**
+	 * 订单商品小计
+	 */
+    private String subTotalStr;
+
+	/**
+	 * 初始商品数量
+	 */
+	private Short initGoodsNumber;
+
+	/**
+	 * 当前商品尺码
+	 */
+	private String currSizeCode;
+
+	/**
+	 * 当前商品颜色码
+	 */
+	private String currColorCode;
+
+	/**
+	 * 当前商品尺名名
+	 */
+	private String currSizeName;
+
+	/**
+	 * 当前商品颜色名
+	 */
+	private String currColorName;
+
+	/**
+	 * 初始积分金额
+	 */
+	private BigDecimal initIntegralMoney;
+
+	/**
+	 * 缺货商品数量
+	 */
+	private Integer initLackNum;
+
+	/**
+	 * 待退货数量
+	 */
+	private String returnRemainNum;
+
+	/**
+	 * 已退数量
+	 */
+	private String returnNum;
+
+	/**
+	 * 交货单状态
+	 */
+	private String orderStatus;
 
 	private Long goodsId;
 
@@ -141,13 +240,25 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	private String expectedShipDate;
 
-	private BigDecimal tax; // 综合税费
+	/**
+	 * 综合税费
+	 */
+	private BigDecimal tax;
 
-	private BigDecimal taxRate; // 综合税率
+	/**
+	 * 综合税率
+	 */
+	private BigDecimal taxRate;
 
+	/**
+	 * 市场价
+	 */
 	private float marketPrice;
-	
-	private Integer boxGauge; // 箱规
+
+	/**
+	 * 箱规
+	 */
+	private Integer boxGauge;
 
     /**
      * 最小购买量
@@ -179,7 +290,50 @@ public class OrderItemGoodsDetail implements Serializable {
      */
     private String supplierName;
 
-	public Long getGoodsId() {
+    /**
+     * 供应商描述
+     */
+    private String customerMaterialName;
+
+    /**
+     * 采购申请编号
+     */
+    private String buyerNo;
+
+    /**
+     * 采购申请行号
+     */
+    private String buyerLineNo;
+
+	/**
+	 * 进项税
+	 */
+	private BigDecimal inputTax;
+
+	/**
+	 * 销项税
+	 */
+	private BigDecimal outputTax;
+
+	/**
+	 * 协议价
+	 */
+	private BigDecimal costPrice;
+
+    /**
+     * 加价金额
+     */
+	private BigDecimal goodsAddPrice;
+
+    public BigDecimal getGoodsAddPrice() {
+        return goodsAddPrice;
+    }
+
+    public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
+        this.goodsAddPrice = goodsAddPrice;
+    }
+
+    public Long getGoodsId() {
 		return goodsId;
 	}
 
@@ -699,23 +853,23 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.sizeName = sizeName;
 	}
 
-	public Double getSubTotal() {
+	public BigDecimal getSubTotal() {
 		if (null == subTotal || subTotal.doubleValue() == 0) {
 			if (null == transactionPrice) {
 				transactionPrice = new BigDecimal(0.00);
 			}
 			if (null == goodsNumber) {
-				subTotal = 0.00D;
+				subTotal = new BigDecimal(0.00);
 			} else {
 				BigDecimal number = new BigDecimal(goodsNumber);
-				subTotal = transactionPrice.multiply(number).doubleValue();
+				subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//subTotal = transactionPrice.doubleValue() * goodsNumber;
 			}
 		}
 		return subTotal;
 	}
 
-	public void setSubTotal(Double subTotal) {
+	public void setSubTotal(BigDecimal subTotal) {
 		this.subTotal = subTotal;
 	}
 
@@ -918,4 +1072,65 @@ public class OrderItemGoodsDetail implements Serializable {
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
     }
+
+    public String getSubTotalStr() {
+        BigDecimal subTotal = getSubTotal();
+        subTotalStr = "";
+        if (subTotal != null) {
+            subTotalStr = subTotal.toString();
+        }
+        return subTotalStr;
+    }
+
+    public void setSubTotalStr(String subTotalStr) {
+        this.subTotalStr = subTotalStr;
+    }
+
+    public String getCustomerMaterialName() {
+        return customerMaterialName;
+    }
+
+    public void setCustomerMaterialName(String customerMaterialName) {
+        this.customerMaterialName = customerMaterialName;
+    }
+
+    public String getBuyerNo() {
+        return buyerNo;
+    }
+
+    public void setBuyerNo(String buyerNo) {
+        this.buyerNo = buyerNo;
+    }
+
+    public String getBuyerLineNo() {
+        return buyerLineNo;
+    }
+
+    public void setBuyerLineNo(String buyerLineNo) {
+        this.buyerLineNo = buyerLineNo;
+    }
+
+	public BigDecimal getInputTax() {
+		return inputTax;
+	}
+
+	public void setInputTax(BigDecimal inputTax) {
+		this.inputTax = inputTax;
+	}
+
+	public BigDecimal getOutputTax() {
+		return outputTax;
+	}
+
+	public void setOutputTax(BigDecimal outputTax) {
+		this.outputTax = outputTax;
+	}
+
+	public BigDecimal getCostPrice() {
+		return costPrice;
+	}
+
+	public void setCostPrice(BigDecimal costPrice) {
+		this.costPrice = costPrice;
+	}
 }
