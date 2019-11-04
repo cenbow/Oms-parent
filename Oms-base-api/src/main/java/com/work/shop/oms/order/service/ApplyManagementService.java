@@ -49,4 +49,11 @@ public interface ApplyManagementService {
 	 * @return OmsBaseResponse<GoodsReturnChangeInfoVO>
 	 */
 	OmsBaseResponse<GoodsReturnChangeInfoVO> findGoodsReturnChangeBySn(OmsBaseRequest<ApplyItem> request);
+
+    /**
+     * 更新订单商品价格
+     * @param applyItem
+     * @return
+     */
+    OmsBaseResponse<Boolean> updateOrderPrice(ApplyItem applyItem);
 }

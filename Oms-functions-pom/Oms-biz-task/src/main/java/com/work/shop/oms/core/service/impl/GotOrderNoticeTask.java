@@ -14,7 +14,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.work.shop.cart.api.StoreInfoCartApi;
+import com.work.shop.cart.api.StoreInfoCartAPI;
 import com.work.shop.cart.api.bean.StoreInfoBean;
 import com.work.shop.cart.api.bean.service.ShopCartRequest;
 import com.work.shop.cart.api.bean.service.ShopCartResponse;
@@ -37,7 +37,7 @@ public class GotOrderNoticeTask extends ATaskServiceProcess{
 	private OrderDistributeDefineMapper orderDistributeDefineMapper;
 
 	//@Resource
-	private StoreInfoCartApi storeInfoCartAPI;
+	private StoreInfoCartAPI storeInfoCartAPI;
 
 	@Resource(name = "sendGotCodeJmsTemplate")
 	private JmsTemplate sendGotCodeJmsTemplate;

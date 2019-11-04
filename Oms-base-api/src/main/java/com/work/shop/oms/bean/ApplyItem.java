@@ -163,9 +163,14 @@ public class ApplyItem implements Serializable{
 	private Integer applyStatus;
 
 	/**
-	 * 订单号
+	 * 交货单号
 	 */
 	private String orderSn;
+
+    /**
+     * 商品价格更新
+     */
+	private List<UpdateGoodsItem> updateGoodsItems;
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -430,4 +435,12 @@ public class ApplyItem implements Serializable{
 	public void setOrderSn(String orderSn) {
 		this.orderSn = orderSn;
 	}
+
+    public List<UpdateGoodsItem> getUpdateGoodsItems() {
+        return updateGoodsItems;
+    }
+
+    public void setUpdateGoodsItems(List<UpdateGoodsItem> updateGoodsItems) {
+        this.updateGoodsItems = updateGoodsItems;
+    }
 }

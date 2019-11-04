@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import javax.annotation.Resource;
+import javax.annotation.Resources;
 
 import com.work.shop.oms.api.bean.OrderContractBean;
 import com.work.shop.oms.api.bean.OrderContractRequest;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.work.shop.cart.api.StoreInfoCartApi;
+import com.work.shop.cart.api.StoreInfoCartAPI;
 import com.work.shop.cart.api.bean.StoreInfoBean;
 import com.work.shop.cart.api.bean.service.ShopCartRequest;
 import com.work.shop.cart.api.bean.service.ShopCartResponse;
@@ -75,7 +76,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 	private GoodsReturnChangeMapper goodsReturnChangeMapper;
 
 	//@Resource
-	private StoreInfoCartApi storeInfoCartAPI;
+	private StoreInfoCartAPI storeInfoCartAPI;
 	
 	@Resource(name="riderDistributeService")
 	private RiderDistributeService riderDistributeService;

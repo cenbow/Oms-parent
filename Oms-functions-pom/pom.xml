@@ -92,12 +92,12 @@
 		<dependency>
 			<groupId>com.work.shop</groupId>
 			<artifactId>CardAPI</artifactId>
-			<version>0.1.2</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.work.shop.cart.api</groupId>
 			<artifactId>PlatformCart-Api</artifactId>
-			<version>1.2.8</version>
+			<version>1.1.0</version>
 		</dependency>
 
 		<dependency>

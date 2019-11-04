@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.work.shop.cardAPI.api.CardCartSearchServiceApi;
 import com.work.shop.cardAPI.bean.CardAPIBean;
-import com.work.shop.cart.api.OrderCartApi;
+import com.work.shop.cart.api.OrderCartAPI;
 import com.work.shop.cart.api.bean.GoodsForOrderServiceParaBean;
 import com.work.shop.cart.api.bean.ResultOrderServiceData;
 import com.work.shop.oms.bean.MasterOrderGoods;
@@ -97,7 +97,7 @@ public class OrderGoodsEditServiceImpl implements OrderGoodsEditService {
 //	@Resource
 //	private ProductGoodsMapper productGoodsMapper;
 	@Resource(name="platformCartAPI")
-	private OrderCartApi platformCartAPI;
+	private OrderCartAPI platformCartAPI;
 	@Resource
 	private SystemConfigMapper systemConfigMapper;
 

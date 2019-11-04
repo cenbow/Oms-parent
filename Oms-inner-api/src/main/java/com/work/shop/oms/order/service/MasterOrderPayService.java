@@ -39,4 +39,11 @@ public interface MasterOrderPayService {
      * @return
      */
     List<MasterOrderPay> getMasterOrderPayList(String masterOrderSn);
+
+    /**
+     * 根据主键更新
+     * @param masterOrderPay
+     * @return
+     */
+    int updateByPrimaryKeySelective(MasterOrderPay masterOrderPay);
 }

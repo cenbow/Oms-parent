@@ -852,6 +852,16 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
     }
 
     /**
+     * 根据订单号更新
+     * @param masterOrderInfo
+     * @return
+     */
+    @Override
+    public int updateByPrimaryKeySelective(MasterOrderInfo masterOrderInfo) {
+        return masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfo);
+    }
+
+    /**
      * 处理订单账期支付信息
      * @param masterOrderPay
      */

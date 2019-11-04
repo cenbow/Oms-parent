@@ -125,4 +125,26 @@ public class ApplyManagementController {
 
         return returnBean;
     }
+
+    /**
+     * 更新订单商品价格
+     * @param applyItem
+     * @return
+     */
+    @PostMapping("/updateOrderPrice")
+    public OmsBaseResponse<Boolean> updateOrderPrice(@RequestBody ApplyItem applyItem) {
+        OmsBaseResponse<Boolean> returnBean = new OmsBaseResponse<Boolean>();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = applyManagementService.updateOrderPrice(applyItem);
+        } catch (Exception e) {
+            logger.error("更新订单商品价格异常:" + JSONObject.toJSONString(applyItem), e);
+            returnBean.setMessage("更新订单商品价格异常");
+        }
+
+        return returnBean;
+    }
+
+
 }
