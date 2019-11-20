@@ -151,4 +151,11 @@ public interface OrderQueryService {
      * @return OrderQueryResponse
      */
     OrderQueryResponse orderContractQuery(OrderContractRequest request);
+
+    /**
+     * 订单列表导出查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    OrderQueryResponse orderQueryByExport(OrderQueryRequest request);
 }

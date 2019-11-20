@@ -45,7 +45,6 @@ import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.service.BatchDecodeService;
 import com.work.shop.oms.utils.PageHelper;
 import com.work.shop.oms.vo.AdminUser;
-import com.work.shop.united.client.dataobject.User;
 
 @Service
 public class BatchDecodeServiceImpl implements BatchDecodeService {

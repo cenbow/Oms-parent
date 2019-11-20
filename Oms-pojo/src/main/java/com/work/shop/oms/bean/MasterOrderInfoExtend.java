@@ -345,6 +345,11 @@ public class MasterOrderInfoExtend {
     private int payPeriodStatus;
 
     /**
+     * 内行业务id
+     */
+    private String paySourceId;
+
+    /**
      * 发票注册电话
      */
     private String invPhone;
@@ -1279,5 +1284,13 @@ public class MasterOrderInfoExtend {
 
     public void setPayPeriodPayStatus(Byte payPeriodPayStatus) {
         this.payPeriodPayStatus = payPeriodPayStatus;
+    }
+
+    public String getPaySourceId() {
+        return paySourceId;
+    }
+
+    public void setPaySourceId(String paySourceId) {
+        this.paySourceId = paySourceId;
     }
 }

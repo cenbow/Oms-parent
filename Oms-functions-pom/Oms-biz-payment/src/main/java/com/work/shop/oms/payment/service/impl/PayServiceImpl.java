@@ -357,8 +357,7 @@ public class PayServiceImpl implements PayService {
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, "支付单已支付：" + paySn, orderStatus.getAdminUser());
 			//pos不确认
 			if (!orderStatus.getSource().equals(ConstantValues.METHOD_SOURCE_TYPE.POS) && masterOrderInfoUpdate.getPayStatus() == Constant.OI_PAY_STATUS_PAYED) {
-//				orderStatus.setMessage(orderStatus.getSource() + "支付确认！");
-//				ReturnInfo reInfo = orderConfirmService.confirmOrderByMasterSn(masterOrderSn, orderStatus);
+
 				OrderManagementRequest request = new OrderManagementRequest();
 				request.setMasterOrderSn(masterOrderSn);
 				request.setActionUser(orderStatus.getAdminUser());

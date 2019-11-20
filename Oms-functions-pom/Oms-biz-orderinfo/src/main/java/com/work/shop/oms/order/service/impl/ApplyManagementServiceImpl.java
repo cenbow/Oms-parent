@@ -285,6 +285,12 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 response.setMessage("订单已发货，无法更改订单商品价格");
                 return response;
             }
+            //校验店铺
+            String shopCode = applyItem.getShopCode();
+            if (StringUtils.isNotBlank(shopCode) && !shopCode.equals(masterOrderInfo.getOrderFrom())) {
+                response.setMessage(shopCode + "店铺下无此订单");
+                return response;
+            }
 
             //获取订单商品信息
             List<UpdateGoodsItem> updateGoodsItems = applyItem.getUpdateGoodsItems();

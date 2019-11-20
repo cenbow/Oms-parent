@@ -170,4 +170,12 @@ public interface OrderQueryService {
      */
     @PostMapping("/order/orderContractQuery")
     OrderQueryResponse orderContractQuery(OrderContractRequest request);
+
+    /**
+     * 订单列表导出查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    @PostMapping("/order/orderQueryByExport")
+    OrderQueryResponse orderQueryByExport(OrderQueryRequest request);
 }

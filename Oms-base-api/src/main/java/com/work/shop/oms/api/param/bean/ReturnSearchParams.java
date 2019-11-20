@@ -100,6 +100,11 @@ public class ReturnSearchParams implements Serializable {
      * 对账单状态 0未生成、1已生成
      */
 	private Integer selltedBillStatus;
+
+    /**
+     * 渠道店铺编码
+     */
+	private String channelCode;
 	
 	public String getMasterOrderSn() {
         return masterOrderSn;
@@ -291,5 +296,13 @@ public class ReturnSearchParams implements Serializable {
 
     public void setSelltedBillStatus(Integer selltedBillStatus) {
         this.selltedBillStatus = selltedBillStatus;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 }

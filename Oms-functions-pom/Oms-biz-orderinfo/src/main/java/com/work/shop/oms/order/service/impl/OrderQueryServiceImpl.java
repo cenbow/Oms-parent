@@ -1,36 +1,20 @@
 package com.work.shop.oms.order.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-
-import com.work.shop.oms.api.bean.OrderContractBean;
-import com.work.shop.oms.api.bean.OrderContractRequest;
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.common.bean.*;
-import com.work.shop.oms.dao.*;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.work.shop.cart.api.StoreInfoCartAPI;
+import com.work.shop.cart.api.StoreInfoCartApi;
 import com.work.shop.cart.api.bean.StoreInfoBean;
 import com.work.shop.cart.api.bean.service.ShopCartRequest;
 import com.work.shop.cart.api.bean.service.ShopCartResponse;
 import com.work.shop.cart.api.bean.service.StoreInfoRequest;
+import com.work.shop.oms.api.bean.OrderContractBean;
+import com.work.shop.oms.api.bean.OrderContractRequest;
 import com.work.shop.oms.api.param.bean.OrderItemQueryExample;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
-import com.work.shop.oms.dao.define.DefineOrderMapper;
-import com.work.shop.oms.dao.define.GoodsReturnChangePageListMapper;
-import com.work.shop.oms.dao.define.OrderDistributeDefineMapper;
-import com.work.shop.oms.dao.define.OrderInfoSearchMapper;
-import com.work.shop.oms.dao.define.OrderReturnSearchMapper;
+import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.dao.*;
+import com.work.shop.oms.dao.define.*;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.request.CustomDefineQueryRequest;
 import com.work.shop.oms.order.request.OmsBaseRequest;
@@ -47,6 +31,15 @@ import com.work.shop.oms.utils.TimeUtil;
 import com.work.shop.oms.vo.OrderReturnListVO;
 import com.work.shop.oms.vo.OrderReturnSearchExample;
 import com.work.shop.oms.vo.OrderShipVO;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 订单退单查询管理
@@ -76,7 +69,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 	private GoodsReturnChangeMapper goodsReturnChangeMapper;
 
 	//@Resource
-	private StoreInfoCartAPI storeInfoCartAPI;
+	private StoreInfoCartApi storeInfoCartAPI;
 	
 	@Resource(name="riderDistributeService")
 	private RiderDistributeService riderDistributeService;
@@ -118,7 +111,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 	 */
 	@Override
 	public OrderQueryResponse orderQuery(OrderQueryRequest request) {
-		logger.info("订单查询 request:" + JSON.toJSONString(request));
+
 		OrderQueryResponse response = new OrderQueryResponse();
 		response.setSuccess(false);
 		response.setMessage("订单信息查询失败");
@@ -313,9 +306,29 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			criteria.andAddTimeGreaterThanOrEqualTo(date);
 		}
 
+		//支付方式
         String payId = request.getPayId();
 		if (StringUtils.isNotBlank(payId)) {
             criteria.andPayIdEqualTo(payId);
+        }
+
+        //公司id
+        String companyId = request.getCompanyId();
+        if (StringUtils.isNotBlank(companyId)) {
+            List<String> companyIdList = Arrays.asList(companyId.split(","));
+            criteria.andCompanyCodeIn(companyIdList);
+        }
+
+        //公司类型
+        Integer companyType = request.getCompanyType();
+        if (companyType != null) {
+            criteria.andCompanyTypeEqualTo(companyType);
+        }
+
+        //支付状态不等于
+        Integer payNotStatus = request.getPayNotStatus();
+        if (payNotStatus != null && payNotStatus >= 0) {
+            criteria.andPayStatusNotEqualTo(payNotStatus.byteValue());
         }
 
         try {
@@ -417,6 +430,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 					list.add((byte) 4);
 					list.add((byte) 10);
 					criteria.andOrderReturnOrderStatusNotIn(list);
+                    criteria.andBackBalanceEqualTo((byte) 0);
 				} else if (model.getOrderView() == 2) {
 					List<Byte> list = new ArrayList<Byte>();
 					list.add((byte) 4);
@@ -2082,6 +2096,79 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         } catch (Exception e) {
             logger.error("订单合同查询异常: " + e.getMessage(), e);
             response.setMessage("订单合同查询失败: " + e.getMessage());
+        }
+        return response;
+    }
+
+    /**
+     * 订单列表导出查询
+     * @param request 查询参数
+     * @return OrderQueryResponse
+     */
+    @Override
+    public OrderQueryResponse orderQueryByExport(OrderQueryRequest request) {
+        logger.info("订单列表导出查询 request:" + JSON.toJSONString(request));
+        OrderQueryResponse response = new OrderQueryResponse();
+        response.setSuccess(false);
+        response.setMessage("订单列表导出查询失败");
+        if (request.getPageNo() == null || request.getPageNo() < 1) {
+            response.setMessage("订单信息查询页码不能为空或小于1");
+            return response;
+        }
+
+        int start = (request.getPageNo() - 1) * request.getPageSize();
+        int limit = request.getPageSize();
+        // 编辑SQL查询参数
+        Map<String, Object> paramMap = new HashMap<>(5);
+        paramMap.put("start", start);
+        paramMap.put("limit", limit);
+
+        String startTime = request.getStartTime();
+        if (StringUtils.isNotBlank(startTime)) {
+            paramMap.put("startTime", startTime);
+        }
+
+        String endTime = request.getEndTime();
+        if (StringUtils.isNotBlank(endTime)) {
+            paramMap.put("endTime", endTime);
+        }
+
+        //公司id
+        String companyId = request.getCompanyId();
+        if (StringUtils.isNotBlank(companyId)) {
+            List<String> companyIdList = Arrays.asList(companyId.split(","));
+            paramMap.put("companyIdList", companyIdList);
+        }
+
+        //公司类型
+        Integer companyType = request.getCompanyType();
+        if (companyType != null) {
+            paramMap.put("companyType", companyType);
+        }
+
+        // 订单类型 0正常订单，1联采订单
+		Integer orderType = request.getOrderType();
+		if (orderType != null) {
+			paramMap.put("orderType", orderType);
+		}
+
+		// 渠道店铺
+		String shopCode = request.getShopCode();
+		if (StringUtils.isNotBlank(shopCode)) {
+			paramMap.put("shopCode", shopCode);
+		}
+
+        try {
+            // 订单列表
+            List<OrderQueryExportResult> resultList = orderInfoSearchMapper.getOrderQueryExportList(paramMap);
+            int exportList = orderInfoSearchMapper.countOrderQueryExportList(paramMap);
+            response.setTotalProperty(exportList);
+            response.setOrderQueryExportResults(resultList);
+            response.setSuccess(true);
+            response.setMessage("订单列表导出查询成功");
+        } catch (Exception e) {
+            logger.error("订单列表导出查询异常: " + e.getMessage(), e);
+            response.setMessage("订单列表导出查询失败: " + e.getMessage());
         }
         return response;
     }

@@ -10,6 +10,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.orderop.service.OrderConfirmService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,9 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 	
 	@Resource
 	private OrderManagementService orderManagementService;
+
+    /*@Resource
+    private OrderConfirmService orderConfirmService;*/
 
     /**
      * 获取指定的支付总金额
@@ -447,6 +451,9 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 							request.setMasterOrderSn(orderSn);
 							request.setMessage("用户支付后解锁！");
 							orderManagementService.orderLock(request);
+
+							//前端支付成功自动确认
+                            //orderConfirmService.confirmOrderByMasterSn(orderSn, new OrderStatus(orderSn, "前端支付成功自动确认", null));
 						} else {
 							masterOrderActionService.insertOrderActionBySn(orderSn,"前台付款操作异常：未找到有效支付单，付款单" + unPayMasterOrderPay.getMasterPaySn() + "付款操作;"+ actionNote.toString(), Constant.OS_STRING_SYSTEM);
 						}

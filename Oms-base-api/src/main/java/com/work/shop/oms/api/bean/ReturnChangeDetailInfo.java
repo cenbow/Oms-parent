@@ -218,6 +218,8 @@ public class ReturnChangeDetailInfo implements Serializable {
             case 1: return "退货";
             case 2: return "换货";
             case 3: return "维修";
+            case 4: return "退款";
+            case 5: return "额外退款单";
             default:return "";
         }
     }

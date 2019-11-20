@@ -45,16 +45,13 @@
 			<artifactId>httpmime</artifactId>
 			<version>4.2.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.work.shop.mybaits</groupId>
 			<artifactId>MybatisGenerator4</artifactId>
 			<version>0.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.work.shop.united</groupId>
-			<artifactId>auth_center_client</artifactId>
-			<version>0.0.1</version>
-		</dependency>
+
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>

@@ -2783,6 +2783,11 @@ public class OrderReturnSearchExample {
             return (Criteria) this;
         }
 
+        public Criteria andBackBalanceEqualTo(Byte value) {
+            addCriterion("ord.backBalance =", value, "backBalance");
+            return (Criteria) this;
+        }
+
         public Criteria andPickupBesttimeEqualTo(String value) {
             addCriterion("pickup_besttime =", value, "pickupBesttime");
             return (Criteria) this;

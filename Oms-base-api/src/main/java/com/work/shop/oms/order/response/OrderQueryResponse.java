@@ -6,6 +6,7 @@ import java.util.List;
 import com.work.shop.oms.api.bean.OrderContractBean;
 import com.work.shop.oms.bean.OrderGoodsItem;
 import com.work.shop.oms.bean.OrderItem;
+import com.work.shop.oms.bean.OrderQueryExportResult;
 import com.work.shop.oms.bean.OrderShipGoodsItem;
 
 /**
@@ -38,6 +39,11 @@ public class OrderQueryResponse implements Serializable {
      * 订单合同列表
      */
 	private List<OrderContractBean> orderContractBeans;
+
+    /**
+     * 公司订单导出结合
+     */
+	private List<OrderQueryExportResult> orderQueryExportResults;
 	
 	public Boolean getSuccess() {
 		return success;
@@ -93,5 +99,13 @@ public class OrderQueryResponse implements Serializable {
 
     public void setOrderContractBeans(List<OrderContractBean> orderContractBeans) {
         this.orderContractBeans = orderContractBeans;
+    }
+
+    public List<OrderQueryExportResult> getOrderQueryExportResults() {
+        return orderQueryExportResults;
+    }
+
+    public void setOrderQueryExportResults(List<OrderQueryExportResult> orderQueryExportResults) {
+        this.orderQueryExportResults = orderQueryExportResults;
     }
 }

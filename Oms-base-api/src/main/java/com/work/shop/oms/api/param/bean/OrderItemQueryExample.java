@@ -859,6 +859,21 @@ public class OrderItemQueryExample {
             addCriterion("mop.pay_id =", value, "value");
             return (Criteria) this;
         }
+
+        public Criteria andCompanyCodeIn(List<String> values) {
+            addCriterion("oie.company_code in", values, "companyCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompanyTypeEqualTo(Integer value) {
+            addCriterion("oie.company_type =", value, "companyType");
+            return (Criteria) this;
+        }
+
+        public Criteria andPayStatusNotEqualTo(Byte value) {
+            addCriterion("oi.pay_status !=", value, "payStatus");
+            return (Criteria) this;
+        }
     }
 
     /**
