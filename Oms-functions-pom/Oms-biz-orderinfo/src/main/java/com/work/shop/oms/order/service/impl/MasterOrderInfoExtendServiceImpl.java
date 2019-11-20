@@ -187,10 +187,11 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
     /**
      * 更新订单账期支付扣款状态
      * @param masterOrderSn
+     * @param paySourceId
      * @return boolean
      */
     @Override
-    public boolean updateMasterPayPeriod(String masterOrderSn) {
+    public boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId) {
         boolean bl = false;
         try {
             MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
@@ -198,6 +199,7 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 
             MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
             extend.setPayPeriodStatus(1);
+            extend.setPaySourceId(paySourceId);
             int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
 
             bl = result > 0;

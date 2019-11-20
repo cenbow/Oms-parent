@@ -300,6 +300,16 @@ public class MasterOrderPayServiceImpl implements MasterOrderPayService{
 		return 0;
 	}
 
+    /**
+     * 根据主键更新
+     * @param masterOrderPay
+     * @return
+     */
+    @Override
+    public int updateByPrimaryKeySelective(MasterOrderPay masterOrderPay) {
+        return masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
+    }
+
 	public Date getDate(Date t, int sec) {
 		long milliseconds = t.getTime();
 		Calendar c = Calendar.getInstance();

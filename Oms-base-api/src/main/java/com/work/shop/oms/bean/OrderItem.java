@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * 订单列表
+ * @author QuYachu
  */
 public class OrderItem implements Serializable{
 
@@ -263,6 +264,16 @@ public class OrderItem implements Serializable{
      * 支付方式
      */
     private String payMethod;
+
+    /**
+     * 公司名称
+     */
+    private String companyName;
+
+    /**
+     * 公司id
+     */
+    private String companyCode;
 	
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -676,5 +687,21 @@ public class OrderItem implements Serializable{
 
     public void setPayMethod(String payMethod) {
         this.payMethod = payMethod;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }

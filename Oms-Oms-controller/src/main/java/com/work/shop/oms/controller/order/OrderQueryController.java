@@ -391,4 +391,24 @@ public class OrderQueryController {
 
         return returnBean;
     }
+
+    /**
+     * 订单列表导出查询
+     * @param request
+     * @return
+     */
+    @PostMapping("/orderQueryByExport")
+    public OrderQueryResponse orderQueryByExport(@RequestBody OrderQueryRequest request) {
+        OrderQueryResponse returnBean = new OrderQueryResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderQueryService.orderQueryByExport(request);
+        } catch (Exception e) {
+            logger.error("订单列表导出查询异常" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("查询异常");
+        }
+
+        return returnBean;
+    }
 }

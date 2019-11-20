@@ -81,4 +81,11 @@ public interface MasterOrderInfoService {
      * @return List<MasterOrderGoods>
      */
     ReturnInfo<List<MasterOrderGoods>> selectGoodsByMasterOrderSn(String masterOrderSn);
+
+    /**
+     * 根据订单号更新
+     * @param masterOrderInfo
+     * @return
+     */
+    int updateByPrimaryKeySelective(MasterOrderInfo masterOrderInfo);
 }

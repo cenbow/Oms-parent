@@ -188,4 +188,19 @@ public interface OrderInfoSearchMapper {
      * @return
      */
     int countOrderContractList(OrderContractRequest request);
+
+    /**
+     * 获取公司订单导出数据列表
+     * @param paramMap
+     * @return
+     */
+    List<OrderQueryExportResult> getOrderQueryExportList(Map<String, Object> paramMap);
+
+    /**
+     * 获取公司订单导出数据列表总数
+     * @param paramMap
+     * @return
+     */
+    int countOrderQueryExportList(Map<String, Object> paramMap);
+
 }

@@ -106,10 +106,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		ApiReturnData apiReturnData = new ApiReturnData();
 		apiReturnData.setIsOk(Constant.OS_STR_YES);
 
-		if (StringUtils.isBlank(searchParam.getUserId())) {
-			apiReturnData.setMessage("userId不能为空！");
+		if (StringUtils.isBlank(searchParam.getUserId()) && StringUtils.isBlank(searchParam.getCompanyId())) {
+			apiReturnData.setMessage("公司id不能为空！或者 userId不能为空！");
 			return apiReturnData;
 		}
+
 		if (searchParam.getPageSize() <= 0) {
 			apiReturnData.setMessage("PageSize不能为空！");
 			return apiReturnData;
@@ -187,6 +188,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             params.put("signStatus", searchParam.getSignStatus());
         }
 
+        //公司id
+        if (searchParam.getCompanyId() != null) {
+            params.put("companyId", searchParam.getCompanyId());
+        }
+
 		return params;
 	}
 
@@ -197,7 +203,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<Paging<OrderPageInfo>> orderPageList(PageListParam searchParam) {
-		logger.info("查询用户订单列表：searchParam"+JSON.toJSONString(searchParam));
+
 		ApiReturnData<Paging<OrderPageInfo>> apiReturnData = new ApiReturnData<Paging<OrderPageInfo>>();
 
 		try {

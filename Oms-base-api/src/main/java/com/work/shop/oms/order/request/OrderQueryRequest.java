@@ -2,74 +2,168 @@ package com.work.shop.oms.order.request;
 
 import java.io.Serializable;
 
+/**
+ * 订单查询请求
+ * @author QuYachu
+ */
 public class OrderQueryRequest implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7115261779726715323L;
-	
-	private Integer pageNo; // 页码
-	
-	private Integer pageSize; // 每页记录数
-	
-	private String masterOrderSn; // 订单号
-	
-	private String outerOrderSn; // 外部订单号
-	
-	private String userId; // 下单人
-	
-	private String receiverName; // 收货人姓名
-	
-	private String receiverMobile; // 收货人手机
-	
-	private String receiverTel; // 收货人电话
 
-	private String channelCode; // 平台编码
-	
-	private String shopCode; // 店铺编码
-	
-	private String storeCode; // 线下店铺编码
-	
-	private String referer; // 订单来源
-	
-	private Integer orderType; // 订单类型,0正常订单，1联采订单
+	/**
+	 * 页码
+	 */
+	private Integer pageNo;
 
-	private Integer orderStatus; // 订单状态
+	/**
+	 * 每页记录数
+	 */
+	private Integer pageSize;
 
-	private Integer payStatus; // 支付状态
+	/**
+	 * 订单号
+	 */
+	private String masterOrderSn;
 
-	private Integer shipStatus; // 发货状态
+	/**
+	 * 外部订单号
+	 */
+	private String outerOrderSn;
 
-	private Integer questionStatus; // 问题单状态
-	
-	private Integer splitStatus; // 拆掉状态
-	
-	private Integer timeType; // 时间类型 0：下单时间;1：确认时间
-	
-	private Integer orderView; // 订单显示类型 0:有效订单;1:全部订单;2:隐藏订单
-	
-	private String startTime; // 开始时间
-	
-	private String endTime; // 结束时间
-	
-	private String deliveryStratTime; // 配送开始时间
-	
-	private String deliveryEndTime; // 配送结束时间
-	
-	private String gotStatus; // 自提状态 0未提、1已提
-	
-	private Integer queryType = 0; // 查询类型 0:订单列表;1:待结算列表
-	
-	private String actionUser; // 操作用户
-	
-	private String insteadUserId; // BD编码
-	
-	private String tmsCode; // 配送编码
-	
-	private String depotCode; // 仓库编码
-	
-	private int exportType; // 导出类型 0 订单列表、1订单商品列表
+	/**
+	 * 下单人
+	 */
+	private String userId;
+
+	/**
+	 * 收货人姓名
+	 */
+	private String receiverName;
+
+	/**
+	 * 收货人手机
+	 */
+	private String receiverMobile;
+
+	/**
+	 * 收货人电话
+	 */
+	private String receiverTel;
+
+	/**
+	 * 平台编码
+	 */
+	private String channelCode;
+
+	/**
+	 * 店铺编码
+	 */
+	private String shopCode;
+
+	/**
+	 * 线下店铺编码
+	 */
+	private String storeCode;
+
+	/**
+	 * 订单来源
+	 */
+	private String referer;
+
+	/**
+	 * 订单类型,0正常订单，1联采订单
+	 */
+	private Integer orderType;
+
+	/**
+	 * 订单状态
+	 */
+	private Integer orderStatus;
+
+	/**
+	 * 支付状态
+	 */
+	private Integer payStatus;
+
+	/**
+	 * 发货状态
+	 */
+	private Integer shipStatus;
+
+	/**
+	 * 问题单状态
+	 */
+	private Integer questionStatus;
+
+	/**
+	 * 拆掉状态
+	 */
+	private Integer splitStatus;
+
+	/**
+	 * 时间类型 0：下单时间;1：确认时间
+	 */
+	private Integer timeType;
+
+	/**
+	 * 订单显示类型 0:有效订单;1:全部订单;2:隐藏订单
+	 */
+	private Integer orderView;
+
+	/**
+	 * 开始时间
+	 */
+	private String startTime;
+
+	/**
+	 * 结束时间
+	 */
+	private String endTime;
+
+	/**
+	 * 配送开始时间
+	 */
+	private String deliveryStratTime;
+
+	/**
+	 * 配送结束时间
+	 */
+	private String deliveryEndTime;
+
+	/**
+	 * 自提状态 0未提、1已提
+	 */
+	private String gotStatus;
+
+	/**
+	 * 查询类型 0:订单列表;1:待结算列表
+	 */
+	private Integer queryType = 0;
+
+	/**
+	 * 操作用户
+	 */
+	private String actionUser;
+
+	/**
+	 * BD编码
+	 */
+	private String insteadUserId;
+
+	/**
+	 * 配送编码
+	 */
+	private String tmsCode;
+
+	/**
+	 * 仓库编码
+	 */
+	private String depotCode;
+
+	/**
+	 * 导出类型 0 订单列表、1订单商品列表
+	 */
+	private int exportType;
 
     private String message;
 
@@ -77,6 +171,21 @@ public class OrderQueryRequest implements Serializable {
      * 支付方式id
      */
     private String payId;
+
+    /**
+     * 公司id
+     */
+    private String companyId;
+
+    /**
+     * 公司类型 1内部公司、2外部公司
+     */
+    private Integer companyType;
+
+    /**
+     * 支付状态不等于
+     */
+    private Integer payNotStatus;
 
     public Integer getPageNo() {
 		return pageNo;
@@ -340,5 +449,29 @@ public class OrderQueryRequest implements Serializable {
 
     public void setPayId(String payId) {
         this.payId = payId;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public Integer getCompanyType() {
+        return companyType;
+    }
+
+    public void setCompanyType(Integer companyType) {
+        this.companyType = companyType;
+    }
+
+    public Integer getPayNotStatus() {
+        return payNotStatus;
+    }
+
+    public void setPayNotStatus(Integer payNotStatus) {
+        this.payNotStatus = payNotStatus;
     }
 }

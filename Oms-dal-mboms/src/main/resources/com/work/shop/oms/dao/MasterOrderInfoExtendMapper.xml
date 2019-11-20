@@ -707,6 +707,9 @@
         <if test="record.payPeriodPayStatus != null">
             pay_period_pay_status = #{record.payPeriodPayStatus},
         </if>
+        <if test="record.paySourceId != null">
+          pay_source_id = #{record.paySourceId},
+        </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -762,7 +765,8 @@
       sale_bd = #{record.saleBd},
       settlement_account = #{record.settlementAccount},
       company_type = #{record.companyType},
-      pay_period_pay_status = #{record.payPeriodPayStatus}
+      pay_period_pay_status = #{record.payPeriodPayStatus},
+      pay_source_id = #{record.paySourceId}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -906,6 +910,9 @@
         <if test="payPeriodPayStatus != null">
             pay_period_pay_status = #{payPeriodPayStatus},
         </if>
+        <if test="paySourceId != null">
+            pay_source_id = #{paySourceId},
+        </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
@@ -958,7 +965,8 @@
       sale_bd = #{saleBd},
       settlement_account = #{settlementAccount},
       company_type = #{companyType},
-      pay_period_pay_status = #{payPeriodPayStatus}
+      pay_period_pay_status = #{payPeriodPayStatus},
+      pay_source_id = #{paySourceId}
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
 </mapper>

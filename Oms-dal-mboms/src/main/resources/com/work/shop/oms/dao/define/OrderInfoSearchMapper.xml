@@ -2245,7 +2245,9 @@
             oie.user_pay_apply userPayApply,
             oie.order_type createOrderType,
             oi.instead_user_id instead_user_id,
-            mop.pay_name as payMethod
+            mop.pay_name as payMethod,
+			oie.company_name as companyName,
+			oie.company_code as companyCode
         FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
@@ -2679,5 +2681,96 @@
         <if test="endTime != null">
             and sign_complete_time &lt;= #{endTime}
         </if>
+    </select>
+
+    <!--公司订单导出查询-->
+    <select id="getOrderQueryExportList" parameterType="map" resultType="com.work.shop.oms.bean.OrderQueryExportResult">
+        SELECT
+        moi.master_order_sn as masterOrderSn,
+        mog.supplier_name as supplierName,
+        moi.shop_name as shopName,
+        if(moie.order_type = 1, "联采订单", "自采订单") as "orderTypeStr",
+        moi.goods_count as goodsNum,
+		<!--
+        moi.total_fee as orderTotalAmount,
+        -->
+		sum(ROUND(mog.transaction_price * mog.goods_number)) as orderTotalAmount,
+        sum(
+        if((mog.input_tax is not null and mog.input_tax > 0),
+        ROUND(mog.cost_price * (1 + mog.input_tax/100) * mog.goods_number, 2),
+        ROUND(mog.cost_price * mog.goods_number,2))
+        ) as purchaseTotalAmount,
+        moi.user_id as userId,
+        moie.company_name as companyName,
+        moi.add_time as addTime,
+        moai.consignee as consignee
+        from master_order_info moi, master_order_info_extend moie
+        LEFT JOIN master_order_goods mog on moie.master_order_sn = mog.master_order_sn
+        LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
+        WHERE moi.master_order_sn = moie.master_order_sn
+        and moi.order_status != 2
+        and moi.pay_status != 0
+        <if test="orderType != null">
+			AND moie.order_type = #{orderType}
+		</if>
+		<if test="shopCode != null">
+			AND moi.order_from = #{shopCode}
+		</if>
+        <if test="companyIdList != null">
+            AND moie.company_code in
+            <foreach collection="companyIdList" item="companyId" open="(" close=")" separator=",">
+                #{companyId}
+            </foreach>
+        </if>
+        <if test="companyType != null">
+            AND moie.company_type = #{companyType}
+        </if>
+        <if test="startTime != null">
+            AND moi.add_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND moi.add_time &lt;= #{endTime}
+        </if>
+        GROUP BY moi.master_order_sn, mog.supplier_code
+        ORDER BY moi.add_time DESC
+        <if test="limit != null and limit > 0">
+            LIMIT ${start},${limit};
+        </if>
+    </select>
+
+    <select id="countOrderQueryExportList" parameterType="map" resultType="int">
+        SELECT count(1) from
+        (
+            select count(1)
+            from master_order_info moi,  master_order_info_extend moie
+            LEFT JOIN master_order_goods mog on moie.master_order_sn = mog.master_order_sn
+            LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
+            WHERE moi.master_order_sn = moie.master_order_sn
+            and moi.order_status != 2
+            and moi.pay_status != 0
+            <if test="orderType != null">
+                AND moie.order_type = #{orderType}
+            </if>
+            <if test="shopCode != null">
+                AND moi.order_from = #{shopCode}
+            </if>
+            <if test="companyIdList != null">
+                AND moie.company_code in
+                <foreach collection="companyIdList" item="companyId" open="(" close=")" separator=",">
+                    #{companyId}
+                </foreach>
+            </if>
+            <if test="companyType != null">
+                AND moie.company_type = #{companyType}
+            </if>
+            <if test="startTime != null">
+                AND moi.add_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND moi.add_time &lt;= #{endTime}
+            </if>
+            GROUP BY moi.master_order_sn, mog.supplier_code
+        ) as countOrderQueryExport
+
     </select>
 </mapper>
