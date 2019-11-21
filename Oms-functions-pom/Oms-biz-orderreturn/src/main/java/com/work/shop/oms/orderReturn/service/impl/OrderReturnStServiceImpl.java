@@ -1998,9 +1998,9 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			if(orderReturn.getLockStatus() == 0){
 				throw new RuntimeException("退单处于锁定状态不可再次操作");
 			}
-		/*  if(orderReturn.getLockStatus().intValue() != userId.intValue() && !StringUtils.equalsIgnoreCase(actionUser, "admin")){
+		    if(orderReturn.getLockStatus().intValue() != userId.intValue() && !StringUtils.equalsIgnoreCase(actionUser, "admin")){
 				throw new RuntimeException("退单被其他人锁定("+orderReturn.getLockStatus()+")");
-			}*/
+			}
 			//退单更新
 			orderReturn.setReturnSn(returnSn);
 			orderReturn.setLockStatus(0);
