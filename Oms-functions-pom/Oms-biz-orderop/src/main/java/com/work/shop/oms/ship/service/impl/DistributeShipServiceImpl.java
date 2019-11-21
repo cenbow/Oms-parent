@@ -1,66 +1,24 @@
 package com.work.shop.oms.ship.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.common.utils.CachedBeanCopier;
-import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
-import com.work.shop.oms.order.service.MasterOrderInfoService;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.work.shop.oms.api.express.feign.OrderExpressService;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
-import com.work.shop.oms.common.bean.ChannelDeliveryQueue;
-import com.work.shop.oms.common.bean.ConstantValues;
-import com.work.shop.oms.common.bean.DistributeShipBean;
-import com.work.shop.oms.common.bean.DistributeShippingBean;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.OrderToShippedProviderBeanERP;
-import com.work.shop.oms.common.bean.OrderToShippedProviderBeanParam;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.common.bean.UserUsers;
+import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.common.utils.CachedBeanCopier;
 import com.work.shop.oms.config.service.SystemShippingService;
-import com.work.shop.oms.dao.ChannelShopMapper;
-import com.work.shop.oms.dao.MasterOrderAddressInfoMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.OrderDepotShipMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.SystemMsgTemplateMapper;
-import com.work.shop.oms.dao.SystemShippingMapper;
-import com.work.shop.oms.dao.WkSfGdnInfoMapper;
-import com.work.shop.oms.dao.WkSfGdnMapper;
-import com.work.shop.oms.dao.WkSfGdnTmpMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.mq.ws.DataUtil;
 import com.work.shop.oms.mq.ws.OrderUtil;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
+import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.orderop.service.JmsSendQueueService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
@@ -71,17 +29,24 @@ import com.work.shop.oms.ship.request.DistOrderShipRequest;
 import com.work.shop.oms.ship.response.DistOrderShipResponse;
 import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.users.UserInfoService;
-import com.work.shop.oms.utils.ConfigCenter;
-import com.work.shop.oms.utils.Constant;
-import com.work.shop.oms.utils.FieldUtil;
-import com.work.shop.oms.utils.MqConfig;
-import com.work.shop.oms.utils.OrderStatusUtils;
-import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.utils.TimeUtil;
+import com.work.shop.oms.utils.*;
 import com.work.shop.sms.bean.Message;
 import com.work.shop.sms.bean.State;
 import com.work.shop.sms.bean.User;
 import com.work.shop.sms.send.api.SMSService;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import java.util.*;
 
 /**
  * 交货单配送服务
@@ -1753,6 +1718,17 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         // 已发货信息保存
         for (String ownerCode : confirmOwnerMap.keySet()) {
             DistConfirmOwner owner = confirmOwnerMap.get(ownerCode);
+
+			//验证配货仓发货单 依据订单号、快递单号、发货仓
+			OrderDepotShipKey  verifyKey=new OrderDepotShipKey();
+			verifyKey.setOrderSn(owner.getOrderSn());
+			verifyKey.setInvoiceNo(owner.getInvoiceNo());
+			verifyKey.setDepotCode(owner.getOwnerCode());
+			OrderDepotShip orderDepotShip = orderDepotShipMapper.selectByPrimaryKey(verifyKey);
+			if(orderDepotShip != null){
+				throw new RuntimeException("该订单的此快递单已进行发货，不能重复添加");
+			}
+
             // 更新发货仓包裹信息
             OrderDepotShip updateShip = new OrderDepotShip();
             // 交货单编码
