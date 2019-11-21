@@ -762,6 +762,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	 */
 	@Override
 	public ReturnManagementResponse returnItemUnLock(ReturnManagementRequest request) {
+	    logger.info("退单解锁 -> request : " + JSONObject.toJSONString(request));
 		ReturnManagementResponse response = new ReturnManagementResponse();
 		response.setMessage("退单解锁失败");
 		response.setSuccess(false);
