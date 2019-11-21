@@ -801,7 +801,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				response.setMessage("查询订单数据不存在");
 				return response;
 			}
-			List<Integer> integers = new ArrayList<>();
+			// 0.一般问题单，1.缺货问题单，2待审核问题单，3待签章问题单
+			List<Integer> integers = new ArrayList<Integer>();
 			integers.add(0);
 			integers.add(1);
 			OrderStatus orderStatus = new OrderStatus();
