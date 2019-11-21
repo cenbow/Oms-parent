@@ -222,6 +222,8 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 				processMasterOrderQuestion(masterOrderSn);
 				msg = "返回正常单成功";
                 processMasterOrderNormalFollow(master, orderStatus);
+			} else {
+				msg = "<font style=color:red;>返回正常单失败：存在其他类型问题单</font>";
 			}
 			ri.setIsOk(Constant.OS_YES);
 			ri.setMessage("返回正常单操作成功!");
