@@ -2016,7 +2016,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.info("returnOrderUnLock"+returnSn+" 操作失败，Msg："+e.getMessage(),e);
-			returnInfo.setMessage("操作失败:"+e.getMessage());
+			returnInfo.setMessage(e.getMessage());
 		}
 		return returnInfo;
 	}
