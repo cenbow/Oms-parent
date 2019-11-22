@@ -788,7 +788,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 				return response;
 			}
 			if (Constant.OS_NO == info.getIsOk()) {
-				response.setMessage("退单解锁失败:" + info.getMessage());
+				response.setMessage(info.getMessage());
 				return response;
 			}
 			response.setMessage("退单解锁成功");
