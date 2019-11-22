@@ -1999,7 +1999,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 				throw new RuntimeException("退单处于锁定状态不可再次操作");
 			}
 		    if(orderReturn.getLockStatus().intValue() != userId.intValue() && !StringUtils.equalsIgnoreCase(actionUser, "admin")){
-				throw new RuntimeException("退单被其他人锁定("+orderReturn.getLockStatus()+")");
+				throw new RuntimeException("退单" + returnSn + "非当前用户锁定，无法解锁");
 			}
 			//退单更新
 			orderReturn.setReturnSn(returnSn);
