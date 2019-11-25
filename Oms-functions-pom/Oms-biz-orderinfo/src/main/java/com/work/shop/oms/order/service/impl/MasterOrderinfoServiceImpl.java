@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
+import com.work.shop.oms.common.bean.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,19 +27,6 @@ import com.work.shop.cardAPI.bean.ParaUserCardStatus;
 import com.work.shop.oms.api.ship.bean.WkUdDistribute;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
-import com.work.shop.oms.common.bean.AsynProcessOrderBean;
-import com.work.shop.oms.common.bean.DepotInfo;
-import com.work.shop.oms.common.bean.MasterGoods;
-import com.work.shop.oms.common.bean.MasterOrder;
-import com.work.shop.oms.common.bean.MasterPay;
-import com.work.shop.oms.common.bean.MasterShip;
-import com.work.shop.oms.common.bean.OcpbStatus;
-import com.work.shop.oms.common.bean.OrderCreateReturnInfo;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.common.bean.ServiceReturnInfo;
-import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.dao.ChannelShopMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
@@ -859,6 +847,133 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
     @Override
     public int updateByPrimaryKeySelective(MasterOrderInfo masterOrderInfo) {
         return masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfo);
+    }
+
+    /**
+     * 主订单编辑发票信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    @Override
+    public ReturnInfo<String> editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<>();
+        returnInfo.setMessage("主订单编辑发票信息失败");
+
+        if (consignInfo == null) {
+            returnInfo.setMessage("请求参数为空");
+            return returnInfo;
+        }
+
+        String orderSn = consignInfo.getOrderSn();
+        if (StringUtils.isBlank(orderSn)) {
+            returnInfo.setMessage("主订单号为空");
+            return returnInfo;
+        }
+
+        String actionUser = consignInfo.getActionUser();
+        if (StringUtils.isBlank(actionUser)) {
+            returnInfo.setMessage("操作人为空");
+            return returnInfo;
+        }
+
+        try {
+            //校验订单
+            MasterOrderInfo masterOrderInfo = getOrderInfoBySn(orderSn);
+            if (masterOrderInfo == null) {
+                returnInfo.setMessage(orderSn + "订单不存在");
+                return returnInfo;
+            }
+
+            //校验是否为未发货
+            Byte shipStatus = masterOrderInfo.getShipStatus();
+            if (!Constant.OD_SHIP_STATUS_UNSHIPPED.equals(shipStatus)) {
+                returnInfo.setMessage(orderSn + "订单必须处于未发货状态");
+                return returnInfo;
+            }
+
+            //校验扩展信息
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendService.getMasterOrderInfoExtendByOrder(orderSn);
+            if (StringUtil.isListNull(extendList)) {
+                returnInfo.setMessage(orderSn + "订单扩展信息不存在");
+                return returnInfo;
+            }
+            MasterOrderInfoExtend extendBydb = extendList.get(0);
+
+            StringBuffer sb = new StringBuffer();
+            MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+            //发票类型
+            String invType = consignInfo.getInvType();
+            if (StringUtils.isNotBlank(invType)) {
+                extend.setInvType(invType);
+                sb.append("发票类型由‘" + extendBydb.getInvType() + "’更改为‘" + invType + "’");
+            }
+
+            //发票抬头
+            String invPayee = consignInfo.getInvPayee();
+            if (StringUtils.isNotBlank(invPayee)) {
+                extend.setInvPayee(invPayee);
+                sb.append("发票抬头由‘" + extendBydb.getInvPayee() + "’更改为‘" + invPayee + "’");
+            }
+
+            //税号
+            String invTaxer = consignInfo.getInvTaxer();
+            if (StringUtils.isNotBlank(invTaxer)) {
+                extend.setInvTaxer(invTaxer);
+                sb.append("税号由‘" + extendBydb.getInvTaxer() + "’更改为‘" + invTaxer + "’");
+            }
+
+            //注册地址
+            String invCompanyAddress = consignInfo.getInvCompanyAddress();
+            if (StringUtils.isNotBlank(invCompanyAddress)) {
+                extend.setInvCompanyAddress(invCompanyAddress);
+                sb.append("注册地址由‘" + extendBydb.getInvCompanyAddress() + "’更改为‘" + invCompanyAddress + "’");
+            }
+
+            //注册电话
+            String invPhone = consignInfo.getInvPhone();
+            if (StringUtils.isNotBlank(invPhone)) {
+                extend.setInvPhone(invPhone);
+                sb.append("注册电话由‘" + extendBydb.getInvPhone() + "’更改为‘" + invPhone + "’");
+            }
+
+            //开户银行
+            String invBank = consignInfo.getInvBank();
+            if (StringUtils.isNotBlank(invBank)) {
+                extend.setInvBank(invBank);
+                sb.append("开户银行由‘" + extendBydb.getInvBank() + "’更改为‘" + invBank + "’");
+            }
+
+            //银行账户
+            String invBankNo = consignInfo.getInvBankNo();
+            if (StringUtils.isNotBlank(invBankNo)) {
+                extend.setInvBankNo(invBankNo);
+                sb.append("银行账户由‘" + extendBydb.getInvBankNo() + "’更改为‘" + invBankNo + "’");
+            }
+
+            //无修改，返回
+            String msg = sb.toString();
+            if (StringUtils.isBlank(msg)) {
+                returnInfo.setIsOk(1);
+                returnInfo.setMessage("修改成功");
+                return returnInfo;
+            }
+
+            extend.setMasterOrderSn(orderSn);
+            int update = masterOrderInfoExtendService.updateByPrimaryKeySelective(extend);
+            if (update > 0) {
+                returnInfo.setIsOk(1);
+                returnInfo.setMessage("修改成功");
+            }
+
+            //添加日志
+            masterOrderActionService.insertOrderActionBySn(orderSn, "发票信息修改：" + msg, actionUser);
+
+        } catch (Exception e) {
+            logger.error("主订单编辑发票信息异常" + JSONObject.toJSONString(consignInfo), e);
+        }
+
+        return returnInfo;
     }
 
     /**

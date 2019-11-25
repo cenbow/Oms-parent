@@ -88,4 +88,12 @@ public interface MasterOrderInfoService {
      * @return
      */
     int updateByPrimaryKeySelective(MasterOrderInfo masterOrderInfo);
+
+    /**
+     * 主订单编辑发票信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    ReturnInfo<String> editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo);
 }

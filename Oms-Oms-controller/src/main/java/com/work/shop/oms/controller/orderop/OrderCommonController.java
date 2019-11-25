@@ -316,4 +316,62 @@ public class OrderCommonController {
 
 		return returnInfo;
 	}
+
+    /**
+     * 主订单编辑订单地址
+     * @param masterOrderSn
+     * @param consignInfo
+     * @return
+     */
+    @PostMapping("/editConsigneeInfoByMasterSn")
+    public ReturnInfo<String> editConsigneeInfoByMasterSn(@RequestParam(name="masterOrderSn") String masterOrderSn, @RequestBody ConsigneeModifyInfo consignInfo) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<String>();
+
+        try {
+            returnInfo = orderCommonService.editConsigneeInfoByMasterSn(masterOrderSn, consignInfo);
+        } catch (Exception e) {
+            logger.error(masterOrderSn + "主订单编辑订单地址异常:" + JSON.toJSONString(consignInfo), e);
+            returnInfo.setMessage(masterOrderSn + "主订单编辑订单地址异常");
+        }
+
+        return returnInfo;
+    }
+
+    /**
+     * 主订单编辑发票信息
+     * @param consignInfo
+     * @return
+     */
+    @PostMapping("/editInvInfoByMasterSn")
+    public ReturnInfo<String> editInvInfoByMasterSn(@RequestBody ConsigneeModifyInfo consignInfo) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<String>();
+
+        try {
+            returnInfo = orderCommonService.editInvInfoByMasterSn(consignInfo);
+        } catch (Exception e) {
+            logger.error("主订单编辑发票信息异常:" + JSON.toJSONString(consignInfo), e);
+            returnInfo.setMessage("主订单编辑发票信息异常");
+        }
+
+        return returnInfo;
+    }
+
+    /**
+     * 主订单编辑发票地址
+     * @param consignInfo
+     * @return
+     */
+    @PostMapping("/editInvAddressInfoByMasterSn")
+    public ReturnInfo<String> editInvAddressInfoByMasterSn(@RequestBody ConsigneeModifyInfo consignInfo) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<String>();
+
+        try {
+            orderCommonService.editInvAddressInfoByMasterSn(consignInfo);
+        } catch (Exception e) {
+            logger.error("主订单编辑订单地址异常:" + JSON.toJSONString(consignInfo), e);
+            returnInfo.setMessage("主订单编辑订单地址异常");
+        }
+
+        return returnInfo;
+    }
 }

@@ -1,18 +1,10 @@
 package com.work.shop.oms.orderop.service;
 
-import java.util.List;
-
-import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
-import com.work.shop.oms.common.bean.DistributeShipBean;
-import com.work.shop.oms.common.bean.DistributeShippingBean;
-import com.work.shop.oms.common.bean.LackSkuParam;
-import com.work.shop.oms.common.bean.OrderInfoUpdateInfo;
-import com.work.shop.oms.common.bean.OrderOtherModifyInfo;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.OrderToShippedProviderBeanParam;
-import com.work.shop.oms.common.bean.ReturnInfo;
+import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.ship.request.DistOrderShipRequest;
 import com.work.shop.oms.ship.response.DistOrderShipResponse;
+
+import java.util.List;
 
 /**
  * 订单操作服务问题单、取消、挂起等
@@ -37,7 +29,7 @@ public interface OrderCommonService {
 	 * @param shortReason 缺货原因
 	 * @return
 	 */
-	public ReturnInfo noticeOsFromErpForShort(String orderSn, List<LackSkuParam> lackSkuParams, String shortReason);
+	ReturnInfo noticeOsFromErpForShort(String orderSn, List<LackSkuParam> lackSkuParams, String shortReason);
 	
 	/**
 	 * 主订单取消(共用方法)
@@ -58,8 +50,7 @@ public interface OrderCommonService {
 	/**
 	 * 第三方供应商发货前向OMS确认是否可以发货
 	 * 
-	 * @param orderSn 交货单编码
-	 * @param orderStatus 订单状态
+	 * @param request
 	 * @return ReturnInfo
 	 */
 	DistOrderShipResponse shippedConfirm(DistOrderShipRequest request);
@@ -79,7 +70,7 @@ public interface OrderCommonService {
 	 * @param providerBeanParams
 	 * @return
 	 */
-	public ReturnInfo acceptShip(List<OrderToShippedProviderBeanParam> providerBeanParams);
+	ReturnInfo acceptShip(List<OrderToShippedProviderBeanParam> providerBeanParams);
 	
 	/**
 	 * 编辑收货人信息
@@ -87,26 +78,24 @@ public interface OrderCommonService {
 	 * @param consignInfo
 	 * @return
 	 */
-	public ReturnInfo editConsigneeInfoByOrderSn(ConsigneeModifyInfo consignInfo);
+	ReturnInfo editConsigneeInfoByOrderSn(ConsigneeModifyInfo consignInfo);
 
 	/**
 	 * 编辑承运商
 	 * 
-	 * @param orderSn 订单号
-	 * @param actionUser 操作人
+	 * @param modifyInfo 客户信息
 	 * @param modifyInfo
 	 * @return
 	 */
-	public ReturnInfo editShippingType(ConsigneeModifyInfo modifyInfo);
+	ReturnInfo editShippingType(ConsigneeModifyInfo modifyInfo);
 	
 	/**
 	 * 子订单未确认
 	 * 
-	 * @param orderSn 订单号
 	 * @param modifyInfo
 	 * @return
 	 */
-	public  ReturnInfo posConfirmOrder(ConsigneeModifyInfo modifyInfo);
+	 ReturnInfo posConfirmOrder(ConsigneeModifyInfo modifyInfo);
 
 	/**
 	 * 编辑订单费用信息
@@ -117,7 +106,7 @@ public interface OrderCommonService {
 	 * @return
 	 * @throws Exception
 	 */
-	public ReturnInfo editShippingFee(String masterOrderSn, String actionUser, Double shippingFee);
+	ReturnInfo editShippingFee(String masterOrderSn, String actionUser, Double shippingFee);
 	
 	/**
 	 * 编辑订单其他信息
@@ -127,7 +116,7 @@ public interface OrderCommonService {
 	 * @param otherModify
 	 * @return
 	 */
-	public ReturnInfo editOrderOther(String masterOrderSn, String actionUser, OrderOtherModifyInfo otherModify);
+	ReturnInfo editOrderOther(String masterOrderSn, String actionUser, OrderOtherModifyInfo otherModify);
 	
 	/**
 	 * 主订单编辑商品
@@ -137,7 +126,7 @@ public interface OrderCommonService {
 	 * @param actionUser 操作人;
 	 * @return
 	 */
-	public ReturnInfo editGoodsByMasterSn(String masterOrderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
+	ReturnInfo editGoodsByMasterSn(String masterOrderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
 
 	/**
 	 * 子订单编辑商品
@@ -147,7 +136,7 @@ public interface OrderCommonService {
 	 * @param actionUser 操作人;
 	 * @return
 	 */
-	public ReturnInfo editGoodsByOrderSn(String orderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
+	ReturnInfo editGoodsByOrderSn(String orderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
 
 	/**
 	 * 主订单编辑订单地址
@@ -156,7 +145,7 @@ public interface OrderCommonService {
 	 * @param consignInfo 客户信息
 	 * @return
 	 */
-	public ReturnInfo editConsigneeInfoByMasterSn(String masterOrderSn, ConsigneeModifyInfo consignInfo);
+	ReturnInfo editConsigneeInfoByMasterSn(String masterOrderSn, ConsigneeModifyInfo consignInfo);
 
 	/**
 	 * 发送业务监控服务
@@ -169,7 +158,7 @@ public interface OrderCommonService {
 	 * 重新更新发货接口
 	 * @param orderSn
 	 */
-	public void reShipped(String orderSn);
+	void reShipped(String orderSn);
 	
 	/**
 	 * 物流系统返回发货信息处理
@@ -177,7 +166,7 @@ public interface OrderCommonService {
 	 * @param shipProviderList
 	 * @param isSystem 是否系统分仓  true:是; false:否
 	 */
-	public ReturnInfo processShip(String orderSn, List<DistributeShipBean> shipProviderList, boolean isSystem);
+	ReturnInfo processShip(String orderSn, List<DistributeShipBean> shipProviderList, boolean isSystem);
 
 	/**
 	 * 订单自提核销
@@ -192,7 +181,7 @@ public interface OrderCommonService {
 	 * @param customerCode 11位码
 	 * @return
 	 */
-	public ReturnInfo getOrderGoodsByOrderSnAndCustomCode(String orderSn, String customerCode);
+	ReturnInfo getOrderGoodsByOrderSnAndCustomCode(String orderSn, String customerCode);
 	
 	/**
 	 *  全渠道订单发货14天后更新已收货状态
@@ -237,4 +226,20 @@ public interface OrderCommonService {
 	 * @return ReturnInfo<String>
 	 */
 	ReturnInfo<String> confirmationOfReceipt(DistributeShippingBean bean);
+
+    /**
+     * 主订单编辑发票信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    ReturnInfo<String> editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo);
+
+    /**
+     * 主订单编辑发票地址信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo);
 }
