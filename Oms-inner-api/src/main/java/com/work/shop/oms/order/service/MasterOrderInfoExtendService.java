@@ -83,4 +83,6 @@ public interface MasterOrderInfoExtendService {
      * @return
      */
     boolean updatePayPeriodPayStatus(String masterOrderSn, int payPeriodPayStatus);
+
+    int updateByPrimaryKeySelective(MasterOrderInfoExtend extend);
 }

@@ -1,37 +1,22 @@
 package com.work.shop.oms.orderop.service.impl;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
+import com.work.shop.oms.api.bean.OrderGoodsInfo;
+import com.work.shop.oms.bimonitor.service.BIMonitorService;
+import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.dao.define.DefineOrderMapper;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.oms.orderop.service.*;
+import com.work.shop.oms.ship.request.DistOrderShipRequest;
+import com.work.shop.oms.ship.response.DistOrderShipResponse;
+import com.work.shop.oms.ship.service.DistributeShipService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.springframework.stereotype.Service;
-
-import com.alibaba.dubbo.common.utils.StringUtils;
-import com.work.shop.oms.api.bean.OrderGoodsInfo;
-import com.work.shop.oms.bimonitor.service.BIMonitorService;
-import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
-import com.work.shop.oms.common.bean.DistributeShipBean;
-import com.work.shop.oms.common.bean.DistributeShippingBean;
-import com.work.shop.oms.common.bean.LackSkuParam;
-import com.work.shop.oms.common.bean.OrderInfoUpdateInfo;
-import com.work.shop.oms.common.bean.OrderOtherModifyInfo;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.OrderToShippedProviderBeanParam;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.dao.define.DefineOrderMapper;
-import com.work.shop.oms.orderop.service.OrderCancelService;
-import com.work.shop.oms.orderop.service.OrderCommonService;
-import com.work.shop.oms.orderop.service.OrderConfirmService;
-import com.work.shop.oms.orderop.service.OrderDistributeEditService;
-import com.work.shop.oms.orderop.service.OrderDistributeOpService;
-import com.work.shop.oms.orderop.service.OrderNormalService;
-import com.work.shop.oms.orderop.service.OrderQuestionService;
-import com.work.shop.oms.ship.request.DistOrderShipRequest;
-import com.work.shop.oms.ship.response.DistOrderShipResponse;
-import com.work.shop.oms.ship.service.DistributeShipService;
 
 /**
  * 订单公共操作服务
@@ -61,6 +46,9 @@ public class OrderCommonServiceImpl implements OrderCommonService{
 
 	@Resource(name = "orderDistributeOpService")
 	private OrderDistributeOpService orderDistributeOpService;
+
+	@Resource
+	private MasterOrderInfoService masterOrderInfoService;
 
 	/**
 	 * 设置主订单问题单
@@ -299,4 +287,26 @@ public class OrderCommonServiceImpl implements OrderCommonService{
 	public ReturnInfo<String> confirmationOfReceipt(DistributeShippingBean bean) {
 		return distributeShipService.confirmationOfReceipt(bean);
 	}
+
+    /**
+     * 主订单编辑发票信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    @Override
+    public ReturnInfo<String> editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo) {
+        return masterOrderInfoService.editInvInfoByMasterSn(consignInfo);
+    }
+
+    /**
+     * 主订单编辑发票地址信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    @Override
+    public ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo) {
+        return orderDistributeEditService.editInvAddressInfoByMasterSn(consignInfo);
+    }
 }

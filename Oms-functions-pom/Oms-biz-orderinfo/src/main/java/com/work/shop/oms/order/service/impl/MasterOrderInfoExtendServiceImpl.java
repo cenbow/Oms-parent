@@ -342,4 +342,9 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 
         return bl;
     }
+
+    @Override
+    public int updateByPrimaryKeySelective(MasterOrderInfoExtend extend) {
+        return masterOrderInfoExtendMapper.updateByPrimaryKeySelective(extend);
+    }
 }

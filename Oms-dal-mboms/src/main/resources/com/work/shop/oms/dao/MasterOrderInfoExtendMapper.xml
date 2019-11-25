@@ -913,6 +913,19 @@
         <if test="paySourceId != null">
             pay_source_id = #{paySourceId},
         </if>
+
+        <if test="invTaxer != null">
+            inv_taxer = #{invTaxer},
+        </if>
+        <if test="invCompanyAddress != null">
+            inv_company_address = #{invCompanyAddress},
+        </if>
+        <if test="invPhone != null">
+            inv_phone = #{invPhone},
+        </if>
+        <if test="invBankNo != null">
+            inv_bank_no = #{invBankNo},
+        </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
