@@ -307,6 +307,6 @@ public class OrderCommonServiceImpl implements OrderCommonService{
      */
     @Override
     public ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo) {
-        return distributeShipService.editInvAddressInfoByMasterSn(consignInfo);
+        return orderDistributeEditService.editInvAddressInfoByMasterSn(consignInfo);
     }
 }

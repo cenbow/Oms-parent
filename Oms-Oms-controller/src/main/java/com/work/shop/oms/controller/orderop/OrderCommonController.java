@@ -366,7 +366,7 @@ public class OrderCommonController {
         ReturnInfo<String> returnInfo = new ReturnInfo<String>();
 
         try {
-            orderCommonService.editInvAddressInfoByMasterSn(consignInfo);
+            returnInfo = orderCommonService.editInvAddressInfoByMasterSn(consignInfo);
         } catch (Exception e) {
             logger.error("主订单编辑订单地址异常:" + JSON.toJSONString(consignInfo), e);
             returnInfo.setMessage("主订单编辑订单地址异常");

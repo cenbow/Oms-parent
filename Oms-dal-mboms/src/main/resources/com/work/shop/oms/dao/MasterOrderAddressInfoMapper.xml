@@ -687,6 +687,15 @@
       <if test="shippingAddress != null">
         shipping_address = #{shippingAddress,jdbcType=VARCHAR},
       </if>
+        <if test="invConsignee != null">
+            inv_consignee = #{invConsignee},
+        </if>
+        <if test="invMobile != null">
+            inv_mobile = #{invMobile},
+        </if>
+        <if test="invAddress != null">
+            inv_address = #{invAddress},
+        </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>

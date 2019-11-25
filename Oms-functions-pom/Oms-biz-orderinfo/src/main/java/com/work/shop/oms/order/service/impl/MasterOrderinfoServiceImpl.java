@@ -906,49 +906,49 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             String invType = consignInfo.getInvType();
             if (StringUtils.isNotBlank(invType)) {
                 extend.setInvType(invType);
-                sb.append("发票类型由‘" + extendBydb.getInvType() + "’更改为‘" + invType + "’");
+                sb.append("发票类型由‘" + extendBydb.getInvType() + "’更改为‘" + invType + "’；");
             }
 
             //发票抬头
             String invPayee = consignInfo.getInvPayee();
             if (StringUtils.isNotBlank(invPayee)) {
                 extend.setInvPayee(invPayee);
-                sb.append("发票抬头由‘" + extendBydb.getInvPayee() + "’更改为‘" + invPayee + "’");
+                sb.append("发票抬头由‘" + extendBydb.getInvPayee() + "’更改为‘" + invPayee + "’；");
             }
 
             //税号
             String invTaxer = consignInfo.getInvTaxer();
             if (StringUtils.isNotBlank(invTaxer)) {
                 extend.setInvTaxer(invTaxer);
-                sb.append("税号由‘" + extendBydb.getInvTaxer() + "’更改为‘" + invTaxer + "’");
+                sb.append("税号由‘" + extendBydb.getInvTaxer() + "’更改为‘" + invTaxer + "’；");
             }
 
             //注册地址
             String invCompanyAddress = consignInfo.getInvCompanyAddress();
             if (StringUtils.isNotBlank(invCompanyAddress)) {
                 extend.setInvCompanyAddress(invCompanyAddress);
-                sb.append("注册地址由‘" + extendBydb.getInvCompanyAddress() + "’更改为‘" + invCompanyAddress + "’");
+                sb.append("注册地址由‘" + extendBydb.getInvCompanyAddress() + "’更改为‘" + invCompanyAddress + "’；");
             }
 
             //注册电话
             String invPhone = consignInfo.getInvPhone();
             if (StringUtils.isNotBlank(invPhone)) {
                 extend.setInvPhone(invPhone);
-                sb.append("注册电话由‘" + extendBydb.getInvPhone() + "’更改为‘" + invPhone + "’");
+                sb.append("注册电话由‘" + extendBydb.getInvPhone() + "’更改为‘" + invPhone + "’；");
             }
 
             //开户银行
             String invBank = consignInfo.getInvBank();
             if (StringUtils.isNotBlank(invBank)) {
                 extend.setInvBank(invBank);
-                sb.append("开户银行由‘" + extendBydb.getInvBank() + "’更改为‘" + invBank + "’");
+                sb.append("开户银行由‘" + extendBydb.getInvBank() + "’更改为‘" + invBank + "’；");
             }
 
             //银行账户
             String invBankNo = consignInfo.getInvBankNo();
             if (StringUtils.isNotBlank(invBankNo)) {
                 extend.setInvBankNo(invBankNo);
-                sb.append("银行账户由‘" + extendBydb.getInvBankNo() + "’更改为‘" + invBankNo + "’");
+                sb.append("银行账户由‘" + extendBydb.getInvBankNo() + "’更改为‘" + invBankNo + "’；");
             }
 
             //无修改，返回
