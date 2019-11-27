@@ -1,22 +1,14 @@
 package com.work.shop.oms.core.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
-import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.core.beans.BaseTask;
 import com.work.shop.oms.core.beans.ConstantTask;
 import com.work.shop.oms.core.beans.ReturnTask;
 import com.work.shop.oms.core.service.ATaskServiceProcess;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.OrderPeriodDetailMapper;
-import com.work.shop.oms.dao.OrderRiderDistributeLogMapper;
 import com.work.shop.oms.dao.define.OrderInfoSearchMapper;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.utils.Constant;
-import com.work.shop.oms.utils.StringUtil;
-import com.work.shop.oms.utils.TimeUtil;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

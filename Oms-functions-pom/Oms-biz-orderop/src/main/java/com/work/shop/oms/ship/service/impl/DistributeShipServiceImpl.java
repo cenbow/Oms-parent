@@ -1519,7 +1519,8 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 depotShipExample.or().andOrderSnIn(strings).andShippingStatusEqualTo((byte)Constant.OS_SHIPPING_STATUS_SHIPPED).andIsDelEqualTo(0);
                 List<OrderDepotShip> depotShips = orderDepotShipMapper.selectByExample(depotShipExample);
                 if (StringUtil.isListNull(depotShips)) {
-                    ri.setMessage("订单[" + masterOrderSn + "]配货仓数据为空！");
+                    ri.setMessage("客户收货确认！");
+					ri.setIsOk(Constant.OS_YES);
                     return ri;
                 }
                 // 处理订单交货单发货信息
