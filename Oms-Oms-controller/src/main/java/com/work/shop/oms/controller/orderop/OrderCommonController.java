@@ -338,6 +338,24 @@ public class OrderCommonController {
     }
 
     /**
+     * 主订单编辑订单地址
+     * @param masterOrderSn
+     * @param consignInfo
+     * @return
+     */
+    @PostMapping("/editConsigneeInfoByMasterSnTest")
+    public ReturnInfo<String> editConsigneeInfoByMasterSnTest(@RequestBody ConsigneeModifyInfo consignInfo) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<String>();
+
+        try {
+            returnInfo = orderCommonService.editConsigneeInfoByMasterSn(consignInfo.getOrderSn(), consignInfo);
+        } catch (Exception e) {
+        }
+
+        return returnInfo;
+    }
+
+    /**
      * 主订单编辑发票信息
      * @param consignInfo
      * @return
