@@ -28,6 +28,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -86,8 +87,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	@Resource
 	private PurchaseOrderService purchaseOrderService;
 
-	@Resource
-	private SystemRegionAreaService systemRegionAreaService;
+//	@Autowired
+//	private SystemRegionAreaService systemRegionAreaService;
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -2437,7 +2438,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             return null;
         }
 
-        List<SystemRegionArea> systemRegionAreas = systemRegionAreaService.getSystemRegionAreaById(regionIds);
+        List<SystemRegionArea> systemRegionAreas = null;
+//        List<SystemRegionArea> systemRegionAreas = systemRegionAreaService.getSystemRegionAreaById(regionIds);
         if (StringUtil.isListNull(systemRegionAreas)) {
             return null;
         }
