@@ -5,13 +5,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
+import com.work.shop.oms.bean.PurchaseOrder;
 import com.work.shop.oms.erp.service.ErpInterfaceProxy;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderPayService;
+import com.work.shop.oms.order.service.PurchaseOrderService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderDistributeEditService;
+import com.work.shop.oms.service.SystemRegionAreaService;
 import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.stock.service.ChannelStockService;
 import com.work.shop.oms.utils.Constant;
@@ -79,6 +82,12 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 
 	@Resource(name = "orderConfirmService")
 	private OrderConfirmService orderConfirmService;
+
+	@Resource
+	private PurchaseOrderService purchaseOrderService;
+
+	@Resource
+	private SystemRegionAreaService systemRegionAreaService;
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -1138,8 +1147,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * 订单商品编辑
 	 * 
 	 * @param orderSn
-	 * @param distribute
-	 * @param define
+	 * @param distributeBean
+	 * @param orderStatus
 	 * @param orderStatus
 	 * @return
 	 */
@@ -1173,8 +1182,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * 订单编辑商品(共用方法)
 	 * 
 	 * @param orderSn
-	 * @param distribute
-	 * @param define
+	 * @param distributeBean
+	 * @param orderStatus
 	 * @param orderStatus
 	 * @return
 	 */
@@ -1318,8 +1327,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	
 	/**
 	 * 同步ERP商品组装
-	 * @param updateObj
-	 * @param oldGoodsMap
+	 * @param orderGoods
+	 * @param detailsInfo
 	 * @return
 	 */
 	private OrderDetailsInfo createMbUpdateGoodsMap(MasterOrderGoods orderGoods, OrderDetailsInfo detailsInfo) {
@@ -1376,9 +1385,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	/**
 	 * 组织通知ERP Bean
 	 * 
-	 * @param orderInfo
+	 * @param distribute
 	 * @param compareResult
-	 * @param actType
 	 * @param depotFlag
 	 * @return
 	 */
@@ -1597,7 +1605,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * @param updateDistributeMap
 	 * @param orderSnKey
 	 * @param type 0：增加;1：删除;2：更新 3：没变化
-	 * @param masterOrderGoods
+	 * @param updateObj
 	 */
 	private void editOrderDistributeGoods(Map<String, UpdateOrderDistributeBean> updateDistributeMap,
 			String orderSnKey, int type, MasterOrderGoods updateObj) {
@@ -1780,7 +1788,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	
 	/**
 	 * 编辑订单商品信息
-	 * @param bean
+	 * @param oldGoods
 	 * @return
 	 */
 	private MasterOrderGoods editOrderGoodsDeleteGoods(MasterOrderGoods oldGoods, short goodsNumber) {
@@ -2003,6 +2011,10 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, actionNote.toString(), actionUser);
 			ri.setIsOk(Constant.OS_YES);
 			ri.setMessage("收货信息更新成功！");
+
+            //更新关联采购单地址信息
+            updatePurchaseOrderAddress(consignInfo);
+
 		} catch (Exception ex) {
 			logger.error("订单[" + masterOrderSn + "]编辑收货人信息异常：" + ex.getMessage(), ex);
 			ri.setMessage("编辑收货人信息失败,"+ex.getMessage());
@@ -2349,4 +2361,92 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		orderAction.setActionNote(msg);
 		distributeActionService.saveOrderAction(orderAction);
 	}
+
+    /**
+     * 更新关联采购单地址信息
+     * @param consignInfo
+     */
+    private void updatePurchaseOrderAddress(ConsigneeModifyInfo consignInfo) {
+        //获取地区信息
+        List<String> regionIds = new ArrayList<>(4);
+        String country = consignInfo.getCountry();
+        if (StringUtils.isNotBlank(country)) {
+            regionIds.add(country);
+        }
+        String province = consignInfo.getProvince();
+        if (StringUtils.isNotBlank(province)) {
+            regionIds.add(province);
+        }
+        String city = consignInfo.getCity();
+        if (StringUtils.isNotBlank(city)) {
+            regionIds.add(city);
+        }
+        String district = consignInfo.getDistrict();
+        if (StringUtils.isNotBlank(district)) {
+            regionIds.add(district);
+        }
+        Map<String, SystemRegionArea> areaInfoMap = getAreaInfoMap(regionIds);
+        if (areaInfoMap == null) {
+            areaInfoMap = new HashMap<>(1);
+        }
+
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        //主订单号
+        purchaseOrder.setMasterOrderSn(consignInfo.getOrderSn());
+        //国家
+        SystemRegionArea countryArea = areaInfoMap.get(country);
+        if (countryArea != null) {
+            purchaseOrder.setCountry(countryArea.getRegionName());
+        }
+        //省
+        SystemRegionArea proviceArea = areaInfoMap.get(province);
+        if (proviceArea != null) {
+            purchaseOrder.setProvince(proviceArea.getRegionName());
+        }
+        //省
+        SystemRegionArea cityArea = areaInfoMap.get(city);
+        if (cityArea != null) {
+            purchaseOrder.setCity(cityArea.getRegionName());
+        }
+        //省
+        SystemRegionArea districtArea = areaInfoMap.get(district);
+        if (districtArea != null) {
+            purchaseOrder.setDistrict(districtArea.getRegionName());
+        }
+        //地址
+        purchaseOrder.setAddress(consignInfo.getAddress());
+        //邮编
+        purchaseOrder.setZipcode(consignInfo.getZipcode());
+        //手机号
+        purchaseOrder.setMobile(consignInfo.getMobile());
+        //电话
+        purchaseOrder.setTel(consignInfo.getTel());
+        //收货人
+        purchaseOrder.setConsignee(consignInfo.getConsignee());
+
+        purchaseOrderService.updateBatchByMasterOrderSn(purchaseOrder);
+    }
+
+    /**
+     * 获取地区信息
+     * @param regionIds
+     * @return
+     */
+    private Map<String, SystemRegionArea> getAreaInfoMap(List<String> regionIds) {
+        if (regionIds == null || regionIds.size() == 0) {
+            return null;
+        }
+
+        List<SystemRegionArea> systemRegionAreas = systemRegionAreaService.getSystemRegionAreaById(regionIds);
+        if (StringUtil.isListNull(systemRegionAreas)) {
+            return null;
+        }
+
+        Map<String, SystemRegionArea> map = new HashMap<>(16);
+        for (SystemRegionArea area : systemRegionAreas) {
+            map.put(area.getRegionId(), area);
+        }
+
+        return map;
+    }
 }

@@ -1,7 +1,6 @@
 package com.work.shop.oms.order.service;
 
 import com.work.shop.oms.bean.PurchaseOrder;
-import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 
@@ -49,4 +48,10 @@ public interface PurchaseOrderService {
      * @param purchaseOrder
      */
     void updatePurchaseOrder(PurchaseOrder purchaseOrder);
+
+    /**
+     * 根据主订单号批量更新
+     * @param purchaseOrder
+     */
+    void updateBatchByMasterOrderSn(PurchaseOrder purchaseOrder);
 }
