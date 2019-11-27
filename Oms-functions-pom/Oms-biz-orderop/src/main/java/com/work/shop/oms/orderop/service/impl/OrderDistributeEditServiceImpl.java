@@ -2008,7 +2008,6 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			ri.setMessage("收货信息更新成功！");
 
             //更新关联采购单地址信息
-            logger.info("更新关联采购单地址信息" + JSONObject.toJSONString(consignInfo));
             updatePurchaseOrderAddress(consignInfo);
 
 		} catch (Exception ex) {
