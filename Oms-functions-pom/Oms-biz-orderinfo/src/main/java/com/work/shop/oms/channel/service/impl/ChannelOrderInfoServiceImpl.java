@@ -155,7 +155,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         Integer selectTimeDays = searchParam.getSelectTimeDays();
         if (selectTimeDays != null) {
             String endTime = TimeUtil.getDate(TimeUtil.YYYY_MM_DD);
-            params.put("endTime", endTime);
+            params.put("endTime", endTime + " 23:59:59");
             String startTime = null;
             startTime = TimeUtil.getBeforeDay(endTime, selectTimeDays-1, TimeUtil.YYYY_MM_DD);
             params.put("startTime", startTime);
