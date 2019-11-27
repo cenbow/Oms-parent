@@ -87,9 +87,6 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	@Resource
 	private PurchaseOrderService purchaseOrderService;
 
-//	@Autowired
-//	private SystemRegionAreaService systemRegionAreaService;
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ReturnInfo editGoods(MasterOrderInfo master,
@@ -2438,8 +2435,9 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             return null;
         }
 
-        List<SystemRegionArea> systemRegionAreas = null;
-//        List<SystemRegionArea> systemRegionAreas = systemRegionAreaService.getSystemRegionAreaById(regionIds);
+        SystemRegionAreaExample example = new SystemRegionAreaExample();
+        example.or().andRegionIdIn(regionIds);
+        List<SystemRegionArea> systemRegionAreas =  systemRegionAreaMapper.selectByExample(example);
         if (StringUtil.isListNull(systemRegionAreas)) {
             return null;
         }
