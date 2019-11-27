@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.*;
-import com.work.shop.oms.bean.PurchaseOrder;
 import com.work.shop.oms.erp.service.ErpInterfaceProxy;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
@@ -14,7 +13,6 @@ import com.work.shop.oms.order.service.PurchaseOrderService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderDistributeEditService;
-import com.work.shop.oms.service.SystemRegionAreaService;
 import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.stock.service.ChannelStockService;
 import com.work.shop.oms.utils.Constant;
@@ -28,7 +26,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -2011,6 +2008,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			ri.setMessage("收货信息更新成功！");
 
             //更新关联采购单地址信息
+            logger.info("更新关联采购单地址信息" + JSONObject.toJSONString(consignInfo));
             updatePurchaseOrderAddress(consignInfo);
 
 		} catch (Exception ex) {
@@ -2365,52 +2363,17 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
      * @param consignInfo
      */
     private void updatePurchaseOrderAddress(ConsigneeModifyInfo consignInfo) {
-        //获取地区信息
-        List<String> regionIds = new ArrayList<>(4);
-        String country = consignInfo.getCountry();
-        if (StringUtils.isNotBlank(country)) {
-            regionIds.add(country);
-        }
-        String province = consignInfo.getProvince();
-        if (StringUtils.isNotBlank(province)) {
-            regionIds.add(province);
-        }
-        String city = consignInfo.getCity();
-        if (StringUtils.isNotBlank(city)) {
-            regionIds.add(city);
-        }
-        String district = consignInfo.getDistrict();
-        if (StringUtils.isNotBlank(district)) {
-            regionIds.add(district);
-        }
-        Map<String, SystemRegionArea> areaInfoMap = getAreaInfoMap(regionIds);
-        if (areaInfoMap == null) {
-            areaInfoMap = new HashMap<>(1);
-        }
-
         PurchaseOrder purchaseOrder = new PurchaseOrder();
         //主订单号
         purchaseOrder.setMasterOrderSn(consignInfo.getOrderSn());
         //国家
-        SystemRegionArea countryArea = areaInfoMap.get(country);
-        if (countryArea != null) {
-            purchaseOrder.setCountry(countryArea.getRegionName());
-        }
+        purchaseOrder.setCountry(consignInfo.getCountry());
         //省
-        SystemRegionArea proviceArea = areaInfoMap.get(province);
-        if (proviceArea != null) {
-            purchaseOrder.setProvince(proviceArea.getRegionName());
-        }
-        //省
-        SystemRegionArea cityArea = areaInfoMap.get(city);
-        if (cityArea != null) {
-            purchaseOrder.setCity(cityArea.getRegionName());
-        }
-        //省
-        SystemRegionArea districtArea = areaInfoMap.get(district);
-        if (districtArea != null) {
-            purchaseOrder.setDistrict(districtArea.getRegionName());
-        }
+        purchaseOrder.setProvince(consignInfo.getProvince());
+        //市
+        purchaseOrder.setCity(consignInfo.getCity());
+        //区
+        purchaseOrder.setDistrict(consignInfo.getDistrict());
         //地址
         purchaseOrder.setAddress(consignInfo.getAddress());
         //邮编
