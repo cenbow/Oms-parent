@@ -522,4 +522,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		paramMap.put("orderSn", orderSn);
 		supplierOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
 	}
+
+    /**
+     * 根据主订单号批量更新
+     * @param purchaseOrder
+     */
+    @Override
+	public void updateBatchByMasterOrderSn(PurchaseOrder purchaseOrder) {
+        PurchaseOrderExample example = new PurchaseOrderExample();
+        example.or().andMasterOrderSnEqualTo(purchaseOrder.getMasterOrderSn());
+        purchaseOrderMapper.updateByExampleSelective(purchaseOrder, example);
+    }
 }
