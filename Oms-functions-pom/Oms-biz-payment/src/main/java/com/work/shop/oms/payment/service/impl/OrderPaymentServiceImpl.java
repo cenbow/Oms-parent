@@ -318,13 +318,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					apiReturnData.setMessage("支付单数据异常！");
 					return apiReturnData;
 				}
-//				OrderStatus orderStatus=new OrderStatus();
-//				orderStatus.setAdminUser(actionUser);
-//				orderStatus.setUserId(Constant.CUSTOMER_PAY_LOCK_ID);
-//				orderStatus.setSource(ConstantValues.METHOD_SOURCE_TYPE.FRONT);
-//				orderStatus.setMasterOrderSn(masterOrderPay.getMasterOrderSn());
-//				orderStatus.setMessage("用户支付前锁定订单！");
-//				returnInfo = orderDistributeOpService.lockOrder(masterOrderPay.getMasterOrderSn(), orderStatus);
+
 				OrderManagementRequest request = new OrderManagementRequest();
 				request.setSource(ConstantValues.METHOD_SOURCE_TYPE.FRONT);
 				request.setActionUser(actionUser);
@@ -392,7 +386,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					payReturn.setIsOk(Constant.YESORNO_NO);
 					payReturn.setMessage("合并付款单" + paySn+ "不存在，不能进行付款操作！");
 				}
-				//actionNote.append("订单合并支付，合并支付单：" + paySn + "，合并实际支付金额：" + amountToPay + "合并支付需支付金额：" + op.getMergePayFee().doubleValue());
+
 				op.setPayFee(new BigDecimal(amountToPay));
 				op.setPayNote(actionNote.toString());
 				op.setUserPayTime(new Date());
@@ -439,11 +433,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 						if (masterPaySnList.contains(unPayMasterOrderPay.getMasterPaySn())) {
 							masterOrderPay(unPayMasterOrderPay.getMasterPaySn(), orderSn.trim(), mergePaySn, payId, payFee, actionNote);
 							masterOrderActionService.insertOrderActionBySn(orderSn,"前台付款操作：付款单" + unPayMasterOrderPay.getMasterPaySn() + "付款操作;"+ actionNote.toString(), Constant.OS_STRING_SYSTEM);
-//							OrderStatus unLockStatus = new OrderStatus();
-//							unLockStatus.setAdminUser(Constant.OS_STRING_SYSTEM);
-//							unLockStatus.setUserId(Constant.CUSTOMER_PAY_LOCK_ID);
-//							unLockStatus.setMessage("用户支付后解锁！");
-//							orderDistributeOpService.unLockOrder(orderSn, unLockStatus);
+
 							OrderManagementRequest request = new OrderManagementRequest();
 							request.setSource(ConstantValues.METHOD_SOURCE_TYPE.FRONT);
 							request.setActionUser(Constant.OS_STRING_SYSTEM);
@@ -452,8 +442,6 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 							request.setMessage("用户支付后解锁！");
 							orderManagementService.orderLock(request);
 
-							//前端支付成功自动确认
-                            //orderConfirmService.confirmOrderByMasterSn(orderSn, new OrderStatus(orderSn, "前端支付成功自动确认", null));
 						} else {
 							masterOrderActionService.insertOrderActionBySn(orderSn,"前台付款操作异常：未找到有效支付单，付款单" + unPayMasterOrderPay.getMasterPaySn() + "付款操作;"+ actionNote.toString(), Constant.OS_STRING_SYSTEM);
 						}

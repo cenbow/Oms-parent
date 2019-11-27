@@ -394,7 +394,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 
 		// 信用支付
-		MasterOrderPayExample payExample = new MasterOrderPayExample();
+		/*MasterOrderPayExample payExample = new MasterOrderPayExample();
 		payExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 		List<MasterOrderPay> masterOrderPayList = masterOrderPayMapper.selectByExample(payExample);
 		if (masterOrderPayList != null && masterOrderPayList.size() > 0) {
@@ -436,7 +436,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
                     orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 				}
 			}
-		}
+		}*/
 
 		// 正常订单
 		if (orderInfo.getOrderType() == Constant.OI_ORDER_TYPE_NORMAL_ORDER) {
