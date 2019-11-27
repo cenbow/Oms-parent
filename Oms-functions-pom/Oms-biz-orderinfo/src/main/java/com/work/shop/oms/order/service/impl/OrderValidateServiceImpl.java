@@ -401,7 +401,8 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
 
 			int payId = masterOrderPay.getPayId().intValue();
-			if (payId == Constant.PAYMENT_XINYONG_ID || payId == Constant.PAYMENT_BAOHAN_ID) {
+			//if (payId == Constant.PAYMENT_XINYONG_ID || payId == Constant.PAYMENT_BAOHAN_ID) {
+			if (payId == Constant.PAYMENT_BAOHAN_ID) {
 
 				BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
 				// 信用支付、保函支付
