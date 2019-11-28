@@ -863,11 +863,15 @@
 			LEFT JOIN order_return orn ON oi.master_order_sn=orn.master_order_sn
 		</if>
 		where
-			oi.user_id= #{userId,jdbcType=VARCHAR} 
-		AND 
-			oi.channel_code = #{siteCode,jdbcType=VARCHAR}
-        and
             oie.is_del = 0
+		AND
+			oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and oi.user_id= #{userId,jdbcType=VARCHAR}
+        </if>
+        <if test="companyId != null">
+            and oie.company_code= #{companyId}
+        </if>
 		<choose>
 			<when test="type == 1">
 				<!--待付款订单 -->

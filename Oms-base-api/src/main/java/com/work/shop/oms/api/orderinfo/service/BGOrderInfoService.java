@@ -127,11 +127,10 @@ public interface BGOrderInfoService {
 
 	/**
 	 * 统计用户订单数量
-	 * @param userId 用户id
-	 * @param siteCode 站点编码
+	 * @param searchParam
 	 * @return ApiReturnData<UserOrderTypeNum>
 	 */
-	public ApiReturnData<UserOrderTypeNum> getUserOrderType(String userId, String siteCode);
+	public ApiReturnData<UserOrderTypeNum> getUserOrderType(PageListParam searchParam);
 	
 	/**
 	 * 统计用户订单数量
