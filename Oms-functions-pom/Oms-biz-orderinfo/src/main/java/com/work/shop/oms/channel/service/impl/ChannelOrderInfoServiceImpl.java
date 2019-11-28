@@ -1037,20 +1037,32 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
 	/**
 	 * 获取用户订单种类数量
-	 * @param userId 用户id
-	 * @param siteCode 站点编码
+	 * @param searchParam
 	 * @return ApiReturnData<UserOrderTypeNum>
 	 */
 	@Override
-	public ApiReturnData<UserOrderTypeNum> getUserOrderType(String userId, String siteCode) {
-		logger.info("平台查询用户订单数量userId=" + userId+", siteCode=" + siteCode);
+	public ApiReturnData<UserOrderTypeNum> getUserOrderType(PageListParam searchParam) {
 		ApiReturnData<UserOrderTypeNum> apiReturnData = new ApiReturnData<UserOrderTypeNum>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
+        if (searchParam == null) {
+            apiReturnData.setMessage("查询参数为空");
+            return apiReturnData;
+        }
+        logger.info("平台查询用户订单数量" + JSONObject.toJSONString(searchParam));
 
 		try {
 			Map<String, Object> params = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
-			params.put("userId", userId);
-			params.put("siteCode", siteCode);
+
+            String userId = searchParam.getUserId();
+            if (StringUtils.isNotBlank(userId)) {
+                params.put("userId", userId);
+            }
+
+            String companyId = searchParam.getCompanyId();
+            if (StringUtils.isNotBlank(companyId)) {
+                params.put("companyId", companyId);
+            }
+			params.put("siteCode", searchParam.getSiteCode());
 			//用户待付款订单数量
 			params.put("type", 1);
 			int waitPayNum = defineOrderMapper.selectUserOrderCountByType(params);
@@ -1919,7 +1931,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<UserOrderTypeNum> getUserOrderTypeNew(PageListParam searchParam) {
-		return getUserOrderType(searchParam.getUserId(), searchParam.getSiteCode());
+		return getUserOrderType(searchParam);
 	}
 
 	/**

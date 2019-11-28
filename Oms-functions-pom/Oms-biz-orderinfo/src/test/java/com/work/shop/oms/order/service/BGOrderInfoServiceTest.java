@@ -113,10 +113,10 @@ public class BGOrderInfoServiceTest extends TestCase {
 	
 	@Test
 	public void testgetUserOrderType() throws Exception{
-		final BGOrderInfoService bgOrderInfoService = reference.get();
-		ApiReturnData info = bgOrderInfoService.getUserOrderType(userId, siteCode);
-		System.out.println(JSON.toJSONString(info));
-		System.out.println("end");  
+//		final BGOrderInfoService bgOrderInfoService = reference.get();
+//		ApiReturnData info = bgOrderInfoService.getUserOrderType(userId, siteCode);
+//		System.out.println(JSON.toJSONString(info));
+//		System.out.println("end");
 	}
 	
 	@Test
