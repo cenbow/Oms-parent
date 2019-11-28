@@ -419,6 +419,21 @@ public class OrderDetailInfo  implements Serializable{
      * 订单取消原因
      */
     private String orderCancel;
+
+    /**
+     * 审核状态 0：未审单、1：已审单
+     */
+    private Byte auditStatus;
+
+    /**
+     * 签章状态： 0未签章、1已签章
+     */
+    private Byte signStatus;
+
+    /**
+     * 需要合同签章 0不需要、1需要
+     */
+    private Byte needSign;
 	
 	public int getOrderType() {
         return orderType;
@@ -1002,5 +1017,29 @@ public class OrderDetailInfo  implements Serializable{
 
     public void setOrderCancel(String orderCancel) {
         this.orderCancel = orderCancel;
+    }
+
+    public Byte getAuditStatus() {
+        return auditStatus;
+    }
+
+    public void setAuditStatus(Byte auditStatus) {
+        this.auditStatus = auditStatus;
+    }
+
+    public Byte getSignStatus() {
+        return signStatus;
+    }
+
+    public void setSignStatus(Byte signStatus) {
+        this.signStatus = signStatus;
+    }
+
+    public Byte getNeedSign() {
+        return needSign;
+    }
+
+    public void setNeedSign(Byte needSign) {
+        this.needSign = needSign;
     }
 }
