@@ -125,11 +125,12 @@ public interface ReturnManagementService {
      * @param request
      * @return
      */
-    public ReturnManagementResponse manualRefund(ReturnManagementRequest request);
+    ReturnManagementResponse manualRefund(ReturnManagementRequest request);
 
     /**
      * 订单退款操作
      * @param orderReturnBean
+	 * @return ReturnManagementResponse
      */
-    void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
+	ReturnManagementResponse doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
 }
