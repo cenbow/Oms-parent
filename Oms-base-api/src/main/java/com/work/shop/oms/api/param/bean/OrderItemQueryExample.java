@@ -875,7 +875,7 @@ public class OrderItemQueryExample {
         }
 
         public Criteria andCompanyNameLike(String value) {
-            addCriterion("oie.company_name =", value, "companyName");
+            addCriterion("oie.company_name like", value, "companyName");
             return (Criteria) this;
         }
 
