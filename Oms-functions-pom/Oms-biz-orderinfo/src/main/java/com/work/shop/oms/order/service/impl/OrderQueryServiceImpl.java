@@ -112,6 +112,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 	@Override
 	public OrderQueryResponse orderQuery(OrderQueryRequest request) {
 
+	    logger.info("orderQuery:" + JSONObject.toJSONString(request));
 		OrderQueryResponse response = new OrderQueryResponse();
 		response.setSuccess(false);
 		response.setMessage("订单信息查询失败");
