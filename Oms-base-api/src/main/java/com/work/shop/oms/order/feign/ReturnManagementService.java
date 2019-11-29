@@ -150,5 +150,5 @@ public interface ReturnManagementService {
      * @param orderReturnBean
      */
     @PostMapping("/order/doOrderReturnMoneyByCommon")
-    void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
+    ReturnManagementResponse doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean);
 }

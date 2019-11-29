@@ -1305,17 +1305,36 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
      * @param orderReturnBean
      */
     @Override
-    public void doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean) {
+    public ReturnManagementResponse doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean) {
+
+        ReturnManagementResponse response = new ReturnManagementResponse();
+        response.setMessage("退款失败");
         //添加退款处理日志
         String returnSn = orderReturnBean.getReturnSn();
         OrderReturn orderReturn = orderReturnMapper.selectByPrimaryKey(returnSn);
         if (orderReturn == null) {
-            return;
+            response.setMessage("退单不存在");
+            return response;
         }
         String userId = orderReturnBean.getUserId();
         if (StringUtils.isBlank(userId)) {
             userId = Constant.OS_STRING_SYSTEM;
         }
+
+        ReturnManagementResponse accountResponse = null;
+		int returnType = orderReturnBean.getType();
+		// 结算账户
+		if (returnType == 3) {
+            accountResponse = fillOrderReturnBeanBySettlementAccount(orderReturn, orderReturnBean);
+		} else if (returnType == 1 || returnType == 4) {
+            accountResponse = fillOrderReturnBeanByUserAccount(orderReturn, orderReturnBean);
+		}
+
+		if (accountResponse != null && !accountResponse.getSuccess()) {
+            response.setMessage(accountResponse.getMessage());
+            return response;
+        }
+
         OrderReturnAction orderReturnAction = new OrderReturnAction();
         orderReturnAction.setActionUser(userId);
         orderReturnAction.setActionNote(returnSn + "退款已申请,请耐心等待");
@@ -1326,15 +1345,11 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
         orderReturnAction.setReturnPayStatus(orderReturn.getPayStatus()== null ?0:orderReturn.getPayStatus().intValue());
         orderReturnActionMapper.insertSelective(orderReturnAction);
 
-        int returnType = orderReturnBean.getType();
-        // 结算账户
-        if (returnType == 3) {
-            fillOrderReturnBeanBySettlementAccount(orderReturn, orderReturnBean);
-        } else if (returnType == 1 || returnType == 4) {
-			fillOrderReturnBeanByUserAccount(orderReturn, orderReturnBean);
-		}
-
         orderCancelService.doOrderReturnMoneyByCommon(orderReturnBean);
+
+        response.setMessage("已提交退款,请稍后");
+        response.setSuccess(true);
+        return response;
     }
 
 	/**
@@ -1342,15 +1357,20 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	 * @param orderReturn
 	 * @param orderReturnBean
 	 */
-	private void fillOrderReturnBeanByUserAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
+	private ReturnManagementResponse fillOrderReturnBeanByUserAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
+        ReturnManagementResponse response = new ReturnManagementResponse();
 		String masterOrderSn = orderReturnBean.getMasterOrderSn();
 		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
 
 		if (masterOrderInfoExtend == null) {
-			return;
+            response.setMessage("订单不存在 ");
+			return response;
 		}
 
 		orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
+        response.setSuccess(true);
+        response.setMessage("成功");
+        return response;
 	}
 
     /**
@@ -1358,12 +1378,21 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
      * @param orderReturn
      * @param orderReturnBean
      */
-    private void fillOrderReturnBeanBySettlementAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
+    private ReturnManagementResponse fillOrderReturnBeanBySettlementAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
+
+        ReturnManagementResponse response = new ReturnManagementResponse();
         String masterOrderSn = orderReturnBean.getMasterOrderSn();
         MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
 
         if (masterOrderInfoExtend == null) {
-            return;
+            response.setMessage("订单不存在");
+            return response;
+        }
+
+        int payPeriodStatus = masterOrderInfoExtend.getPayPeriodStatus();
+        if (payPeriodStatus == 0) {
+            response.setMessage("订单未正常扣款,请扣款后再退款");
+            return response;
         }
 
         orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
@@ -1371,11 +1400,16 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
         List<MasterOrderPay> orderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
         if (orderPayList == null || orderPayList.size() == 0) {
-            return;
+            response.setMessage("订单支付单不存在");
+            return response;
         }
 
         MasterOrderPay masterOrderPay = orderPayList.get(0);
         orderReturnBean.setPayNo(masterOrderPay.getPayNote());
+
+        response.setSuccess(true);
+        response.setMessage("成功");
+        return response;
     }
 
 	/**

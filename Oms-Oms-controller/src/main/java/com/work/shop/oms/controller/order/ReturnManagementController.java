@@ -338,11 +338,15 @@ public class ReturnManagementController {
      * @param orderReturnBean
      */
     @PostMapping("/doOrderReturnMoneyByCommon")
-    public void doOrderReturnMoneyByCommon(@RequestBody OrderReturnBean orderReturnBean) {
+    public ReturnManagementResponse doOrderReturnMoneyByCommon(@RequestBody OrderReturnBean orderReturnBean) {
+
+        ReturnManagementResponse response = new ReturnManagementResponse();
         try {
-            returnManagementService.doOrderReturnMoneyByCommon(orderReturnBean);
+            response = returnManagementService.doOrderReturnMoneyByCommon(orderReturnBean);
         } catch (Exception e) {
             logger.error("订单退款操作异常:" + JSONObject.toJSONString(orderReturnBean), e);
+            response.setMessage("退款异常");
         }
+        return response;
     }
 }
