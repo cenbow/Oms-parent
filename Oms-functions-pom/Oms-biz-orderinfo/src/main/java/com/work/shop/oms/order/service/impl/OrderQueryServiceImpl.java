@@ -143,7 +143,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			criteria.andOrderAndGoods();
 		}
 		// 订单所属站点
-		if (StringUtil.isNotEmpty(request.getChannelCode()) && !request.getChannelCode().equals("-1")) {
+		if (StringUtil.isNotEmpty(request.getChannelCode()) && !Constant.PLEASE_SELECT_STRING.equals(request.getChannelCode())) {
 			condition = false;
 			String[] channelCodes = request.getChannelCode().split(",");
 			if (channelCodes.length == 1) {
@@ -163,7 +163,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			}
 		}
 		// 订单线下店铺
-		if (StringUtil.isNotEmpty(request.getStoreCode()) && !request.getStoreCode().equals("-1")) {
+		if (StringUtil.isNotEmpty(request.getStoreCode()) && !Constant.PLEASE_SELECT_STRING.equals(request.getStoreCode())) {
 			condition = false;
 			String arr[] = request.getStoreCode().split(",");
 			if (arr.length == 1) {
@@ -188,7 +188,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			criteria.andOrderTypeEqualTo(request.getOrderType());
 		}
 		/*** 订单来源 ***/
-		if (StringUtil.isNotNull(request.getReferer()) && !"-1".equals(request.getReferer())) {
+		if (StringUtil.isNotNull(request.getReferer()) && !Constant.PLEASE_SELECT_STRING.equals(request.getReferer())) {
 			condition = false;
 			criteria.andRefererEqualTo(request.getReferer());
 		}
@@ -287,6 +287,53 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			criteria.andSplitStatusEqualTo(request.getSplitStatus().byteValue());
 		}
 
+        //支付方式
+        String payId = request.getPayId();
+        if (StringUtils.isNotBlank(payId)) {
+            condition = false;
+            criteria.andPayIdEqualTo(payId);
+        }
+
+        //公司id
+        String companyId = request.getCompanyId();
+        if (StringUtils.isNotBlank(companyId)) {
+            condition = false;
+            List<String> companyIdList = Arrays.asList(companyId.split(","));
+            criteria.andCompanyCodeIn(companyIdList);
+        }
+
+        //公司类型
+        Integer companyType = request.getCompanyType();
+        if (companyType != null) {
+            condition = false;
+            criteria.andCompanyTypeEqualTo(companyType);
+        }
+
+        //支付状态不等于
+        Integer payNotStatus = request.getPayNotStatus();
+        if (payNotStatus != null && payNotStatus >= 0) {
+            condition = false;
+            criteria.andPayStatusNotEqualTo(payNotStatus.byteValue());
+        }
+
+        // 公司名称
+        String companyName = request.getCompanyName();
+        if (StringUtils.isNotBlank(companyName)) {
+            condition = false;
+            criteria.andCompanyNameLike("%" + companyName + "%");
+        }
+
+        // 店铺类型
+        Integer channelType = request.getChannelType();
+        if (channelType != null) {
+            condition = false;
+            if (channelType == 0) {
+                criteria.andOrderFromNotEqual(Constant.DEFAULT_SHOP);
+            } else if (channelType == 1) {
+                criteria.andOrderFromEqualTo(Constant.DEFAULT_SHOP);
+            }
+        }
+
 		//订单有效、隐藏、全部状态
 		if (null != request.getOrderView()) {
 			if (request.getOrderView() == 0) {//默认显示有效订单
@@ -305,31 +352,6 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			Date date = calendar.getTime();
 			criteria.andAddTimeGreaterThanOrEqualTo(date);
 		}
-
-		//支付方式
-        String payId = request.getPayId();
-		if (StringUtils.isNotBlank(payId)) {
-            criteria.andPayIdEqualTo(payId);
-        }
-
-        //公司id
-        String companyId = request.getCompanyId();
-        if (StringUtils.isNotBlank(companyId)) {
-            List<String> companyIdList = Arrays.asList(companyId.split(","));
-            criteria.andCompanyCodeIn(companyIdList);
-        }
-
-        //公司类型
-        Integer companyType = request.getCompanyType();
-        if (companyType != null) {
-            criteria.andCompanyTypeEqualTo(companyType);
-        }
-
-        //支付状态不等于
-        Integer payNotStatus = request.getPayNotStatus();
-        if (payNotStatus != null && payNotStatus >= 0) {
-            criteria.andPayStatusNotEqualTo(payNotStatus.byteValue());
-        }
 
         try {
 			int totalProperty = 0;
@@ -587,6 +609,16 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 				condition = false;
 				criteria.andPayStatusEqualTo(model.getPayStatus());
 			}
+
+			// 店铺模式
+            if (model.getChannelType() != null) {
+                condition = false;
+                if (model.getChannelType() == 0) {
+                    criteria.andOrderFromNotEqualTo(Constant.DEFAULT_SHOP);
+                } else if (model.getChannelType() == 1) {
+                    criteria.andOrderFromEqualTo(Constant.DEFAULT_SHOP);
+                }
+            }
 			
 			//结算时间
 			if (null != model.getSelectTimeType() && model.getSelectTimeType().equals("clearTime")) {
@@ -1060,6 +1092,18 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			}
 			if(null!=goodsReturnChangeVO.getEnReturnSum()){
 				criteria.andReturnSumLessThanOrEqualTo(goodsReturnChangeVO.getEnReturnSum());
+			}
+
+			/**
+			 * 渠道店铺类型 0 店铺、1自营
+			 */
+			String channelType = goodsReturnChangeVO.getChannelType();
+			if (StringUtils.isNotBlank(channelType)) {
+				if ("0".equals(channelType)) {
+					criteria.andShopCodeNotEqualTo(Constant.DEFAULT_SHOP);
+				} else if ("1".equals(channelType)) {
+					criteria.andShopCodeEqualTo(Constant.DEFAULT_SHOP);
+				}
 			}
 			
 			// 订单所属站点

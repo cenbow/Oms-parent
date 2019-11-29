@@ -5,24 +5,32 @@ import java.util.List;
 
 import com.work.shop.oms.bean.GoodsReturnChange;
 
-
-
+/**
+ * 售后申请
+ * @author QuYachu
+ */
 public class GoodsReturnChangeVO extends GoodsReturnChange implements Serializable{
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -2928864060529284811L;
+
 	private Integer stReturnSum;
+
 	private Integer enReturnSum;
+
 	private String startTime;
+
 	private String endTime;
+
 	private String channelCode;
+
 	private List<String> sites;
+
 	/**
 	 * newData三个月以内数据
 	 * historyData历史数据
 	 */
 	private String listDataType;
+
 	public Integer getStReturnSum() {
 		return stReturnSum;
 	}
@@ -72,9 +80,7 @@ public class GoodsReturnChangeVO extends GoodsReturnChange implements Serializab
 	private Integer questionStatus;
 	private String goodsName;
 	private Double transactionPrice;
-	
-	
-	
+
 	public String getReturnTypeStr() {
 		if (getReturnType() == null) {
 			return "";

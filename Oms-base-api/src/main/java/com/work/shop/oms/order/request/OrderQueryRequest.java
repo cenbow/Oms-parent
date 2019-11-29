@@ -177,6 +177,11 @@ public class OrderQueryRequest implements Serializable {
      */
     private String companyId;
 
+	/**
+	 * 公司名称
+	 */
+	private String companyName;
+
     /**
      * 公司类型 1内部公司、2外部公司
      */
@@ -186,6 +191,11 @@ public class OrderQueryRequest implements Serializable {
      * 支付状态不等于
      */
     private Integer payNotStatus;
+
+	/**
+	 * 渠道类型 0店铺、1自营
+	 */
+	private Integer channelType;
 
     public Integer getPageNo() {
 		return pageNo;
@@ -474,4 +484,20 @@ public class OrderQueryRequest implements Serializable {
     public void setPayNotStatus(Integer payNotStatus) {
         this.payNotStatus = payNotStatus;
     }
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public Integer getChannelType() {
+		return channelType;
+	}
+
+	public void setChannelType(Integer channelType) {
+		this.channelType = channelType;
+	}
 }
