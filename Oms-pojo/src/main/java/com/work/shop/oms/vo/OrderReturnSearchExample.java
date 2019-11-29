@@ -311,8 +311,13 @@ public class OrderReturnSearchExample {
         public Criteria andOrderFromEqualTo(String value) {
 			addCriterion("oi.order_from =", value, "orderFrom");
             return (Criteria) this;
-        } 
-        
+        }
+
+        public Criteria andOrderFromNotEqualTo(String value) {
+            addCriterion("oi.order_from <>", value, "orderFrom");
+            return (Criteria) this;
+        }
+
         public Criteria andOrderFromIn(List<String> values) {
             addCriterion("oi.order_from in", values, "orderFrom");
             return (Criteria) this;

@@ -608,6 +608,10 @@ public class OrderItemQueryExample {
             addCriterion("oi.order_from =", value, "orderFrom");
             return (Criteria) this;
         }
+        public Criteria andOrderFromNotEqual(String value) {
+            addCriterion("oi.order_from <>", value, "orderFrom");
+            return (Criteria) this;
+        }
 
         public Criteria andOrderFromIn(List<String> values) {
             addCriterion("oi.order_from in", values, "orderFrom");
@@ -867,6 +871,11 @@ public class OrderItemQueryExample {
 
         public Criteria andCompanyTypeEqualTo(Integer value) {
             addCriterion("oie.company_type =", value, "companyType");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompanyNameLike(String value) {
+            addCriterion("oie.company_name =", value, "companyType");
             return (Criteria) this;
         }
 
