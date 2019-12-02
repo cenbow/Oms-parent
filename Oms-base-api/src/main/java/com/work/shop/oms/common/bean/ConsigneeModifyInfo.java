@@ -40,6 +40,59 @@ public class ConsigneeModifyInfo implements Serializable {
 	private String payId;								// 支付方式Id
 	private String source = "OMS";						// 方法调用来源 POS:POS端;FRONT:前端;OMS:后台取消;ERP:ERP端
 
+    /*发票信息*/
+    /**
+     * 发票类型
+     */
+    private String invType;
+
+    /**
+     * 发票抬头
+     */
+    private String invPayee;
+
+    /**
+     * 纳税人识别号
+     */
+    private String invTaxer;
+
+    /**
+     * 发票公司地址
+     */
+    private String invCompanyAddress;
+
+    /**
+     * 发票注册电话
+     */
+    private String invPhone;
+
+    /**
+     * 发票开户银行
+     */
+    private String invBank;
+
+    /**
+     * 发票银行账号
+     */
+    private String invBankNo;
+
+    /*发票收货地址信息*/
+
+    /**
+     * 发票收货人
+     */
+    private String invConsignee;
+
+    /**
+     * 发票收货人手机号
+     */
+    private String invMobile;
+
+    /**
+     * 发票收货人地址
+     */
+    private String invAddress;
+
 	public String getConsignee() {
 		return consignee;
 	}
@@ -222,7 +275,80 @@ public class ConsigneeModifyInfo implements Serializable {
 	public void setSource(String source) {
 		this.source = source;
 	}
-	@Override
+
+    public String getInvType() {
+        return invType;
+    }
+
+    public void setInvType(String invType) {
+        this.invType = invType;
+    }
+
+    public String getInvTaxer() {
+        return invTaxer;
+    }
+
+    public void setInvTaxer(String invTaxer) {
+        this.invTaxer = invTaxer;
+    }
+
+    public String getInvCompanyAddress() {
+        return invCompanyAddress;
+    }
+
+    public void setInvCompanyAddress(String invCompanyAddress) {
+        this.invCompanyAddress = invCompanyAddress;
+    }
+
+    public String getInvPhone() {
+        return invPhone;
+    }
+
+    public void setInvPhone(String invPhone) {
+        this.invPhone = invPhone;
+    }
+
+    public String getInvBank() {
+        return invBank;
+    }
+
+    public void setInvBank(String invBank) {
+        this.invBank = invBank;
+    }
+
+    public String getInvBankNo() {
+        return invBankNo;
+    }
+
+    public void setInvBankNo(String invBankNo) {
+        this.invBankNo = invBankNo;
+    }
+
+    public String getInvConsignee() {
+        return invConsignee;
+    }
+
+    public void setInvConsignee(String invConsignee) {
+        this.invConsignee = invConsignee;
+    }
+
+    public String getInvMobile() {
+        return invMobile;
+    }
+
+    public void setInvMobile(String invMobile) {
+        this.invMobile = invMobile;
+    }
+
+    public String getInvAddress() {
+        return invAddress;
+    }
+
+    public void setInvAddress(String invAddress) {
+        this.invAddress = invAddress;
+    }
+
+    @Override
 	public String toString() {
 		return "ConsigneeModifyInfo [orderSn=" + orderSn + ", actionUser="
 				+ actionUser + ", consignee=" + consignee + ", country="

@@ -16,36 +16,29 @@ public interface OrderDistributeEditService {
 	 * @param masterOrderInfo 主订单
 	 * @param distribute 子订单
 	 * @param infoUpdateInfo 订单品数据
-	 * @param orderStatus message:备注;actionUser:操作人;
+	 * @param actionUser message:备注;actionUser:操作人;
 	 * @return
 	 */
-	public ReturnInfo editGoods(MasterOrderInfo masterOrderInfo, OrderDistribute distribute, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
+	ReturnInfo editGoods(MasterOrderInfo masterOrderInfo, OrderDistribute distribute, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
 
 	/**
 	 * 主订单编辑商品
 	 * 
 	 * @param masterOrderSn 主订单号
 	 * @param infoUpdateInfo 订单品数据
-	 * @param orderStatus message:备注;actionUser:操作人;
+	 * @param actionUser message:备注;actionUser:操作人;
 	 * @return
 	 */
-	public ReturnInfo editGoodsByMasterSn(String masterOrderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
+	 ReturnInfo editGoodsByMasterSn(String masterOrderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
 	
 	/**
 	 * 子订单编辑商品
-	 * 
-	 * @param orderSn 子订单号
-	 * @param orderStatus message:备注;actionUser:操作人;
-	 * @return
-	 */
-	/**
-	 * 
 	 * @param orderSn 子订单号
 	 * @param infoUpdateInfo 订单品数据
-	 * @param orderStatus message:备注;actionUser:操作人;
+	 * @param actionUser message:备注;actionUser:操作人;
 	 * @return
 	 */
-	public ReturnInfo editGoodsByOrderSn(String orderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
+	ReturnInfo editGoodsByOrderSn(String orderSn, OrderInfoUpdateInfo infoUpdateInfo, String actionUser);
 	
 	/**
 	 * 编辑订单费用信息
@@ -56,7 +49,7 @@ public interface OrderDistributeEditService {
 	 * @return
 	 * @throws Exception
 	 */
-	public ReturnInfo editShippingFee(String masterOrderSn, String actionUser, Double shippingFee);
+	ReturnInfo editShippingFee(String masterOrderSn, String actionUser, Double shippingFee);
 
 	/**
 	 * 编辑承运商
@@ -68,12 +61,12 @@ public interface OrderDistributeEditService {
 	/**
 	 * 编辑订单其他信息
 	 * 
-	 * @param orderSn
+	 * @param masterOrderSn
 	 * @param actionUser
 	 * @param otherModify
 	 * @return
 	 */
-	public ReturnInfo editOrderOther(String masterOrderSn, String actionUser, OrderOtherModifyInfo otherModify);
+	ReturnInfo editOrderOther(String masterOrderSn, String actionUser, OrderOtherModifyInfo otherModify);
 	
 	/**
 	 * 主订单编辑订单地址
@@ -82,16 +75,14 @@ public interface OrderDistributeEditService {
 	 * @param consignInfo 客户信息
 	 * @return
 	 */
-	public ReturnInfo editConsigneeInfoByMasterSn(String masterOrderSn, ConsigneeModifyInfo consignInfo);
+	ReturnInfo editConsigneeInfoByMasterSn(String masterOrderSn, ConsigneeModifyInfo consignInfo);
 
 	/**
 	 * 
-	 * @param orderSn 子订单号
-	 * @param infoUpdateInfo 订单品数据
-	 * @param orderStatus message:备注;actionUser:操作人;
+	 * @param consignInfo 子订单号
 	 * @return
 	 */
-	public ReturnInfo editConsigneeInfoByOrderSn(ConsigneeModifyInfo consignInfo);
+	ReturnInfo editConsigneeInfoByOrderSn(ConsigneeModifyInfo consignInfo);
 	
 	/**
 	 * 构建收货人信息
@@ -102,6 +93,13 @@ public interface OrderDistributeEditService {
 	 * @param actionNote
 	 * @return
 	 */
-	public MasterOrderAddressInfo editAddressInfo(String masterOrderSn, ConsigneeModifyInfo consignInfo, MasterOrderAddressInfo orderAddressInfo,
+	MasterOrderAddressInfo editAddressInfo(String masterOrderSn, ConsigneeModifyInfo consignInfo, MasterOrderAddressInfo orderAddressInfo,
 			StringBuffer actionNote);
+
+    /**
+     * 主订单编辑发票地址信息
+     * @param consignInfo
+     * @return
+     */
+    ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo);
 }

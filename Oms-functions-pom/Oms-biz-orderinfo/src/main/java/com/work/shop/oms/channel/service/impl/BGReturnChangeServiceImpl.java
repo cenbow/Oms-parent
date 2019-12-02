@@ -1700,11 +1700,16 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             createGoodsReturnChange.setReason(goodsReturnChange.getReason());
             createGoodsReturnChange.setExplain(goodsReturnChange.getExplain());
 
-            //审核，自动创建退单，申请单自动完成
-            logger.info("申请售后自动创建退单");
-            MasterOrderInfo masterOrderInfo = masterOrderInfos.get(0);
-            createGoodsReturnChange.setShipFee(masterOrderInfo.getShippingTotalFee() == null ? 0.0 : masterOrderInfo.getShippingTotalFee().doubleValue());
-            createOrderProcess(createGoodsReturnChange, masterOrderInfo.getShipStatus());
+            //退换类型
+            Integer returnType = goodsReturnChange.getReturnType();
+            //只有退货单才创建退单
+            if (returnType != null && returnType == 1) {
+                //审核，自动创建退单，申请单自动完成
+                logger.info("申请售后自动创建退单");
+                MasterOrderInfo masterOrderInfo = masterOrderInfos.get(0);
+                createGoodsReturnChange.setShipFee(masterOrderInfo.getShippingTotalFee() == null ? 0.0 : masterOrderInfo.getShippingTotalFee().doubleValue());
+                createOrderProcess(createGoodsReturnChange, masterOrderInfo.getShipStatus());
+            }
 
             apiReturnData.setIsOk("1");
             apiReturnData.setMessage("审核成功");

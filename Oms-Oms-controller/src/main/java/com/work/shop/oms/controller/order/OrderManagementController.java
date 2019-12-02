@@ -508,4 +508,24 @@ public class OrderManagementController {
 
         return returnBean;
     }
+
+    /**
+     * 订单下发供应商采购单
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @PostMapping("/sendPurchaseOrder")
+    public OrderManagementResponse sendPurchaseOrder(@RequestBody OrderManagementRequest request) {
+        OrderManagementResponse returnBean = new OrderManagementResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderManagementService.sendPurchaseOrder(request);
+        } catch (Exception e) {
+            logger.error("订单下发供应商采购单异常:" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("订单下发供应商采购单异常");
+        }
+
+        return returnBean;
+    }
 }

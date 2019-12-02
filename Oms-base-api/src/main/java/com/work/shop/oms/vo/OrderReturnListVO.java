@@ -43,20 +43,38 @@ public class OrderReturnListVO extends OrderReturn {
 	 * 查询类型 0退单列表、1退单商品列表
 	 */
 	private int searchType;
-	
-	private String payNote; //付款备注;
+
+	/**
+	 * 付款备注
+	 */
+	private String payNote;
 	
 	private BigDecimal financialPrices;
-	
-	private Byte transType;  //'交易类型 1：款到发货 2：货到付款 3：担保交易',
 
-	private String exportTemplateType;   //导出模版类型
-	
-	private BigDecimal discount;   //折扣金额
-	
-	private BigDecimal returnBonusMoney; // 退红包金额   order_refund
-	
-	private String returnPayName;  // 退款方式名称
+	/**
+	 * 交易类型 1：款到发货 2：货到付款 3：担保交易
+	 */
+	private Byte transType;
+
+	/**
+	 * 导出模版类型
+	 */
+	private String exportTemplateType;
+
+	/**
+	 * 折扣金额
+	 */
+	private BigDecimal discount;
+
+	/**
+	 * 退红包金额
+	 */
+	private BigDecimal returnBonusMoney;
+
+	/**
+	 * 退款方式名称
+	 */
+	private String returnPayName;
 	
 	/**
 	 * 退金额状态：0未退、1已退
@@ -69,12 +87,26 @@ public class OrderReturnListVO extends OrderReturn {
 	private String custumCodes;
 	private Integer orderView;
 	private String consignee;
-	private String dir;// 升序或降序
-	private String sort; // 排序的字段
 
-	private String depotCode; // 仓库编码
+	/**
+	 * 升序或降序
+	 */
+	private String dir;
 
-	private String returnMobile; // 退货人手机号码
+	/**
+	 * 排序的字段
+	 */
+	private String sort;
+
+	/**
+	 * 仓库编码
+	 */
+	private String depotCode;
+
+	/**
+	 * 退货人手机号码
+	 */
+	private String returnMobile;
 
 	private String warehouseName;
 
@@ -82,21 +114,42 @@ public class OrderReturnListVO extends OrderReturn {
 
 	private String depotName;
 
-	private String bank; // 退款银行
+	/**
+	 * 退款银行
+	 */
+	private String bank;
 
-	private String subsidiaryBank;// 退款支行
+	/**
+	 * 退款支行
+	 */
+	private String subsidiaryBank;
 
-	private String accountNumber;// 退款帐号
+	/**
+	 * 退款帐号
+	 */
+	private String accountNumber;
 
-	private String account; // 退款账户
+	/**
+	 * 退款账户
+	 */
+	private String account;
 
 	private String warehouseCode;
 
-	private String returnShippingSn; // 关联退单SN
+	/**
+	 * 关联退单SN
+	 */
+	private String returnShippingSn;
 
-	private String goodsSn; // 商品编号
+	/**
+	 * 商品编号
+	 */
+	private String goodsSn;
 
-	private String skuSn;// 商品sku码
+	/**
+	 * 商品sku码
+	 */
+	private String skuSn;
 
 	/**
 	 * 商品名称
@@ -209,6 +262,11 @@ public class OrderReturnListVO extends OrderReturn {
 	 * 箱规
 	 */
 	private Integer boxGauge;
+
+	/**
+	 * 渠道类型 0店铺、1自营
+	 */
+	private Integer channelType;
 	
 	public Short getProdscannum() {
 		return prodscannum;
@@ -1365,4 +1423,12 @@ public class OrderReturnListVO extends OrderReturn {
     public void setReturnPayStr(String returnPayStr) {
         this.returnPayStr = returnPayStr;
     }
+
+	public Integer getChannelType() {
+		return channelType;
+	}
+
+	public void setChannelType(Integer channelType) {
+		this.channelType = channelType;
+	}
 }

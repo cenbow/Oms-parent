@@ -138,4 +138,32 @@ public interface OrderCommonService {
 	 */
     @PostMapping("/order/confirmationOfReceipt")
 	ReturnInfo<String> confirmationOfReceipt(DistributeShippingBean bean);
+
+    /**
+     * 主订单编辑订单地址
+     *
+     * @param masterOrderSn 主订单号
+     * @param consignInfo 客户信息
+     * @return
+     */
+    @PostMapping("/order/editConsigneeInfoByMasterSn")
+    ReturnInfo editConsigneeInfoByMasterSn(@RequestParam(name="masterOrderSn") String masterOrderSn, @RequestBody ConsigneeModifyInfo consignInfo);
+
+    /**
+     * 主订单编辑发票信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    @PostMapping("/order/editInvInfoByMasterSn")
+    ReturnInfo editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo);
+
+    /**
+     * 主订单编辑发票地址信息
+     *
+     * @param consignInfo 客户信息
+     * @return
+     */
+    @PostMapping("/order/editInvAddressInfoByMasterSn")
+    ReturnInfo editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo);
 }

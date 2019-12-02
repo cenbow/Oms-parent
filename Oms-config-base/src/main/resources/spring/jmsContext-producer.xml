@@ -515,4 +515,16 @@
         <property name="deliveryMode" value="2" />
         <property name="defaultDestination" ref="create_return_order" />
     </bean>
+
+	<!-- 审批队列 -->
+	<bean id="userCompanyOrderApprovalJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="sessionTransacted" value="true" />
+		<property name="sessionAcknowledgeMode" value="1" />
+		<property name="deliveryMode" value="2" />
+		<property name="defaultDestination" ref="user_company_order_approval" />
+	</bean>
+	<bean id="user_company_order_approval" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="user_company_order_approval" />
+	</bean>
 </beans>

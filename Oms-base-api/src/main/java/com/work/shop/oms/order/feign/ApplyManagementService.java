@@ -56,4 +56,12 @@ public interface ApplyManagementService {
      */
     @PostMapping("/order/findGoodsReturnChangeBySn")
     OmsBaseResponse<GoodsReturnChangeInfoVO> findGoodsReturnChangeBySn(OmsBaseRequest<ApplyItem> request);
+
+    /**
+     * 更新订单商品价格
+     * @param applyItem
+     * @return
+     */
+    @PostMapping("/order/updateOrderPrice")
+    OmsBaseResponse<Boolean> updateOrderPrice(ApplyItem applyItem);
 }

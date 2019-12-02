@@ -587,7 +587,8 @@
             t.sellerUser, t.is_del, t.promotion_id, t.c2m_item, t.protect_falg, t.supplier_code,t.sales_mode,
             t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value,
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
-            t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.invoice_no invoiceNo
+            t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.invoice_no invoiceNo,
+            t.goods_add_price goodsAddPrice
         FROM
             master_order_goods t
         where

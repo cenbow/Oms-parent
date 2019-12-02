@@ -7,7 +7,6 @@ import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.OrderManagementResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -209,4 +208,12 @@ public interface OrderManagementService {
      */
     @PostMapping("/order/orderSettlementAccountCompleted")
     OrderManagementResponse orderSettlementAccountCompleted(OrderManagementRequest request);
+
+    /**
+     * 订单下发供应商采购单
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @PostMapping("/order/sendPurchaseOrder")
+    OrderManagementResponse sendPurchaseOrder(OrderManagementRequest request);
 }

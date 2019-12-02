@@ -110,12 +110,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		}
 		String masterOrderSn = request.getMasterOrderSn();
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
-			info.setMessage("参数[masterOrderSn]为空");
+			info.setMessage("订单号为空");
 			return info;
 		}
 		info.setOrderSn(masterOrderSn);
 		try {
-			Map<String, Object> paramMap = new HashMap<String, Object>();
+			Map<String, Object> paramMap = new HashMap<String, Object>(4);
 			paramMap.put("masterOrderSn", masterOrderSn);
 			paramMap.put("isHistory", 0);
 			//查询主单信息（主单表、扩展表、地址信息表）
@@ -124,10 +124,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 				info.setMessage("订单信息不存在！");
 				return info;
 			}
-			if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_QUESTION) {
-				info.setMessage("订单是问题单");
-				return info;
-			}
+			// 是否强制下发
+            int purchaseOrderSend = request.getPurchaseOrderSend();
+			if (purchaseOrderSend == 0) {
+                if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_QUESTION) {
+                    info.setMessage("订单是问题单");
+                    return info;
+                }
+            }
 			OrderDistributeExample distributeExample = new OrderDistributeExample();
 			distributeExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 			List<OrderDistribute> distributes = orderDistributeMapper.selectByExample(distributeExample);
@@ -157,11 +161,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 	 * @return ReturnInfo<String>
 	 */
 	private ReturnInfo<String> commonOrderCreate(MasterOrderDetail master, OrderDistribute distribute, OrderManagementRequest request) {
-		ReturnInfo<String> info = new ReturnInfo<>(Constant.OS_NO, "采购单创建失败");
+		ReturnInfo<String> info = new ReturnInfo<String>(Constant.OS_NO, "采购单创建失败");
 
 		String orderFrom = master.getOrderFrom();
 		if (!Constant.DEFAULT_SHOP.equals(orderFrom)) {
 			info.setMessage("店铺订单,不需要转采购订单");
+            info.setIsOk(Constant.OS_YES);
 			return info;
 		}
 		List<PurchaseOrderLine> lines = mergeOrderLines(distribute.getOrderSn());
@@ -171,7 +176,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		}
 		PurchaseOrder order = purchaseOrderMapper.selectByPrimaryKey(distribute.getOrderSn());
 		if (order != null) {
-			info.setMessage("采购单已经创建");
+			info.setMessage("已下发供应商采购单");
+            info.setIsOk(Constant.OS_YES);
 			return info;
 		}
 		PurchaseOrder record = new PurchaseOrder();
@@ -188,7 +194,18 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 		//采购单推送供应链，超市为甲方，供应商为乙方
         //只要不是需要签章，没有签章完成的订单都下发
-        boolean flag = master.getNeedSign() != 1 || master.getSignStatus() != 0;
+        boolean flag = false;
+
+        if (request.getPurchaseOrderSend() == 1) {
+            // 强制下发
+            flag = true;
+        } else if (master.getNeedSign() != 1) {
+            // 子公司不需要签章
+            flag = true;
+        } else if (master.getSignStatus() == 1) {
+            // 子公司已签章
+            flag = true;
+        }
         if (flag) {
             pushJointPurchasing(master.getMasterOrderSn(), request.getActionUser(), request.getActionUserId(), distribute.getSupplierCode(), 1);
         }
@@ -363,17 +380,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
     /**
      * 订单推送供应链
-     * @param masterOrderSn
-     * @param actionUser
-     * @param actionUserId
+     * @param masterOrderSn 订单号
+     * @param actionUser 操作人
+     * @param actionUserId 操作人id
      * @param supplierCode 供应商编码
-     * @param type 0买家->超市，1超市->供应商
+     * @param type 0买家->超市，1超市->供应商, 2 买家->店铺
      */
     @Override
 	public void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, int type) {
         //校验订单类型；联采订单供应商编码不能为空，普通订单必须为企业用户
         logger.info("订单推送供应链信息：订单号" + masterOrderSn + ",供应商编码" + supplierCode + ",推送类型" + type);
-        Map<String, Object> paramMap = new HashMap<String, Object>();
+        Map<String, Object> paramMap = new HashMap<String, Object>(4);
         paramMap.put("masterOrderSn", masterOrderSn);
         paramMap.put("isHistory", 0);
         //查询主单信息（主单表、扩展表、地址信息表）
@@ -383,31 +400,35 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             return;
         }
 
-        //用户-》超市，校验是否已推送
-        if (master.getPushSupplyChain() != null && master.getPushSupplyChain() == 1) {
-            // 0 买家与超市、2买家与店铺
-            if (type == 0 || type == 2) {
-                logger.error(masterOrderSn + "订单推送供应链推送：订单已推送供应链");
-                return;
-            }
-        }
-
-        Integer createOrderType = master.getCreateOrderType();
-        //联采订单，或交货单
-        if (createOrderType == 1 || (type == 1 && master.getNeedSign() == 1)) {
-            if (StringUtils.isBlank(supplierCode)) {
-                logger.error(masterOrderSn + "订单推送供应链推送：供应商编码为空");
-                return;
-            }
-            //正常订单需要签章
-        } else if (createOrderType == 0 && master.getNeedSign() == 1) {
-            if (StringUtils.isBlank(master.getCompanyId())) {
-                logger.error(masterOrderSn + "订单推送供应链推送：下单人不为企业用户");
-                return;
-            }
+        if (type == 1) {
+            // 超市与供应商
         } else {
-            logger.error(masterOrderSn + "订单推送供应链推送：未知订单类型");
-            return;
+            //用户-》超市，校验是否已推送
+            if (master.getPushSupplyChain() != null && master.getPushSupplyChain() == 1) {
+                // 0 买家与超市、2买家与店铺
+                if (type == 0 || type == 2) {
+                    logger.error(masterOrderSn + "订单推送供应链推送：订单已推送供应链");
+                    return;
+                }
+            }
+
+            Integer createOrderType = master.getCreateOrderType();
+            //联采订单，或交货单
+            if (createOrderType == 1 || (type == 1 && master.getNeedSign() == 1)) {
+                if (StringUtils.isBlank(supplierCode)) {
+                    logger.error(masterOrderSn + "订单推送供应链推送：供应商编码为空");
+                    return;
+                }
+                //正常订单需要签章
+            } else if (createOrderType == 0 && master.getNeedSign() == 1) {
+                if (StringUtils.isBlank(master.getCompanyId())) {
+                    logger.error(masterOrderSn + "订单推送供应链推送：下单人不为企业用户");
+                    return;
+                }
+            } else {
+                logger.error(masterOrderSn + "订单推送供应链推送：未知订单类型");
+                return;
+            }
         }
         paramMap = new HashMap<String, Object>(6);
         paramMap.put("masterOrderSn", masterOrderSn);
@@ -450,16 +471,24 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             return info;
         }
 
-        if (purchaseOrder.getPushSupplyChain() == null) {
-            info.setMessage("签章状态为空");
-            return info;
-        }
-
         PurchaseOrder order = purchaseOrderMapper.selectByPrimaryKey(purchaseOrder.getPurchaseOrderCode());
         if (order == null) {
             info.setMessage("采购单信息获取失败");
             return info;
         }
+
+		if (order.getPushSupplyChain() == null) {
+			info.setMessage("签章状态为空");
+			return info;
+		}
+
+        // 签章状态
+        Byte signComplete = order.getSignComplete();
+        if (signComplete != null && signComplete == 1) {
+			info.setIsOk(Constant.OS_YES);
+			info.setMessage("采购单已签章");
+			return info;
+		}
 
         try {
             int update = purchaseOrderMapper.updateByPrimaryKeySelective(purchaseOrder);
@@ -493,4 +522,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		paramMap.put("orderSn", orderSn);
 		supplierOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
 	}
+
+    /**
+     * 根据主订单号批量更新
+     * @param purchaseOrder
+     */
+    @Override
+	public void updateBatchByMasterOrderSn(PurchaseOrder purchaseOrder) {
+        PurchaseOrderExample example = new PurchaseOrderExample();
+        example.or().andMasterOrderSnEqualTo(purchaseOrder.getMasterOrderSn());
+        purchaseOrderMapper.updateByExampleSelective(purchaseOrder, example);
+    }
 }

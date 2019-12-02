@@ -166,7 +166,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 	 */
 	@Override
 	public OrderManagementResponse orderItemGet(OrderManagementRequest request) {
-		logger.info("订单详情查询 request:" + JSON.toJSONString(request));
+
 		OrderManagementResponse response = new OrderManagementResponse();
 		response.setSuccess(false);
 		response.setMessage("查询失败");
@@ -350,7 +350,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 	 */
 	@Override
 	public OrderManagementResponse getOrderItemLog(OrderManagementRequest request) {
-		logger.info("查询订单日志request:" + JSON.toJSONString(request));
+
 		OrderManagementResponse response = new OrderManagementResponse();
 		response.setSuccess(false);
 		response.setMessage("查询订单日志失败");
@@ -801,7 +801,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				response.setMessage("查询订单数据不存在");
 				return response;
 			}
-			List<Integer> integers = new ArrayList<>();
+			// 0.一般问题单，1.缺货问题单，2待审核问题单，3待签章问题单
+			List<Integer> integers = new ArrayList<Integer>();
 			integers.add(0);
 			integers.add(1);
 			OrderStatus orderStatus = new OrderStatus();
@@ -1156,6 +1157,40 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 	}
 
     /**
+     * 订单下发供应商采购单
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @Override
+    public OrderManagementResponse sendPurchaseOrder(OrderManagementRequest request) {
+        logger.info("下发供应商采购单request:" + JSON.toJSONString(request));
+        OrderManagementResponse response = new OrderManagementResponse();
+        response.setSuccess(false);
+        response.setMessage("下发供应商采购单失败");
+        String msg = checkCommonOrderManagementRequest(request);
+        if (StringUtils.isNotBlank(msg)) {
+            response.setMessage(msg);
+            return response;
+        }
+
+        try {
+            request.setPurchaseOrderSend(1);
+            ReturnInfo<String> info = purchaseOrderService.purchaseOrderCreateByMaster(request);
+
+            if (info != null && Constant.OS_YES == info.getIsOk()) {
+                response.setSuccess(true);
+                response.setMessage(info.getMessage());
+            } else {
+                response.setMessage(info == null ? "订单下发供应商失败" : info.getMessage());
+            }
+        } catch (Exception e) {
+            logger.error("订单下发供应商采购单失败：" + JSONObject.toJSONString(request), e);
+            response.setMessage("订单下发供应商采购单失败：" + e.getMessage());
+        }
+        return response;
+    }
+
+    /**
      * 采购单更新合同号和签章状态
      * @param masterOrderSn
      * @param contractNo
@@ -1402,10 +1437,16 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             }
 
             String message = "更新账期支付扣款成功状态异常";
+            String contractNo = request.getContractNo();
             // 成功
-            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn);
+            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo);
             if (payStatus) {
+
                 message = "账期支付扣款成功";
+                if (StringUtils.isNotBlank(contractNo)) {
+                    message += ",内行业务id:" + contractNo;
+                }
+
                 response.setSuccess(true);
                 response.setMessage("操作成功");
             }
@@ -1466,7 +1507,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         }
 
         if (StringUtil.isTrimEmpty(request.getMasterOrderSn())) {
-            msg = "订单编码为空";
+            msg = "订单号为空";
             return msg;
         }
 
@@ -1542,6 +1583,17 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param masterOrderSn
      */
     private void updateSignStatus(String masterOrderSn, String contractNo) {
+    	MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
+    	if (masterOrderInfo == null) {
+    		logger.info("订单号:" + masterOrderSn + "不存在");
+    		return;
+		}
+		// 签章状态 0未签章、1已签章
+		Integer signStatus = masterOrderInfo.getSignStatus();
+    	if (signStatus != null && signStatus == 1) {
+			logger.info("订单号:" + masterOrderSn + "已签章");
+			return;
+		}
         MasterOrderInfo updateOrder = new MasterOrderInfo();
         updateOrder.setMasterOrderSn(masterOrderSn);
         updateOrder.setUpdateTime(new Date());

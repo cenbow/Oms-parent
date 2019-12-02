@@ -137,6 +137,11 @@ public class PageListParam implements Serializable{
      */
 	private Integer signStatus;
 
+    /**
+     * 公司id
+     */
+	private String companyId;
+
 	public String getUserId() {
 		return userId;
 	}
@@ -375,6 +380,14 @@ public class PageListParam implements Serializable{
 
     public void setSignStatus(Integer signStatus) {
         this.signStatus = signStatus;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
     }
 
     @Override

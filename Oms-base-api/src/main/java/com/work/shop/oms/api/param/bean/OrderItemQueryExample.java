@@ -608,6 +608,10 @@ public class OrderItemQueryExample {
             addCriterion("oi.order_from =", value, "orderFrom");
             return (Criteria) this;
         }
+        public Criteria andOrderFromNotEqual(String value) {
+            addCriterion("oi.order_from <>", value, "orderFrom");
+            return (Criteria) this;
+        }
 
         public Criteria andOrderFromIn(List<String> values) {
             addCriterion("oi.order_from in", values, "orderFrom");
@@ -857,6 +861,26 @@ public class OrderItemQueryExample {
 
         public Criteria andPayIdEqualTo(String value) {
             addCriterion("mop.pay_id =", value, "value");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompanyCodeIn(List<String> values) {
+            addCriterion("oie.company_code in", values, "companyCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompanyTypeEqualTo(Integer value) {
+            addCriterion("oie.company_type =", value, "companyType");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompanyNameLike(String value) {
+            addCriterion("oie.company_name like", value, "companyName");
+            return (Criteria) this;
+        }
+
+        public Criteria andPayStatusNotEqualTo(Byte value) {
+            addCriterion("oi.pay_status !=", value, "payStatus");
             return (Criteria) this;
         }
     }

@@ -162,7 +162,7 @@ public class MasterOrderInfoController {
         try {
             return masterOrderInfoService.selectGoodsByMasterOrderSn(masterOrderSn);
         } catch (Exception e) {
-            logger.error(masterOrderSn + "更新订单推送供应链状态:" + "异常", e);
+            logger.error(masterOrderSn + "通过订单编码获取订单商品列表:" + "异常", e);
         }
         return null;
     }

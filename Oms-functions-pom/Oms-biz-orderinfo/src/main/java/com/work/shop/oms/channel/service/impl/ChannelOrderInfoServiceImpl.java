@@ -106,10 +106,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 		ApiReturnData apiReturnData = new ApiReturnData();
 		apiReturnData.setIsOk(Constant.OS_STR_YES);
 
-		if (StringUtils.isBlank(searchParam.getUserId())) {
-			apiReturnData.setMessage("userId不能为空！");
+		if (StringUtils.isBlank(searchParam.getUserId()) && StringUtils.isBlank(searchParam.getCompanyId())) {
+			apiReturnData.setMessage("公司id不能为空！或者 userId不能为空！");
 			return apiReturnData;
 		}
+
 		if (searchParam.getPageSize() <= 0) {
 			apiReturnData.setMessage("PageSize不能为空！");
 			return apiReturnData;
@@ -154,7 +155,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         Integer selectTimeDays = searchParam.getSelectTimeDays();
         if (selectTimeDays != null) {
             String endTime = TimeUtil.getDate(TimeUtil.YYYY_MM_DD);
-            params.put("endTime", endTime);
+            params.put("endTime", endTime + " 23:59:59");
             String startTime = null;
             startTime = TimeUtil.getBeforeDay(endTime, selectTimeDays-1, TimeUtil.YYYY_MM_DD);
             params.put("startTime", startTime);
@@ -187,6 +188,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             params.put("signStatus", searchParam.getSignStatus());
         }
 
+        //公司id
+        if (searchParam.getCompanyId() != null) {
+            params.put("companyId", searchParam.getCompanyId());
+        }
+
 		return params;
 	}
 
@@ -197,7 +203,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<Paging<OrderPageInfo>> orderPageList(PageListParam searchParam) {
-		logger.info("查询用户订单列表：searchParam"+JSON.toJSONString(searchParam));
+
 		ApiReturnData<Paging<OrderPageInfo>> apiReturnData = new ApiReturnData<Paging<OrderPageInfo>>();
 
 		try {
@@ -1031,20 +1037,32 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
 	/**
 	 * 获取用户订单种类数量
-	 * @param userId 用户id
-	 * @param siteCode 站点编码
+	 * @param searchParam
 	 * @return ApiReturnData<UserOrderTypeNum>
 	 */
 	@Override
-	public ApiReturnData<UserOrderTypeNum> getUserOrderType(String userId, String siteCode) {
-		logger.info("平台查询用户订单数量userId=" + userId+", siteCode=" + siteCode);
+	public ApiReturnData<UserOrderTypeNum> getUserOrderType(PageListParam searchParam) {
 		ApiReturnData<UserOrderTypeNum> apiReturnData = new ApiReturnData<UserOrderTypeNum>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
+        if (searchParam == null) {
+            apiReturnData.setMessage("查询参数为空");
+            return apiReturnData;
+        }
+        logger.info("平台查询用户订单数量" + JSONObject.toJSONString(searchParam));
 
 		try {
 			Map<String, Object> params = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
-			params.put("userId", userId);
-			params.put("siteCode", siteCode);
+
+            String userId = searchParam.getUserId();
+            if (StringUtils.isNotBlank(userId)) {
+                params.put("userId", userId);
+            }
+
+            String companyId = searchParam.getCompanyId();
+            if (StringUtils.isNotBlank(companyId)) {
+                params.put("companyId", companyId);
+            }
+			params.put("siteCode", searchParam.getSiteCode());
 			//用户待付款订单数量
 			params.put("type", 1);
 			int waitPayNum = defineOrderMapper.selectUserOrderCountByType(params);
@@ -1913,7 +1931,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<UserOrderTypeNum> getUserOrderTypeNew(PageListParam searchParam) {
-		return getUserOrderType(searchParam.getUserId(), searchParam.getSiteCode());
+		return getUserOrderType(searchParam);
 	}
 
 	/**

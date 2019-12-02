@@ -2,11 +2,7 @@ package com.work.shop.oms.ship.service;
 
 import java.util.List;
 
-import com.work.shop.oms.common.bean.DistributeShipBean;
-import com.work.shop.oms.common.bean.DistributeShippingBean;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.OrderToShippedProviderBeanParam;
-import com.work.shop.oms.common.bean.ReturnInfo;
+import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.ship.request.DistOrderShipRequest;
 import com.work.shop.oms.ship.response.DistOrderShipResponse;
 
@@ -146,4 +142,5 @@ public interface DistributeShipService {
 	 * @param masterOrderSn
 	 */
 	void processMasterShipResult(String masterOrderSn);
+
 }

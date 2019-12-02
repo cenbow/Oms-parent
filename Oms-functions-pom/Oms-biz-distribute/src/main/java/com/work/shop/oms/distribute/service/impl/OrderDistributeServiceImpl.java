@@ -7,6 +7,7 @@ import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
+import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
@@ -22,6 +23,7 @@ import com.work.shop.oms.vo.SettleParamObj;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -82,6 +84,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
 	@Resource
 	private OrderSettleService orderSettleService;
+
+    @Resource(name="userCompanyOrderApprovalJmsTemplate")
+	private JmsTemplate userCompanyOrderApprovalJmsTemplate;
 
 	/**
 	 * 判断订单拆交货单信息
@@ -203,6 +208,8 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
         // 需要审核订单设置待审核问题单
         if (master.getNeedAudit() == 1 && master.getAuditStatus() == 0) {
             orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待审核问题单", Constant.QUESTION_CODE_REVIEW));
+            // 下发MQ
+            sendOrderAuditMq(master, masterOrderInfoExtend);
         } else {
             // 不需要审核正常订单 创建采购单
             if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
@@ -236,6 +243,28 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
         if (orderType == null || orderType == 0) {
             // 通知统一库存分配库存
             uniteStockService.distOccupy(masterOrderSn);
+        }
+    }
+
+    /**
+     * 订单审批下发MQ
+     * @param master
+     * @param masterOrderInfoExtend
+     */
+    private void sendOrderAuditMq(MasterOrderInfo master, MasterOrderInfoExtend masterOrderInfoExtend) {
+        UserCompanyOrderApproval userCompanyOrderApproval = new UserCompanyOrderApproval();
+        //userCompanyOrderApproval.setUserType(userResponseBean.getUserType());
+        //userCompanyOrderApproval.setUserName(userResponseBean.getRealName());
+        userCompanyOrderApproval.setUserAccount(master.getUserId());
+        userCompanyOrderApproval.setMasterOrderSn(masterOrderInfoExtend.getMasterOrderSn());
+        userCompanyOrderApproval.setContractCode(masterOrderInfoExtend.getCustomerContractNum());
+
+        String text = JSONObject.toJSONString(userCompanyOrderApproval);
+        logger.info("订单下发审批:" + text);
+        try {
+            userCompanyOrderApprovalJmsTemplate.send(new TextMessageCreator(text));
+        } catch (Exception e) {
+            logger.error("下发订单审核MQ信息异常", e);
         }
     }
 

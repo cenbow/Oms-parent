@@ -183,4 +183,11 @@ public interface OrderManagementService {
 	 * @return
 	 */
 	OrderManagementResponse orderSettlementAccountCompleted(OrderManagementRequest request);
+
+	/**
+	 * 订单下发供应商采购单
+	 * @param request 请求参数
+	 * @return OrderManagementResponse
+	 */
+	OrderManagementResponse sendPurchaseOrder(OrderManagementRequest request);
 }

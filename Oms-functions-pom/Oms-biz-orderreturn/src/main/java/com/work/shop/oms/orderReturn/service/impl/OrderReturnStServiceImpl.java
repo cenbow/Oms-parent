@@ -1998,9 +1998,9 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 			if(orderReturn.getLockStatus() == 0){
 				throw new RuntimeException("退单处于锁定状态不可再次操作");
 			}
-		/*  if(orderReturn.getLockStatus().intValue() != userId.intValue() && !StringUtils.equalsIgnoreCase(actionUser, "admin")){
-				throw new RuntimeException("退单被其他人锁定("+orderReturn.getLockStatus()+")");
-			}*/
+		    if(orderReturn.getLockStatus().intValue() != userId.intValue() && !StringUtils.equalsIgnoreCase(actionUser, "admin")){
+				throw new RuntimeException("退单" + returnSn + "非当前用户锁定，无法解锁");
+			}
 			//退单更新
 			orderReturn.setReturnSn(returnSn);
 			orderReturn.setLockStatus(0);
@@ -2016,7 +2016,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.info("returnOrderUnLock"+returnSn+" 操作失败，Msg："+e.getMessage(),e);
-			returnInfo.setMessage("操作失败:"+e.getMessage());
+			returnInfo.setMessage(e.getMessage());
 		}
 		return returnInfo;
 	}

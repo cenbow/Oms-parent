@@ -115,6 +115,9 @@
 			<if test="goodsName != null">
 				and org.goods_name like  CONCAT('%','${goodsName}','%' )
 			</if>
+            <if test="channelCode != null">
+                and orn.channel_code = #{channelCode}
+            </if>
 		group by orn.return_sn
 		<if test="orderBy != null" >
 	      ${orderBy}
@@ -194,6 +197,9 @@
 			<if test="goodsName != null">
 				and org.goods_name like  CONCAT('%','${goodsName}','%' )
 			</if>
+            <if test="channelCode != null">
+                and orn.channel_code = #{channelCode}
+            </if>
 		group by orn.return_sn
 		<if test="orderBy != null" >
 	      ${orderBy}

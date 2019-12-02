@@ -89,10 +89,11 @@
 		grc.order_sn=oi.master_order_sn
 		where
             oie.is_del = 0
-        and
-			oi.user_id= #{userId,jdbcType=VARCHAR}
 		and
 			oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and oi.user_id= #{userId,jdbcType=VARCHAR}
+        </if>
 		<if test="shopCode != null">
 			and oi.order_from = #{shopCode,jdbcType=VARCHAR}
 		</if>
@@ -126,6 +127,10 @@
         <!-- 签章状态 -->
         <if test="signStatus != null">
             and oi.sign_status = #{signStatus}
+        </if>
+        <!-- 公司id -->
+        <if test="companyId != null">
+            and oie.company_code = #{companyId}
         </if>
 
 		<!--app列表只显示订单 --> 
@@ -220,8 +225,11 @@
 			on oie.master_order_sn = oi.master_order_sn
 			where
             	oie.is_del = 0
-        	and oi.user_id= #{userId,jdbcType=VARCHAR}
-			and oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+            and
+            oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+            <if test="userId != null">
+                and oi.user_id= #{userId,jdbcType=VARCHAR}
+            </if>
 			<if test="shopCode != null">
 				and oi.order_from = #{shopCode,jdbcType=VARCHAR}
 			</if>
@@ -252,6 +260,15 @@
 			<if test="contractNum != null">
 				and oie.customer_contract_num = #{contractNum}
 			</if>
+            <!-- 签章状态 -->
+            <if test="signStatus != null">
+                and oi.sign_status = #{signStatus}
+            </if>
+            <!-- 公司id -->
+            <if test="companyId != null">
+                and oie.company_code = #{companyId}
+            </if>
+
 		<!--app列表只显示订单 --> 
 			<choose>
 			<when test="type == 1">
@@ -625,7 +642,8 @@
 		GROUP_CONCAT(DISTINCT moi.master_order_sn) exChangeSns,
 		returnchange.return_type returnType,
 		od.got_code gotCode,
-		od.got_status gotStatus
+		od.got_status gotStatus,
+        sp.pay_code payCode
 	FROM(
 		select 
 			DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
@@ -700,6 +718,9 @@
 			oai.latitude,
 			oai.delivery_time deliveryTime,
             oi.need_audit needAudit,
+            oi.audit_status auditStatus,
+            oi.need_sign needSign,
+            oi.sign_status signStatus,
             oai.inv_consignee invConsignee,
             oai.inv_mobile invMobile,
             oai.inv_address invAddress,
@@ -742,6 +763,7 @@
 	left join master_order_info moi on moi.relating_original_sn = a.orderSn AND moi.order_type = 2 AND moi.order_status != 2
 	left join goods_return_change returnchange on returnchange.order_sn = a.orderSn
 	left join order_distribute od on a.orderSn = od.master_order_sn and a.isCac = 1
+    left join system_payment sp on a.payId = sp.pay_id and sp.enabled = 1
 	GROUP BY a.orderSn;
 	</select>
 	
@@ -839,16 +861,20 @@
 		from
 		master_order_info
 		oi
-		<if test="type == 4 or type == 5">
 		LEFT JOIN master_order_info_extend oie ON oie.master_order_sn=oi.master_order_sn
-		</if>
 		<if test="type == 6">
 			LEFT JOIN order_return orn ON oi.master_order_sn=orn.master_order_sn
 		</if>
 		where
-			oi.user_id= #{userId,jdbcType=VARCHAR} 
-		AND 
+            oie.is_del = 0
+		AND
 			oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and oi.user_id= #{userId,jdbcType=VARCHAR}
+        </if>
+        <if test="companyId != null">
+            and oie.company_code= #{companyId}
+        </if>
 		<choose>
 			<when test="type == 1">
 				<!--待付款订单 -->

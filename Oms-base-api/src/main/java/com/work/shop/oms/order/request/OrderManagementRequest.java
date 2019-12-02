@@ -77,9 +77,14 @@ public class OrderManagementRequest implements Serializable {
     private String payCode;
 
     /**
-     * 订单类型0正常订单,1协议订单
+     * 订单类型0正常订单,1联采订单
      */
     private Integer orderType;
+
+	/**
+	 * 采购订单下发 1强制下发
+	 */
+	private int purchaseOrderSend;
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -191,5 +196,13 @@ public class OrderManagementRequest implements Serializable {
 
 	public void setContractNo(String contractNo) {
 		this.contractNo = contractNo;
+	}
+
+	public int getPurchaseOrderSend() {
+		return purchaseOrderSend;
+	}
+
+	public void setPurchaseOrderSend(int purchaseOrderSend) {
+		this.purchaseOrderSend = purchaseOrderSend;
 	}
 }

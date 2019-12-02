@@ -1,75 +1,15 @@
 package com.work.shop.oms.orderop.service.impl;
 
-import java.math.BigDecimal;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.MasterOrderAddressInfo;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderGoodsExample;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoBean;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.OrderDepotShip;
-import com.work.shop.oms.bean.OrderDepotShipExample;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeBean;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNew;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNewDel;
-import com.work.shop.oms.bean.OrderQuestionLackSkuNewExample;
-import com.work.shop.oms.bean.SystemRegionArea;
-import com.work.shop.oms.bean.SystemRegionAreaExample;
-import com.work.shop.oms.bean.SystemShipping;
-import com.work.shop.oms.bean.SystemShippingExample;
-import com.work.shop.oms.common.bean.C2bGood;
-import com.work.shop.oms.common.bean.CardPackageUpdateInfo;
-import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
-import com.work.shop.oms.common.bean.ConstantValues;
-import com.work.shop.oms.common.bean.OrderDetailsInfo;
-import com.work.shop.oms.common.bean.OrderGoodsUpdateBean;
-import com.work.shop.oms.common.bean.OrderInfoMappingBean;
-import com.work.shop.oms.common.bean.OrderInfoUpdateInfo;
-import com.work.shop.oms.common.bean.OrderMasterInfo;
-import com.work.shop.oms.common.bean.OrderOtherModifyInfo;
-import com.work.shop.oms.common.bean.OrderStatus;
-import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.common.bean.UpdateOrderDistributeBean;
-import com.work.shop.oms.common.bean.UpdateOrderInfo;
-import com.work.shop.oms.dao.MasterOrderAddressInfoMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsMapper;
-import com.work.shop.oms.dao.MasterOrderInfoExtendMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.OrderDepotShipMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.OrderQuestionLackSkuNewDelMapper;
-import com.work.shop.oms.dao.OrderQuestionLackSkuNewMapper;
-import com.work.shop.oms.dao.SystemRegionAreaMapper;
-import com.work.shop.oms.dao.SystemShippingMapper;
+import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
+import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.erp.service.ErpInterfaceProxy;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderPayService;
+import com.work.shop.oms.order.service.PurchaseOrderService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderDistributeEditService;
@@ -80,6 +20,18 @@ import com.work.shop.oms.utils.NumberUtil;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.webservice.ErpResultBean;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.util.*;
 
 @Service
 public class OrderDistributeEditServiceImpl implements OrderDistributeEditService{
@@ -128,6 +80,9 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 
 	@Resource(name = "orderConfirmService")
 	private OrderConfirmService orderConfirmService;
+
+	@Resource
+	private PurchaseOrderService purchaseOrderService;
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -1187,8 +1142,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * 订单商品编辑
 	 * 
 	 * @param orderSn
-	 * @param distribute
-	 * @param define
+	 * @param distributeBean
+	 * @param orderStatus
 	 * @param orderStatus
 	 * @return
 	 */
@@ -1222,8 +1177,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * 订单编辑商品(共用方法)
 	 * 
 	 * @param orderSn
-	 * @param distribute
-	 * @param define
+	 * @param distributeBean
+	 * @param orderStatus
 	 * @param orderStatus
 	 * @return
 	 */
@@ -1367,8 +1322,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	
 	/**
 	 * 同步ERP商品组装
-	 * @param updateObj
-	 * @param oldGoodsMap
+	 * @param orderGoods
+	 * @param detailsInfo
 	 * @return
 	 */
 	private OrderDetailsInfo createMbUpdateGoodsMap(MasterOrderGoods orderGoods, OrderDetailsInfo detailsInfo) {
@@ -1425,9 +1380,8 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	/**
 	 * 组织通知ERP Bean
 	 * 
-	 * @param orderInfo
+	 * @param distribute
 	 * @param compareResult
-	 * @param actType
 	 * @param depotFlag
 	 * @return
 	 */
@@ -1646,7 +1600,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * @param updateDistributeMap
 	 * @param orderSnKey
 	 * @param type 0：增加;1：删除;2：更新 3：没变化
-	 * @param masterOrderGoods
+	 * @param updateObj
 	 */
 	private void editOrderDistributeGoods(Map<String, UpdateOrderDistributeBean> updateDistributeMap,
 			String orderSnKey, int type, MasterOrderGoods updateObj) {
@@ -1829,7 +1783,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	
 	/**
 	 * 编辑订单商品信息
-	 * @param bean
+	 * @param oldGoods
 	 * @return
 	 */
 	private MasterOrderGoods editOrderGoodsDeleteGoods(MasterOrderGoods oldGoods, short goodsNumber) {
@@ -2052,6 +2006,10 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, actionNote.toString(), actionUser);
 			ri.setIsOk(Constant.OS_YES);
 			ri.setMessage("收货信息更新成功！");
+
+            //更新关联采购单地址信息
+            updatePurchaseOrderAddress(consignInfo);
+
 		} catch (Exception ex) {
 			logger.error("订单[" + masterOrderSn + "]编辑收货人信息异常：" + ex.getMessage(), ex);
 			ri.setMessage("编辑收货人信息失败,"+ex.getMessage());
@@ -2069,6 +2027,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * @param actionNote
 	 * @return
 	 */
+	@Override
 	public MasterOrderAddressInfo editAddressInfo(String masterOrderSn, ConsigneeModifyInfo consignInfo, MasterOrderAddressInfo orderAddressInfo,
 			StringBuffer actionNote) {
 		Map<String,String> systemRegionMap = new HashMap<String, String>();
@@ -2159,6 +2118,93 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		}
 		return updateOrderAddressInfo;
 	}
+
+    /**
+     * 主订单编辑发票地址信息
+     * @param consignInfo
+     * @return
+     */
+    @Override
+    public ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo) {
+        ReturnInfo<String> info = new ReturnInfo<>();
+        info.setMessage("主订单编辑发票地址信息失败");
+        if (consignInfo == null) {
+            info.setMessage("[consignInfo]不能都为空！");
+            return info;
+        }
+        String masterOrderSn = consignInfo.getOrderSn();
+        if (StringUtil.isTrimEmpty(masterOrderSn)) {
+            info.setMessage("订单号不能都为空！");
+            return info;
+        }
+        String actionUser = consignInfo.getActionUser();
+        if (StringUtil.isTrimEmpty(actionUser)) {
+            info.setMessage("操作人为空！");
+            return info;
+        }
+
+        try {
+            MasterOrderInfo master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+            if (master == null) {
+                info.setMessage("订单[" + masterOrderSn + "]不存在，不能编辑发票地址信息操作！");
+                return info;
+            }
+            if (master.getShipStatus() > Constant.OI_SHIP_STATUS_UNSHIPPED) {
+                info.setMessage("订单[" + masterOrderSn + "]分配单已经发货，不能编辑发票地址信息操作！");
+                return info;
+            }
+
+            //校验收货信息
+            MasterOrderAddressInfo addressInfo = masterOrderAddressInfoMapper.selectByPrimaryKey(masterOrderSn);
+            if (addressInfo == null) {
+                info.setMessage("订单[" + masterOrderSn + "]收货信息为空！");
+                return info;
+            }
+
+            MasterOrderAddressInfo updateAddress = new MasterOrderAddressInfo();
+            StringBuffer sb = new StringBuffer();
+            //发票收货人
+            String invConsignee = consignInfo.getInvConsignee();
+            if (StringUtils.isNotBlank(invConsignee)) {
+                updateAddress.setInvConsignee(invConsignee);
+                sb.append("发票收货人由‘" + updateAddress.getInvConsignee() + "’更改为‘" + invConsignee + "’；");
+            }
+
+            //发票收货人手机号
+            String invMobile = consignInfo.getInvMobile();
+            if (StringUtils.isNotBlank(invMobile)) {
+                updateAddress.setInvMobile(invMobile);
+                sb.append("发票收货人手机号由‘" + updateAddress.getInvMobile() + "’更改为‘" + invMobile + "’；");
+            }
+
+            //发票收货人地址
+            String invAddress = consignInfo.getInvAddress();
+            if (StringUtils.isNotBlank(invAddress)) {
+                updateAddress.setInvAddress(invAddress);
+                sb.append("发票收货人地址由‘" + updateAddress.getInvAddress() + "’更改为‘" + invAddress + "’；");
+            }
+
+            //无修改信息返回修改成功
+            String msg = sb.toString();
+            if (StringUtils.isBlank(msg)) {
+                info.setIsOk(1);
+                info.setMessage("更新成功");
+                return info;
+            }
+            updateAddress.setMasterOrderSn(masterOrderSn);
+            int update = masterOrderAddressInfoMapper.updateByPrimaryKeySelective(updateAddress);
+            if (update > 0) {
+                info.setIsOk(1);
+                info.setMessage("更新成功");
+            }
+
+            //添加日志
+            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：" + msg, actionUser);
+        } catch (Exception e) {
+            logger.error("主订单编辑发票地址信息异常" + JSONObject.toJSONString(consignInfo), e);
+        }
+        return info;
+    }
 	
 	private ReturnInfo judgeMasterOrderStatus(String masterOrderSn, MasterOrderInfo master, byte orderStatus) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
@@ -2310,4 +2356,59 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		orderAction.setActionNote(msg);
 		distributeActionService.saveOrderAction(orderAction);
 	}
+
+    /**
+     * 更新关联采购单地址信息
+     * @param consignInfo
+     */
+    private void updatePurchaseOrderAddress(ConsigneeModifyInfo consignInfo) {
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        //主订单号
+        purchaseOrder.setMasterOrderSn(consignInfo.getOrderSn());
+        //国家
+        purchaseOrder.setCountry(consignInfo.getCountry());
+        //省
+        purchaseOrder.setProvince(consignInfo.getProvince());
+        //市
+        purchaseOrder.setCity(consignInfo.getCity());
+        //区
+        purchaseOrder.setDistrict(consignInfo.getDistrict());
+        //地址
+        purchaseOrder.setAddress(consignInfo.getAddress());
+        //邮编
+        purchaseOrder.setZipcode(consignInfo.getZipcode());
+        //手机号
+        purchaseOrder.setMobile(consignInfo.getMobile());
+        //电话
+        purchaseOrder.setTel(consignInfo.getTel());
+        //收货人
+        purchaseOrder.setConsignee(consignInfo.getConsignee());
+
+        purchaseOrderService.updateBatchByMasterOrderSn(purchaseOrder);
+    }
+
+    /**
+     * 获取地区信息
+     * @param regionIds
+     * @return
+     */
+    private Map<String, SystemRegionArea> getAreaInfoMap(List<String> regionIds) {
+        if (regionIds == null || regionIds.size() == 0) {
+            return null;
+        }
+
+        SystemRegionAreaExample example = new SystemRegionAreaExample();
+        example.or().andRegionIdIn(regionIds);
+        List<SystemRegionArea> systemRegionAreas =  systemRegionAreaMapper.selectByExample(example);
+        if (StringUtil.isListNull(systemRegionAreas)) {
+            return null;
+        }
+
+        Map<String, SystemRegionArea> map = new HashMap<>(16);
+        for (SystemRegionArea area : systemRegionAreas) {
+            map.put(area.getRegionId(), area);
+        }
+
+        return map;
+    }
 }
