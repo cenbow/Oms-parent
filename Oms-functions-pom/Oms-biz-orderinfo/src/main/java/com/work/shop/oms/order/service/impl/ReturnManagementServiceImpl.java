@@ -1308,6 +1308,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
     public ReturnManagementResponse doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean) {
 
         ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setSuccess(false);
         response.setMessage("退款失败");
         //添加退款处理日志
         String returnSn = orderReturnBean.getReturnSn();
@@ -1359,6 +1360,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	 */
 	private ReturnManagementResponse fillOrderReturnBeanByUserAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
         ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setSuccess(false);
 		String masterOrderSn = orderReturnBean.getMasterOrderSn();
 		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
 
@@ -1381,6 +1383,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
     private ReturnManagementResponse fillOrderReturnBeanBySettlementAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
 
         ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setSuccess(false);
         String masterOrderSn = orderReturnBean.getMasterOrderSn();
         MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
 
