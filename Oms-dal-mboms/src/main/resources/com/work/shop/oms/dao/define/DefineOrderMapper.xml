@@ -413,7 +413,9 @@
 		og.buyer_no as buyerNo,
 		og.buyer_line_no as buyerLineNo,
         og.distribution_category distributionCategory,
-		og.depot_code depotCode
+		og.depot_code depotCode,
+        og.supplier_code supplierCode,
+        og.supplier_name supplierName
 		from
 		<if test="isHistory == 0">
 			master_order_goods
