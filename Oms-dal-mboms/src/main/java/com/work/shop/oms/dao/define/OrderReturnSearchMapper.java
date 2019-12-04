@@ -47,6 +47,9 @@ public interface OrderReturnSearchMapper {
 	 @ReadOnly
 	 List<OrderReturnListVO> selectOrderReturnListByExample(OrderReturnSearchExample example);
 
+	 @ReadOnly
+	 List<OrderReturnListVO> getOrderReturnStatisticalInfo(OrderReturnSearchExample example);
+
 	 int countOrderReturnListByExample(OrderReturnSearchExample example);
 	 
 	 /**
