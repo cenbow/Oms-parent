@@ -2264,6 +2264,18 @@
         	</foreach>
     	</if>
 	</select>
+
+	<select id="selectOrderInfo" resultMap="OrderItemMap" parameterType="com.work.shop.oms.api.param.bean.OrderItemQueryExample" >
+		SELECT
+		oi.total_fee,
+		oi.order_from orderFrom,
+		oie.order_type createOrderType
+		FROM
+		master_order_info oi
+		LEFT JOIN master_order_info_extend oie ON oie.master_order_sn = oi.master_order_sn
+		LEFT JOIN master_order_pay op ON oi.master_order_sn = op.master_order_sn
+		<include refid="Example_Where_Clause" />
+	</select>
   
   	<select id="countOrderItemByExample" resultType="java.lang.Integer" parameterType="com.work.shop.oms.api.param.bean.OrderItemQueryExample" >
     	SELECT

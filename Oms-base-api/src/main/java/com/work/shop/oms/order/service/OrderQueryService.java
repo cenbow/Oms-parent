@@ -158,4 +158,8 @@ public interface OrderQueryService {
      * @return OrderQueryResponse
      */
     OrderQueryResponse orderQueryByExport(OrderQueryRequest request);
+
+	OrderQueryResponse orderStatisticalQuery(OrderQueryRequest request);
+
+	OmsBaseResponse<OrderReturnListVO> orderReturnStatisticalQuery(OrderQueryRequest request);
 }

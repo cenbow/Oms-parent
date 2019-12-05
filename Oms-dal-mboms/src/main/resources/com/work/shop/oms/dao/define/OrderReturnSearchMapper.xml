@@ -1328,4 +1328,13 @@ GROUP BY
         where org.relating_return_sn = #{returnSn}
         group by org.relating_return_sn, org.extension_code, org.custom_code
     </select>
+
+	<select id="getOrderReturnStatisticalInfo" parameterType="com.work.shop.oms.bean.OrderReturnExample" resultMap="pageListResultMap">
+		SELECT oi.order_from orderFrom, orn.return_total_fee returnTotalFee
+		FROM order_refund ord
+        LEFT JOIN order_return orn ON ord.relating_return_sn = orn.return_sn
+        LEFT JOIN master_order_info oi ON orn.master_order_sn = oi.master_order_sn
+        LEFT JOIN master_order_info_extend oie ON oie.master_order_sn = oi.master_order_sn
+		<include refid="Example_Where_Clause" />
+	</select>
 </mapper>

@@ -18,6 +18,7 @@ import com.work.shop.oms.vo.OrderReturnListVO;
 import com.work.shop.oms.vo.OrderShipVO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
@@ -178,4 +179,18 @@ public interface OrderQueryService {
      */
     @PostMapping("/order/orderQueryByExport")
     OrderQueryResponse orderQueryByExport(OrderQueryRequest request);
+
+    /**
+     * 统计订单金额数量
+     */
+    @PostMapping("/order/orderStatisticalQuery")
+    OrderQueryResponse orderStatisticalQuery(@RequestBody OrderQueryRequest request);
+
+    /**
+     * 统计退单金额数量
+     * @param request 查询参数
+     * @return OmsBaseResponse<OrderReturnListVO>
+     */
+    @PostMapping("/order/orderReturnStatisticalQuery")
+    OmsBaseResponse<OrderReturnListVO> orderReturnStatisticalQuery(@RequestBody OrderQueryRequest request);
 }

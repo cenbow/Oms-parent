@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 退款单
+ * @author QuYachu
+ */
 public class OrderRefund implements Serializable {
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 9024013031018188021L;
 
 	/**
