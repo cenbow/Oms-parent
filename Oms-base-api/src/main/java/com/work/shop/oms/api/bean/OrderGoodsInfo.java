@@ -152,6 +152,16 @@ public class OrderGoodsInfo implements Serializable{
 	 * 可申请售后数量
 	 */
     private int canChangeNum;
+
+    /**
+     * 供应商编码
+     */
+    private String supplierCode;
+
+    /**
+     * 供应商名称
+     */
+    private String supplierName;
 	
 	public int getGoodsStatus() {
 		return goodsStatus;
@@ -421,5 +431,21 @@ public class OrderGoodsInfo implements Serializable{
 
     public void setBuyerLineNo(String buyerLineNo) {
         this.buyerLineNo = buyerLineNo;
+    }
+
+    public String getSupplierCode() {
+        return supplierCode;
+    }
+
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
     }
 }
