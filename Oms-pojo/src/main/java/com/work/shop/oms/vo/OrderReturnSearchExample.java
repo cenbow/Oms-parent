@@ -275,7 +275,12 @@ public class OrderReturnSearchExample {
         public Criteria andPayStatusEqualTo(Integer value) {
             addCriterion("orn.pay_status =", value, "payStatus");
             return (Criteria) this;
-        } 
+        }
+
+        public Criteria andCompanyCodeIn(List<String> values) {
+            addCriterion("oie.company_code in", values, "companyCode");
+            return (Criteria) this;
+        }
         
  /*       public Criteria andReturnShipStatusEqualTo(Integer value) {
             addCriterion("ord.return_ship_status =", value, "returnShipStatus");
@@ -1550,6 +1555,11 @@ public class OrderReturnSearchExample {
             return (Criteria) this;
         }
 
+        public Criteria andOrdUpdateTimeGreaterThanOrEqualTo(Date value) {
+            addCriterion("ord.update_time >=", value, "updateTime");
+            return (Criteria) this;
+        }
+
         public Criteria andAddTimeLessThan(Date value) {
             addCriterion("orn.add_time <", value, "addTime");
             return (Criteria) this;
@@ -1557,6 +1567,11 @@ public class OrderReturnSearchExample {
 
         public Criteria andAddTimeLessThanOrEqualTo(Date value) {
             addCriterion("orn.add_time <=", value, "addTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrdUpdateTimeLessThanOrEqualTo(Date value) {
+            addCriterion("ord.update_time <=", value, "updateTime");
             return (Criteria) this;
         }
 
@@ -1572,6 +1587,11 @@ public class OrderReturnSearchExample {
 
         public Criteria andAddTimeBetween(Date value1, Date value2) {
             addCriterion("orn.add_time between", value1, value2, "addTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andOrdUpdateTimeBetween(Date value1, Date value2) {
+            addCriterion("ord.update_time between", value1, value2, "updateTime");
             return (Criteria) this;
         }
 

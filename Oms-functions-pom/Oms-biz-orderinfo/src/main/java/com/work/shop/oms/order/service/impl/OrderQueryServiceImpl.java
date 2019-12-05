@@ -2352,4 +2352,112 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			e.printStackTrace();
 		}
 	}
+
+
+	@Override
+	public OrderQueryResponse orderStatisticalQuery(OrderQueryRequest request) {
+
+		OrderQueryResponse response = new OrderQueryResponse();
+		response.setSuccess(false);
+		response.setMessage("订单信息查询失败");
+		// 编辑SQL查询参数
+		OrderItemQueryExample example = new OrderItemQueryExample();
+		OrderItemQueryExample.Criteria criteria = example.or();
+		example.setMainOrderInfo(true);
+
+		// 订单渠道店铺
+		if (StringUtil.isNotEmpty(request.getShopCode()) && !Constant.PLEASE_SELECT_STRING.equals(request.getShopCode())) {
+			String[] shopCodeData = request.getShopCode().split(Constant.STRING_SPLIT_COMMA);
+			if (shopCodeData.length == 1) {
+				criteria.andOrderFromEqualTo(request.getShopCode());
+			} else {
+				criteria.andOrderFromIn(Arrays.asList(shopCodeData));
+			}
+		}
+		if ((StringUtil.isNotNull(request.getStartTime()) || StringUtil.isNotNull(request.getEndTime())) ) {
+			Date startTime = DateTimeUtils.parseStr(request.getStartTime());
+			Date endTime = DateTimeUtils.parseStr(request.getEndTime());
+			//支付时间
+            if (StringUtil.isNotNull(request.getStartTime()) && StringUtil.isNotNull(request.getEndTime())) {
+                criteria.andPayTimeBetween(startTime,endTime);
+            } else if (StringUtil.isNotNull(request.getStartTime())) {
+                criteria.andPayTimeGreaterThanOrEqualTo(startTime);
+            } else if (StringUtil.isNotNull(request.getEndTime())) {
+                criteria.andPayTimeLessThanOrEqualTo(startTime);
+            }
+		}
+		//公司id
+		String companyId = request.getCompanyId();
+		if (StringUtils.isNotBlank(companyId)) {
+			List<String> companyIdList = Arrays.asList(companyId.split(","));
+			criteria.andCompanyCodeIn(companyIdList);
+		}
+		//
+		List<Byte> payStatusList = new ArrayList<>();
+		payStatusList.add((byte)2);
+		payStatusList.add((byte)3);
+		criteria.andPayStatusIn(payStatusList);
+
+		try {
+			// 订单列表
+            List<OrderItem> orderItems = orderInfoSearchMapper.selectOrderInfo(example);
+            response.setOrderItems(orderItems);
+			response.setSuccess(true);
+			response.setMessage("查询订单信息成功");
+		} catch (Exception e) {
+			logger.error("订单查询异常: " + e.getMessage(), e);
+			response.setMessage("订单查询失败: " + e.getMessage());
+		}
+		return response;
+	}
+
+
+	@Override
+	public OmsBaseResponse<OrderReturnListVO> orderReturnStatisticalQuery(OrderQueryRequest model) {
+		OmsBaseResponse<OrderReturnListVO> response = new OmsBaseResponse<OrderReturnListVO>();
+		response.setSuccess(false);
+		response.setMessage("退单信息查询失败");
+
+
+		OrderReturnSearchExample example = new OrderReturnSearchExample();
+		OrderReturnSearchExample.Criteria criteria = example.or();
+
+		if (null != model) {
+			//公司id
+			String companyId = model.getCompanyId();
+			if (StringUtils.isNotBlank(companyId)) {
+				List<String> companyIdList = Arrays.asList(companyId.split(","));
+				criteria.andCompanyCodeIn(companyIdList);
+			}
+			//退款时间
+			if (StringUtil.isNotNull(model.getStartTime()) && StringUtil.isNotNull(model.getEndTime())) {
+				criteria.andOrdUpdateTimeBetween(DateTimeUtils.parseStr(model.getStartTime()) ,DateTimeUtils.parseStr(model.getEndTime()));
+			} else if(StringUtil.isNotNull(model.getStartTime())) {
+				criteria.andOrdUpdateTimeGreaterThanOrEqualTo(DateTimeUtils.parseStr(model.getStartTime()));
+			} else if(StringUtil.isNotNull(model.getEndTime())) {
+				criteria.andOrdUpdateTimeLessThanOrEqualTo(DateTimeUtils.parseStr(model.getEndTime()));
+			}
+			// 渠道店铺
+			if (StringUtil.isNotEmpty(model.getShopCode()) && !model.getShopCode().equals("-1")) {
+				String arr[] = model.getShopCode().split(",");
+				if (arr.length == 1) {
+					criteria.andShopCodeEqualTo(arr[0]);
+				} else {
+					criteria.andShopCodeIn(Arrays.asList(arr));
+				}
+			}
+			criteria.andBackBalanceEqualTo((byte) 1);
+		}
+		// 列表明细
+		List<OrderReturnListVO> list = orderReturnSearchMapper.getOrderReturnStatisticalInfo(example);
+
+		response.setSuccess(true);
+		response.setMessage("查询成功");
+		if (StringUtil.isListNull(list)) {
+			response.setList(list);
+			return response;
+		}
+		response.setList(list);
+		return response;
+	}
 }
