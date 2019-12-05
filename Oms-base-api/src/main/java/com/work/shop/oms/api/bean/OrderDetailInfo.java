@@ -434,7 +434,17 @@ public class OrderDetailInfo  implements Serializable{
      * 需要合同签章 0不需要、1需要
      */
     private Byte needSign;
-	
+
+    /**
+     * 订单备注
+     */
+    private String postscript;
+
+    /**
+     * 合同号
+     */
+    private String signContractNum;
+
 	public int getOrderType() {
         return orderType;
     }
@@ -1041,5 +1051,21 @@ public class OrderDetailInfo  implements Serializable{
 
     public void setNeedSign(Byte needSign) {
         this.needSign = needSign;
+    }
+
+    public String getPostscript() {
+        return postscript;
+    }
+
+    public void setPostscript(String postscript) {
+        this.postscript = postscript;
+    }
+
+    public String getSignContractNum() {
+        return signContractNum;
+    }
+
+    public void setSignContractNum(String signContractNum) {
+        this.signContractNum = signContractNum;
     }
 }
