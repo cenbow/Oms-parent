@@ -436,7 +436,8 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		//汇总退单总金额 -初始值
 		if(Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue() 
 				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.REJECTION_AND_WAREHOUSE.intValue()
-				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_LOSE_GOODS.intValue()){
+				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_LOSE_GOODS.intValue()
+                || Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_EXTRA_PAY.intValue()){
 			//总货款
             BigDecimal returnTotalFee = new BigDecimal(returnAccount.getReturnGoodsMoney()).subtract(new BigDecimal(returnAccount.getTotalIntegralMoney()))
                 .subtract(new BigDecimal(returnAccount.getReturnBonusMoney()));
