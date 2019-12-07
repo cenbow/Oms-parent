@@ -1191,6 +1191,76 @@ public class OrderManagementServiceImpl implements OrderManagementService {
     }
 
     /**
+     * 订单设置签章
+     * @param request
+     * @return
+     */
+    @Override
+    public OrderManagementResponse setSignByOrder(OrderManagementRequest request) {
+        OrderManagementResponse response = new OrderManagementResponse();
+        response.setSuccess(false);
+        response.setMessage("设置需要签章失败");
+
+        if (request == null || StringUtils.isBlank(request.getMasterOrderSn())) {
+            response.setMessage("订单号为空");
+            return response;
+        }
+        String actionUser = request.getActionUser();
+        if (StringUtils.isBlank(actionUser)) {
+            response.setMessage("操作人不能为空");
+            return response;
+        }
+
+        String masterOrderSn = request.getMasterOrderSn();
+        try {
+            //根据主订单号获取订单信息
+            MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
+            if (masterOrderInfo == null) {
+                response.setMessage("订单信息异常");
+                return response;
+            }
+
+            //是否需要签章
+            Integer needSign = masterOrderInfo.getNeedSign();
+            if (needSign != null && needSign == 1) {
+                response.setMessage(masterOrderSn + "订单无需设置需要签章");
+                return response;
+            }
+
+            MasterOrderInfo param = new MasterOrderInfo();
+            param.setMasterOrderSn(masterOrderSn);
+            param.setNeedSign(1);
+            //更新订单需要签章状态
+            int update = masterOrderInfoService.updateByPrimaryKeySelective(param);
+            if (update == 0) {
+                response.setMessage(masterOrderSn + "订单设置需要签章失败");
+                return response;
+            }
+            //添加订单日志
+            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "设置需要签章", actionUser);
+
+            //订单推送供应链
+            logger.info("设置需要签章后:" + masterOrderSn + "订单推送供应链");
+            int type = 0;
+            String orderFrom = masterOrderInfo.getOrderFrom();
+            if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
+                type = 2;
+            }
+            purchaseOrderService.pushJointPurchasing(masterOrderSn, masterOrderInfo.getUserId(), "000000", null, type);
+
+            //设置待签章问题单
+            orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
+
+            response.setSuccess(true);
+            response.setMessage("设置需要签章成功");
+        } catch (Exception e) {
+            logger.error(masterOrderSn + "订单设置需要签章异常", e);
+        }
+
+        return response;
+    }
+
+    /**
      * 采购单更新合同号和签章状态
      * @param masterOrderSn
      * @param contractNo

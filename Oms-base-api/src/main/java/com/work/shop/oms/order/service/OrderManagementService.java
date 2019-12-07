@@ -1,12 +1,12 @@
 package com.work.shop.oms.order.service;
 
-import java.util.List;
-
 import com.work.shop.oms.common.bean.ShippingInfo;
 import com.work.shop.oms.order.request.OmsBaseRequest;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.OrderManagementResponse;
+
+import java.util.List;
 
 /**
  * 订单管理
@@ -190,4 +190,11 @@ public interface OrderManagementService {
 	 * @return OrderManagementResponse
 	 */
 	OrderManagementResponse sendPurchaseOrder(OrderManagementRequest request);
+
+    /**
+     * 订单设置签章
+     * @param request
+     * @return
+     */
+    OrderManagementResponse setSignByOrder(OrderManagementRequest request);
 }

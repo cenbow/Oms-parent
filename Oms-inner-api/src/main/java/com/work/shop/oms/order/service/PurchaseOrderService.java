@@ -32,7 +32,7 @@ public interface PurchaseOrderService {
      * @param actionUser
      * @param actionUserId
      * @param supplierCode 供应商编码
-     * @param type 0买家->超市，1超市->供应商
+     * @param type 0买家->超市，1超市->供应商, 2 买家->店铺
      */
     void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, int type);
 

@@ -216,4 +216,12 @@ public interface OrderManagementService {
      */
     @PostMapping("/order/sendPurchaseOrder")
     OrderManagementResponse sendPurchaseOrder(OrderManagementRequest request);
+
+    /**
+     * 订单设置签章
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @PostMapping("/order/setSignByOrder")
+    OrderManagementResponse setSignByOrder(OrderManagementRequest request);
 }
