@@ -237,6 +237,16 @@ public class OrderItemDetail implements Serializable {
      */
     private String saleBd;
 
+    /**
+     * 需要合同签章 0不需要、1需要
+     */
+    private Byte needSign;
+
+    /**
+     * 签章状态 0未签章、1已签章
+     */
+    private Byte signStatus;
+
     public String getSaleBd() {
         return saleBd;
     }
@@ -1499,5 +1509,21 @@ public class OrderItemDetail implements Serializable {
 
     public void setInvPhone(String invPhone) {
         this.invPhone = invPhone;
+    }
+
+    public Byte getNeedSign() {
+        return needSign;
+    }
+
+    public void setNeedSign(Byte needSign) {
+        this.needSign = needSign;
+    }
+
+    public Byte getSignStatus() {
+        return signStatus;
+    }
+
+    public void setSignStatus(Byte signStatus) {
+        this.signStatus = signStatus;
     }
 }

@@ -436,7 +436,8 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		//汇总退单总金额 -初始值
 		if(Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue() 
 				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.REJECTION_AND_WAREHOUSE.intValue()
-				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_LOSE_GOODS.intValue()){
+				|| Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_LOSE_GOODS.intValue()
+                || Integer.valueOf(returnType).intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_EXTRA_PAY.intValue()){
 			//总货款
             BigDecimal returnTotalFee = new BigDecimal(returnAccount.getReturnGoodsMoney()).subtract(new BigDecimal(returnAccount.getTotalIntegralMoney()))
                 .subtract(new BigDecimal(returnAccount.getReturnBonusMoney()));
@@ -1308,6 +1309,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
     public ReturnManagementResponse doOrderReturnMoneyByCommon(OrderReturnBean orderReturnBean) {
 
         ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setSuccess(false);
         response.setMessage("退款失败");
         //添加退款处理日志
         String returnSn = orderReturnBean.getReturnSn();
@@ -1359,6 +1361,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	 */
 	private ReturnManagementResponse fillOrderReturnBeanByUserAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
         ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setSuccess(false);
 		String masterOrderSn = orderReturnBean.getMasterOrderSn();
 		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
 
@@ -1381,6 +1384,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
     private ReturnManagementResponse fillOrderReturnBeanBySettlementAccount(OrderReturn orderReturn, OrderReturnBean orderReturnBean) {
 
         ReturnManagementResponse response = new ReturnManagementResponse();
+		response.setSuccess(false);
         String masterOrderSn = orderReturnBean.getMasterOrderSn();
         MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
 

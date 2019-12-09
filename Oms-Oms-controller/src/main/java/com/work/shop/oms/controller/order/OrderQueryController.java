@@ -411,4 +411,41 @@ public class OrderQueryController {
 
         return returnBean;
     }
+
+    /**
+     * 统计订单金额数量
+     */
+    @PostMapping("/orderStatisticalQuery")
+    public OrderQueryResponse orderStatisticalQuery(@RequestBody OrderQueryRequest request) {
+        OrderQueryResponse returnBean = new OrderQueryResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderQueryService.orderStatisticalQuery(request);
+        } catch (Exception e) {
+            logger.error("订单列表查询异常" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("查询异常");
+        }
+        return returnBean;
+    }
+
+    /**
+     * 统计退单金额数量
+     * @param request 查询参数
+     * @return OmsBaseResponse<OrderReturnListVO>
+     */
+    @PostMapping("/orderReturnStatisticalQuery")
+    public OmsBaseResponse<OrderReturnListVO> orderReturnStatisticalQuery(@RequestBody OrderQueryRequest request) {
+        OmsBaseResponse<OrderReturnListVO> returnBean = new OmsBaseResponse<OrderReturnListVO>();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderQueryService.orderReturnStatisticalQuery(request);
+        } catch (Exception e) {
+            logger.error("退单列表查询异常" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("查询异常");
+        }
+
+        return returnBean;
+    }
 }

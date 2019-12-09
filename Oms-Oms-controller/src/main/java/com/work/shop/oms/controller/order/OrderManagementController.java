@@ -528,4 +528,24 @@ public class OrderManagementController {
 
         return returnBean;
     }
+
+    /**
+     * 订单设置签章
+     * @param request
+     * @return
+     */
+    @PostMapping("/setSignByOrder")
+    public OrderManagementResponse setSignByOrder(@RequestBody OrderManagementRequest request) {
+        OrderManagementResponse returnBean = new OrderManagementResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderManagementService.setSignByOrder(request);
+        } catch (Exception e) {
+            logger.error("订单设置签章异常:" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("订单设置签章异常");
+        }
+
+        return returnBean;
+    }
 }

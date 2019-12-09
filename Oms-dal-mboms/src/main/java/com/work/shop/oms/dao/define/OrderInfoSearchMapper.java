@@ -122,7 +122,10 @@ public interface OrderInfoSearchMapper {
 	
 	@ReadOnly
 	List<OrderItem> selectOrderItemByExample(OrderItemQueryExample example);
-	
+
+	@ReadOnly
+	List<OrderItem> selectOrderInfo(OrderItemQueryExample example);
+
 	@ReadOnly
 	int countOrderItemByExample(OrderItemQueryExample example);
 	

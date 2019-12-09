@@ -413,7 +413,9 @@
 		og.buyer_no as buyerNo,
 		og.buyer_line_no as buyerLineNo,
         og.distribution_category distributionCategory,
-		og.depot_code depotCode
+		og.depot_code depotCode,
+        og.supplier_code supplierCode,
+        og.supplier_name supplierName
 		from
 		<if test="isHistory == 0">
 			master_order_goods
@@ -721,6 +723,8 @@
             oi.audit_status auditStatus,
             oi.need_sign needSign,
             oi.sign_status signStatus,
+            oi.postscript postscript,
+            oi.sign_contract_num signContractNum,
             oai.inv_consignee invConsignee,
             oai.inv_mobile invMobile,
             oai.inv_address invAddress,

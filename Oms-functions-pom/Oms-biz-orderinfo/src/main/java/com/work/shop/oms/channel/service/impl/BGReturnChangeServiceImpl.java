@@ -1249,6 +1249,12 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 return new ReturnInfo<Boolean>(Constant.OS_NO, orderSn + "订单商品不存在！退换单申请明细创建失败！");
             }
 
+            //获取退单商品信息
+            Map<String, OrderReturnGoods> orderReturnGoodsMap = getOrderReturnGoodsMap(orderSn);
+            if (orderReturnGoodsMap == null) {
+                orderReturnGoodsMap = new HashMap<>(1);
+            }
+
             int returnNum = 0;
             List<GoodsReturnChangeDetail> details = new ArrayList<GoodsReturnChangeDetail>();
             for (GoodsReturnChangeDetailInfo detailInfo : goodsList) {
@@ -1266,8 +1272,12 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 
                 //订单商品
                 MasterOrderGoods goods = orderGoodsList.get(0);
-                if (detailInfo.getReturnSum() > goodsNum) {
-                    return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + "商品编码：" + detailInfo.getCustomCode() + "退换商品数量大于购买数量！退换单申请明细创建失败！");
+//                if (detailInfo.getReturnSum() > goodsNum) {
+//                    return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + "商品编码：" + detailInfo.getCustomCode() + "退换商品数量大于购买数量！退换单申请明细创建失败！");
+//                }
+                boolean checkGoodsNum = checkGoodsNum(detailInfo.getReturnSum(), goods, orderReturnGoodsMap);
+                if (!checkGoodsNum) {
+                    return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + ",sku编码：" + detailInfo.getCustomCode() + "退换商品数量大于可退换数量！退换单申请明细创建失败！");
                 }
 
                 GoodsReturnChangeDetail goodsReturnChangeDetail = new GoodsReturnChangeDetail();
@@ -1308,6 +1318,68 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
         }
 
         return returnInfo;
+    }
+
+    /**
+     * 校验商品数量
+     * @param applyNum 申请退换商品数量
+     */
+    private boolean checkGoodsNum(int applyNum, MasterOrderGoods goods, Map<String, OrderReturnGoods> map) {
+        String key = goods.getCustomCode() + "_" + goods.getExtensionCode();
+        OrderReturnGoods returnGoods = map.get(key);
+        //可申请退换货数量
+        int canChangeNum = 0;
+        if (returnGoods == null) {
+            canChangeNum = goods.getGoodsNumber();
+        } else {
+            canChangeNum = goods.getGoodsNumber() - returnGoods.getGoodsReturnNumber();
+        }
+
+        if (applyNum > canChangeNum) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 获取退单信息
+     * @param orderSn
+     * @return
+     */
+    private Map<String, OrderReturnGoods> getOrderReturnGoodsMap(String orderSn) {
+        OrderReturnExample returnExample = new OrderReturnExample();
+        returnExample.or().andRelatingOrderSnEqualTo(orderSn).andIsDelEqualTo(0).andReturnOrderStatusNotEqualTo((byte) 4);
+        List<OrderReturn> orderReturnList = orderReturnMapper.selectByExample(returnExample);
+        if (StringUtil.isListNull(orderReturnList)) {
+            return null;
+        }
+
+        List<String> returnSnList = new ArrayList<String>();
+        for (OrderReturn orderReturn : orderReturnList) {
+            returnSnList.add(orderReturn.getReturnSn());
+        }
+
+        OrderReturnGoodsExample goodsExample = new OrderReturnGoodsExample();
+        goodsExample.or().andRelatingReturnSnIn(returnSnList);
+        List<OrderReturnGoods> orderReturnGoodsList = orderReturnGoodsMapper.selectByExample(goodsExample);
+        if (StringUtil.isListNull(orderReturnGoodsList)) {
+            return null;
+        }
+
+        Map<String, OrderReturnGoods> map = new HashMap<String, OrderReturnGoods>();
+        for (OrderReturnGoods returnGoods : orderReturnGoodsList) {
+            String key = returnGoods.getCustomCode() + "_" + returnGoods.getExtensionCode();
+            OrderReturnGoods goods = map.get(key);
+            if (goods != null) {
+                Integer returnNum = goods.getGoodsReturnNumber() + returnGoods.getGoodsReturnNumber();
+                returnGoods.setGoodsReturnNumber(returnNum.shortValue());
+            }
+
+            map.put(key, returnGoods);
+        }
+
+        return map;
     }
 
     /**
