@@ -967,7 +967,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             }
 
             //添加日志
-            masterOrderActionService.insertOrderActionBySn(orderSn, "发票信息修改：" + msg, actionUser);
+            masterOrderActionService.insertOrderActionBySn(orderSn, "发票信息修改：<br />" + msg, actionUser);
 
         } catch (Exception e) {
             logger.error("主订单编辑发票信息异常" + JSONObject.toJSONString(consignInfo), e);

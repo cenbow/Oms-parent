@@ -2199,7 +2199,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             }
 
             //添加日志
-            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：" + msg, actionUser);
+            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：<br />" + msg, actionUser);
         } catch (Exception e) {
             logger.error("主订单编辑发票地址信息异常" + JSONObject.toJSONString(consignInfo), e);
         }
