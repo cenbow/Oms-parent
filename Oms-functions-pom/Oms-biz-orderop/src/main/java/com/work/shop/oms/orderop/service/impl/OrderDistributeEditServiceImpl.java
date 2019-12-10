@@ -2056,7 +2056,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		String encMoile = consignInfo.getMobile();
 		String encTel = consignInfo.getTel();
 		MasterOrderAddressInfo updateOrderAddressInfo = new MasterOrderAddressInfo();
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getConsignee(), orderAddressInfo.getConsignee())) {
+		if (!StringUtils.equalsIgnoreCase(consignInfo.getConsignee(), orderAddressInfo.getConsignee()) && StringUtils.isBlank(consignInfo.getConsignee())) {
 			actionNote.append("收件人 "+orderAddressInfo.getConsignee()+" → " + consignInfo.getConsignee() + ";<br />");
 			updateOrderAddressInfo.setConsignee(consignInfo.getConsignee());
 		}
@@ -2080,18 +2080,18 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			actionNote.append("移动手机已变更;<br />");
 			updateOrderAddressInfo.setMobile(encMoile);
 		}
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getSignBuilding(), orderAddressInfo.getSignBuilding())) {
-			actionNote.append("标志性建筑由 "+orderAddressInfo.getSignBuilding()+" → " + consignInfo.getSignBuilding() + ";<br />");
-			updateOrderAddressInfo.setSignBuilding(consignInfo.getSignBuilding());
-		}
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getBestTime(), orderAddressInfo.getBestTime())) {
-			actionNote.append("最佳送货时间由 "+orderAddressInfo.getBestTime()+" → " + consignInfo.getBestTime() + ";<br />");
-			updateOrderAddressInfo.setBestTime(consignInfo.getBestTime());
-		}
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getCountry(), orderAddressInfo.getCountry())) {
-			actionNote.append("国家由 "+systemRegionMap.get(orderAddressInfo.getCountry())+" → " + systemRegionMap.get(consignInfo.getCountry()) + ";<br />");
-			updateOrderAddressInfo.setCountry(consignInfo.getCountry());
-		}
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getSignBuilding(), orderAddressInfo.getSignBuilding())) {
+//			actionNote.append("标志性建筑由 "+orderAddressInfo.getSignBuilding()+" → " + consignInfo.getSignBuilding() + ";<br />");
+//			updateOrderAddressInfo.setSignBuilding(consignInfo.getSignBuilding());
+//		}
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getBestTime(), orderAddressInfo.getBestTime())) {
+//			actionNote.append("最佳送货时间由 "+orderAddressInfo.getBestTime()+" → " + consignInfo.getBestTime() + ";<br />");
+//			updateOrderAddressInfo.setBestTime(consignInfo.getBestTime());
+//		}
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getCountry(), orderAddressInfo.getCountry())) {
+//			actionNote.append("国家由 "+systemRegionMap.get(orderAddressInfo.getCountry())+" → " + systemRegionMap.get(consignInfo.getCountry()) + ";<br />");
+//			updateOrderAddressInfo.setCountry(consignInfo.getCountry());
+//		}
 		consignInfo.setCountry(systemRegionMap.get(consignInfo.getCountry()));
 		if (!StringUtils.equalsIgnoreCase(consignInfo.getProvince(), orderAddressInfo.getProvince())) {
 			actionNote.append("省份由 "+systemRegionMap.get(orderAddressInfo.getProvince())+" → " + systemRegionMap.get(consignInfo.getProvince()) + ";<br />");
@@ -2107,15 +2107,15 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			actionNote.append("区县由 "+systemRegionMap.get(orderAddressInfo.getDistrict())+" → " + systemRegionMap.get(consignInfo.getDistrict()) + ";<br />");
 			updateOrderAddressInfo.setDistrict(consignInfo.getDistrict());
 		}
-		consignInfo.setDistrict(systemRegionMap.get(consignInfo.getDistrict()));
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getStreet(), orderAddressInfo.getStreet())) {
-			actionNote.append("街道由 "+systemRegionMap.get(orderAddressInfo.getStreet())+" → " + systemRegionMap.get(consignInfo.getStreet()) + ";<br />");
-			updateOrderAddressInfo.setStreet(consignInfo.getStreet());
-		}
-		if (StringUtils.isEmpty(consignInfo.getStreet())) {
-			String street = systemRegionMap.get(consignInfo.getStreet());
-			consignInfo.setAddress((street == null ? "" : street) + consignInfo.getAddress());
-		}
+//		consignInfo.setDistrict(systemRegionMap.get(consignInfo.getDistrict()));
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getStreet(), orderAddressInfo.getStreet())) {
+//			actionNote.append("街道由 "+systemRegionMap.get(orderAddressInfo.getStreet())+" → " + systemRegionMap.get(consignInfo.getStreet()) + ";<br />");
+//			updateOrderAddressInfo.setStreet(consignInfo.getStreet());
+//		}
+//		if (StringUtils.isEmpty(consignInfo.getStreet())) {
+//			String street = systemRegionMap.get(consignInfo.getStreet());
+//			consignInfo.setAddress((street == null ? "" : street) + consignInfo.getAddress());
+//		}
 		return updateOrderAddressInfo;
 	}
 
@@ -2167,21 +2167,21 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             String invConsignee = consignInfo.getInvConsignee();
             if (StringUtils.isNotBlank(invConsignee)) {
                 updateAddress.setInvConsignee(invConsignee);
-                sb.append("发票收货人由‘" + updateAddress.getInvConsignee() + "’更改为‘" + invConsignee + "’；");
+                sb.append("发票收货人由‘" + updateAddress.getInvConsignee() + "’→‘" + invConsignee + "’；<br />");
             }
 
             //发票收货人手机号
             String invMobile = consignInfo.getInvMobile();
             if (StringUtils.isNotBlank(invMobile)) {
                 updateAddress.setInvMobile(invMobile);
-                sb.append("发票收货人手机号由‘" + updateAddress.getInvMobile() + "’更改为‘" + invMobile + "’；");
+                sb.append("发票收货人手机号由‘" + updateAddress.getInvMobile() + "’→‘" + invMobile + "’；<br />");
             }
 
             //发票收货人地址
             String invAddress = consignInfo.getInvAddress();
             if (StringUtils.isNotBlank(invAddress)) {
                 updateAddress.setInvAddress(invAddress);
-                sb.append("发票收货人地址由‘" + updateAddress.getInvAddress() + "’更改为‘" + invAddress + "’；");
+                sb.append("发票收货人地址由‘" + updateAddress.getInvAddress() + "’→‘" + invAddress + "’；<br />");
             }
 
             //无修改信息返回修改成功
