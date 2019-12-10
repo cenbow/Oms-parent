@@ -40,6 +40,9 @@
     <result column="longitude" property="longitude" />
     <result column="latitude" property="latitude" />
     <result column="delivery_time" jdbcType="VARCHAR" property="deliveryTime" />
+      <result column="inv_consignee" jdbcType="VARCHAR" property="invConsignee" />
+      <result column="inv_mobile" jdbcType="VARCHAR" property="invMobile" />
+      <result column="inv_address" jdbcType="VARCHAR" property="invAddress" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <!--
@@ -116,7 +119,7 @@
     tel, mobile, email, best_time, sign_building, shipping_id, shipping_name, shipping_days, 
     charge_type, cac_code, creat_time, update_time, region_id, way_payment_freight, depot_code, 
     user_card_no, user_card_name, area_code, city_code, district_code, province_code, 
-    shipping_address, longitude, latitude, delivery_time
+    shipping_address, longitude, latitude, delivery_time, inv_consignee, inv_mobile, inv_address
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.MasterOrderAddressInfoExample" resultMap="BaseResultMap">
     <!--
