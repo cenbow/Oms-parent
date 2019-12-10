@@ -904,49 +904,49 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
             //发票类型
             String invType = consignInfo.getInvType();
-            if (StringUtils.isNotBlank(invType) && invType.equalsIgnoreCase(extendBydb.getInvType())) {
+            if (StringUtils.isNotBlank(invType) && !invType.equalsIgnoreCase(extendBydb.getInvType())) {
                 extend.setInvType(invType);
                 sb.append("发票类型由‘" + extendBydb.getInvType() + "’→‘" + invType + "’；<br />");
             }
 
             //发票抬头
             String invPayee = consignInfo.getInvPayee();
-            if (StringUtils.isNotBlank(invPayee) && invPayee.equalsIgnoreCase(extendBydb.getInvPayee())) {
+            if (StringUtils.isNotBlank(invPayee) && !invPayee.equalsIgnoreCase(extendBydb.getInvPayee())) {
                 extend.setInvPayee(invPayee);
                 sb.append("发票抬头由‘" + extendBydb.getInvPayee() + "’→‘" + invPayee + "’；<br />");
             }
 
             //税号
             String invTaxer = consignInfo.getInvTaxer();
-            if (StringUtils.isNotBlank(invTaxer) && invTaxer.equalsIgnoreCase(extendBydb.getInvTaxer())) {
+            if (StringUtils.isNotBlank(invTaxer) && !invTaxer.equalsIgnoreCase(extendBydb.getInvTaxer())) {
                 extend.setInvTaxer(invTaxer);
                 sb.append("税号由‘" + extendBydb.getInvTaxer() + "’→‘" + invTaxer + "’；<br />");
             }
 
             //注册地址
             String invCompanyAddress = consignInfo.getInvCompanyAddress();
-            if (StringUtils.isNotBlank(invCompanyAddress) && invCompanyAddress.equalsIgnoreCase(extendBydb.getInvCompanyAddress())) {
+            if (StringUtils.isNotBlank(invCompanyAddress) && !invCompanyAddress.equalsIgnoreCase(extendBydb.getInvCompanyAddress())) {
                 extend.setInvCompanyAddress(invCompanyAddress);
                 sb.append("注册地址由‘" + extendBydb.getInvCompanyAddress() + "’→‘" + invCompanyAddress + "’；<br />");
             }
 
             //注册电话
             String invPhone = consignInfo.getInvPhone();
-            if (StringUtils.isNotBlank(invPhone) && invPhone.equalsIgnoreCase(extendBydb.getInvPhone())) {
+            if (StringUtils.isNotBlank(invPhone) && !invPhone.equalsIgnoreCase(extendBydb.getInvPhone())) {
                 extend.setInvPhone(invPhone);
                 sb.append("注册电话由‘" + extendBydb.getInvPhone() + "’→‘" + invPhone + "’；<br />");
             }
 
             //开户银行
             String invBank = consignInfo.getInvBank();
-            if (StringUtils.isNotBlank(invBank) && invBank.equalsIgnoreCase(extendBydb.getInvBank())) {
+            if (StringUtils.isNotBlank(invBank) && !invBank.equalsIgnoreCase(extendBydb.getInvBank())) {
                 extend.setInvBank(invBank);
                 sb.append("开户银行由‘" + extendBydb.getInvBank() + "’→‘" + invBank + "’；<br />");
             }
 
             //银行账户
             String invBankNo = consignInfo.getInvBankNo();
-            if (StringUtils.isNotBlank(invBankNo) && invBankNo.equalsIgnoreCase(extendBydb.getInvBankNo())) {
+            if (StringUtils.isNotBlank(invBankNo) && !invBankNo.equalsIgnoreCase(extendBydb.getInvBankNo())) {
                 extend.setInvBankNo(invBankNo);
                 sb.append("银行账户由‘" + extendBydb.getInvBankNo() + "’→‘" + invBankNo + "’；<br />");
             }

@@ -2165,21 +2165,21 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             StringBuffer sb = new StringBuffer();
             //发票收货人
             String invConsignee = consignInfo.getInvConsignee();
-            if (StringUtils.isNotBlank(invConsignee) && invConsignee.equalsIgnoreCase(addressInfo.getInvConsignee())) {
+            if (StringUtils.isNotBlank(invConsignee) && !invConsignee.equalsIgnoreCase(addressInfo.getInvConsignee())) {
                 updateAddress.setInvConsignee(invConsignee);
                 sb.append("发票收货人由‘" + updateAddress.getInvConsignee() + "’→‘" + invConsignee + "’；<br />");
             }
 
             //发票收货人手机号
             String invMobile = consignInfo.getInvMobile();
-            if (StringUtils.isNotBlank(invMobile) && invMobile.equalsIgnoreCase(addressInfo.getInvMobile())) {
+            if (StringUtils.isNotBlank(invMobile) && !invMobile.equalsIgnoreCase(addressInfo.getInvMobile())) {
                 updateAddress.setInvMobile(invMobile);
                 sb.append("发票收货人手机号由‘" + updateAddress.getInvMobile() + "’→‘" + invMobile + "’；<br />");
             }
 
             //发票收货人地址
             String invAddress = consignInfo.getInvAddress();
-            if (StringUtils.isNotBlank(invAddress) && invAddress.equalsIgnoreCase(addressInfo.getInvAddress())) {
+            if (StringUtils.isNotBlank(invAddress) && !invAddress.equalsIgnoreCase(addressInfo.getInvAddress())) {
                 updateAddress.setInvAddress(invAddress);
                 sb.append("发票收货人地址由‘" + updateAddress.getInvAddress() + "’→‘" + invAddress + "’；<br />");
             }
