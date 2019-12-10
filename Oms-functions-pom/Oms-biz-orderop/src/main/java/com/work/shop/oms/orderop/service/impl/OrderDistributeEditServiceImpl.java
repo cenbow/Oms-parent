@@ -2165,21 +2165,21 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             StringBuffer sb = new StringBuffer();
             //发票收货人
             String invConsignee = consignInfo.getInvConsignee();
-            if (StringUtils.isNotBlank(invConsignee)) {
+            if (StringUtils.isNotBlank(invConsignee) && invConsignee.equalsIgnoreCase(addressInfo.getInvConsignee())) {
                 updateAddress.setInvConsignee(invConsignee);
                 sb.append("发票收货人由‘" + updateAddress.getInvConsignee() + "’→‘" + invConsignee + "’；<br />");
             }
 
             //发票收货人手机号
             String invMobile = consignInfo.getInvMobile();
-            if (StringUtils.isNotBlank(invMobile)) {
+            if (StringUtils.isNotBlank(invMobile) && invMobile.equalsIgnoreCase(addressInfo.getInvMobile())) {
                 updateAddress.setInvMobile(invMobile);
                 sb.append("发票收货人手机号由‘" + updateAddress.getInvMobile() + "’→‘" + invMobile + "’；<br />");
             }
 
             //发票收货人地址
             String invAddress = consignInfo.getInvAddress();
-            if (StringUtils.isNotBlank(invAddress)) {
+            if (StringUtils.isNotBlank(invAddress) && invAddress.equalsIgnoreCase(addressInfo.getInvAddress())) {
                 updateAddress.setInvAddress(invAddress);
                 sb.append("发票收货人地址由‘" + updateAddress.getInvAddress() + "’→‘" + invAddress + "’；<br />");
             }
@@ -2199,7 +2199,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             }
 
             //添加日志
-            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：" + msg, actionUser);
+            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：<br />" + msg, actionUser);
         } catch (Exception e) {
             logger.error("主订单编辑发票地址信息异常" + JSONObject.toJSONString(consignInfo), e);
         }
