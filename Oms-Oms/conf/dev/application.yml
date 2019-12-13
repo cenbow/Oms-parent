@@ -1,6 +1,6 @@
 
 server:
-  port: 7795
+  port: 7796
 
 eureka:
   instance:
@@ -26,6 +26,7 @@ spring:
     name: oms-service-dev
   main:
     allow-bean-definition-overriding: true
+
 
 #log配置
 logging:
