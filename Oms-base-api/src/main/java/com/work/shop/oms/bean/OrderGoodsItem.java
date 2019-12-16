@@ -127,6 +127,21 @@ public class OrderGoodsItem implements Serializable {
      */
     private String payMethod;
 
+	/**
+	 * 下单公司名称
+	 */
+	private String companyName;
+
+	/**
+	 * 物料描述
+	 */
+	private String customerMaterialName;
+
+	/**
+	 * 客户物料编码
+	 */
+	private String customerMaterialCode;
+
 	public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
@@ -406,4 +421,28 @@ public class OrderGoodsItem implements Serializable {
     public void setPayMethod(String payMethod) {
         this.payMethod = payMethod;
     }
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public String getCustomerMaterialName() {
+		return customerMaterialName;
+	}
+
+	public void setCustomerMaterialName(String customerMaterialName) {
+		this.customerMaterialName = customerMaterialName;
+	}
+
+	public String getCustomerMaterialCode() {
+		return customerMaterialCode;
+	}
+
+	public void setCustomerMaterialCode(String customerMaterialCode) {
+		this.customerMaterialCode = customerMaterialCode;
+	}
 }
