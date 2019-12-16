@@ -768,70 +768,92 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<OrderDetailInfo> orderInfoDetail(String orderSn, String isHistory, String userId, String siteCode) {
+        PageListParam searchParam = new PageListParam();
+        searchParam.setOrderSn(orderSn);
+        searchParam.setIsHistory(isHistory);
+        searchParam.setUserId(userId);
+        searchParam.setSiteCode(siteCode);
+		return orderInfoDetailByCompany(searchParam);
+	}
 
-		ApiReturnData<OrderDetailInfo> apiReturnData = new ApiReturnData<OrderDetailInfo>();
-		apiReturnData.setIsOk(Constant.OS_STR_NO);
-		try {
-			if (StringUtils.isBlank(orderSn)) {
-				apiReturnData.setMessage("订单号不能为空！");
-				return apiReturnData;
-			}
-			if (StringUtils.isBlank(siteCode)) {
-				apiReturnData.setMessage("站点不能为空！");
-				return apiReturnData;
-			}
-			if (StringUtils.isBlank(isHistory)) {
-				isHistory = "0";
-			}
-			Map<String, Object> params = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
-			params.put("orderSn", orderSn);
-			params.put("isHistory", isHistory);
-			params.put("siteCode", siteCode);
-			if (StringUtils.isBlank(userId)) {
-				params.put("userId", null);
-			} else {
-				params.put("userId", userId);
-			}
-			OrderDetailInfo orderDetailInfo = defineOrderMapper.selectOrderDetailInfo(params);
-			if (orderDetailInfo == null) {
-				apiReturnData.setMessage("没有找到该订单！");
-				return apiReturnData;
-			}
-			// 设置订单状态
-			setOrderStatus(orderDetailInfo);
+    /**
+     * 订单详情
+     * @return ApiReturnData<OrderDetailInfo>
+     */
+    public ApiReturnData<OrderDetailInfo> orderInfoDetailByCompany(PageListParam searchParam) {
 
-			//校验是否可以申请退单
+        ApiReturnData<OrderDetailInfo> apiReturnData = new ApiReturnData<OrderDetailInfo>();
+        apiReturnData.setIsOk(Constant.OS_STR_NO);
+        String orderSn = searchParam.getOrderSn();
+        try {
+            if (StringUtils.isBlank(orderSn)) {
+                apiReturnData.setMessage("订单号不能为空！");
+                return apiReturnData;
+            }
+            String siteCode = searchParam.getSiteCode();
+            if (StringUtils.isBlank(siteCode)) {
+                apiReturnData.setMessage("站点不能为空！");
+                return apiReturnData;
+            }
+            String isHistory = searchParam.getIsHistory();
+            if (StringUtils.isBlank(isHistory)) {
+                isHistory = "0";
+            }
+            Map<String, Object> params = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
+            params.put("orderSn", orderSn);
+            params.put("isHistory", isHistory);
+            params.put("siteCode", siteCode);
+
+            String userId = searchParam.getUserId();
+            if (StringUtils.isNotBlank(userId)) {
+                params.put("userId", userId);
+            }
+
+            String companyId = searchParam.getCompanyId();
+            if (StringUtils.isNotBlank(companyId)) {
+                params.put("companyId", companyId);
+            }
+
+            OrderDetailInfo orderDetailInfo = defineOrderMapper.selectOrderDetailInfo(params);
+            if (orderDetailInfo == null) {
+                apiReturnData.setMessage("没有找到该订单！");
+                return apiReturnData;
+            }
+            // 设置订单状态
+            setOrderStatus(orderDetailInfo);
+
+            //校验是否可以申请退单
             fillOrderRefund(orderDetailInfo);
 
-			// 订单未支付, 订单前端可以取消的最后时间
-			String orderCancelTime = getOrderCancelTime(orderDetailInfo.getOrderCreateTime());
-			orderDetailInfo.setOrderCancelTime(orderCancelTime);
+            // 订单未支付, 订单前端可以取消的最后时间
+            String orderCancelTime = getOrderCancelTime(orderDetailInfo.getOrderCreateTime());
+            orderDetailInfo.setOrderCancelTime(orderCancelTime);
 
-			// 填充订单地址信息
+            // 填充订单地址信息
             fillOrderAddressInfo(orderDetailInfo);
 
-			Map<String, Object> shipParams = new HashMap<String, Object>(4);
-			shipParams.put("orderSn", orderSn);
-			shipParams.put("isHistory", isHistory);
-			List<OrderShipInfo> shipList = defineOrderMapper.selectOrderShipInfo(shipParams);
+            Map<String, Object> shipParams = new HashMap<String, Object>(4);
+            shipParams.put("orderSn", orderSn);
+            shipParams.put("isHistory", isHistory);
+            List<OrderShipInfo> shipList = defineOrderMapper.selectOrderShipInfo(shipParams);
 
-			if (shipList == null || shipList.size() == 0 || shipList.get(0) == null) {
+            if (shipList == null || shipList.size() == 0 || shipList.get(0) == null) {
                 //未拆单时商品查询
-				shipList = fillNotSplitOrderInfo(orderSn, isHistory);
-			} else {
-				//已拆单时商品查询
-				shipList = fillSplitOrderInfo(orderDetailInfo, shipList, isHistory);
-			}
-			orderDetailInfo.setOrderShipInfo(shipList);
-			setOrderGoodsInfo(orderDetailInfo);
-			apiReturnData.setData(orderDetailInfo);
-			apiReturnData.setIsOk(Constant.OS_STR_YES);
-		} catch (Exception e) {
-			logger.error("平台前台查询订单详情异常：order="+orderSn, e);
-			apiReturnData.setMessage("平台前台查询订单详情异常"+e.toString());
-		}
-		return apiReturnData;
-	}
+                shipList = fillNotSplitOrderInfo(orderSn, isHistory);
+            } else {
+                //已拆单时商品查询
+                shipList = fillSplitOrderInfo(orderDetailInfo, shipList, isHistory);
+            }
+            orderDetailInfo.setOrderShipInfo(shipList);
+            setOrderGoodsInfo(orderDetailInfo);
+            apiReturnData.setData(orderDetailInfo);
+            apiReturnData.setIsOk(Constant.OS_STR_YES);
+        } catch (Exception e) {
+            logger.error("平台前台查询订单详情异常：order="+orderSn, e);
+            apiReturnData.setMessage("平台前台查询订单详情异常"+e.toString());
+        }
+        return apiReturnData;
+    }
 
 	/**
 	 * 获取订单商品信息
@@ -1908,8 +1930,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 	 */
 	@Override
 	public ApiReturnData<OrderDetailInfo> orderInfoDetailNew(PageListParam searchParam) {
-		return orderInfoDetail(searchParam.getOrderSn(), searchParam.getIsHistory(),
-				searchParam.getUserId(), searchParam.getSiteCode());
+		return orderInfoDetailByCompany(searchParam);
 	}
 
 	@Override
