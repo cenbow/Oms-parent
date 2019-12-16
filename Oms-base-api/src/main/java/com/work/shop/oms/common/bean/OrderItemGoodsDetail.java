@@ -107,7 +107,7 @@ public class OrderItemGoodsDetail implements Serializable {
 	/**
 	 * 初始商品数量
 	 */
-	private Short initGoodsNumber;
+	private Integer initGoodsNumber;
 
 	/**
 	 * 当前商品尺码
@@ -170,7 +170,7 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	private String extensionId;
 
-	private Short goodsNumber;
+	private Integer goodsNumber;
 
 	private BigDecimal goodsPrice;
 
@@ -192,7 +192,7 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	private String goodsThumb;
 
-	private Short sendNumber;
+	private Integer sendNumber;
 
 	private String parentSn;
 
@@ -397,11 +397,11 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.extensionId = extensionId == null ? null : extensionId.trim();
 	}
 
-	public Short getGoodsNumber() {
+	public Integer getGoodsNumber() {
 		return goodsNumber;
 	}
 
-	public void setGoodsNumber(Short goodsNumber) {
+	public void setGoodsNumber(Integer goodsNumber) {
 		this.goodsNumber = goodsNumber;
 	}
 
@@ -485,11 +485,11 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.goodsThumb = goodsThumb == null ? null : goodsThumb.trim();
 	}
 
-	public Short getSendNumber() {
+	public Integer getSendNumber() {
 		return sendNumber;
 	}
 
-	public void setSendNumber(Short sendNumber) {
+	public void setSendNumber(Integer sendNumber) {
 		this.sendNumber = sendNumber;
 	}
 
@@ -873,11 +873,11 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.subTotal = subTotal;
 	}
 
-	public Short getInitGoodsNumber() {
+	public Integer getInitGoodsNumber() {
 		return initGoodsNumber;
 	}
 
-	public void setInitGoodsNumber(Short initGoodsNumber) {
+	public void setInitGoodsNumber(Integer initGoodsNumber) {
 		this.initGoodsNumber = initGoodsNumber;
 	}
 
