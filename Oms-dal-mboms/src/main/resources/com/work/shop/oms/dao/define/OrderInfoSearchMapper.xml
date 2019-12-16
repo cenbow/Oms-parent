@@ -2765,6 +2765,7 @@
             LEFT JOIN master_order_goods mog on moie.master_order_sn = mog.master_order_sn
             LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
             WHERE moi.master_order_sn = moie.master_order_sn
+			and moi.master_order_sn = mog.master_order_sn
             and moi.order_status != 2
             and moi.pay_status != 0
             <if test="orderType != null">
