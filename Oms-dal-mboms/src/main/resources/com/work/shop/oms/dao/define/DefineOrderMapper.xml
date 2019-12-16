@@ -761,6 +761,9 @@
 		<if test="userId != null">
 			and oi.user_id = #{userId,jdbcType=VARCHAR}
 		</if>
+        <if test="companyId != null">
+            and oie.company_code = #{companyId,jdbcType=VARCHAR}
+        </if>
 		GROUP BY oi.master_order_sn
 		) a
 	left join order_return oreturn on oreturn.master_order_sn = a.orderSn AND oreturn.return_order_status != 4
