@@ -11,8 +11,11 @@ import java.math.BigDecimal;
 public class OrderGoodsItem implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	private String masterOrderSn; // 订单号
+
+	/**
+	 * 订单号
+	 */
+	private String masterOrderSn;
 	
 	private String outerOrderSn; // 外部订单号
 	
