@@ -174,7 +174,7 @@ public class OrderCommonServiceTest extends TestCase {
 		LackSkuParam lackSkuParam = new LackSkuParam();
 		lackSkuParam.setCustomCode("21384090140");
 		lackSkuParam.setDepotCode("V2015W001");
-		lackSkuParam.setLackNum((short)1);
+		lackSkuParam.setLackNum(1);
 		lackSkuParam.setOrderSn("1605161555440212");
 		lackSkuParams.add(lackSkuParam);
 		ReturnInfo info = orderCommonService.addLackSkuQuestion("1605161555440212s02", lackSkuParams, orderStatus);

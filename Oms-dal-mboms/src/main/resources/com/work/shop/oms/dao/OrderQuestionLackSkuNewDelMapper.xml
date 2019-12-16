@@ -11,7 +11,7 @@
     <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
     <result column="depot_code" jdbcType="VARCHAR" property="depotCode" />
     <result column="question_code" jdbcType="VARCHAR" property="questionCode" />
-    <result column="lack_num" jdbcType="SMALLINT" property="lackNum" />
+    <result column="lack_num" jdbcType="INTEGER" property="lackNum" />
     <result column="delivery_sn" jdbcType="VARCHAR" property="deliverySn" />
     <result column="lack_reason" jdbcType="VARCHAR" property="lackReason" />
     <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />

@@ -395,12 +395,12 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				if (tempCount > goodsNum) {
 					tempShipSkuMap.put(shipsku, tempCount - goodsNum);
                     tempCount = goodsNum;
-					og.setGoodsNumber(Short.parseShort("" + tempCount));
+					og.setGoodsNumber(tempCount);
 					fillGoodsDisSendNm(og);
 					// 该商品已经处理完毕s
 					break;
 				}
-				og.setGoodsNumber(Short.parseShort("" + tempCount));
+				og.setGoodsNumber(tempCount);
 				fillGoodsDisSendNm(og);
 
 				tempShipSkuMap.remove(shipsku);
@@ -498,7 +498,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				if (orderGoods.getCustomCode().equals(goods.getCustomCode())
 						&& orderGoods.getExtensionCode().equals(goods.getExtensionCode())
 						&& orderGoods.getExtensionId().equals(goods.getExtensionId())) {
-					orderGoods.setGoodsNumber((short) (orderGoods.getGoodsNumber() + goods.getGoodsNumber()));
+					orderGoods.setGoodsNumber(orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					flag = true;
 				}
 			}

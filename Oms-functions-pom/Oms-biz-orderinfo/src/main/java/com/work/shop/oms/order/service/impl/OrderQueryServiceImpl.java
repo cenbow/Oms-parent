@@ -2023,7 +2023,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 							}
 						}
 						
-						orderBean.setGoodsNumber((short)goodsNumber);
+						orderBean.setGoodsNumber(goodsNumber);
 						if (goodsNumber <= 0) {
 							goodsIt.remove();
 						}

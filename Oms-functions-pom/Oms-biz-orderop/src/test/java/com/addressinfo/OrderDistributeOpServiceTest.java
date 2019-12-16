@@ -133,7 +133,7 @@ public class OrderDistributeOpServiceTest extends TestCase {
 	}
 	
 	private OrderGoodsUpdateBean buildUpdateGoods(String orderSn, Long id, String sku, Double TransactionPrice,
-			Double settlementPrice, Double shareBonus, String supplierCode, short number, String depot) {
+			Double settlementPrice, Double shareBonus, String supplierCode, int number, String depot) {
 		if (StringUtil.isTrimEmpty(depot)) {
 			depot = Constant.DETAILS_DEPOT_CODE;
 		}

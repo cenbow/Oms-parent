@@ -132,7 +132,7 @@ public class OrderLogisticsQuestionServiceImpl implements
 							sqParam.setDeliverySn(null);
 							sqParam.setLackReason(lackReason);
 						//	if (!StringUtil.isTrimEmpty(lackNum)) {
-								sqParam.setLackNum(Short.valueOf(lackNum.trim()));
+								sqParam.setLackNum(Integer.valueOf(lackNum.trim()));
 						/*	} else {
 								sqParam.setLackNum((short)1);
 							}*/
@@ -173,7 +173,7 @@ public class OrderLogisticsQuestionServiceImpl implements
 							sqParam.setDepotCode(depotCode);
 							sqParam.setDeliverySn(deliverySn);
 						//	if (!StringUtil.isTrimEmpty(lackNum)) {
-								sqParam.setLackNum(Short.valueOf(lackNum.trim()));
+								sqParam.setLackNum(Integer.valueOf(lackNum.trim()));
 							/*} else {
 								sqParam.setLackNum((short)1);
 							}*/

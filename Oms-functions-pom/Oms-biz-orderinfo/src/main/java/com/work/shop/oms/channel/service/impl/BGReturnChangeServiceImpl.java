@@ -1373,7 +1373,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             OrderReturnGoods goods = map.get(key);
             if (goods != null) {
                 Integer returnNum = goods.getGoodsReturnNumber() + returnGoods.getGoodsReturnNumber();
-                returnGoods.setGoodsReturnNumber(returnNum.shortValue());
+                returnGoods.setGoodsReturnNumber(returnNum);
             }
 
             map.put(key, returnGoods);
@@ -2125,7 +2125,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 returnGoods.setGoodsBuyNumber(detail.getGoodsNumber());
                 returnGoods.setGoodsName(detail.getGoodsName());
                 returnGoods.setGoodsPrice(detail.getGoodsPrice().doubleValue());
-                returnGoods.setGoodsReturnNumber(detail.getReturnSum().shortValue());
+                returnGoods.setGoodsReturnNumber(detail.getReturnSum());
                 returnGoods.setGoodsSn(detail.getGoodsSn());
                 returnGoods.setGoodsThumb(detail.getGoodsThumb());
                 returnGoods.setOsDepotCode(detail.getDepotCode());

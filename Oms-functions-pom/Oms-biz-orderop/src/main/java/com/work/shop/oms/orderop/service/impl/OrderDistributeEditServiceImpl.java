@@ -165,7 +165,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			// 商品主键KeyMap
 			Map<Long, MasterOrderGoods> oldGoodsIdMap = new HashMap<Long, MasterOrderGoods>();
 			// 发货仓商品数量
-			Map<String, Short> deptCodeGoodsCount = new HashMap<String, Short>();
+			Map<String, Integer> deptCodeGoodsCount = new HashMap<String, Integer>();
 			for (MasterOrderGoods orderGoods : orderGoodsOldList) {
 				String customCode = orderGoods.getCustomCode();
 				String deptCode = orderGoods.getDepotCode();
@@ -174,9 +174,9 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 				String skuKey = deptCode + customCode + extensionCode + extensionId;
 				oldGoodsMap.put(skuKey, orderGoods);
 				oldGoodsIdMap.put(orderGoods.getId(), orderGoods);
-				Short goodsNumber = deptCodeGoodsCount.get(deptCode);
+				Integer goodsNumber = deptCodeGoodsCount.get(deptCode);
 				if (goodsNumber != null) {
-					deptCodeGoodsCount.put(deptCode, (short) (goodsNumber + orderGoods.getGoodsNumber()));
+					deptCodeGoodsCount.put(deptCode,  goodsNumber + orderGoods.getGoodsNumber());
 				} else {
 					deptCodeGoodsCount.put(deptCode, orderGoods.getGoodsNumber());
 				}
@@ -1329,7 +1329,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	private OrderDetailsInfo createMbUpdateGoodsMap(MasterOrderGoods orderGoods, OrderDetailsInfo detailsInfo) {
 		// 判断是否是ERP商品
 		OrderDetailsInfo mergerdetailsInfo = new OrderDetailsInfo();
-		short goodsNumber = orderGoods.getGoodsNumber();
+		int goodsNumber = orderGoods.getGoodsNumber();
 		if (detailsInfo == null) {
 			mergerdetailsInfo.setProdNum(orderGoods.getCustomCode());
 			mergerdetailsInfo.setCount(orderGoods.getGoodsNumber());
@@ -1502,7 +1502,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 							.append(" 分摊金额:"+ deleteGoods.getShareBonus().setScale(4, BigDecimal.ROUND_HALF_UP))
 							.append(" 促销信息:"+ deleteGoods.getPromotionDesc() + "</br>");
 						OrderQuestionLackSkuNew lackSku = new OrderQuestionLackSkuNew();
-						lackSku.setLackNum((short)0);
+						lackSku.setLackNum(0);
 						lackSku.setDepotCode(deleteGoods.getDepotCode());
 						lackSku.setCustomCode(deleteGoods.getCustomCode());
 						lackSku.setExtensionCode(deleteGoods.getExtensionCode());
@@ -1529,7 +1529,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 							lackSku.setCustomCode(modifyGoods.getCustomCode());
 							lackSku.setExtensionCode(modifyGoods.getExtensionCode());
 							lackSku.setExtensionId(modifyGoods.getExtensionId());
-							lackSku.setLackNum((short)1);
+							lackSku.setLackNum(1);
 							updateLackSku(orderSn, lackSku, 0);
 						}
 					}
@@ -1706,7 +1706,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		}
 		try {
 			OrderQuestionLackSkuNew newLackSku = new OrderQuestionLackSkuNew();
-			short num = lackSku.getLackNum();
+			int num = lackSku.getLackNum();
 			if (lackSku.getLackNum() == null) {
 				num = 0;
 			}
@@ -1786,7 +1786,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * @param oldGoods
 	 * @return
 	 */
-	private MasterOrderGoods editOrderGoodsDeleteGoods(MasterOrderGoods oldGoods, short goodsNumber) {
+	private MasterOrderGoods editOrderGoodsDeleteGoods(MasterOrderGoods oldGoods, int goodsNumber) {
 		if (null == oldGoods) {
 			return null;
 		}
@@ -1797,7 +1797,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		} catch (Exception e) {
 			logger.error("复制targetgoods信息异常"+ e.getMessage());
 		}
-		targetgoods.setGoodsNumber((short)Math.abs(goodsNumber));
+		targetgoods.setGoodsNumber(Math.abs(goodsNumber));
 		return targetgoods;
 	}
 	
