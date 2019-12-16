@@ -9,12 +9,22 @@ public class CreateOrderReturnGoods implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String masterOrderSn;//主单号
-	private String orderSn;//子单号
+	/**
+	 * 主单号
+	 */
+	private String masterOrderSn;
+
+	/**
+	 * 子单号
+	 */
+	private String orderSn;
+
 	private String relatingReturnSn;
 	private String customCode;
-	private Short goodsReturnNumber;
-	private Short goodsBuyNumber;
+
+	private Integer goodsReturnNumber;
+
+	private Integer goodsBuyNumber;
 	private Integer chargeBackCount;
 	private Integer haveReturnCount;
 	private String extensionCode;
@@ -23,9 +33,13 @@ public class CreateOrderReturnGoods implements Serializable {
 	private Double settlePrice = 0D;
 	private Double shareSettle = 0D;
 	private Double priceDifference = 0D;
-	private Short priceDifferNum = 0;
+
+	private Integer priceDifferNum = 0;
+
 	private String priceDifferReason;
+
 	private String returnReason;
+
 	private String goodsThumb;//产品图片url
 	private Double payPoints;//消费积分
 	private Double settlementPrice;//财务价
@@ -158,18 +172,23 @@ public class CreateOrderReturnGoods implements Serializable {
 	public void setSettlePrice(Double settlePrice) {
 		this.settlePrice = settlePrice;
 	}
-	public Short getGoodsReturnNumber() {
+
+	public Integer getGoodsReturnNumber() {
 		return goodsReturnNumber;
 	}
-	public void setGoodsReturnNumber(Short goodsReturnNumber) {
+
+	public void setGoodsReturnNumber(Integer goodsReturnNumber) {
 		this.goodsReturnNumber = goodsReturnNumber;
 	}
-	public Short getGoodsBuyNumber() {
+
+	public Integer getGoodsBuyNumber() {
 		return goodsBuyNumber;
 	}
-	public void setGoodsBuyNumber(Short goodsBuyNumber) {
+
+	public void setGoodsBuyNumber(Integer goodsBuyNumber) {
 		this.goodsBuyNumber = goodsBuyNumber;
 	}
+
 	public Integer getChargeBackCount() {
 		return chargeBackCount;
 	}
@@ -203,15 +222,19 @@ public class CreateOrderReturnGoods implements Serializable {
 	public Double getPriceDifference() {
 		return priceDifference;
 	}
+
 	public void setPriceDifference(Double priceDifference) {
 		this.priceDifference = priceDifference;
 	}
-	public Short getPriceDifferNum() {
+
+	public Integer getPriceDifferNum() {
 		return priceDifferNum;
 	}
-	public void setPriceDifferNum(Short priceDifferNum) {
+
+	public void setPriceDifferNum(Integer priceDifferNum) {
 		this.priceDifferNum = priceDifferNum;
 	}
+
 	public String getPriceDifferReason() {
 		return priceDifferReason;
 	}

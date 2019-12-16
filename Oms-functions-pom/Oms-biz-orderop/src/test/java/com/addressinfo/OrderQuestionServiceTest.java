@@ -70,7 +70,7 @@ public class OrderQuestionServiceTest extends TestCase {
 		LackSkuParam param = new LackSkuParam();
 		param.setCustomCode("20780470140");
 		param.setDepotCode("A01339S011");
-		param.setLackNum((short)1);
+		param.setLackNum(1);
 		param.setQuestionCode("9953");
 		param.setLackReason("ssss");
 		lackSkuParams.add(param);

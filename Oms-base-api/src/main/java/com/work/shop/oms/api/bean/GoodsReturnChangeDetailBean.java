@@ -13,7 +13,7 @@ public class GoodsReturnChangeDetailBean implements Serializable {
 
     private String extensionCode;
 
-    private Short goodsNumber;
+    private Integer goodsNumber;
 
     private BigDecimal goodsPrice;
 
@@ -103,11 +103,11 @@ public class GoodsReturnChangeDetailBean implements Serializable {
         this.extensionCode = extensionCode == null ? null : extensionCode.trim();
     }
 
-    public Short getGoodsNumber() {
+    public Integer getGoodsNumber() {
         return goodsNumber;
     }
 
-    public void setGoodsNumber(Short goodsNumber) {
+    public void setGoodsNumber(Integer goodsNumber) {
         this.goodsNumber = goodsNumber;
     }
 

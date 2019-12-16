@@ -445,6 +445,7 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 		return ri;
 	}
 
+	@Override
 	public ReturnInfo realese(StockOperatePO bgop) {
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (bgop == null) {
@@ -585,7 +586,7 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 							for (MasterOrderGoods goods : goodsList) {
 								MasterOrderGoods updateGoods = new MasterOrderGoods();
 								updateGoods.setId(goods.getId());
-								updateGoods.setChannelSendNumber((short) 0);
+								updateGoods.setChannelSendNumber(0);
 								masterOrderGoodsMapper.updateByPrimaryKeySelective(updateGoods);
 							}
 						} catch (Exception e) {

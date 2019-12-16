@@ -26,41 +26,31 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
-		<profiles>
+
+	<profiles>
 		<profile>
 			<id>www</id>
 			<properties>
-				<package.environment>conf/www</package.environment>
+				<spring.profiles.active>www</spring.profiles.active>
 			</properties>
 		</profile>
 		<profile>
 			<id>dev</id>
 			<properties>
-				<package.environment>conf/dev</package.environment>
-			</properties>
-		</profile>
-		<profile>
-			<id>test</id>
-			<properties>
-				<package.environment>conf/test</package.environment>
+				<spring.profiles.active>dev</spring.profiles.active>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
 		</profile>
 		<profile>
-			<id>clone</id>
+			<id>test</id>
 			<properties>
-				<package.environment>conf/clone</package.environment>
-			</properties>
-		</profile>
-		<profile>
-			<id>yace</id>
-			<properties>
-				<package.environment>conf/yace</package.environment>
+				<spring.profiles.active>test</spring.profiles.active>
 			</properties>
 		</profile>
 	</profiles>
+
 	<build>
 		<finalName>OmsTask</finalName>
 		<plugins>
@@ -69,28 +59,30 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-					<archive>
-						<addMavenDescriptor>false</addMavenDescriptor>
-					</archive>
-					<webResources>
-						<resource>
-							<directory>${package.environment}</directory>
-							<targetPath>WEB-INF/classes</targetPath>
-							<filtering>true</filtering>
-						</resource>
-					</webResources>
-				</configuration>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>resource.properties</exclude>
+					<exclude>application.yml</exclude>
+				</excludes>
+			</resource>
+
+			<resource>
+				<directory>conf/${spring.profiles.active}/</directory>
+			</resource>
+		</resources>
 	</build>
+
 </project>

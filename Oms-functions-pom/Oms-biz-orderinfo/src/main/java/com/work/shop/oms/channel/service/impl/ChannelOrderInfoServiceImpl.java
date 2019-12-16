@@ -988,7 +988,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             OrderReturnGoods goods = map.get(key);
             if (goods != null) {
                 Integer returnNum = goods.getGoodsReturnNumber() + returnGoods.getGoodsReturnNumber();
-                returnGoods.setGoodsReturnNumber(returnNum.shortValue());
+                returnGoods.setGoodsReturnNumber(returnNum);
             }
 
             map.put(key, returnGoods);

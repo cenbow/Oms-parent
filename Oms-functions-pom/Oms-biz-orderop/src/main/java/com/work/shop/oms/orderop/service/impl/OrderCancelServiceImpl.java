@@ -1177,7 +1177,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		returnGoods.setMasterOrderSn(orderGoods.getMasterOrderSn());
 		returnGoods.setOrderSn(orderGoods.getOrderSn());
 		returnGoods.setCustomCode(orderGoods.getCustomCode());
-		returnGoods.setGoodsReturnNumber(orderGoods.getGoodsNumber().shortValue());
+		returnGoods.setGoodsReturnNumber(orderGoods.getGoodsNumber());
 		returnGoods.setGoodsBuyNumber(orderGoods.getGoodsNumber());
 		returnGoods.setExtensionCode(orderGoods.getExtensionCode());
 		returnGoods.setExtensionId(orderGoods.getExtensionId());

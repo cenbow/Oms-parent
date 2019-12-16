@@ -2024,13 +2024,13 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 							it.remove();
 							quantity -= num;
 						} else {
-							short newGoodsNumber = (short) (num - quantity);
+							int newGoodsNumber =  num - quantity;
 							MasterOrderGoods insertItem = new MasterOrderGoods();
                             CachedBeanCopier.copy(goodsItem, insertItem);
 							insertItem.setGoodsNumber(newGoodsNumber);
 							insertItems.add(insertItem);
 							
-							shipItem.setGoodsNumber(quantity.shortValue());
+							shipItem.setGoodsNumber(quantity);
 							quantity = 0;
 						}
 						deliveryGoodsItems.add(shipItem);

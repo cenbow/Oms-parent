@@ -189,7 +189,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         // 套装名称
         masterOrderGoods.setGroupName("");
         // 商品数量
-        masterOrderGoods.setGoodsNumber(Short.parseShort(masterGoods.getGoodsNumber().toString()));
+        masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
         // 父商品sn
         masterOrderGoods.setParentSn("");
         // 成交价格
