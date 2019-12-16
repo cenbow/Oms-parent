@@ -28,7 +28,7 @@ public class OrderGoodsUpdateBean implements Serializable, Comparable<OrderGoods
 
 	private String customCode;
 
-	private Short goodsNumber;
+	private Integer goodsNumber;
 
 	private BigDecimal marketPrice;
 	
@@ -56,7 +56,7 @@ public class OrderGoodsUpdateBean implements Serializable, Comparable<OrderGoods
 
 	private String goodsThumb;
 
-	private Short sendNumber;
+	private Integer sendNumber;
 
 	private Integer isReal;
 
@@ -426,11 +426,11 @@ public class OrderGoodsUpdateBean implements Serializable, Comparable<OrderGoods
 		this.customCode = customCode;
 	}
 
-	public Short getGoodsNumber() {
+	public Integer getGoodsNumber() {
 		return goodsNumber;
 	}
 
-	public void setGoodsNumber(Short goodsNumber) {
+	public void setGoodsNumber(Integer goodsNumber) {
 		this.goodsNumber = goodsNumber;
 	}
 
@@ -506,11 +506,11 @@ public class OrderGoodsUpdateBean implements Serializable, Comparable<OrderGoods
 		this.goodsThumb = goodsThumb;
 	}
 
-	public Short getSendNumber() {
+	public Integer getSendNumber() {
 		return sendNumber;
 	}
 
-	public void setSendNumber(Short sendNumber) {
+	public void setSendNumber(Integer sendNumber) {
 		this.sendNumber = sendNumber;
 	}
 

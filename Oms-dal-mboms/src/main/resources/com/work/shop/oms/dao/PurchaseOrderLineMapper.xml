@@ -13,7 +13,7 @@
     <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
     <result column="custom_code" property="customCode" jdbcType="VARCHAR" />
     <result column="goods_sn" property="goodsSn" jdbcType="VARCHAR" />
-    <result column="goods_number" property="goodsNumber" jdbcType="SMALLINT" />
+    <result column="goods_number" property="goodsNumber" />
     <result column="goods_size_name" property="goodsSizeName" jdbcType="VARCHAR" />
     <result column="goods_color_name" property="goodsColorName" jdbcType="VARCHAR" />
     <result column="goods_thumb" property="goodsThumb" jdbcType="VARCHAR" />

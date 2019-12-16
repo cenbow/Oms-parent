@@ -326,7 +326,7 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 //商品折扣
                 BigDecimal discount = masterOrderGoods.getDiscount();
                 //商品数量
-                Short goodsNumber = masterOrderGoods.getGoodsNumber();
+                Integer goodsNumber = masterOrderGoods.getGoodsNumber();
 
                 //需改成修改价格
                 BigDecimal updatePrice = priceMap.get(customCode);

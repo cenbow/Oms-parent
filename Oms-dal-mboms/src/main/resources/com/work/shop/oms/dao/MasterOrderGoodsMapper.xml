@@ -14,7 +14,7 @@
     <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
     <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
     <result column="extension_id" jdbcType="VARCHAR" property="extensionId" />
-    <result column="goods_number" jdbcType="SMALLINT" property="goodsNumber" />
+    <result column="goods_number" jdbcType="INTEGER" property="goodsNumber" />
     <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
     <result column="transaction_price" jdbcType="DECIMAL" property="transactionPrice" />
     <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />

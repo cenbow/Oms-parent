@@ -2023,7 +2023,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 							}
 						}
 						
-						orderBean.setGoodsNumber((short)goodsNumber);
+						orderBean.setGoodsNumber(goodsNumber);
 						if (goodsNumber <= 0) {
 							goodsIt.remove();
 						}
@@ -2189,6 +2189,12 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         if (companyType != null) {
             paramMap.put("companyType", companyType);
         }
+
+        //订单编号
+		String masterOrderSn = request.getMasterOrderSn();
+		if (StringUtils.isNotBlank(masterOrderSn)) {
+			paramMap.put("masterOrderSn", masterOrderSn);
+		}
 
         // 订单类型 0正常订单，1联采订单
 		Integer orderType = request.getOrderType();

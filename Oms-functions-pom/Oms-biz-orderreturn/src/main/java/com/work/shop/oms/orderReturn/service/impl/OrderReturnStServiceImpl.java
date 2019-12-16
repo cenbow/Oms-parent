@@ -256,7 +256,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 							updateReturnGoods.setQualityStatus(ConstantValues.ORDERRETURNSHIP_ISPASS_STATUS.PARTPASS.byteValue());
 						}
 						updateReturnGoods.setCheckinTime(new Date());
-						updateReturnGoods.setProdscannum(BigDecimal.valueOf(storageGoods.getProdScanNum() + returnGood.getProdscannum()).shortValue());
+						updateReturnGoods.setProdscannum(storageGoods.getProdScanNum() + returnGood.getProdscannum());
 						updateReturnGoods.setRemark(storageGoods.getRemark());
 						int haveReturnCount = returnGood.getHaveReturnCount().intValue() + storageGoods.getProdScanNum();
 						updateReturnGoods.setHaveReturnCount(haveReturnCount);
@@ -472,7 +472,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 					cancleFlag = false;
 				}
 				orderReturnGoods.setCheckinStatus(ConstantValues.ORDERRETURNSHIP_CHECKIN_STATUS.UNSTORAGE.byteValue());
-				orderReturnGoods.setProdscannum(ConstantValues.YESORNO_NO.shortValue());
+				orderReturnGoods.setProdscannum(ConstantValues.YESORNO_NO);
 				orderReturnGoods.setToErp(ConstantValues.YESORNO_NO.byteValue());
 				orderReturnGoods.setStorageTimeStamp(StringUtils.EMPTY);
 				orderReturnGoods.setStorageStatus(Constant.STORAGE_STATUS_UNTRATED);
@@ -1083,7 +1083,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 	}
 
 	private void setGoodsNumber(OrderReturnGoods ogBean, OrderReturnGoods ogs) {
-		ogs.setGoodsReturnNumber((short) (ogs.getGoodsReturnNumber() + ogBean.getGoodsReturnNumber()));
+		ogs.setGoodsReturnNumber(ogs.getGoodsReturnNumber() + ogBean.getGoodsReturnNumber());
 	}
 	
 	private void setAvgShareBonus(OrderReturnGoods ogs, OrderReturnGoods ogBean) {
@@ -1111,7 +1111,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 		ogs.setSettlementPrice(bd);
 	}
 
-	private BigDecimal setAvgPrice(Short goodsNumber, BigDecimal transactionPrice, Short goodsNumber2, BigDecimal transactionPrice2) {
+	private BigDecimal setAvgPrice(Integer goodsNumber, BigDecimal transactionPrice, Integer goodsNumber2, BigDecimal transactionPrice2) {
 		BigDecimal price1 = transactionPrice.multiply(BigDecimal.valueOf(goodsNumber)).setScale(5, BigDecimal.ROUND_HALF_UP);
 		BigDecimal price2 = transactionPrice2.multiply(BigDecimal.valueOf(goodsNumber2)).setScale(5, BigDecimal.ROUND_HALF_UP);
 		BigDecimal sum = price1.add(price2);
@@ -2353,7 +2353,7 @@ public class OrderReturnStServiceImpl implements OrderReturnStService {
 	 ***/
 	public void updateOrderInfoOrOrderReturnLog(SettleBillQueue billQueue) {
 		
-	logger.info("OrderReturnStServiceImpl.updateOrderInfoOrOrderReturnLog  begin."+JSON.toJSONString(billQueue));
+		logger.info("OrderReturnStServiceImpl.updateOrderInfoOrOrderReturnLog  begin."+JSON.toJSONString(billQueue));
 		
 		OrderSettleBillExample orderSettleBillExample = new OrderSettleBillExample();
 		orderSettleBillExample.or().andIdEqualTo(Long.valueOf(billQueue.getId()));

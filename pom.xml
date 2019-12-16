@@ -28,7 +28,9 @@
 		<module>Oms-functions-pom</module>
 		<module>Oms-config-base</module>
 		<module>Oms-OmsPay</module>
+		<!--
 		<module>Oms-OmsTask</module>
+		-->
 		<module>Oms-inner-api</module>
 		<module>Oms-dal-mbstore</module>
 		<module>Oms-ExpressService</module>

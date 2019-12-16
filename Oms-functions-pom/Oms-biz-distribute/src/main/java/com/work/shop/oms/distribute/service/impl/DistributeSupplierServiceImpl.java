@@ -202,7 +202,7 @@ public class DistributeSupplierServiceImpl implements DistributeSupplierService 
 	
 	/**
 	 * 根据供应商不同批量分发
-	 * @param distributes
+	 * @param orderSn
 	 * @param isRePush
 	 * @return
 	 * @throws Exception
@@ -420,7 +420,7 @@ public class DistributeSupplierServiceImpl implements DistributeSupplierService 
 	 * 更新OS订单下发状态
 	 * 
 	 * @param orderSn
-	 * @param orderInfo
+	 * @param nowDate
 	 */
 	private void updateOsOrderInfoPushStatus(String orderSn, Date nowDate) {
 		logger.debug("正在更新订单分发状态");
@@ -483,7 +483,7 @@ public class DistributeSupplierServiceImpl implements DistributeSupplierService 
 	}
 
 	private void setGoodsNumber(MasterOrderGoods ogBean, MasterOrderGoods ogs) {
-		ogs.setGoodsNumber((short) (ogs.getGoodsNumber() + ogBean.getGoodsNumber()));
+		ogs.setGoodsNumber(ogs.getGoodsNumber() + ogBean.getGoodsNumber());
 	}
 	
 	private void setAvgDiscount(MasterOrderGoods ogs, MasterOrderGoods ogBean) {
@@ -513,7 +513,7 @@ public class DistributeSupplierServiceImpl implements DistributeSupplierService 
 		ogs.setIntegralMoney(bd);
 	}
 
-	private BigDecimal setAvgPrice(Short goodsNumber, BigDecimal transactionPrice, Short goodsNumber2, BigDecimal transactionPrice2) {
+	private BigDecimal setAvgPrice(Integer goodsNumber, BigDecimal transactionPrice, Integer goodsNumber2, BigDecimal transactionPrice2) {
 		BigDecimal price1 = transactionPrice.multiply(BigDecimal.valueOf(goodsNumber)).setScale(5, BigDecimal.ROUND_HALF_UP);
 		BigDecimal price2 = transactionPrice2.multiply(BigDecimal.valueOf(goodsNumber2)).setScale(5, BigDecimal.ROUND_HALF_UP);
 		BigDecimal sum = price1.add(price2);

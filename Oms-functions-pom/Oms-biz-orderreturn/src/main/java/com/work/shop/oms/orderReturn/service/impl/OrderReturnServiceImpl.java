@@ -1077,8 +1077,8 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 							createGoods.setExtensionCode(goodsItem.getExtensionCode());
 							createGoods.setExtensionId(goodsItem.getExtensionId());
 							createGoods.setOsDepotCode(goodsItem.getOsDepotCode());
-							createGoods.setGoodsBuyNumber(goodsItem.getGoodsBuyNumber().shortValue());
-							createGoods.setGoodsReturnNumber(goodsItem.getGoodsReturnNumber().shortValue());
+							createGoods.setGoodsBuyNumber(goodsItem.getGoodsBuyNumber());
+							createGoods.setGoodsReturnNumber(goodsItem.getGoodsReturnNumber());
 							createGoods.setGoodsPrice(goodsItem.getGoodsPrice().doubleValue());
 							createGoods.setMarketPrice(goodsItem.getMarketPrice().doubleValue());
 							createGoods.setShareBonus(goodsItem.getShareBonus().doubleValue());
@@ -1124,8 +1124,8 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				
 				if(allReturnGoodsMap.containsKey(key)){
 					tempGoods = allReturnGoodsMap.get(key);
-					tempGoods.setGoodsBuyNumber(Integer.valueOf(tempGoods.getGoodsBuyNumber().intValue() + createOrderReturnGoods.getGoodsBuyNumber().intValue()).shortValue());
-					tempGoods.setGoodsReturnNumber(Integer.valueOf(tempGoods.getGoodsReturnNumber().intValue() + createOrderReturnGoods.getGoodsReturnNumber().intValue()).shortValue());
+					tempGoods.setGoodsBuyNumber(Integer.valueOf(tempGoods.getGoodsBuyNumber().intValue() + createOrderReturnGoods.getGoodsBuyNumber().intValue()));
+					tempGoods.setGoodsReturnNumber(Integer.valueOf(tempGoods.getGoodsReturnNumber().intValue() + createOrderReturnGoods.getGoodsReturnNumber().intValue()));
 					createOrderReturnGoods = tempGoods;
 				}
 				allReturnGoodsMap.put(key, createOrderReturnGoods);

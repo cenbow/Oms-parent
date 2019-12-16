@@ -1947,7 +1947,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
         for (CreateOrderReturnGoods goods : orderReturnGoodsList) {
             //退商品数量
-            Short goodsReturnNumber = goods.getGoodsReturnNumber();
+            Integer goodsReturnNumber = goods.getGoodsReturnNumber();
 
             //商品售价
             Double goodsPrice = goods.getGoodsPrice();
@@ -2029,7 +2029,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
             //创建退数量
             int createReturnNum = 0;
             for (CreateOrderReturnGoods goods : orderReturnGoodsList) {
-                Short goodsReturnNumber = goods.getGoodsReturnNumber();
+                Integer goodsReturnNumber = goods.getGoodsReturnNumber();
                 if (goodsReturnNumber == null) {
                     goodsReturnNumber = 0;
                 }
@@ -2054,7 +2054,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
             //同sku,同扩展属性商品一条记录多数量计算
             CreateOrderReturnGoods createOrderReturnGoods = orderReturnGoodsList.get(0);
-            createOrderReturnGoods.setGoodsReturnNumber((short) createReturnNum);
+            createOrderReturnGoods.setGoodsReturnNumber(createReturnNum);
             createReturnGoodsList.add(createOrderReturnGoods);
         }
 

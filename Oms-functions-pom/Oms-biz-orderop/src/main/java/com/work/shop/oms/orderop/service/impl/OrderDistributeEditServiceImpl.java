@@ -165,7 +165,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			// 商品主键KeyMap
 			Map<Long, MasterOrderGoods> oldGoodsIdMap = new HashMap<Long, MasterOrderGoods>();
 			// 发货仓商品数量
-			Map<String, Short> deptCodeGoodsCount = new HashMap<String, Short>();
+			Map<String, Integer> deptCodeGoodsCount = new HashMap<String, Integer>();
 			for (MasterOrderGoods orderGoods : orderGoodsOldList) {
 				String customCode = orderGoods.getCustomCode();
 				String deptCode = orderGoods.getDepotCode();
@@ -174,9 +174,9 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 				String skuKey = deptCode + customCode + extensionCode + extensionId;
 				oldGoodsMap.put(skuKey, orderGoods);
 				oldGoodsIdMap.put(orderGoods.getId(), orderGoods);
-				Short goodsNumber = deptCodeGoodsCount.get(deptCode);
+				Integer goodsNumber = deptCodeGoodsCount.get(deptCode);
 				if (goodsNumber != null) {
-					deptCodeGoodsCount.put(deptCode, (short) (goodsNumber + orderGoods.getGoodsNumber()));
+					deptCodeGoodsCount.put(deptCode,  goodsNumber + orderGoods.getGoodsNumber());
 				} else {
 					deptCodeGoodsCount.put(deptCode, orderGoods.getGoodsNumber());
 				}
@@ -1329,7 +1329,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	private OrderDetailsInfo createMbUpdateGoodsMap(MasterOrderGoods orderGoods, OrderDetailsInfo detailsInfo) {
 		// 判断是否是ERP商品
 		OrderDetailsInfo mergerdetailsInfo = new OrderDetailsInfo();
-		short goodsNumber = orderGoods.getGoodsNumber();
+		int goodsNumber = orderGoods.getGoodsNumber();
 		if (detailsInfo == null) {
 			mergerdetailsInfo.setProdNum(orderGoods.getCustomCode());
 			mergerdetailsInfo.setCount(orderGoods.getGoodsNumber());
@@ -1502,7 +1502,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 							.append(" 分摊金额:"+ deleteGoods.getShareBonus().setScale(4, BigDecimal.ROUND_HALF_UP))
 							.append(" 促销信息:"+ deleteGoods.getPromotionDesc() + "</br>");
 						OrderQuestionLackSkuNew lackSku = new OrderQuestionLackSkuNew();
-						lackSku.setLackNum((short)0);
+						lackSku.setLackNum(0);
 						lackSku.setDepotCode(deleteGoods.getDepotCode());
 						lackSku.setCustomCode(deleteGoods.getCustomCode());
 						lackSku.setExtensionCode(deleteGoods.getExtensionCode());
@@ -1529,7 +1529,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 							lackSku.setCustomCode(modifyGoods.getCustomCode());
 							lackSku.setExtensionCode(modifyGoods.getExtensionCode());
 							lackSku.setExtensionId(modifyGoods.getExtensionId());
-							lackSku.setLackNum((short)1);
+							lackSku.setLackNum(1);
 							updateLackSku(orderSn, lackSku, 0);
 						}
 					}
@@ -1706,7 +1706,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		}
 		try {
 			OrderQuestionLackSkuNew newLackSku = new OrderQuestionLackSkuNew();
-			short num = lackSku.getLackNum();
+			int num = lackSku.getLackNum();
 			if (lackSku.getLackNum() == null) {
 				num = 0;
 			}
@@ -1786,7 +1786,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 	 * @param oldGoods
 	 * @return
 	 */
-	private MasterOrderGoods editOrderGoodsDeleteGoods(MasterOrderGoods oldGoods, short goodsNumber) {
+	private MasterOrderGoods editOrderGoodsDeleteGoods(MasterOrderGoods oldGoods, int goodsNumber) {
 		if (null == oldGoods) {
 			return null;
 		}
@@ -1797,7 +1797,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		} catch (Exception e) {
 			logger.error("复制targetgoods信息异常"+ e.getMessage());
 		}
-		targetgoods.setGoodsNumber((short)Math.abs(goodsNumber));
+		targetgoods.setGoodsNumber(Math.abs(goodsNumber));
 		return targetgoods;
 	}
 	
@@ -2056,7 +2056,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		String encMoile = consignInfo.getMobile();
 		String encTel = consignInfo.getTel();
 		MasterOrderAddressInfo updateOrderAddressInfo = new MasterOrderAddressInfo();
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getConsignee(), orderAddressInfo.getConsignee())) {
+		if (!StringUtils.equalsIgnoreCase(consignInfo.getConsignee(), orderAddressInfo.getConsignee()) && StringUtils.isBlank(consignInfo.getConsignee())) {
 			actionNote.append("收件人 "+orderAddressInfo.getConsignee()+" → " + consignInfo.getConsignee() + ";<br />");
 			updateOrderAddressInfo.setConsignee(consignInfo.getConsignee());
 		}
@@ -2080,18 +2080,18 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			actionNote.append("移动手机已变更;<br />");
 			updateOrderAddressInfo.setMobile(encMoile);
 		}
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getSignBuilding(), orderAddressInfo.getSignBuilding())) {
-			actionNote.append("标志性建筑由 "+orderAddressInfo.getSignBuilding()+" → " + consignInfo.getSignBuilding() + ";<br />");
-			updateOrderAddressInfo.setSignBuilding(consignInfo.getSignBuilding());
-		}
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getBestTime(), orderAddressInfo.getBestTime())) {
-			actionNote.append("最佳送货时间由 "+orderAddressInfo.getBestTime()+" → " + consignInfo.getBestTime() + ";<br />");
-			updateOrderAddressInfo.setBestTime(consignInfo.getBestTime());
-		}
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getCountry(), orderAddressInfo.getCountry())) {
-			actionNote.append("国家由 "+systemRegionMap.get(orderAddressInfo.getCountry())+" → " + systemRegionMap.get(consignInfo.getCountry()) + ";<br />");
-			updateOrderAddressInfo.setCountry(consignInfo.getCountry());
-		}
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getSignBuilding(), orderAddressInfo.getSignBuilding())) {
+//			actionNote.append("标志性建筑由 "+orderAddressInfo.getSignBuilding()+" → " + consignInfo.getSignBuilding() + ";<br />");
+//			updateOrderAddressInfo.setSignBuilding(consignInfo.getSignBuilding());
+//		}
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getBestTime(), orderAddressInfo.getBestTime())) {
+//			actionNote.append("最佳送货时间由 "+orderAddressInfo.getBestTime()+" → " + consignInfo.getBestTime() + ";<br />");
+//			updateOrderAddressInfo.setBestTime(consignInfo.getBestTime());
+//		}
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getCountry(), orderAddressInfo.getCountry())) {
+//			actionNote.append("国家由 "+systemRegionMap.get(orderAddressInfo.getCountry())+" → " + systemRegionMap.get(consignInfo.getCountry()) + ";<br />");
+//			updateOrderAddressInfo.setCountry(consignInfo.getCountry());
+//		}
 		consignInfo.setCountry(systemRegionMap.get(consignInfo.getCountry()));
 		if (!StringUtils.equalsIgnoreCase(consignInfo.getProvince(), orderAddressInfo.getProvince())) {
 			actionNote.append("省份由 "+systemRegionMap.get(orderAddressInfo.getProvince())+" → " + systemRegionMap.get(consignInfo.getProvince()) + ";<br />");
@@ -2107,15 +2107,15 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			actionNote.append("区县由 "+systemRegionMap.get(orderAddressInfo.getDistrict())+" → " + systemRegionMap.get(consignInfo.getDistrict()) + ";<br />");
 			updateOrderAddressInfo.setDistrict(consignInfo.getDistrict());
 		}
-		consignInfo.setDistrict(systemRegionMap.get(consignInfo.getDistrict()));
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getStreet(), orderAddressInfo.getStreet())) {
-			actionNote.append("街道由 "+systemRegionMap.get(orderAddressInfo.getStreet())+" → " + systemRegionMap.get(consignInfo.getStreet()) + ";<br />");
-			updateOrderAddressInfo.setStreet(consignInfo.getStreet());
-		}
-		if (StringUtils.isEmpty(consignInfo.getStreet())) {
-			String street = systemRegionMap.get(consignInfo.getStreet());
-			consignInfo.setAddress((street == null ? "" : street) + consignInfo.getAddress());
-		}
+//		consignInfo.setDistrict(systemRegionMap.get(consignInfo.getDistrict()));
+//		if (!StringUtils.equalsIgnoreCase(consignInfo.getStreet(), orderAddressInfo.getStreet())) {
+//			actionNote.append("街道由 "+systemRegionMap.get(orderAddressInfo.getStreet())+" → " + systemRegionMap.get(consignInfo.getStreet()) + ";<br />");
+//			updateOrderAddressInfo.setStreet(consignInfo.getStreet());
+//		}
+//		if (StringUtils.isEmpty(consignInfo.getStreet())) {
+//			String street = systemRegionMap.get(consignInfo.getStreet());
+//			consignInfo.setAddress((street == null ? "" : street) + consignInfo.getAddress());
+//		}
 		return updateOrderAddressInfo;
 	}
 
@@ -2165,23 +2165,23 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             StringBuffer sb = new StringBuffer();
             //发票收货人
             String invConsignee = consignInfo.getInvConsignee();
-            if (StringUtils.isNotBlank(invConsignee)) {
+            if (StringUtils.isNotBlank(invConsignee) && !invConsignee.equalsIgnoreCase(addressInfo.getInvConsignee())) {
                 updateAddress.setInvConsignee(invConsignee);
-                sb.append("发票收货人由‘" + updateAddress.getInvConsignee() + "’更改为‘" + invConsignee + "’；");
+                sb.append("发票收货人由‘" + addressInfo.getInvConsignee() + "’→‘" + invConsignee + "’；<br />");
             }
 
             //发票收货人手机号
             String invMobile = consignInfo.getInvMobile();
-            if (StringUtils.isNotBlank(invMobile)) {
+            if (StringUtils.isNotBlank(invMobile) && !invMobile.equalsIgnoreCase(addressInfo.getInvMobile())) {
                 updateAddress.setInvMobile(invMobile);
-                sb.append("发票收货人手机号由‘" + updateAddress.getInvMobile() + "’更改为‘" + invMobile + "’；");
+                sb.append("发票收货人手机号由‘" + addressInfo.getInvMobile() + "’→‘" + invMobile + "’；<br />");
             }
 
             //发票收货人地址
             String invAddress = consignInfo.getInvAddress();
-            if (StringUtils.isNotBlank(invAddress)) {
+            if (StringUtils.isNotBlank(invAddress) && !invAddress.equalsIgnoreCase(addressInfo.getInvAddress())) {
                 updateAddress.setInvAddress(invAddress);
-                sb.append("发票收货人地址由‘" + updateAddress.getInvAddress() + "’更改为‘" + invAddress + "’；");
+                sb.append("发票收货人地址由‘" + addressInfo.getInvAddress() + "’→‘" + invAddress + "’；<br />");
             }
 
             //无修改信息返回修改成功
@@ -2199,7 +2199,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
             }
 
             //添加日志
-            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：" + msg, actionUser);
+            masterOrderActionService.insertOrderActionBySn(masterOrderSn, "编辑发票地址信息：<br />" + msg, actionUser);
         } catch (Exception e) {
             logger.error("主订单编辑发票地址信息异常" + JSONObject.toJSONString(consignInfo), e);
         }

@@ -613,7 +613,7 @@ public class UniteStockServiceImpl implements UniteStockService {
                     for (MasterOrderGoods goods : list) {
                         MasterOrderGoods updateGoods = new MasterOrderGoods();
                         updateGoods.setId(goods.getId());
-                        updateGoods.setSendNumber((short) 0);
+                        updateGoods.setSendNumber(0);
                         masterOrderGoodsMapper.updateByPrimaryKeySelective(updateGoods);
                     }
                 } catch (Exception e) {
@@ -671,7 +671,7 @@ public class UniteStockServiceImpl implements UniteStockService {
                     goods.setBoxGauge(item.getBoxGauge());
                 } else {
                     int qty = goods.getGoodsNumber().intValue() + item.getGoodsNumber();
-                    goods.setGoodsNumber((short) qty);
+                    goods.setGoodsNumber(qty);
                 }
                 itemQtyMap.put(key, goods);
             }

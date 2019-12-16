@@ -261,7 +261,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         BigDecimal totalPrice = new BigDecimal(0);
         BigDecimal totalUntaxPrice = new BigDecimal(0);
         for (PurchaseOrderLine line : lines) {
-            Short goodsNumber = line.getGoodsNumber();
+            Integer goodsNumber = line.getGoodsNumber();
             if (goodsNumber == null) {
                 continue;
             }
@@ -375,7 +375,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 	}
 	
 	private void setGoodsNumber(MasterOrderGoods ogBean, MasterOrderGoods ogs) {
-		ogs.setGoodsNumber((short) (ogs.getGoodsNumber() + ogBean.getGoodsNumber()));
+		ogs.setGoodsNumber(ogs.getGoodsNumber() + ogBean.getGoodsNumber());
 	}
 
     /**

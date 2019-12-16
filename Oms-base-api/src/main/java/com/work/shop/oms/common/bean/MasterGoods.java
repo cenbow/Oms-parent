@@ -161,7 +161,7 @@ public class MasterGoods implements Serializable {
 	/**
 	 * 库存占用量
 	 */
-	private Short sendNumber;
+	private Integer sendNumber;
 
 	/**
 	 * 发货仓编码
@@ -497,11 +497,11 @@ public class MasterGoods implements Serializable {
 		this.supplierCode = supplierCode;
 	}
 
-	public Short getSendNumber() {
+	public Integer getSendNumber() {
 		return sendNumber == null ? 0 : sendNumber;
 	}
 
-	public void setSendNumber(Short sendNumber) {
+	public void setSendNumber(Integer sendNumber) {
 		this.sendNumber = sendNumber;
 	}
 

@@ -27,6 +27,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+
 #log配置
 logging:
   config:

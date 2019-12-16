@@ -2311,6 +2311,7 @@
             oai.consignee,
             oai.mobile,
             oai.address,
+			oie.company_name as companyName,
             mog.goods_name as goodsName,
             mog.goods_sn as goodsSn,
             mog.custom_code as customCode,
@@ -2330,7 +2331,9 @@
             mog.output_tax as outputTax,
             mog.cost_price as costPrice,
             mog.box_gauge as boxGauge,
-            mop.pay_name as payMethod
+            mop.pay_name as payMethod,
+			mog.customer_material_code as customerMaterialCode,
+			mog.customer_material_name as customerMaterialName
 		FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
@@ -2743,6 +2746,9 @@
         <if test="endTime != null">
             AND moi.add_time &lt;= #{endTime}
         </if>
+		<if test="masterOrderSn != null">
+			AND moi.master_order_sn = #{masterOrderSn}
+		</if>
         GROUP BY moi.master_order_sn, mog.supplier_code
         ORDER BY moi.add_time DESC
         <if test="limit != null and limit > 0">

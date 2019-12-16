@@ -558,7 +558,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 							}
 						}
 						if (goods.getSendNumber().intValue() > 0) {
-							newGoods.setSendNumber((short)1);
+							newGoods.setSendNumber(1);
 						}
 						newGoods.setGoodsNumber(1);
 						newGoods.setExtensionId(index + "");

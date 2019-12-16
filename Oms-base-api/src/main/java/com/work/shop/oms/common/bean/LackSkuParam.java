@@ -16,7 +16,7 @@ public class LackSkuParam implements Serializable{
 
 	private String depotCode;
 
-	private Short lackNum = 1;
+	private Integer lackNum = 1;
 
 	private String deliverySn;
 
@@ -46,11 +46,11 @@ public class LackSkuParam implements Serializable{
 		this.depotCode = depotCode;
 	}
 
-	public Short getLackNum() {
+	public Integer getLackNum() {
 		return lackNum;
 	}
 
-	public void setLackNum(Short lackNum) {
+	public void setLackNum(Integer lackNum) {
 		this.lackNum = lackNum;
 	}
 

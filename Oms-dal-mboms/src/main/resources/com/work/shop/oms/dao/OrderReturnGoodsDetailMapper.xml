@@ -7,8 +7,8 @@
     <result column="custom_code" property="customCode" jdbcType="VARCHAR" />
     <result column="goods_sn" property="goodsSn" jdbcType="VARCHAR" />
     <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
-    <result column="goods_return_number" property="goodsReturnNumber" jdbcType="SMALLINT" />
-    <result column="goods_buy_number" property="goodsBuyNumber" jdbcType="SMALLINT" />
+    <result column="goods_return_number" property="goodsReturnNumber" jdbcType="INTEGER" />
+    <result column="goods_buy_number" property="goodsBuyNumber" jdbcType="INTEGER" />
     <result column="charge_back_count" property="chargeBackCount" jdbcType="INTEGER" />
     <result column="have_return_count" property="haveReturnCount" jdbcType="INTEGER" />
     <result column="market_price" property="marketPrice" jdbcType="DECIMAL" />
@@ -20,7 +20,7 @@
     <result column="share_settle" property="shareSettle" jdbcType="DECIMAL" />
     <result column="os_depot_code" property="osDepotCode" jdbcType="VARCHAR" />
     <result column="price_difference" property="priceDifference" jdbcType="DECIMAL" />
-    <result column="price_differ_num" property="priceDifferNum" jdbcType="SMALLINT" />
+    <result column="price_differ_num" property="priceDifferNum" jdbcType="INTEGER" />
     <result column="price_differ_reason" property="priceDifferReason" jdbcType="VARCHAR" />
     <result column="return_reason" property="returnReason" jdbcType="VARCHAR" />
     <result column="goods_thumb" property="goodsThumb" jdbcType="VARCHAR" />
@@ -38,7 +38,7 @@
     <result column="integral_money" property="integralMoney" jdbcType="DECIMAL" />
     <result column="barcode" property="barcode" jdbcType="VARCHAR" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
-    <result column="prodScanNum" property="prodscannum" jdbcType="SMALLINT" />
+    <result column="prodScanNum" property="prodscannum" jdbcType="INTEGER" />
     <result column="master_order_sn" property="masterOrderSn" jdbcType="VARCHAR" />
     <result column="order_sn" property="orderSn" jdbcType="VARCHAR" />
     <result column="storage_time_stamp" property="storageTimeStamp" jdbcType="VARCHAR" />

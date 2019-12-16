@@ -884,23 +884,23 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
      * @param orderGoodsList
      */
 	private void setGoodsInfo(List<OrderGoodsInfo>  orderGoodsList){
-		if (CollectionUtils.isNotEmpty(orderGoodsList)) {
-			for (OrderGoodsInfo orderGoods : orderGoodsList) {
-				if (orderGoods.getSkuSn() != null && orderGoods.getSkuSn().length() > 6) {
-					orderGoods.setGoodsSn(orderGoods.getSkuSn().substring(0, 6));
-				}
-			}
-		}
+//		if (CollectionUtils.isNotEmpty(orderGoodsList)) {
+//			for (OrderGoodsInfo orderGoods : orderGoodsList) {
+//				if (orderGoods.getSkuSn() != null && orderGoods.getSkuSn().length() > 6) {
+//					orderGoods.setGoodsSn(orderGoods.getSkuSn().substring(0, 6));
+//				}
+//			}
+//		}
 	}
 	
 	private void setReturnGoodsInfo(List<OrderReturnGoodsInfo> orderReturnGoodsList) {
-		if (CollectionUtils.isNotEmpty(orderReturnGoodsList)) {
-			for (OrderReturnGoodsInfo orderReturnGoods : orderReturnGoodsList) {
-				if (orderReturnGoods.getSkuSn() != null && orderReturnGoods.getSkuSn().length() > 6) {
-					orderReturnGoods.setGoodsSn(orderReturnGoods.getSkuSn().substring(0, 6));
-				}
-			}
-		}
+//		if (CollectionUtils.isNotEmpty(orderReturnGoodsList)) {
+//			for (OrderReturnGoodsInfo orderReturnGoods : orderReturnGoodsList) {
+//				if (orderReturnGoods.getSkuSn() != null && orderReturnGoods.getSkuSn().length() > 6) {
+//					orderReturnGoods.setGoodsSn(orderReturnGoods.getSkuSn().substring(0, 6));
+//				}
+//			}
+//		}
 	}
 	
 	/**
@@ -988,7 +988,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             OrderReturnGoods goods = map.get(key);
             if (goods != null) {
                 Integer returnNum = goods.getGoodsReturnNumber() + returnGoods.getGoodsReturnNumber();
-                returnGoods.setGoodsReturnNumber(returnNum.shortValue());
+                returnGoods.setGoodsReturnNumber(returnNum);
             }
 
             map.put(key, returnGoods);

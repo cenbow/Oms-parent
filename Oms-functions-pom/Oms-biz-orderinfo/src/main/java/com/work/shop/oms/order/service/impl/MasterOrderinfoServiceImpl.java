@@ -904,51 +904,51 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
             //发票类型
             String invType = consignInfo.getInvType();
-            if (StringUtils.isNotBlank(invType)) {
+            if (StringUtils.isNotBlank(invType) && !invType.equalsIgnoreCase(extendBydb.getInvType())) {
                 extend.setInvType(invType);
-                sb.append("发票类型由‘" + extendBydb.getInvType() + "’更改为‘" + invType + "’；");
+                sb.append("发票类型由‘" + extendBydb.getInvType() + "’→‘" + invType + "’；<br />");
             }
 
             //发票抬头
             String invPayee = consignInfo.getInvPayee();
-            if (StringUtils.isNotBlank(invPayee)) {
+            if (StringUtils.isNotBlank(invPayee) && !invPayee.equalsIgnoreCase(extendBydb.getInvPayee())) {
                 extend.setInvPayee(invPayee);
-                sb.append("发票抬头由‘" + extendBydb.getInvPayee() + "’更改为‘" + invPayee + "’；");
+                sb.append("发票抬头由‘" + extendBydb.getInvPayee() + "’→‘" + invPayee + "’；<br />");
             }
 
             //税号
             String invTaxer = consignInfo.getInvTaxer();
-            if (StringUtils.isNotBlank(invTaxer)) {
+            if (StringUtils.isNotBlank(invTaxer) && !invTaxer.equalsIgnoreCase(extendBydb.getInvTaxer())) {
                 extend.setInvTaxer(invTaxer);
-                sb.append("税号由‘" + extendBydb.getInvTaxer() + "’更改为‘" + invTaxer + "’；");
+                sb.append("税号由‘" + extendBydb.getInvTaxer() + "’→‘" + invTaxer + "’；<br />");
             }
 
             //注册地址
             String invCompanyAddress = consignInfo.getInvCompanyAddress();
-            if (StringUtils.isNotBlank(invCompanyAddress)) {
+            if (StringUtils.isNotBlank(invCompanyAddress) && !invCompanyAddress.equalsIgnoreCase(extendBydb.getInvCompanyAddress())) {
                 extend.setInvCompanyAddress(invCompanyAddress);
-                sb.append("注册地址由‘" + extendBydb.getInvCompanyAddress() + "’更改为‘" + invCompanyAddress + "’；");
+                sb.append("注册地址由‘" + extendBydb.getInvCompanyAddress() + "’→‘" + invCompanyAddress + "’；<br />");
             }
 
             //注册电话
             String invPhone = consignInfo.getInvPhone();
-            if (StringUtils.isNotBlank(invPhone)) {
+            if (StringUtils.isNotBlank(invPhone) && !invPhone.equalsIgnoreCase(extendBydb.getInvPhone())) {
                 extend.setInvPhone(invPhone);
-                sb.append("注册电话由‘" + extendBydb.getInvPhone() + "’更改为‘" + invPhone + "’；");
+                sb.append("注册电话由‘" + extendBydb.getInvPhone() + "’→‘" + invPhone + "’；<br />");
             }
 
             //开户银行
             String invBank = consignInfo.getInvBank();
-            if (StringUtils.isNotBlank(invBank)) {
+            if (StringUtils.isNotBlank(invBank) && !invBank.equalsIgnoreCase(extendBydb.getInvBank())) {
                 extend.setInvBank(invBank);
-                sb.append("开户银行由‘" + extendBydb.getInvBank() + "’更改为‘" + invBank + "’；");
+                sb.append("开户银行由‘" + extendBydb.getInvBank() + "’→‘" + invBank + "’；<br />");
             }
 
             //银行账户
             String invBankNo = consignInfo.getInvBankNo();
-            if (StringUtils.isNotBlank(invBankNo)) {
+            if (StringUtils.isNotBlank(invBankNo) && !invBankNo.equalsIgnoreCase(extendBydb.getInvBankNo())) {
                 extend.setInvBankNo(invBankNo);
-                sb.append("银行账户由‘" + extendBydb.getInvBankNo() + "’更改为‘" + invBankNo + "’；");
+                sb.append("银行账户由‘" + extendBydb.getInvBankNo() + "’→‘" + invBankNo + "’；<br />");
             }
 
             //无修改，返回
@@ -967,7 +967,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             }
 
             //添加日志
-            masterOrderActionService.insertOrderActionBySn(orderSn, "发票信息修改：" + msg, actionUser);
+            masterOrderActionService.insertOrderActionBySn(orderSn, "发票信息修改：<br />" + msg, actionUser);
 
         } catch (Exception e) {
             logger.error("主订单编辑发票信息异常" + JSONObject.toJSONString(consignInfo), e);

@@ -473,7 +473,7 @@
     <result column="custom_code" jdbcType="VARCHAR" property="customCode" />
     <result column="extension_code" jdbcType="VARCHAR" property="extensionCode" />
     <result column="extension_id" jdbcType="VARCHAR" property="extensionId" />
-    <result column="goods_number" jdbcType="SMALLINT" property="goodsNumber" />
+    <result column="goods_number" jdbcType="INTEGER" property="goodsNumber" />
     <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
     <result column="market_price" jdbcType="DECIMAL" property="marketPrice" />
     <result column="transaction_price" jdbcType="DECIMAL" property="transactionPrice" />
@@ -486,7 +486,7 @@
     <result column="goods_size_name" jdbcType="VARCHAR" property="goodsSizeName" />
     <result column="goods_color_name" jdbcType="VARCHAR" property="goodsColorName" />
     <result column="goods_thumb" jdbcType="VARCHAR" property="goodsThumb" />
-    <result column="send_number" jdbcType="SMALLINT" property="sendNumber" />
+    <result column="send_number" jdbcType="INTEGER" property="sendNumber" />
     <result column="parent_sn" jdbcType="VARCHAR" property="parentSn" />
     <result column="merge_from" jdbcType="VARCHAR" property="mergeFrom" />
     <result column="exchange_from" jdbcType="VARCHAR" property="exchangeFrom" />

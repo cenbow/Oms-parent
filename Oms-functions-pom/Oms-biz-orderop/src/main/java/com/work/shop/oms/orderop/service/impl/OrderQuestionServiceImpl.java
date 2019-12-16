@@ -663,12 +663,9 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 	/**
 	 * 检查缺货问题单中商品数据的准确性
 	 * 
-	 * @param shortageParams
-	 * @param orderSn
-	 * @param adminUser
-	 * @param message
-	 * @param logType
-	 * @param code
+	 * @param lackSkuParams
+	 * @param distribute
+	 * @param orderStatus
 	 * @return
 	 */
 	public ReturnInfo checkShortageOrderGoods(List<LackSkuParam> lackSkuParams, OrderDistribute distribute,
@@ -763,7 +760,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 				errorMsg += "商品编码：" + param.getCustomCode() + ";配货仓：" + param.getDepotCode() + ",商品不存在！</br>";
 				continue;
 			}
-			short lackNum = param.getLackNum();
+			int lackNum = param.getLackNum();
 			for (MasterOrderGoods searchGoods : searchGoodsList) {
 				OrderQuestionLackSkuNew lackSkuNew = new OrderQuestionLackSkuNew();
 				lackSkuNew.setOrderSn(distribute.getOrderSn());
@@ -772,7 +769,7 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 				lackSkuNew.setDepotCode(param.getDepotCode());
 				lackSkuNew.setQuestionCode(define.getCode());
 				lackSkuNew.setCustomCode(param.getCustomCode());
-				short goodsNumber = searchGoods.getGoodsNumber();
+				int goodsNumber = searchGoods.getGoodsNumber();
 				if (lackNum <= 0) {
 					break ;
 				} else if (goodsNumber < lackNum) {
@@ -804,9 +801,9 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 	/**
 	 * 保存问题单缺货问题商品
 	 * 
-	 * @param questionParam
-	 * @param oqPkId
+	 * @param lackSkuParam
 	 * @param orderSn
+	 * @param define
 	 */
 	private String saveLackSku(LackSkuParam lackSkuParam, String orderSn, OrderCustomDefine define) throws Exception {
 		logger.debug("订单" + orderSn + "商品SKU:" + lackSkuParam.getCustomCode() + " 保存问题单缺货问题商品");
@@ -833,9 +830,9 @@ public class OrderQuestionServiceImpl implements OrderQuestionService {
 			criteria.andIsDelEqualTo(0);
 			List<MasterOrderGoods> searchGoodsList = masterOrderGoodsMapper.selectByExample(goodsExample2);
 			if (StringUtil.isListNotNull(searchGoodsList)) {
-				short lackNum = lackSkuParam.getLackNum();
+				int lackNum = lackSkuParam.getLackNum();
 				for (MasterOrderGoods searchGoods : searchGoodsList) {
-					short goodsNumber = searchGoods.getGoodsNumber();
+					int goodsNumber = searchGoods.getGoodsNumber();
 					if (lackNum <= 0) {
 						break ;
 					} else if (goodsNumber < lackNum) {
