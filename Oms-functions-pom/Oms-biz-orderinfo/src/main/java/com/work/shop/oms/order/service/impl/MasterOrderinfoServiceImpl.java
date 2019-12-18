@@ -758,7 +758,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
 			int payId = masterOrderPay.getPayId();
-			if (Constant.PAYMENT_ZHANGQI_ID  != payId || Constant.PAYMENT_YINCHENG != payId) {
+			if (Constant.PAYMENT_ZHANGQI_ID  != payId && Constant.PAYMENT_YINCHENG != payId) {
 				returnInfo.setMessage("订单:" + masterOrderSn + "不是内行现金和内行银承支付");
 				return returnInfo;
 			}
