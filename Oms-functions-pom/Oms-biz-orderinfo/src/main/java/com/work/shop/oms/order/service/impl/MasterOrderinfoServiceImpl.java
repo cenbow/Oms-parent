@@ -726,10 +726,10 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			orderAccountPeriod.setType(1);
 
 			if (Constant.PAYMENT_ZHANGQI_ID == masterOrderPay.getPayId()) {
-				orderAccountPeriod.setPayType(0);
-			} else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
+                orderAccountPeriod.setPayType(0);
+            } else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
                 orderAccountPeriod.setPayType(1);
-			}
+            }
 			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
 		} catch (Exception e) {
 			logger.error("处理订单账期支付推送问题");
@@ -987,7 +987,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
      */
 	private void processOrderAccountPay(MasterOrderPay masterOrderPay) {
         int payId = masterOrderPay.getPayId();
-        if (Constant.PAYMENT_ZHANGQI_ID  != payId) {
+        if (Constant.PAYMENT_ZHANGQI_ID  != payId && Constant.PAYMENT_YINCHENG != payId) {
             return;
         }
         // 期数
@@ -1026,6 +1026,11 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
         orderAccountPeriod.setType(1);
 
+        if (Constant.PAYMENT_ZHANGQI_ID == masterOrderPay.getPayId()) {
+            orderAccountPeriod.setPayType(0);
+        } else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
+            orderAccountPeriod.setPayType(1);
+        }
         return orderAccountPeriod;
     }
 }

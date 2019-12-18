@@ -281,7 +281,7 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         try {
             apiReturnData.setIsOk(Constant.OS_STR_NO);
             apiReturnData.setMessage("校验成功");
-            if (Constant.PAYMENT_ZHANGQI_ID == payId) {
+            if (Constant.PAYMENT_ZHANGQI_ID == payId || Constant.PAYMENT_YINCHENG == payId) {
                 apiReturnData.setData(true);
                 apiReturnData.setIsOk(Constant.OS_STR_YES);
             } else {
