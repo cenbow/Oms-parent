@@ -724,6 +724,12 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
 			orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
 			orderAccountPeriod.setType(1);
+
+			if (Constant.PAYMENT_ZHANGQI_ID == masterOrderPay.getPayId()) {
+				orderAccountPeriod.setPayType(0);
+			} else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
+                orderAccountPeriod.setPayType(1);
+			}
 			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
 		} catch (Exception e) {
 			logger.error("处理订单账期支付推送问题");
@@ -752,8 +758,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
 			int payId = masterOrderPay.getPayId();
-			if (Constant.PAYMENT_ZHANGQI_ID  != payId) {
-				returnInfo.setMessage("订单:" + masterOrderSn + "不是账期支付");
+			if (Constant.PAYMENT_ZHANGQI_ID  != payId || Constant.PAYMENT_YINCHENG != payId) {
+				returnInfo.setMessage("订单:" + masterOrderSn + "不是内行现金和内行银承支付");
 				return returnInfo;
 			}
 
@@ -765,13 +771,13 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             }
             int payPeriodStatus = masterOrderInfoExtend.getPayPeriodStatus();
 			if (payPeriodStatus == 1) {
-                returnInfo.setMessage("订单:" + masterOrderSn + "账期已扣款");
+                returnInfo.setMessage("订单:" + masterOrderSn + "已扣款");
                 return returnInfo;
             }
             processOrderAccountPay(masterOrderPay);
 			Date lastPayDate = masterOrderInfoExtend.getLastPayDate();
 			if (lastPayDate != null) {
-                returnInfo.setMessage("订单:" + masterOrderSn + "账期支付时间已设置");
+                returnInfo.setMessage("订单:" + masterOrderSn + "支付时间已设置");
                 return returnInfo;
             }
             //账期支付填充最后支付时间
@@ -781,7 +787,6 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			logger.error("处理订单账期支付推送问题");
 			returnInfo.setIsOk(Constant.OS_NO);
 		}
-
 
 		return returnInfo;
 	}
