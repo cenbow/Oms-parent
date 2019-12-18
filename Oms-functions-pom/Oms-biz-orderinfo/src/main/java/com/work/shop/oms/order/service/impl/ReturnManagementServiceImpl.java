@@ -1325,10 +1325,13 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
         ReturnManagementResponse accountResponse = null;
 		int returnType = orderReturnBean.getType();
-		// 结算账户
-		if (returnType == 3) {
+
+		if (returnType == Constant.USER_PAY_TYPE_SETTLEMENT) {
+			// 结算账户
             accountResponse = fillOrderReturnBeanBySettlementAccount(orderReturn, orderReturnBean);
-		} else if (returnType == 1 || returnType == 4) {
+		} else if (returnType == Constant.USER_PAY_TYPE_XINYONG || returnType == Constant.USER_PAY_TYPE_BAOHAN
+                || returnType == Constant.USER_PAY_TYPE_ZHANGQI || returnType == Constant.USER_PAY_TYPE_YINCHENG) {
+			// 保函、铁付通、内行现金、内行银承
             accountResponse = fillOrderReturnBeanByUserAccount(orderReturn, orderReturnBean);
 		}
 
@@ -1370,6 +1373,15 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 			return response;
 		}
 
+		// 内行现金和内行银承 下发退款、需要先扣款
+		if (orderReturnBean.getType() == Constant.USER_PAY_TYPE_ZHANGQI || orderReturnBean.getType() == Constant.USER_PAY_TYPE_YINCHENG) {
+            int payPeriodStatus = masterOrderInfoExtend.getPayPeriodStatus();
+            if (payPeriodStatus == 0) {
+                response.setMessage("订单未正常扣款,请扣款后再退款");
+                return response;
+            }
+        }
+
 		orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
         response.setSuccess(true);
         response.setMessage("成功");
@@ -1377,7 +1389,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 	}
 
     /**
-     * 设置账期支付退款信息
+     * 设置结算账户退款信息
      * @param orderReturn
      * @param orderReturnBean
      */
@@ -1390,12 +1402,6 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
         if (masterOrderInfoExtend == null) {
             response.setMessage("订单不存在");
-            return response;
-        }
-
-        int payPeriodStatus = masterOrderInfoExtend.getPayPeriodStatus();
-        if (payPeriodStatus == 0) {
-            response.setMessage("订单未正常扣款,请扣款后再退款");
             return response;
         }
 

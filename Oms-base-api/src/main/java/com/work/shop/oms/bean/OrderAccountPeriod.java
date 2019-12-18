@@ -50,6 +50,11 @@ public class OrderAccountPeriod implements Serializable {
      */
     private BigDecimal paymentRate;
 
+    /**
+     * 内行支付业务类型 0 内行现金、1内行银承
+     */
+    private int payType;
+
     public String getMasterOrderSn() {
         return masterOrderSn;
     }
@@ -112,5 +117,13 @@ public class OrderAccountPeriod implements Serializable {
 
     public void setPaymentRate(BigDecimal paymentRate) {
         this.paymentRate = paymentRate;
+    }
+
+    public int getPayType() {
+        return payType;
+    }
+
+    public void setPayType(int payType) {
+        this.payType = payType;
     }
 }
