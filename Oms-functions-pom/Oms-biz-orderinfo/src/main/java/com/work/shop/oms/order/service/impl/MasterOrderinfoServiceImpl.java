@@ -788,7 +788,6 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			returnInfo.setIsOk(Constant.OS_NO);
 		}
 
-
 		return returnInfo;
 	}
 
