@@ -2333,15 +2333,17 @@
             mog.box_gauge as boxGauge,
             mop.pay_name as payMethod,
 			mog.customer_material_code as customerMaterialCode,
-			mog.customer_material_name as customerMaterialName
-		FROM master_order_info oi,
-            master_order_address_info oai,
-            master_order_info_extend oie,
-            master_order_goods mog,
-            master_order_pay mop
+			pgm.material_description as customerMaterialName
+		FROM mboms_mall.master_order_info oi,
+			mboms_mall.master_order_address_info oai,
+			mboms_mall.master_order_info_extend oie,
+			mboms_mall.master_order_goods mog,
+			mboms_mall.master_order_pay mop,
+			mbproduct_mall.product_goods_map  pgm
 		<if test="_parameter != null" >
 	        <include refid="Example_Where_Clause" />
 	    </if>
+		and pgm.company_id=oie.company_code and mog.customer_material_code=pgm.materiel_no
 	    group by oi.master_order_sn, mog.custom_code, mog.extension_code, mog.goods_price, mog.transaction_price, mog.settlement_price, mog.depot_code
 		order by ${orderByClause}
     	<if test="criteria.valid" >
