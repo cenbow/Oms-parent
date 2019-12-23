@@ -23,7 +23,7 @@ eureka:
 
 spring:
   application:
-    name: oms-service-dev
+    name: oms-service-cii
   main:
     allow-bean-definition-overriding: true
 

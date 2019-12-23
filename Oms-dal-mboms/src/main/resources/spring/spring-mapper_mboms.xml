@@ -511,4 +511,19 @@
 		<property name="mapperInterface" value="com.work.shop.oms.dao.PurchaseOrderLineMapper" />
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
 	</bean>
+
+	<bean id="orderRewardPointGoodsMaster" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderRewardPointGoodsMasterMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="orderRewardPointGoodsDetail" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderRewardPointGoodsDetailMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="rewardPointChangeLogMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.RewardPointChangeLogMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
 </beans>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.OrderRewardPointGoodsMasterMapper">
+
+    <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean">
+        <id column="id" property="id"/>
+        <result column="order_sn" property="orderSN"/>
+        <result column="buyer_sn" property="buyerSN"/>
+        <result column="total_point" property="totalPoint"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="receiver_tel" property="receiverTel"/>
+        <result column="receiver_address" property="receiverAddress"/>
+        <result column="express_time" property="expressTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="cancel_sn" property="cancelSN"/>
+        <result column="cancel_time" property="cancelTime"/>
+        <result column="comment" property="comment"/>
+    </resultMap>
+
+    <select id="getCountByParam" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultType="Integer">
+        select count(*) from order_reward_point_goods_master where buyer_sn=#{buyerSN}
+        <if test="beginOrderTime!=null and endOrderTime!=null">
+            and create_time<![CDATA[<=]]>#{endOrderTime} and create_time<![CDATA[>=]]>#{beginOrderTime}
+        </if>
+        <if test="orderStatus!=null">
+            and order_status=${orderStatus}
+        </if>
+        <if test="order!=null and sort!=null">
+            order by ${order} ${sort},id
+        </if>
+        limit ${start},${pageSize}
+    </select>
+
+    <select id="getOrderRewardPointGoods" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultMap="BaseResultMap">
+        select * from order_reward_point_goods_master where buyer_sn=#{buyerSN}
+        <if test="beginOrderTime!=null and endOrderTime!=null">
+            and create_time<![CDATA[<=]]>#{endOrderTime} and create_time<![CDATA[>=]]>#{beginOrderTime}
+        </if>
+        <if test="orderStatus!=null">
+            and order_status=${orderStatus}
+        </if>
+        <if test="order!=null and sort!=null">
+            order by ${order} ${sort},id
+        </if>
+        limit ${start},${pageSize}
+    </select>
+
+    <insert id="createOrderMaster" parameterType="com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean">
+        insert into order_reward_point_goods_master(order_sn ,buyer_sn, total_point, receiver_name, receiver_tel, receiver_address)
+        values(#{orderSN},#{buyerSN},#{totalPoint},#{receiverName},#{receiverTel},#{receiverAddress})
+    </insert>
+
+    <update id="cancelOrder" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods">
+        update order_reward_point_goods_master
+        set cancel_time=#{cancelTime},order_status=4, cancel_sn=#{cancelSN}
+        where order_sn=#{orderSN} and buyer_sn=#{buyerSN}
+    </update>
+</mapper>
