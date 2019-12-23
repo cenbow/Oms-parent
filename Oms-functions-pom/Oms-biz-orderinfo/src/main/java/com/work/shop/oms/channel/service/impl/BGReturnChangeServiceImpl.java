@@ -2124,7 +2124,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 returnGoods.setExtensionId("1");
                 returnGoods.setGoodsBuyNumber(detail.getGoodsNumber());
                 returnGoods.setGoodsName(detail.getGoodsName());
-                returnGoods.setGoodsPrice(detail.getGoodsPrice().doubleValue());
+                returnGoods.setGoodsPrice(detail.getTransactionPrice().doubleValue());
                 returnGoods.setGoodsReturnNumber(detail.getReturnSum());
                 returnGoods.setGoodsSn(detail.getGoodsSn());
                 returnGoods.setGoodsThumb(detail.getGoodsThumb());

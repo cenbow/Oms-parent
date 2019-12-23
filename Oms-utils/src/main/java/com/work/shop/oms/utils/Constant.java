@@ -1065,6 +1065,11 @@ public class Constant {
 	 * 支付方式 保函
 	 */
 	public static final int PAYMENT_BAOHAN_ID = 47;
+
+	/**
+	 * 支付方式 银承
+	 */
+	public static final int PAYMENT_YINCHENG = 50;
     
     /**
      * 问题单类型 0：普通问题单；1：缺货问题单；2：审核问题单；3签章问题单
@@ -1093,4 +1098,29 @@ public class Constant {
      * 默认店铺
      */
     public static final String DEFAULT_SHOP = "hbis";
+
+	/**
+	 * 信用额度
+	 */
+	public static final int USER_PAY_TYPE_XINYONG = 1;
+
+	/**
+	 * 账期支付
+	 */
+	public static final int USER_PAY_TYPE_ZHANGQI = 2;
+
+	/**
+	 * 结算账户
+	 */
+	public static final int USER_PAY_TYPE_SETTLEMENT = 3;
+
+	/**
+	 * 银行保函
+	 */
+	public static final int USER_PAY_TYPE_BAOHAN = 4;
+
+	/**
+	 * 内行银承
+	 */
+	public static final int USER_PAY_TYPE_YINCHENG = 5;
 }
