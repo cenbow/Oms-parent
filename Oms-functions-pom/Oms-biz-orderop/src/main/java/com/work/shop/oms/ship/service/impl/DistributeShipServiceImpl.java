@@ -1825,7 +1825,8 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         }
 
         for (MasterOrderGoods item : list) {
-        	item.setExtensionId(item.getExtensionId() + "0"); // 商品下标补0防止主键冲突
+            // 商品下标补0防止主键冲突
+        	item.setExtensionId(item.getExtensionId() + "0");
         	item.setId(null);
         	masterOrderGoodsMapper.insertSelective(item);
         }
@@ -2080,6 +2081,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 			logger.debug("处理完毕订单" + orderSn);
 			// 添加发货日志
 			DistributeAction orderAction = new DistributeAction();
+			orderAction.setActionUser(request.getActionUser());
 			fillOrderAction(orderSn, distribute, orderAction);
 			distributeActionService.saveOrderAction(orderAction);
 			isSend.set(null);
@@ -2169,7 +2171,11 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 	 */
 	private void fillOrderAction(String orderSn, OrderDistribute distribute, DistributeAction orderAction) {
 		orderAction.setOrderSn(orderSn);
-		orderAction.setActionUser("system");
+		String actionUser = orderAction.getActionUser();
+		if (StringUtils.isBlank(actionUser)) {
+			actionUser = "system";
+		}
+		orderAction.setActionUser(actionUser);
 		orderAction.setOrderStatus(new Byte("" + distribute.getOrderStatus()));
 		orderAction.setShippingStatus(new Byte("" + distribute.getShipStatus()));
 		orderAction.setPayStatus(new Byte("" + distribute.getPayStatus()));
