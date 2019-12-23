@@ -2312,7 +2312,7 @@
             oai.mobile,
             oai.address,
 			oie.company_name as companyName,
-			oie.company_id as companyId,
+			oie.company_code as companyId,
             mog.goods_name as goodsName,
             mog.goods_sn as goodsSn,
             mog.custom_code as customCode,
@@ -2334,8 +2334,8 @@
             mog.box_gauge as boxGauge,
             mop.pay_name as payMethod,
 			mog.customer_material_code as customerMaterialCode,
-			mog.customer_material_name as customerMaterialName，
-			mog.supplier_code  as supplierCode
+			mog.customer_material_name as customerMaterialName,
+			mog.supplier_code as supplierCode
 		FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
