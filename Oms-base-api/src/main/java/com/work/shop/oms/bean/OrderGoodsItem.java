@@ -131,6 +131,11 @@ public class OrderGoodsItem implements Serializable {
     private String payMethod;
 
 	/**
+	 * 下单公司id
+	 */
+	private String companyId;
+
+	/**
 	 * 下单公司名称
 	 */
 	private String companyName;
@@ -144,6 +149,26 @@ public class OrderGoodsItem implements Serializable {
 	 * 客户物料编码
 	 */
 	private String customerMaterialCode;
+
+	/**
+	 * 供应商名称
+	 */
+	private String supplierName;
+
+	/**
+	 * 供应商编码
+	 */
+	private String supplierCode;
+
+	/**
+	 * 供应商联系人
+	 */
+	private String supplierContactUser;
+
+	/**
+	 * 供应商联系电话
+	 */
+	private String supplierContactMobile;
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -447,5 +472,45 @@ public class OrderGoodsItem implements Serializable {
 
 	public void setCustomerMaterialCode(String customerMaterialCode) {
 		this.customerMaterialCode = customerMaterialCode;
+	}
+
+	public String getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(String supplierName) {
+		this.supplierName = supplierName;
+	}
+
+	public String getSupplierContactUser() {
+		return supplierContactUser;
+	}
+
+	public void setSupplierContactUser(String supplierContactUser) {
+		this.supplierContactUser = supplierContactUser;
+	}
+
+	public String getSupplierContactMobile() {
+		return supplierContactMobile;
+	}
+
+	public void setSupplierContactMobile(String supplierContactMobile) {
+		this.supplierContactMobile = supplierContactMobile;
+	}
+
+	public String getSupplierCode() {
+		return supplierCode;
+	}
+
+	public void setSupplierCode(String supplierCode) {
+		this.supplierCode = supplierCode;
+	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
 	}
 }
