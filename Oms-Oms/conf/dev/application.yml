@@ -26,6 +26,10 @@ spring:
     name: oms-service-dev
   main:
     allow-bean-definition-overriding: true
+  activemq:
+    broker-url: failover:(tcp://220.194.242.41:61616)?timeout=6000&randomize=false&initialReconnectDelay=1000&jms.prefetchPolicy.all=10&jms.useAsyncSend=true
+    user: systemadmin
+    password: Manager123
 
 #log配置
 logging:
