@@ -705,19 +705,6 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
                 logger.info("退单确认结果：" + JSONObject.toJSONString(returnManagementResponse));
             }
 
-            //退单创建成功生成日志
-			if(response.getSuccess()){
-				OrderReturnAction orderReturnAction = new OrderReturnAction();
-				String returnSn = request.getReturnSn();
-				orderReturnAction.setActionUser(request.getActionUser());
-				orderReturnAction.setActionNote(returnSn + "创建退单");
-				orderReturnAction.setReturnSn(returnSn);
-				orderReturnAction.setLogTime(new Date());
-                orderReturnAction.setReturnOrderStatus(0);
-                orderReturnAction.setReturnShippingStatus(0);
-                orderReturnAction.setReturnPayStatus(0);
-                orderReturnActionMapper.insertSelective(orderReturnAction);
-			}
 		} catch (Exception e) {
 			logger.error("退单创建失败:" + e.getMessage(), e);
 			response.setMessage("退单创建失败:" + e.getMessage());
