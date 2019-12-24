@@ -20,4 +20,7 @@ public interface OrderRewardPointGoodsService {
 
     List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(String orderSN);
 
+    //根据订单号查询订单
+    OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN);
+
 }

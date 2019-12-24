@@ -18,4 +18,7 @@ public interface OrderRewardPointGoodsMasterMapper {
 
     //订单取消
     void cancelOrder(ParamOrderRewardPointGoods param);
+
+    //根据订单号查询订单
+    OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN);
 }

@@ -2,8 +2,6 @@ package com.work.shop.oms.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.work.shop.oms.bean.ChangeUserAndCompanyPointMQBean;
 import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
 import com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean;
@@ -269,7 +267,10 @@ public class CreateOrderController extends BaseController {
         }
 
         ResultData<List<ProductRewardPointGoodsBean>> beanList = rewardPointGoodsFeign.getRewardPointGoodsBySNList(goodsSNList);
-        if (beanList == null || beanList.getData() == null || beanList.getData().size() == 0 || beanList.getData().size() != goodsSNList.size()) {
+        if (beanList == null || beanList.getData() == null || beanList.getData().size() == 0) {
+            result.setMsg("积分商品查询为空！");
+            return result;
+        } else if (beanList.getData().size() != goodsSNList.size()) {
             result.setMsg("积分商品查询出错！");
             return result;
         }
@@ -302,7 +303,7 @@ public class CreateOrderController extends BaseController {
         UserShopPointsRequestBean userShopPointsRequestBean = new UserShopPointsRequestBean();
         userShopPointsRequestBean.setAccountSN(param.getBuyerSN());
         ResultData<UserShopPointBean> userShopPointResult = userPointFeign.getUserPointByUserAccount(userShopPointsRequestBean);
-        if (userShopPointResult == null || userShopPointResult.getData() == null) {
+        if (userShopPointResult == null) {
             result.setMsg("用户：" + param.getBuyerSN() + "的积分查询出错！");
             return result;
         } else if (userShopPointResult.getData().getPoint() < totalPoint) {
@@ -387,6 +388,20 @@ public class CreateOrderController extends BaseController {
     public ResultData<String> cancelOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
         ResultData<String> result = new ResultData<>();
         result.setIsOk(0);
+
+        if (StringUtils.isEmpty(param.getOrderSN())) {
+            result.setMsg("订单参数不能为空！");
+            return result;
+        } else {
+            OrderRewardPointGoodsMasterBean orderRewardPointGoods = orderRewardPointGoodsService.getOrderRewardPointGoodsByOrderSN(param.getOrderSN());
+            if (orderRewardPointGoods == null) {
+                result.setMsg("订单:" + param.getOrderSN() + "不存在！");
+                return result;
+            } else if (orderRewardPointGoods.getOrderStatus() >= 2) {
+                result.setMsg("订单已发货无法取消！");
+                return result;
+            }
+        }
 
         param.setCancelTime(new Date());
         orderRewardPointGoodsService.cancelOrderRewardPoint(param);

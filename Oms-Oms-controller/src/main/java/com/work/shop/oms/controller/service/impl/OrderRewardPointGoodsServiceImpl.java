@@ -61,4 +61,9 @@ public class OrderRewardPointGoodsServiceImpl implements OrderRewardPointGoodsSe
         return rewardPointGoodsDetailMapper.getOrderRewardPointGoodsDetail(orderSN);
     }
 
+    @Override
+    public OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN) {
+        return rewardPointGoodsMasterMapper.getOrderRewardPointGoodsByOrderSN(orderSN);
+    }
+
 }

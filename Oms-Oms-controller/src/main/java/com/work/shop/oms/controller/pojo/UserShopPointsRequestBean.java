@@ -13,8 +13,7 @@ import java.io.Serializable;
 @Data
 public class UserShopPointsRequestBean implements Serializable {
 
-    private static final long serialVersionUID = 5848801464658227676L;
-
+    private static final long serialVersionUID = -3881830166518096407L;
     /**
      * 账户id
      */

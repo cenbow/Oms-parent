@@ -27,7 +27,7 @@
             and order_status=${orderStatus}
         </if>
         <if test="order!=null and sort!=null">
-            order by ${order} ${sort},id
+            order by ${order} ${sort}
         </if>
         limit ${start},${pageSize}
     </select>
@@ -41,19 +41,28 @@
             and order_status=${orderStatus}
         </if>
         <if test="order!=null and sort!=null">
-            order by ${order} ${sort},id
+            order by ${order} ${sort}
         </if>
         limit ${start},${pageSize}
     </select>
 
     <insert id="createOrderMaster" parameterType="com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean">
-        insert into order_reward_point_goods_master(order_sn ,buyer_sn, total_point, receiver_name, receiver_tel, receiver_address)
-        values(#{orderSN},#{buyerSN},#{totalPoint},#{receiverName},#{receiverTel},#{receiverAddress})
+        insert into order_reward_point_goods_master(order_sn, buyer_sn, total_point, receiver_name, receiver_tel, receiver_address)
+        values (#{orderSN}, #{buyerSN}, #{totalPoint}, #{receiverName}, #{receiverTel}, #{receiverAddress})
     </insert>
 
     <update id="cancelOrder" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods">
         update order_reward_point_goods_master
-        set cancel_time=#{cancelTime},order_status=4, cancel_sn=#{cancelSN}
-        where order_sn=#{orderSN} and buyer_sn=#{buyerSN}
+        set cancel_time=#{cancelTime},
+            order_status=4,
+            cancel_sn=#{cancelSN}
+        where order_sn = #{orderSN}
+          and buyer_sn = #{buyerSN}
     </update>
+
+    <select id="getOrderRewardPointGoodsByOrderSN" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select *
+        from order_reward_point_goods_master
+        where order_sn = #{orderSN}
+    </select>
 </mapper>
