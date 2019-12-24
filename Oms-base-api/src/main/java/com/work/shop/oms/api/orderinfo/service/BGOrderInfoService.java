@@ -1,5 +1,6 @@
 package com.work.shop.oms.api.orderinfo.service;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.work.shop.oms.api.bean.*;
@@ -337,4 +338,7 @@ public interface BGOrderInfoService {
      * @return ApiReturnData<UserOrderTypeNum>
      */
     public ApiReturnData<UserOrderTypeNum> getUserOrderReturnType(PageListParam searchParam);
+
+	//查询订单来源
+	HashMap<String,Object> getOrderFromByOrderSN(String orderSN);
 }

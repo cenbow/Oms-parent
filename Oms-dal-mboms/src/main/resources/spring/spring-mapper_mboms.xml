@@ -526,4 +526,9 @@
 		<property name="mapperInterface" value="com.work.shop.oms.dao.RewardPointChangeLogMapper" />
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
 	</bean>
+
+	<bean id="rewardPointRatioMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.RewardPointRatioMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
 </beans>

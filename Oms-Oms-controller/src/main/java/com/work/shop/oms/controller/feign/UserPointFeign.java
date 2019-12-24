@@ -1,8 +1,8 @@
 package com.work.shop.oms.controller.feign;
 
+import com.work.shop.oms.common.bean.CommonResultData;
 import com.work.shop.oms.controller.pojo.UserShopPointBean;
 import com.work.shop.oms.controller.pojo.UserShopPointsRequestBean;
-import com.work.shop.pca.common.ResultData;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -17,5 +17,5 @@ import org.springframework.web.bind.annotation.PostMapping;
 public interface UserPointFeign {
 
     @PostMapping("/CloudShopCenter-manager/custom/userPointsShop/getUserPointByUserAccount")
-    ResultData<UserShopPointBean> getUserPointByUserAccount(UserShopPointsRequestBean userShopPointsRequestBean);
+    CommonResultData<UserShopPointBean> getUserPointByUserAccount(UserShopPointsRequestBean userShopPointsRequestBean);
 }

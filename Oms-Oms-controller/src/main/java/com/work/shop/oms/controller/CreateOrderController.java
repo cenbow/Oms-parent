@@ -14,6 +14,7 @@ import com.work.shop.oms.controller.pojo.ProductRewardPointGoodsBean;
 import com.work.shop.oms.controller.pojo.UserShopPointBean;
 import com.work.shop.oms.controller.pojo.UserShopPointsRequestBean;
 import com.work.shop.oms.controller.service.OrderRewardPointGoodsService;
+import com.work.shop.oms.controller.service.RewardPointRatioService;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
@@ -22,7 +23,6 @@ import com.work.shop.oms.order.service.SystemOrderSnService;
 import com.work.shop.oms.param.bean.ParamOrderRewardPointGoods;
 import com.work.shop.oms.utils.CommonUtils;
 import com.work.shop.oms.utils.Constant;
-import com.work.shop.pca.common.ResultData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +64,9 @@ public class CreateOrderController extends BaseController {
 
     @Resource(name = "orderRewardPointGoodsService")
     private OrderRewardPointGoodsService orderRewardPointGoodsService;
+
+    @Autowired
+    private RewardPointRatioService rewardPointRatioService;
 
     @Autowired
     private RewardPointGoodsFeign rewardPointGoodsFeign;
@@ -175,12 +178,27 @@ public class CreateOrderController extends BaseController {
         return JSON.toJSONString(result);
     }
 
+    //查询积分比例表
+    @PostMapping(value = "/getRewardPointRatio")
+    @ResponseBody
+    public CommonResultData<Integer> getRewardPointRatio() {
+        CommonResultData<Integer> result = new CommonResultData<>();
+        result.setIsOk("0");
+
+        int ratio = rewardPointRatioService.getRewardPointRatio();
+        if (ratio > 0) {
+            result.setIsOk("1");
+            result.setResult(ratio);
+        }
+        return result;
+    }
+
     //查询积分商品订单主表
     @PostMapping(value = "/getOrderRewardPointMaster")
     @ResponseBody
-    public ResultData<List<OrderRewardPointGoodsMasterBean>> getOrderRewardPointMaster(@RequestBody ParamOrderRewardPointGoods param) {
-        ResultData<List<OrderRewardPointGoodsMasterBean>> result = new ResultData<>();
-        result.setIsOk(0);
+    public CommonResultData<List<OrderRewardPointGoodsMasterBean>> getOrderRewardPointMaster(@RequestBody ParamOrderRewardPointGoods param) {
+        CommonResultData<List<OrderRewardPointGoodsMasterBean>> result = new CommonResultData<>();
+        result.setIsOk("0");
 
         if (!StringUtils.isEmpty(param.getOrder()) && (!"order_status".equals(param.getOrder()) || !("create_time".equals(param.getOrder())))) {
             result.setMsg("排序条件参数错误！");
@@ -192,8 +210,8 @@ public class CreateOrderController extends BaseController {
 
         int count = orderRewardPointGoodsService.getCountOfOrderRewardPointGoodsMaster(param);
         if (count == 0) {
-            result.setIsOk(1);
-            result.setTotalCount(0);
+            result.setIsOk("1");
+            result.setTotal(0);
             return result;
         }
 
@@ -205,8 +223,8 @@ public class CreateOrderController extends BaseController {
         if (param.getCurrentPage() > 1) {
             //查询最后一页的逻辑
             if (param.getCurrentPage() > pageCount) {
-                result.setIsOk(1);
-                result.setTotalCount(0);
+                result.setIsOk("1");
+                result.setTotal(0);
                 return result;
             } else if (param.getCurrentPage() == pageCount) {
                 param.setStart(param.getPageSize() * (pageCount - 1));
@@ -220,17 +238,17 @@ public class CreateOrderController extends BaseController {
 
 
         List<OrderRewardPointGoodsMasterBean> resultList = orderRewardPointGoodsService.getOrderRewardPointGoodsMaster(param);
-        result.setIsOk(1);
-        result.setData(resultList);
+        result.setIsOk("1");
+        result.setResult(resultList);
         return result;
     }
 
     //查询积分商品订单明细表
     @PostMapping(value = "/getOrderRewardPointDetail")
     @ResponseBody
-    public ResultData<List<OrderRewardPointGoodsDetailBean>> getOrderRewardPointDetail(@RequestBody ParamOrderRewardPointGoods param) {
-        ResultData<List<OrderRewardPointGoodsDetailBean>> result = new ResultData<>();
-        result.setIsOk(0);
+    public CommonResultData<List<OrderRewardPointGoodsDetailBean>> getOrderRewardPointDetail(@RequestBody ParamOrderRewardPointGoods param) {
+        CommonResultData<List<OrderRewardPointGoodsDetailBean>> result = new CommonResultData<>();
+        result.setIsOk("0");
 
         logger.info("orderSN :" + param.getOrderSN());
         List<OrderRewardPointGoodsDetailBean> resultList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(param.getOrderSN());
@@ -239,18 +257,18 @@ public class CreateOrderController extends BaseController {
             return result;
         }
 
-        result.setIsOk(1);
-        result.setData(resultList);
-        result.setTotalCount(resultList.size());
+        result.setIsOk("1");
+        result.setResult(resultList);
+        result.setTotal(resultList.size());
         return result;
     }
 
     //创建积分商品订单
     @PostMapping(value = "/createOrderRewardPoint")
     @ResponseBody
-    public ResultData<String> createOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
-        ResultData<String> result = new ResultData<>();
-        result.setIsOk(0);
+    public CommonResultData<String> createOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
+        CommonResultData<String> result = new CommonResultData<>();
+        result.setIsOk("0");
 
         if (param.getDetailBeanList() == null || param.getDetailBeanList().size() == 0) {
             result.setMsg("积分商品订单明细不能为空！");
@@ -266,15 +284,15 @@ public class CreateOrderController extends BaseController {
             goodsSNList.add(param.getDetailBeanList().get(i).getGoodsSN());
         }
 
-        ResultData<List<ProductRewardPointGoodsBean>> beanList = rewardPointGoodsFeign.getRewardPointGoodsBySNList(goodsSNList);
-        if (beanList == null || beanList.getData() == null || beanList.getData().size() == 0) {
+        CommonResultData<List<ProductRewardPointGoodsBean>> beanList = rewardPointGoodsFeign.getRewardPointGoodsBySNList(goodsSNList);
+        if (beanList == null || beanList.getResult() == null || beanList.getResult().size() == 0) {
             result.setMsg("积分商品查询为空！");
             return result;
-        } else if (beanList.getData().size() != goodsSNList.size()) {
+        } else if (beanList.getResult().size() != goodsSNList.size()) {
             result.setMsg("积分商品查询出错！");
             return result;
         }
-        List<ProductRewardPointGoodsBean> goodsList = beanList.getData();
+        List<ProductRewardPointGoodsBean> goodsList = beanList.getResult();
 
         int totalPoint = 0;
         for (int i = 0; i < goodsList.size(); i++) {
@@ -302,11 +320,11 @@ public class CreateOrderController extends BaseController {
         //查询用户积分
         UserShopPointsRequestBean userShopPointsRequestBean = new UserShopPointsRequestBean();
         userShopPointsRequestBean.setAccountSN(param.getBuyerSN());
-        ResultData<UserShopPointBean> userShopPointResult = userPointFeign.getUserPointByUserAccount(userShopPointsRequestBean);
+        CommonResultData<UserShopPointBean> userShopPointResult = userPointFeign.getUserPointByUserAccount(userShopPointsRequestBean);
         if (userShopPointResult == null) {
             result.setMsg("用户：" + param.getBuyerSN() + "的积分查询出错！");
             return result;
-        } else if (userShopPointResult.getData().getPoint() < totalPoint) {
+        } else if (userShopPointResult.getResult().getPoint() < totalPoint) {
             result.setMsg("用户：" + param.getBuyerSN() + "的积分小于" + totalPoint + ",无法兑换");
             return result;
         }
@@ -377,25 +395,26 @@ public class CreateOrderController extends BaseController {
             logger.error("下发修改用户和公司积分MQ信息异常", e.getMessage());
         }
 
-        result.setIsOk(1);
-        result.setData(orderSn);
+        result.setIsOk("1");
+        result.setResult(orderSn);
         return result;
     }
 
     //取消积分商品订单
     @RequestMapping(value = "/cancelOrderRewardPoint")
     @ResponseBody
-    public ResultData<String> cancelOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
-        ResultData<String> result = new ResultData<>();
-        result.setIsOk(0);
+    public CommonResultData<String> cancelOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
+        CommonResultData<String> result = new CommonResultData<>();
+        result.setIsOk("0");
 
         if (StringUtils.isEmpty(param.getOrderSN())) {
             result.setMsg("订单参数不能为空！");
             return result;
         } else {
             OrderRewardPointGoodsMasterBean orderRewardPointGoods = orderRewardPointGoodsService.getOrderRewardPointGoodsByOrderSN(param.getOrderSN());
+
             if (orderRewardPointGoods == null) {
-                result.setMsg("订单:" + param.getOrderSN() + "不存在！");
+                result.setMsg("订单：" + param.getOrderSN() + "不存在！");
                 return result;
             } else if (orderRewardPointGoods.getOrderStatus() >= 2) {
                 result.setMsg("订单已发货无法取消！");
@@ -454,8 +473,8 @@ public class CreateOrderController extends BaseController {
             logger.error("下发修改用户和公司积分MQ信息异常", e.getMessage());
         }
 
-        result.setIsOk(1);
-        result.setData("取消订单成功！");
+        result.setIsOk("1");
+        result.setResult("取消订单成功！");
         return result;
     }
 }
