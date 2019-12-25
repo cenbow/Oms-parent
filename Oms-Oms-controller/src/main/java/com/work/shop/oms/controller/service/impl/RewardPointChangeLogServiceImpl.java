@@ -1,6 +1,5 @@
 package com.work.shop.oms.controller.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.work.shop.oms.bean.RewardPointChangeLogBean;
 import com.work.shop.oms.controller.service.RewardPointChangeLogService;
 import com.work.shop.oms.dao.RewardPointChangeLogMapper;
@@ -8,9 +7,7 @@ import com.work.shop.oms.param.bean.ParamRewardPointChangeLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -43,5 +40,4 @@ public class RewardPointChangeLogServiceImpl implements RewardPointChangeLogServ
     public int getCountOfRewardPointChangeLog(ParamRewardPointChangeLog param) {
         return rewardPointChangeLogMapper.getCountOfRewardPointChangeLog(param);
     }
-
 }

@@ -29,25 +29,19 @@ public class AddRewardPointChangeLogListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        TextMessage objMessage = null;
-        if (message instanceof TextMessage) {
-            objMessage = (TextMessage) message;
-        } else {
-            return;
-        }
-
         try {
-            if (!StringUtils.isEmpty(objMessage.getText())) {
-                RewardPointChangeLogBean rewardPointChangeLogBean = JSON.parseObject(objMessage.getText(), RewardPointChangeLogBean.class);
+            TextMessage textMessage = (TextMessage) message;
+            logger.info("消费添加积分变更记录: {}", textMessage.getText());
+            if (!StringUtils.isEmpty(textMessage.getText())) {
+                RewardPointChangeLogBean rewardPointChangeLogBean = JSON.parseObject(textMessage.getText(), RewardPointChangeLogBean.class);
                 if (rewardPointChangeLogBean == null) {
-                    logger.error("添加积分变更记录错误: 没有积分变更记录!");
+                    logger.error("消费添加积分变更记录错误: 没有积分变更记录!");
                     return;
                 }
                 rewardPointChangeLogService.addRewardPointChangeLog(rewardPointChangeLogBean);
-                logger.info("添加积分变更记录: {}", rewardPointChangeLogBean.toString());
             }
         } catch (Exception e) {
-            logger.error("添加积分变更记录错误: {}", e.getMessage());
+            logger.error("消费添加积分变更记录错误: {}", e.getMessage());
         }
     }
 }

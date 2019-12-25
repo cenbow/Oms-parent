@@ -270,6 +270,11 @@ public class CreateOrderController extends BaseController {
         CommonResultData<String> result = new CommonResultData<>();
         result.setIsOk("0");
 
+        if (StringUtils.isEmpty(param.getReceiverName()) || StringUtils.isEmpty(param.getReceiverTel()) || StringUtils.isEmpty(param.getReceiverAddress())) {
+            result.setMsg("收货人、收货人电话、收货地址不能为空！");
+            return result;
+        }
+
         if (param.getDetailBeanList() == null || param.getDetailBeanList().size() == 0) {
             result.setMsg("积分商品订单明细不能为空！");
             return result;
