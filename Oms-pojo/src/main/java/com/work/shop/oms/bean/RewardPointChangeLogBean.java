@@ -28,7 +28,7 @@ public class RewardPointChangeLogBean implements Serializable {
     private String orderSN;
 
     //描述
-    private String descrption;
+    private String description;
 
     private int changePoint;
 

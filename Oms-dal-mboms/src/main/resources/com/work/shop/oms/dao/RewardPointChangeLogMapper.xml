@@ -7,7 +7,7 @@
         <result column="account_sn" property="accountSN"/>
         <result column="company_sn" property="companySN"/>
         <result column="order_sn" property="orderSN"/>
-        <result column="descrption" property="descrption"/>
+        <result column="description" property="description"/>
         <result column="change_point" property="changePoint"/>
         <result column="create_time" property="createTime"/>
     </resultMap>
@@ -28,7 +28,7 @@
     </select>
 
     <insert id="addRewardPointChangeLog" parameterType="com.work.shop.oms.bean.RewardPointChangeLogBean">
-        insert into reward_point_change_log(account_sn ,company_sn, order_sn, descrption, change_point)
-        values(#{accountSN},#{companySN},#{orderSN},#{descrption},#{changePoint})
+        insert into reward_point_change_log(account_sn ,company_sn, order_sn, description, change_point)
+        values(#{accountSN},#{companySN},#{orderSN},#{description},#{changePoint})
     </insert>
 </mapper>

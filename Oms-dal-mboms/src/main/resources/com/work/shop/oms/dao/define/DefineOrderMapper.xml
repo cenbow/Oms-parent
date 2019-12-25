@@ -1154,7 +1154,7 @@
     </select>
 
     <select id="getOrderFromByOrderSN" parameterType="java.lang.String" resultType="java.util.HashMap">
-        select order_from, user_id，money_paid
+        select order_from, user_id, money_paid
         from master_order_info
         where master_order_sn = #{orderSN}
     </select>

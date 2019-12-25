@@ -342,12 +342,12 @@ public class CreateOrderController extends BaseController {
             result.setMsg(siSn.getMessage());
             return result;
         }
-        final String orderSn = "JF" + siSn.getResult();
-        param.setOrderSN(orderSn);
+        final String orderSN = "JF" + siSn.getResult();
+        param.setOrderSN(orderSN);
         param.setTotalPoint(totalPoint);
 
         for (int i = 0; i < param.getDetailBeanList().size(); i++) {
-            param.getDetailBeanList().get(i).setOrderSN(orderSn);
+            param.getDetailBeanList().get(i).setOrderSN(orderSN);
         }
 
         orderRewardPointGoodsService.createOrderRewardPoint(param);
@@ -374,8 +374,8 @@ public class CreateOrderController extends BaseController {
         RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
         rewardPointChangeLogBean.setAccountSN(param.getBuyerSN());
 //        rewardPointChangeLogBean.setCompanySN(1);
-        rewardPointChangeLogBean.setOrderSN(orderSn);
-        rewardPointChangeLogBean.setDescrption("积分商品兑换");
+        rewardPointChangeLogBean.setOrderSN(orderSN);
+        rewardPointChangeLogBean.setDescription("兑换积分商品扣减积分");
         rewardPointChangeLogBean.setChangePoint(0 - param.getTotalPoint());
 
         String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
@@ -401,7 +401,7 @@ public class CreateOrderController extends BaseController {
         }
 
         result.setIsOk("1");
-        result.setResult(orderSn);
+        result.setResult(orderSN);
         return result;
     }
 
@@ -415,16 +415,22 @@ public class CreateOrderController extends BaseController {
         if (StringUtils.isEmpty(param.getOrderSN())) {
             result.setMsg("订单参数不能为空！");
             return result;
-        } else {
-            OrderRewardPointGoodsMasterBean orderRewardPointGoods = orderRewardPointGoodsService.getOrderRewardPointGoodsByOrderSN(param.getOrderSN());
+        }
 
-            if (orderRewardPointGoods == null) {
-                result.setMsg("订单：" + param.getOrderSN() + "不存在！");
-                return result;
-            } else if (orderRewardPointGoods.getOrderStatus() >= 2) {
-                result.setMsg("订单已发货无法取消！");
-                return result;
-            }
+        OrderRewardPointGoodsMasterBean orderRewardPointGoodsMaster = orderRewardPointGoodsService.getOrderRewardPointGoodsByOrderSN(param.getOrderSN());
+
+        if (orderRewardPointGoodsMaster == null) {
+            result.setMsg("订单：" + param.getOrderSN() + "不存在！");
+            return result;
+        } else if (orderRewardPointGoodsMaster.getOrderStatus() >= 2) {
+            result.setMsg("订单已发货无法取消！");
+            return result;
+        }
+
+        List<OrderRewardPointGoodsDetailBean> orderDetailList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(param.getOrderSN());
+        if (orderDetailList == null || orderDetailList.size() == 0) {
+            result.setMsg("积分订单明细表不存在！");
+            return result;
         }
 
         param.setCancelTime(new Date());
@@ -432,11 +438,11 @@ public class CreateOrderController extends BaseController {
 
         //下发"change_stock_and_salesvolumel"信道，修改商品库存和销量
         List<ChangeStockAndSaleVolumeBean> changeStockAndSaleVolumeBeanList = new ArrayList<>();
-        for (int i = 0; i < param.getDetailBeanList().size(); i++) {
+        for (int i = 0; i < orderDetailList.size(); i++) {
             ChangeStockAndSaleVolumeBean changeStockAndSaleVolumeBean = new ChangeStockAndSaleVolumeBean();
-            changeStockAndSaleVolumeBean.setGoodsSN(param.getDetailBeanList().get(i).getGoodsSN());
-            changeStockAndSaleVolumeBean.setChangeStock(param.getDetailBeanList().get(i).getSaleCount());
-            changeStockAndSaleVolumeBean.setChangeSalesVolume(0 - param.getDetailBeanList().get(i).getSaleCount());
+            changeStockAndSaleVolumeBean.setGoodsSN(orderDetailList.get(i).getGoodsSN());
+            changeStockAndSaleVolumeBean.setChangeStock(orderDetailList.get(i).getSaleCount());
+            changeStockAndSaleVolumeBean.setChangeSalesVolume(0 - orderDetailList.get(i).getSaleCount());
             changeStockAndSaleVolumeBeanList.add(changeStockAndSaleVolumeBean);
         }
 
@@ -450,11 +456,11 @@ public class CreateOrderController extends BaseController {
 
         //下发"add_reward_point_change_log"信道，添加积分变更记录
         RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
-        rewardPointChangeLogBean.setAccountSN(param.getBuyerSN());
+        rewardPointChangeLogBean.setAccountSN(orderRewardPointGoodsMaster.getBuyerSN());
 //        rewardPointChangeLogBean.setCompanySN(1);
         rewardPointChangeLogBean.setOrderSN(param.getOrderSN());
-        rewardPointChangeLogBean.setDescrption("积分商品订单取消");
-        rewardPointChangeLogBean.setChangePoint(param.getTotalPoint());
+        rewardPointChangeLogBean.setDescription("取消积分商品订单增加积分");
+        rewardPointChangeLogBean.setChangePoint(orderRewardPointGoodsMaster.getTotalPoint());
 
         String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
         logger.info("添加积分变更记录下发{}:", addRewardPointChangeLogMQ);
@@ -466,9 +472,9 @@ public class CreateOrderController extends BaseController {
 
         //下发"change_user_and_company_point"信道，修改用户和公司积分
         ChangeUserAndCompanyPointMQBean changeUserAndCompanyPointMQBean = new ChangeUserAndCompanyPointMQBean();
-        changeUserAndCompanyPointMQBean.setAccountSN(param.getBuyerSN());
+        changeUserAndCompanyPointMQBean.setAccountSN(orderRewardPointGoodsMaster.getBuyerSN());
 //        changeUserAndCompanyPointMQBean.setCompanySN(11);
-        changeUserAndCompanyPointMQBean.setChangePoint(param.getTotalPoint());
+        changeUserAndCompanyPointMQBean.setChangePoint(orderRewardPointGoodsMaster.getTotalPoint());
 
         String changeUserAndCompanyPointMQ = JSONObject.toJSONString(changeUserAndCompanyPointMQBean);
         logger.info("修改用户和公司积分下发{}:", changeUserAndCompanyPointMQ);

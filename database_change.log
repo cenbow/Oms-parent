@@ -29,7 +29,7 @@
        `goods_name` varchar(20) NOT NULL COMMENT '商品名称',
        `goods_brand` varchar(20) DEFAULT NULL COMMENT '品牌名称',
        `need_point` int(10) unsigned NOT NULL COMMENT '所需积分',
-       `sale_cout` int(10) unsigned NOT NULL COMMENT '兑换数量',
+       `sale_count` int(10) unsigned NOT NULL COMMENT '兑换数量',
        `express_sn` varchar(20) DEFAULT NULL COMMENT '快递单号',
        `express_company` varchar(20) DEFAULT NULL COMMENT '快递公司名称',
        `express_company_sn` varchar(20) DEFAULT NULL COMMENT '快递公司编号',
@@ -43,7 +43,7 @@
        `company_sn` varchar(100) DEFAULT NULL COMMENT '公司编号',
        `order_sn` varchar(20) NOT NULL COMMENT '订单编号',
        `change_point` int(10) NOT NULL COMMENT '积分变更',
-       `descrption` varchar(20)  COMMENT '描述',
+       `description` varchar(20)  COMMENT '描述',
        `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
        PRIMARY KEY (`id`)
      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='积分变更记录';

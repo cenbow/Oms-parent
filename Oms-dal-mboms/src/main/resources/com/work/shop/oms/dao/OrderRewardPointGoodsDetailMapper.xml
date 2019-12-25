@@ -21,7 +21,7 @@
     </select>
 
     <insert id="createOrderDetail" parameterType="java.util.List">
-        insert into order_reward_point_goods_detail(order_sn ,goods_sn, goods_name, goods_brand, need_point, sale_cout)
+        insert into order_reward_point_goods_detail(order_sn ,goods_sn, goods_name, goods_brand, need_point, sale_count)
         values
         <foreach item="item" collection="list" index="index" separator=",">
             (#{item.orderSN},#{item.goodsSN},#{item.goodsName},#{item.goodsBrand},#{item.needPoint},#{item.saleCount})
