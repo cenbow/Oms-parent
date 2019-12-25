@@ -18,18 +18,14 @@
         <result column="comment" property="comment"/>
     </resultMap>
 
-    <select id="getCountByParam" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultType="Integer">
+    <select id="getCountOfOrderRewardPointGoodsMaster" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultType="java.lang.Integer">
         select count(*) from order_reward_point_goods_master where buyer_sn=#{buyerSN}
         <if test="beginOrderTime!=null and endOrderTime!=null">
             and create_time<![CDATA[<=]]>#{endOrderTime} and create_time<![CDATA[>=]]>#{beginOrderTime}
         </if>
-        <if test="orderStatus!=null">
+        <if test="orderStatus gt 0">
             and order_status=${orderStatus}
         </if>
-        <if test="order!=null and sort!=null">
-            order by ${order} ${sort}
-        </if>
-        limit ${start},${pageSize}
     </select>
 
     <select id="getOrderRewardPointGoods" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultMap="BaseResultMap">
@@ -37,7 +33,7 @@
         <if test="beginOrderTime!=null and endOrderTime!=null">
             and create_time<![CDATA[<=]]>#{endOrderTime} and create_time<![CDATA[>=]]>#{beginOrderTime}
         </if>
-        <if test="orderStatus!=null">
+        <if test="orderStatus gt 0">
             and order_status=${orderStatus}
         </if>
         <if test="order!=null and sort!=null">

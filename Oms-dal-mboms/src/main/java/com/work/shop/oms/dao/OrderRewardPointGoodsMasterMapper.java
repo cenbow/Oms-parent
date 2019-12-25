@@ -9,7 +9,7 @@ import java.util.List;
 @Repository("orderRewardPointGoodsMasterMapper")
 public interface OrderRewardPointGoodsMasterMapper {
 
-    int getCountByParam(ParamOrderRewardPointGoods param);
+    int getCountOfOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param);
 
     List<OrderRewardPointGoodsMasterBean> getOrderRewardPointGoods(ParamOrderRewardPointGoods param);
 

@@ -203,7 +203,7 @@ public class CreateOrderController extends BaseController {
         if (!StringUtils.isEmpty(param.getOrder()) && (!"order_status".equals(param.getOrder()) || !("create_time".equals(param.getOrder())))) {
             result.setMsg("排序条件参数错误！");
             return result;
-        } else if (!StringUtils.isEmpty(param.getSort()) && !"desc".equals(param.getSort()) && !"asc".equals(param.getSort())) {
+        } else if (!StringUtils.isEmpty(param.getSort()) && (!"desc".equals(param.getSort()) || !"asc".equals(param.getSort()))) {
             result.setMsg("排序参数错误！");
             return result;
         }
@@ -236,9 +236,9 @@ public class CreateOrderController extends BaseController {
             param.setStart(0);
         }
 
-
         List<OrderRewardPointGoodsMasterBean> resultList = orderRewardPointGoodsService.getOrderRewardPointGoodsMaster(param);
         result.setIsOk("1");
+        result.setTotal(resultList.size());
         result.setResult(resultList);
         return result;
     }
@@ -250,7 +250,6 @@ public class CreateOrderController extends BaseController {
         CommonResultData<List<OrderRewardPointGoodsDetailBean>> result = new CommonResultData<>();
         result.setIsOk("0");
 
-        logger.info("orderSN :" + param.getOrderSN());
         List<OrderRewardPointGoodsDetailBean> resultList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(param.getOrderSN());
         if (resultList == null || resultList.size() == 0) {
             result.setMsg("查询积分商品订单明细表出错！");
@@ -258,8 +257,8 @@ public class CreateOrderController extends BaseController {
         }
 
         result.setIsOk("1");
-        result.setResult(resultList);
         result.setTotal(resultList.size());
+        result.setResult(resultList);
         return result;
     }
 

@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
  * @Version V1.0
  **/
 
-@FeignClient("shopcenter-server-cii")
+//@FeignClient("shopcenter-server-cii")
+@FeignClient("shopcenter-server")
 public interface UserPointFeign {
 
     @PostMapping("/CloudShopCenter-manager/custom/userPointsShop/getUserPointByUserAccount")

@@ -15,7 +15,8 @@ import java.util.List;
  * @Version V1.0
  **/
 
-@FeignClient("product-service-cii")
+//@FeignClient("product-service-cii")
+@FeignClient("product-service")
 public interface RewardPointGoodsFeign {
 
     @PostMapping("/getRewardPointGoodsBySNList")

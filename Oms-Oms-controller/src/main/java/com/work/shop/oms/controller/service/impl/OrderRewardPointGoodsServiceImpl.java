@@ -48,7 +48,7 @@ public class OrderRewardPointGoodsServiceImpl implements OrderRewardPointGoodsSe
 
     @Override
     public int getCountOfOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param) {
-        return rewardPointGoodsMasterMapper.getCountByParam(param);
+        return rewardPointGoodsMasterMapper.getCountOfOrderRewardPointGoodsMaster(param);
     }
 
     @Override
