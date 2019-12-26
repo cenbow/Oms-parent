@@ -233,7 +233,6 @@ public class CreateOrderController extends BaseController {
             param.setStart(0);
         }
 
-
         List<ResultRewardPointGoodsBean> resultData = orderRewardPointGoodsService.getOrderRewardPointGoods(param);
         if (resultData == null || resultData.size() == 0) {
             result.setMsg("查询积分商品订单出错！");
@@ -405,8 +404,8 @@ public class CreateOrderController extends BaseController {
         if (orderRewardPointGoodsMaster == null) {
             result.setMsg("订单：" + param.getOrderSN() + "不存在！");
             return result;
-        } else if (orderRewardPointGoodsMaster.getOrderStatus() >= 2) {
-            result.setMsg("订单已发货无法取消！");
+        } else if (orderRewardPointGoodsMaster.getOrderStatus() == 2) {
+            result.setMsg("订单已经取消！");
             return result;
         }
 

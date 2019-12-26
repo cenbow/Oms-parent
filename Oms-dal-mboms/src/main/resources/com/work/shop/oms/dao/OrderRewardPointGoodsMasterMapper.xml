@@ -87,7 +87,7 @@
     <update id="cancelOrder" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods">
         update order_reward_point_goods_master
         set cancel_time=#{cancelTime},
-            order_status=4,
+            order_status=2,
             cancel_sn=#{cancelSN}
         where order_sn = #{orderSN}
           and buyer_sn = #{buyerSN}
