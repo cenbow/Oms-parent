@@ -241,7 +241,7 @@ public class CreateOrderController extends BaseController {
         }
 
         result.setIsOk("1");
-        result.setTotal(resultData.size());
+        result.setTotal(count);
         result.setResult(resultData);
         return result;
     }
