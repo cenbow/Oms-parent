@@ -1,6 +1,7 @@
 package com.work.shop.oms.dao;
 
 import com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean;
+import com.work.shop.oms.bean.ResultRewardPointGoodsBean;
 import com.work.shop.oms.param.bean.ParamOrderRewardPointGoods;
 import org.springframework.stereotype.Repository;
 
@@ -8,10 +9,6 @@ import java.util.List;
 
 @Repository("orderRewardPointGoodsMasterMapper")
 public interface OrderRewardPointGoodsMasterMapper {
-
-    int getCountOfOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param);
-
-    List<OrderRewardPointGoodsMasterBean> getOrderRewardPointGoods(ParamOrderRewardPointGoods param);
 
     //创建订单主表
     void createOrderMaster(OrderRewardPointGoodsMasterBean masterBean);
@@ -21,4 +18,8 @@ public interface OrderRewardPointGoodsMasterMapper {
 
     //根据订单号查询订单
     OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN);
+
+    int getCountOfOrderRewardPointGoods(ParamOrderRewardPointGoods param);
+
+    List<ResultRewardPointGoodsBean> getOrderRewardPointGoods(ParamOrderRewardPointGoods param);
 }

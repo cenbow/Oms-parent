@@ -205,7 +205,7 @@ public class CreateOrderController extends BaseController {
             return result;
         }
 
-        int count = orderRewardPointGoodsService.getCountOfOrderRewardPointGoodsMaster(param);
+        int count = orderRewardPointGoodsService.getCountOfOrderRewardPointGoods(param);
         if (count == 0) {
             result.setIsOk("1");
             result.setTotal(0);
@@ -233,41 +233,16 @@ public class CreateOrderController extends BaseController {
             param.setStart(0);
         }
 
-        List<ResultRewardPointGoodsBean> resulData = new ArrayList<>();
-        List<OrderRewardPointGoodsMasterBean> masterList = orderRewardPointGoodsService.getOrderRewardPointGoodsMaster(param);
-        List<OrderRewardPointGoodsDetailBean> detailList = new ArrayList<>();
-        if (masterList != null && masterList.size() > 0) {
-            List<String> orderSNList = new ArrayList<>();
-            for (int i = 0; i < masterList.size(); i++) {
-                orderSNList.add(masterList.get(i).getOrderSN());
 
-                ResultRewardPointGoodsBean rewardPointGoodsBean = new ResultRewardPointGoodsBean();
-                rewardPointGoodsBean.setBuyerSN(masterList.get(i).getBuyerSN());
-                rewardPointGoodsBean.setOrderSN(masterList.get(i).getOrderSN());
-                rewardPointGoodsBean.setCancelSN(masterList.get(i).getCancelSN());
-                rewardPointGoodsBean.setTotalPoint(masterList.get(i).getTotalPoint());
-                rewardPointGoodsBean.setOrderStatus(masterList.get(i).getOrderStatus());
-                rewardPointGoodsBean.setReceiverName(masterList.get(i).getReceiverName());
-                rewardPointGoodsBean.setReceiverTel(masterList.get(i).getReceiverTel());
-                rewardPointGoodsBean.setExpressTime(masterList.get(i).getExpressTime());
-                rewardPointGoodsBean.setCreateTime(masterList.get(i).getCreateTime());
-                rewardPointGoodsBean.setCancelTime(masterList.get(i).getCancelTime());
-                rewardPointGoodsBean.setComment(masterList.get(i).getComment());
-
-                resulData.add(rewardPointGoodsBean);
-            }
-            detailList.addAll(orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(orderSNList));
-
-            if (detailList.size() > 0) {
-                for (int i = 0; i < resulData.size(); i++) {
-
-                }
-            }
+        List<ResultRewardPointGoodsBean> resultData = orderRewardPointGoodsService.getOrderRewardPointGoods(param);
+        if (resultData == null || resultData.size() == 0) {
+            result.setMsg("查询积分商品订单出错！");
+            return result;
         }
 
         result.setIsOk("1");
-        result.setTotal(resulData.size());
-        result.setResult(resulData);
+        result.setTotal(resultData.size());
+        result.setResult(resultData);
         return result;
     }
 
@@ -435,9 +410,7 @@ public class CreateOrderController extends BaseController {
             return result;
         }
 
-        List<String> orderSNList = new ArrayList<>();
-        orderSNList.add(param.getOrderSN());
-        List<OrderRewardPointGoodsDetailBean> orderDetailList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(orderSNList);
+        List<OrderRewardPointGoodsDetailBean> orderDetailList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(param.getOrderSN());
         if (orderDetailList == null || orderDetailList.size() == 0) {
             result.setMsg("积分订单明细表不存在！");
             return result;

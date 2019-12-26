@@ -2,6 +2,7 @@ package com.work.shop.oms.controller.service;
 
 import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
 import com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean;
+import com.work.shop.oms.bean.ResultRewardPointGoodsBean;
 import com.work.shop.oms.param.bean.ParamOrderRewardPointGoods;
 
 import java.util.List;
@@ -14,13 +15,12 @@ public interface OrderRewardPointGoodsService {
     //取消积分订单
     void cancelOrderRewardPoint(ParamOrderRewardPointGoods param);
 
-    int getCountOfOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param);
-
-    List<OrderRewardPointGoodsMasterBean> getOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param);
-
-    List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(List<String> orderSN);
-
     //根据订单号查询订单
     OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN);
 
+    List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(String orderSN);
+
+    int getCountOfOrderRewardPointGoods(ParamOrderRewardPointGoods param);
+
+    List<ResultRewardPointGoodsBean> getOrderRewardPointGoods(ParamOrderRewardPointGoods param);
 }

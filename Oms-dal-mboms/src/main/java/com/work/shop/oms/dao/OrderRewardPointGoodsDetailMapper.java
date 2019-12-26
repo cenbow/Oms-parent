@@ -8,7 +8,7 @@ import java.util.List;
 @Repository("orderRewardPointGoodsDetailMapper")
 public interface OrderRewardPointGoodsDetailMapper {
 
-    List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(List<String> orderSNLIst);
+    List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(String orderSN);
 
     void createOrderDetail(List<OrderRewardPointGoodsDetailBean> detailBeanList);
 }
