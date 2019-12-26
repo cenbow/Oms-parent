@@ -65,7 +65,7 @@ public class RewardPointChangeLogController {
 
         List<RewardPointChangeLogBean> resultList = rewardPointChangeLogService.getRewardPointChangeLog(param);
         result.setIsOk("1");
-        result.setTotal(resultList.size());
+        result.setTotal(count);
         result.setResult(resultList);
         return result;
     }
