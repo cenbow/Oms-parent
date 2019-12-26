@@ -2,112 +2,112 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.work.shop.oms.dao.define.DefineOrderMapper">
 
-	<select id="selectUserOrderInfo"
-		resultType="com.work.shop.oms.api.bean.OrderPageInfo"
-		parameterType="Map">
-	SELECT a.*,
-		GROUP_CONCAT(DISTINCT oreturn.return_sn) returnSns,
-		GROUP_CONCAT(DISTINCT moi.master_order_sn) exChangeSns,
-		returnchange.return_type returnType
-	FROM(
-		select oi.master_order_sn orderSn,
-		DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
-		oi.total_payable totalPayable,
-		oi.total_fee totalfee,
-		oi.pay_total_fee payTotalfee,
-		op.pay_name paymentMethod,
-		oai.consignee receiver,
-		oi.surplus surplus,
-		oi.referer referer,
-		oi.bonus bonus,
-		oi.money_paid moneyPaid,
-		oi.goods_amount goodsAmount,
-		oi.shipping_total_fee shippingTotalFee,
-		oi.discount discount,
- 		oi.goods_count goodsCount,
- 		sum(grc.return_sum) returnGoodsCount,
-		op.pay_id payId,
+    <select id="selectUserOrderInfo"
+            resultType="com.work.shop.oms.api.bean.OrderPageInfo"
+            parameterType="Map">
+        SELECT a.*,
+        GROUP_CONCAT(DISTINCT oreturn.return_sn) returnSns,
+        GROUP_CONCAT(DISTINCT moi.master_order_sn) exChangeSns,
+        returnchange.return_type returnType
+        FROM(
+        select oi.master_order_sn orderSn,
+        DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
+        oi.total_payable totalPayable,
+        oi.total_fee totalfee,
+        oi.pay_total_fee payTotalfee,
+        op.pay_name paymentMethod,
+        oai.consignee receiver,
+        oi.surplus surplus,
+        oi.referer referer,
+        oi.bonus bonus,
+        oi.money_paid moneyPaid,
+        oi.goods_amount goodsAmount,
+        oi.shipping_total_fee shippingTotalFee,
+        oi.discount discount,
+        oi.goods_count goodsCount,
+        sum(grc.return_sum) returnGoodsCount,
+        op.pay_id payId,
         op.pay_lasttime payLastTime,
-		oie.is_review isReview,
-		oie.free_post_type freePostType,
-		oi.order_status orderStatus,
-		oi.pay_status payStatus,
-		oi.user_id userId,
-		oi.ship_status shipStatus,
-		oi.order_type orderType,
-		oi.trans_type transType,
-		oi.integral_money integralMoney,
-		oi.integral integral,
-		oi.source source,
-		oi.order_from channelCode,
-		oi.shop_name channelName,
-		oie.is_advance isAdvance,
+        oie.is_review isReview,
+        oie.free_post_type freePostType,
+        oi.order_status orderStatus,
+        oi.pay_status payStatus,
+        oi.user_id userId,
+        oi.ship_status shipStatus,
+        oi.order_type orderType,
+        oi.trans_type transType,
+        oi.integral_money integralMoney,
+        oi.integral integral,
+        oi.source source,
+        oi.order_from channelCode,
+        oi.shop_name channelName,
+        oie.is_advance isAdvance,
         oie.customer_contract_num customerContractNum,
-		oi.expected_ship_date expectedShipDate,
+        oi.expected_ship_date expectedShipDate,
         oie.user_pay_apply userPayApply,
-		oi.tax,
-		oi.bv_value bvValue,
+        oi.tax,
+        oi.bv_value bvValue,
         oi.need_audit needAudit,
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress
-		from
-		<if test="isHistory == 0">
-			master_order_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_info_history
-		</if>
-		oi
-		left join
-		<if test="isHistory == 0">
-			master_order_address_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_address_info_history
-		</if>
-		oai on oi.master_order_sn = oai.master_order_sn
-		left join
-		<if test="isHistory == 0">
-			master_order_goods
-		</if>
-		<if test="isHistory == 1">
-			master_order_goods_history
-		</if>
-		og on og.master_order_sn=oi.master_order_sn
-		left join
-		<if test="isHistory == 0">
-			master_order_pay
-		</if>
-		<if test="isHistory == 1">
-			master_order_pay_history
-		</if>
-		op on op.master_order_sn=oi.master_order_sn
-		left join master_order_info_extend oie on
-		oie.master_order_sn=oi.master_order_sn
-		left join goods_return_change grc on
-		grc.order_sn=oi.master_order_sn
-		where
-            oie.is_del = 0
-		and
-			oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+        from
+        <if test="isHistory == 0">
+            master_order_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_info_history
+        </if>
+        oi
+        left join
+        <if test="isHistory == 0">
+            master_order_address_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_address_info_history
+        </if>
+        oai on oi.master_order_sn = oai.master_order_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_goods
+        </if>
+        <if test="isHistory == 1">
+            master_order_goods_history
+        </if>
+        og on og.master_order_sn=oi.master_order_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_pay
+        </if>
+        <if test="isHistory == 1">
+            master_order_pay_history
+        </if>
+        op on op.master_order_sn=oi.master_order_sn
+        left join master_order_info_extend oie on
+        oie.master_order_sn=oi.master_order_sn
+        left join goods_return_change grc on
+        grc.order_sn=oi.master_order_sn
+        where
+        oie.is_del = 0
+        and
+        oi.channel_code = #{siteCode,jdbcType=VARCHAR}
         <if test="userId != null">
             and oi.user_id= #{userId,jdbcType=VARCHAR}
         </if>
-		<if test="shopCode != null">
-			and oi.order_from = #{shopCode,jdbcType=VARCHAR}
-		</if>
-		<if test="orderSn != null">
-			and oi.master_order_sn = #{orderSn,jdbcType=VARCHAR}
-		</if>
-		<!--商品sku-->
-		<if test="goodsSn != null">
-			and og.custom_code = #{goodsSn,jdbcType=VARCHAR}
-		</if>
-		<!--物料编码-->
-		<if test="materielNo != null">
-			and og.customer_material_code = #{materielNo}
-		</if>
+        <if test="shopCode != null">
+            and oi.order_from = #{shopCode,jdbcType=VARCHAR}
+        </if>
+        <if test="orderSn != null">
+            and oi.master_order_sn = #{orderSn,jdbcType=VARCHAR}
+        </if>
+        <!--商品sku-->
+        <if test="goodsSn != null">
+            and og.custom_code = #{goodsSn,jdbcType=VARCHAR}
+        </if>
+        <!--物料编码-->
+        <if test="materielNo != null">
+            and og.customer_material_code = #{materielNo}
+        </if>
         <if test="startTime != null">
             and oi.add_time &gt;= #{startTime}
         </if>
@@ -120,10 +120,10 @@
                 #{orderSn}
             </foreach>
         </if>
-		<!-- 客户合同编码 -->
-		<if test="contractNum != null">
-			and oie.customer_contract_num = #{contractNum}
-		</if>
+        <!-- 客户合同编码 -->
+        <if test="contractNum != null">
+            and oie.customer_contract_num = #{contractNum}
+        </if>
         <!-- 签章状态 -->
         <if test="signStatus != null">
             and oi.sign_status = #{signStatus}
@@ -133,449 +133,368 @@
             and oie.company_code = #{companyId}
         </if>
 
-		<!--app列表只显示订单 --> 
-		<choose>
-			<when test="type == 1">
-				<!--待付款订单 -->
-				and oi.pay_status in (0,1) and oi.order_status=0
-			</when>
-			<when test="type == 2">
-				<!--待发货订单 -->
-				and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and
-				oi.ship_status in (0,1)
-			</when>
-			<when test="type == 3">
-				<!--待收货订单 -->
-				and oi.ship_status in (2,3,4) 
-			</when>
-			<when test="type == 4">
-				<!--已收货订单 -->
-				and oi.ship_status = 5 
-			</when>
-			<when test="type == 5">
-				<!--待评论 -->
-				and oi.ship_status = 5 and oie.is_review = 0 
-			</when>
-			<when test="type == 6">
-				<!--交易关闭订单 -->
-				and oi.order_status = 2 
-			</when>
-			<when test="type == 9">
-				<!--等待补款 -->
-				and oi.order_type = 2 and oi.total_payable > 0
-			</when>
-			<when test="type == 10">
-				<!--正在换货 -->
-				and oi.order_type = 2 and oi.total_payable &lt;= 0 and
-				oi.ship_status &lt;5
-			</when>
-			<when test="type == 11">
-				<!--换货成功 -->
-				and oi.order_type = 2 and oi.ship_status = 5
-			</when>
-		</choose>
-			GROUP BY oi.master_order_sn 
-			order by oi.add_time desc
-            <if test="pageSize > 0">
-                limit #{start}, #{pageSize}
-            </if>
-		)
-		a
-		left join order_return oreturn on oreturn.master_order_sn=a.orderSn AND oreturn.return_order_status != 4
-		left join master_order_info moi on moi.relating_original_sn=a.orderSn AND moi.order_type=2 AND moi.order_status != 2
-		left join goods_return_change returnchange on returnchange.order_sn=a.orderSn
-		GROUP BY a.orderSn order by a.orderCreateTime DESC;
-	</select>
-	
-	<select id="selectUserOrderInfoCount" resultType="java.lang.Integer" parameterType="Map">
-		select count(1) from (
-			select count(1) from
-			<if test="isHistory == 0">
-				master_order_info
-			</if>
-			<if test="isHistory == 1">
-				master_order_info_history
-			</if>
-			oi
-			left join
-			<if test="isHistory == 0">
-				master_order_address_info
-			</if>
-			<if test="isHistory == 1">
-				master_order_address_info_history
-			</if>
-			oai on oi.master_order_sn = oai.master_order_sn
-			left join
-			<if test="isHistory == 0">
-				master_order_goods
-			</if>
-			<if test="isHistory == 1">
-				master_order_goods_history
-			</if>
-			og on og.master_order_sn = oi.master_order_sn
-			left join
-			<if test="isHistory == 0">
-				master_order_pay
-			</if>
-			<if test="isHistory == 1">
-				master_order_pay_history
-			</if>
-			op on op.master_order_sn = oi.master_order_sn
-			left join master_order_info_extend oie
-			on oie.master_order_sn = oi.master_order_sn
-			where
-            	oie.is_del = 0
-            and
-            oi.channel_code = #{siteCode,jdbcType=VARCHAR}
-            <if test="userId != null">
-                and oi.user_id= #{userId,jdbcType=VARCHAR}
-            </if>
-			<if test="shopCode != null">
-				and oi.order_from = #{shopCode,jdbcType=VARCHAR}
-			</if>
-			<if test="orderSn != null">
-				and oi.master_order_sn = #{orderSn,jdbcType=VARCHAR}
-			</if>
-			<!--商品sku-->
-			<if test="goodsSn != null">
-				and og.custom_code = #{goodsSn,jdbcType=VARCHAR}
-			</if>
-			<!--物料编码-->
-			<if test="materielNo != null">
-				and og.customer_material_code = #{materielNo}
-			</if>
-			<if test="startTime != null">
-				and oi.add_time &gt;= #{startTime}
-			</if>
-			<if test="endTime != null">
-				and oi.add_time &lt;= #{endTime}
-			</if>
-			<if test="orderSns != null">
-				and oi.master_order_sn in
-				<foreach collection="orderSns" item="orderSn" open="(" close=")" separator=",">
-					#{orderSn}
-				</foreach>
-			</if>
-			<!-- 客户合同编码 -->
-			<if test="contractNum != null">
-				and oie.customer_contract_num = #{contractNum}
-			</if>
-            <!-- 签章状态 -->
-            <if test="signStatus != null">
-                and oi.sign_status = #{signStatus}
-            </if>
-            <!-- 公司id -->
-            <if test="companyId != null">
-                and oie.company_code = #{companyId}
-            </if>
+        <!--app列表只显示订单 -->
+        <choose>
+            <when test="type == 1">
+                <!--待付款订单 -->
+                and oi.pay_status in (0,1) and oi.order_status=0
+            </when>
+            <when test="type == 2">
+                <!--待发货订单 -->
+                and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and
+                oi.ship_status in (0,1)
+            </when>
+            <when test="type == 3">
+                <!--待收货订单 -->
+                and oi.ship_status in (2,3,4)
+            </when>
+            <when test="type == 4">
+                <!--已收货订单 -->
+                and oi.ship_status = 5
+            </when>
+            <when test="type == 5">
+                <!--待评论 -->
+                and oi.ship_status = 5 and oie.is_review = 0
+            </when>
+            <when test="type == 6">
+                <!--交易关闭订单 -->
+                and oi.order_status = 2
+            </when>
+            <when test="type == 9">
+                <!--等待补款 -->
+                and oi.order_type = 2 and oi.total_payable > 0
+            </when>
+            <when test="type == 10">
+                <!--正在换货 -->
+                and oi.order_type = 2 and oi.total_payable &lt;= 0 and
+                oi.ship_status &lt;5
+            </when>
+            <when test="type == 11">
+                <!--换货成功 -->
+                and oi.order_type = 2 and oi.ship_status = 5
+            </when>
+        </choose>
+        GROUP BY oi.master_order_sn
+        order by oi.add_time desc
+        <if test="pageSize > 0">
+            limit #{start}, #{pageSize}
+        </if>
+        )
+        a
+        left join order_return oreturn on oreturn.master_order_sn=a.orderSn AND oreturn.return_order_status != 4
+        left join master_order_info moi on moi.relating_original_sn=a.orderSn AND moi.order_type=2 AND moi.order_status != 2
+        left join goods_return_change returnchange on returnchange.order_sn=a.orderSn
+        GROUP BY a.orderSn order by a.orderCreateTime DESC;
+    </select>
 
-		<!--app列表只显示订单 --> 
-			<choose>
-			<when test="type == 1">
-				<!--待付款订单 -->
-				and oi.pay_status in (0,1) and oi.order_status=0
-			</when>
-			<when test="type == 2">
-				<!--待发货订单 -->
-				and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and
-				oi.ship_status in (0,1) 
-			</when>
-			<when test="type == 3">
-				<!--待收货订单 -->
-				and oi.ship_status in (2,3,4) 
-			</when>
-			<when test="type == 4">
-				<!--已收货订单 -->
-				and oi.ship_status = 5
-			</when>
-			<when test="type == 5">
-				<!--待评论 -->
-				and oi.ship_status = 5 and oie.is_review = 0
-			</when>
-			<when test="type == 6">
-				<!--交易关闭订单 -->
-				and oi.order_status = 2 
-			</when>
-			<when test="type==9">
-				<!--等待补款 -->
-				and oi.order_type = 2 and oi.total_payable > 0
-			</when>
-			<when test="type==10">
-				<!--正在换货 -->
-				and oi.order_type = 2 and oi.total_payable &lt;= 0 and
-				oi.ship_status &lt;5
-			</when>
-			<when test="type==11">
-				<!--换货成功 -->
-				and oi.order_type = 2 and oi.ship_status = 5
-			</when>
-		</choose>
-		GROUP BY oi.master_order_sn ) aa
-	</select>
-	
-	<select id="selectReturnGoodsType"
-		resultType="java.lang.Integer"
-		parameterType="Map">
-		select count(1) from ( select sku_sn from  goods_return_change where order_sn=#{orderSn,jdbcType=VARCHAR} GROUP BY sku_sn) aa;
-	</select>
-	
-	<select id="selectGoodsType"
-		resultType="java.lang.Integer"
-		parameterType="Map">
-		select count(1) from ( select custom_code from  master_order_goods where master_order_sn=#{orderSn,jdbcType=VARCHAR} GROUP BY custom_code) aa;
-	</select>
-	
+    <select id="selectUserOrderInfoCount" resultType="java.lang.Integer" parameterType="Map">
+        select count(1) from (
+        select count(1) from
+        <if test="isHistory == 0">
+            master_order_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_info_history
+        </if>
+        oi
+        left join
+        <if test="isHistory == 0">
+            master_order_address_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_address_info_history
+        </if>
+        oai on oi.master_order_sn = oai.master_order_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_goods
+        </if>
+        <if test="isHistory == 1">
+            master_order_goods_history
+        </if>
+        og on og.master_order_sn = oi.master_order_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_pay
+        </if>
+        <if test="isHistory == 1">
+            master_order_pay_history
+        </if>
+        op on op.master_order_sn = oi.master_order_sn
+        left join master_order_info_extend oie
+        on oie.master_order_sn = oi.master_order_sn
+        where
+        oie.is_del = 0
+        and
+        oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and oi.user_id= #{userId,jdbcType=VARCHAR}
+        </if>
+        <if test="shopCode != null">
+            and oi.order_from = #{shopCode,jdbcType=VARCHAR}
+        </if>
+        <if test="orderSn != null">
+            and oi.master_order_sn = #{orderSn,jdbcType=VARCHAR}
+        </if>
+        <!--商品sku-->
+        <if test="goodsSn != null">
+            and og.custom_code = #{goodsSn,jdbcType=VARCHAR}
+        </if>
+        <!--物料编码-->
+        <if test="materielNo != null">
+            and og.customer_material_code = #{materielNo}
+        </if>
+        <if test="startTime != null">
+            and oi.add_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and oi.add_time &lt;= #{endTime}
+        </if>
+        <if test="orderSns != null">
+            and oi.master_order_sn in
+            <foreach collection="orderSns" item="orderSn" open="(" close=")" separator=",">
+                #{orderSn}
+            </foreach>
+        </if>
+        <!-- 客户合同编码 -->
+        <if test="contractNum != null">
+            and oie.customer_contract_num = #{contractNum}
+        </if>
+        <!-- 签章状态 -->
+        <if test="signStatus != null">
+            and oi.sign_status = #{signStatus}
+        </if>
+        <!-- 公司id -->
+        <if test="companyId != null">
+            and oie.company_code = #{companyId}
+        </if>
 
-	<select id="selectWaitPayInfo"
-		resultType="com.work.shop.oms.api.bean.OrderPayInfo"
-		parameterType="Map">
-		select
-		oi.master_order_sn orderSn,
-		oi.total_payable
-		totalPayable,
-		oi.order_status orderStatus,
-		oi.order_type orderType,
-		oi.user_id userId,
-		oi.pay_status payStatus,
-		oi.bonus bonus,
-		oi.money_paid moneyPaid,
-		oi.goods_amount goodsAmount,
-		oi.surplus
-		surplus,
-		oi.total_fee totalFee,
-		DATE_FORMAT(oi.add_time,'%Y-%m-%d %T')
-		addTime,
-		op.pay_id payId,
-		DATE_FORMAT(op.pay_lasttime,'%Y-%m-%d %T')
-		payLastTime,
-		op.pay_sn paySn
-		from
-		master_order_info
-		oi left join master_order_pay op on op.order_sn=oi.order_sn and
-		op.pay_status=0
-		where oi.order_sn=#{orderSn,jdbcType=VARCHAR} /*
+        <!--app列表只显示订单 -->
+        <choose>
+            <when test="type == 1">
+                <!--待付款订单 -->
+                and oi.pay_status in (0,1) and oi.order_status=0
+            </when>
+            <when test="type == 2">
+                <!--待发货订单 -->
+                and oi.pay_status = 2 and oi.order_status In (0,1,5,6) and
+                oi.ship_status in (0,1)
+            </when>
+            <when test="type == 3">
+                <!--待收货订单 -->
+                and oi.ship_status in (2,3,4)
+            </when>
+            <when test="type == 4">
+                <!--已收货订单 -->
+                and oi.ship_status = 5
+            </when>
+            <when test="type == 5">
+                <!--待评论 -->
+                and oi.ship_status = 5 and oie.is_review = 0
+            </when>
+            <when test="type == 6">
+                <!--交易关闭订单 -->
+                and oi.order_status = 2
+            </when>
+            <when test="type==9">
+                <!--等待补款 -->
+                and oi.order_type = 2 and oi.total_payable > 0
+            </when>
+            <when test="type==10">
+                <!--正在换货 -->
+                and oi.order_type = 2 and oi.total_payable &lt;= 0 and
+                oi.ship_status &lt;5
+            </when>
+            <when test="type==11">
+                <!--换货成功 -->
+                and oi.order_type = 2 and oi.ship_status = 5
+            </when>
+        </choose>
+        GROUP BY oi.master_order_sn ) aa
+    </select>
+
+    <select id="selectReturnGoodsType"
+            resultType="java.lang.Integer"
+            parameterType="Map">
+        select count(1)
+        from (select sku_sn from goods_return_change where order_sn = #{orderSn,jdbcType=VARCHAR} GROUP BY sku_sn) aa;
+    </select>
+
+    <select id="selectGoodsType"
+            resultType="java.lang.Integer"
+            parameterType="Map">
+        select count(1)
+        from (select custom_code from master_order_goods where master_order_sn = #{orderSn,jdbcType=VARCHAR} GROUP BY custom_code) aa;
+    </select>
+
+
+    <select id="selectWaitPayInfo"
+            resultType="com.work.shop.oms.api.bean.OrderPayInfo"
+            parameterType="Map">
+        select oi.master_order_sn orderSn,
+               oi.total_payable
+                                  totalPayable,
+               oi.order_status    orderStatus,
+               oi.order_type      orderType,
+               oi.user_id         userId,
+               oi.pay_status      payStatus,
+               oi.bonus           bonus,
+               oi.money_paid      moneyPaid,
+               oi.goods_amount    goodsAmount,
+               oi.surplus
+                                  surplus,
+               oi.total_fee       totalFee,
+               DATE_FORMAT(oi.add_time, '%Y-%m-%d %T')
+                                  addTime,
+               op.pay_id          payId,
+               DATE_FORMAT(op.pay_lasttime, '%Y-%m-%d %T')
+                                  payLastTime,
+               op.pay_sn          paySn
+        from master_order_info oi
+                 left join master_order_pay op on op.order_sn = oi.order_sn and
+                                                  op.pay_status = 0
+        where oi.order_sn = #{orderSn,jdbcType=VARCHAR} /*
 		maxscale route to master */;
-	</select>
+    </select>
 
-	<select id="selectOrderShipInfo"
-		resultType="com.work.shop.oms.api.bean.OrderShipInfo"
-		parameterType="Map">
-		select
-		os.shipping_name shippingName,
-		DATE_FORMAT(os.delivery_confirm_time,'%Y-%m-%d %T')
-		deliveryConfirmTime,
-		os.invoice_no invoiceNo,
-		DATE_FORMAT(os.delivery_time,'%Y-%m-%d %T') orderShipTime,
-		os.depot_code depotCode,
+    <select id="selectOrderShipInfo"
+            resultType="com.work.shop.oms.api.bean.OrderShipInfo"
+            parameterType="Map">
+        select
+        os.shipping_name shippingName,
+        DATE_FORMAT(os.delivery_confirm_time,'%Y-%m-%d %T')
+        deliveryConfirmTime,
+        os.invoice_no invoiceNo,
+        DATE_FORMAT(os.delivery_time,'%Y-%m-%d %T') orderShipTime,
+        os.depot_code depotCode,
         os.shipping_status shippingStatus,
         os.is_receipt isReceipt,
-		order_sn orderSn
-		from
-		<if test="isHistory == 0">
-			order_depot_ship
-		</if>
-		<if test="isHistory == 1">
-			order_depot_ship_history
-		</if>
-		os 
-		where os.order_sn in (select order_sn from order_distribute where master_order_sn=#{orderSn,jdbcType=VARCHAR});
-	</select>
+        order_sn orderSn
+        from
+        <if test="isHistory == 0">
+            order_depot_ship
+        </if>
+        <if test="isHistory == 1">
+            order_depot_ship_history
+        </if>
+        os
+        where os.order_sn in (select order_sn from order_distribute where master_order_sn=#{orderSn,jdbcType=VARCHAR});
+    </select>
 
-	<select id="selectOrderGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
-		select
-		og.order_sn subOrderSn,
-		og.goods_price goodsPrice,
-		og.transaction_price transactionPrice,
-		og.settlement_price settlementPrice,
+    <select id="selectOrderGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
+        select
+        og.order_sn subOrderSn,
+        og.goods_price goodsPrice,
+        og.transaction_price transactionPrice,
+        og.settlement_price settlementPrice,
         og.goods_sn goodsSn,
-		og.custom_code skuSn,
-		og.goods_name goodsName,
-		og.goods_thumb goodsUrl,
-		og.goods_number goodsNum,
-		og.goods_size_name goodsSize,
-		og.goods_color_name goodsColor,
-		og.discount discountedPrice,
-		og.pay_points payPoints,
-		og.extension_code extensionCode,
-		og.integral_money integralMoney,
-		og.integral integral,
-		og.c2m_item c2mItemStr,
-		og.send_number sendNumber,
-		oi.order_from orderFrom,
-		og.bv_value bvValue,
-		og.expected_ship_date expectedShipDate,
-		og.tax,
-		og.tax_rate taxRate,
-		og.base_bv_value baseBvValue,
+        og.custom_code skuSn,
+        og.goods_name goodsName,
+        og.goods_thumb goodsUrl,
+        og.goods_number goodsNum,
+        og.goods_size_name goodsSize,
+        og.goods_color_name goodsColor,
+        og.discount discountedPrice,
+        og.pay_points payPoints,
+        og.extension_code extensionCode,
+        og.integral_money integralMoney,
+        og.integral integral,
+        og.c2m_item c2mItemStr,
+        og.send_number sendNumber,
+        oi.order_from orderFrom,
+        og.bv_value bvValue,
+        og.expected_ship_date expectedShipDate,
+        og.tax,
+        og.tax_rate taxRate,
+        og.base_bv_value baseBvValue,
         og.min_buy_num minBuyNum,
         og.buy_unit buyUnit,
         og.customer_material_code customerMaterialCode,
-		og.buyer_no as buyerNo,
-		og.buyer_line_no as buyerLineNo,
+        og.buyer_no as buyerNo,
+        og.buyer_line_no as buyerLineNo,
         og.distribution_category distributionCategory,
-		og.depot_code depotCode,
+        og.depot_code depotCode,
         og.supplier_code supplierCode,
         og.supplier_name supplierName
-		from
-		<if test="isHistory == 0">
-			master_order_goods
-		</if>
-		<if test="isHistory == 1">
-			master_order_goods_history
-		</if>
-		og
-		left join
-		<if test="isHistory == 0">
-			master_order_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_info_history
-		</if>
-			oi on oi.master_order_sn=og.master_order_sn
-		where 1=1
-		<if test="orderSn!=null">
-			and og.order_sn=#{orderSn,jdbcType=VARCHAR}
-		</if>
-		<if test="depotCode!=null">
-			and og.depot_code=#{depotCode,jdbcType=VARCHAR}
-		</if>
-		<if test="masterOrderSn">
-			and og.master_order_sn=#{masterOrderSn,jdbcType=VARCHAR}
-		</if>
+        from
+        <if test="isHistory == 0">
+            master_order_goods
+        </if>
+        <if test="isHistory == 1">
+            master_order_goods_history
+        </if>
+        og
+        left join
+        <if test="isHistory == 0">
+            master_order_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_info_history
+        </if>
+        oi on oi.master_order_sn=og.master_order_sn
+        where 1=1
+        <if test="orderSn!=null">
+            and og.order_sn=#{orderSn,jdbcType=VARCHAR}
+        </if>
+        <if test="depotCode!=null">
+            and og.depot_code=#{depotCode,jdbcType=VARCHAR}
+        </if>
+        <if test="masterOrderSn">
+            and og.master_order_sn=#{masterOrderSn,jdbcType=VARCHAR}
+        </if>
         <if test="invoiceNo != null">
             and og.invoice_no=#{invoiceNo,jdbcType=VARCHAR}
         </if>
-		and og.is_del=0
-		GROUP BY og.custom_code, og.extension_code;
-	</select>
+        and og.is_del=0
+        GROUP BY og.custom_code, og.extension_code;
+    </select>
 
     <select id="selectByWhere" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
-       select 
+        select
         og.goods_price goodsPrice,
-		og.transaction_price transactionPrice,
-		og.settlement_price settlementPrice, 
-		og.custom_code skuSn,
-		og.goods_name goodsName,
-		og.goods_thumb goodsUrl,
-		sum(og.goods_number) goodsNum,
-		og.goods_size_name goodsSize,
-		og.goods_color_name goodsColor,
-		og.discount discountedPrice,
-		og.pay_points payPoints,
-		og.extension_code extensionCode,
-		og.integral_money integralMoney,
-		og.integral integral,
-		og.c2m_item c2mItemStr,
-		og.send_number sendNumber
-    from master_order_goods og where 1=1
-    <if test="orderSn!=null">
-       and og.order_sn=#{orderSn,jdbcType=VARCHAR}
-    </if>
-    <if test="customCode!=null">
-       and og.custom_Code=#{customCode,jdbcType=VARCHAR}
-    </if>
-    GROUP BY og.custom_code,og.extension_code;
-  
-  </select>
-  	
-	<select id="selectUserOrderReturnInfo" resultType="com.work.shop.oms.api.bean.OrderReturnPageInfo" parameterType="Map">
-		select
-			orn.master_order_sn orderSn,
-			orn.return_sn orderReturnSn,
-			orn.pay_status rpayStatus,
-			orn.return_allgoods_count returnAllgoodsCount,
-            orn.return_order_status returnOrderStatus,
-            grc.contact_name contactUser,
-            grc.contact_mobile contactMobile,
-            orf.backBalance backBalance,
-            orn.return_order_status returnOrderStatus,
-            orn.ship_status shipStatus,
-            orn.return_reason returnReason,
-            orn.channel_code shopCode,
-            orn.shop_name shopName,
-            moie.customer_contract_num customerContractNum,
-			DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') orderCreateTime
-		from
-			order_return orn
-        left join order_refund orf on orn.return_sn=orf.relating_return_sn
-        left join (SELECT contact_name, contact_mobile, order_sn FROM goods_return_change WHERE is_del=0 AND `status`=2 GROUP BY order_sn) grc
-        on grc.order_sn=orn.relating_order_sn
-        left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
-		where
-			orn.user_id= #{userId,jdbcType=VARCHAR}
-		AND
-			orn.site_code = #{siteCode,jdbcType=VARCHAR}
-		and
-			orn.return_type = 1
-		and
-			orn.process_type = 1
-        and
-        orn.return_order_status !=4
-        and
-        orn.return_order_status !=0
-        and
-        orn.is_del = 0
-        <if test="shopCode != null">
-            and orn.channel_code = #{shopCode,jdbcType=VARCHAR}
+        og.transaction_price transactionPrice,
+        og.settlement_price settlementPrice,
+        og.custom_code skuSn,
+        og.goods_name goodsName,
+        og.goods_thumb goodsUrl,
+        sum(og.goods_number) goodsNum,
+        og.goods_size_name goodsSize,
+        og.goods_color_name goodsColor,
+        og.discount discountedPrice,
+        og.pay_points payPoints,
+        og.extension_code extensionCode,
+        og.integral_money integralMoney,
+        og.integral integral,
+        og.c2m_item c2mItemStr,
+        og.send_number sendNumber
+        from master_order_goods og where 1=1
+        <if test="orderSn!=null">
+            and og.order_sn=#{orderSn,jdbcType=VARCHAR}
         </if>
-        <if test="returnSn != null">
-            and orn.return_sn = #{returnSn,jdbcType=VARCHAR}
+        <if test="customCode!=null">
+            and og.custom_Code=#{customCode,jdbcType=VARCHAR}
         </if>
-        <if test="type==7">
-            <!--正在退货 -->
-            and orn.pay_status in (0,2)
-        </if>
-        <if test="type==8">
-            <!--退货成功 -->
-            and orn.pay_status = 1
-        </if>
-        <if test="returnProcessStatus == 1">
-            <!--退货中 -->
-            and orn.return_order_status = 1
-            and orn.ship_status != 3
-            and orf.backBalance = 0
-        </if>
-        <if test="returnProcessStatus == 2">
-            <!--退货成功 -->
-            and orn.ship_status = 3
-        </if>
-        <if test="returnProcessStatus == 3">
-            <!--退款成功 -->
-            and orf.backBalance = 1
-        </if>
-        GROUP BY orn.return_sn
-		order by orn.add_time desc
-        limit #{start},#{pageSize}
-	</select>
+        GROUP BY og.custom_code,og.extension_code;
 
-	<select id="selectOrderReturnGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderReturnGoodsInfo"
-		parameterType="Map">
-		select
-		org.goods_return_number goodsNum,
-		org.goods_price transactionPrice,
-		org.goods_sn goodsSn,
-		org.custom_code skuSn,
-		org.goods_name goodsName,
-		org.goods_thumb goodsUrl,
-		org.extension_code extensionCode,
-		org.pay_points payPoints,
-		org.goods_color_name goodsColor,
-		org.goods_size_name goodsSize,
-		mog.min_buy_num minBuyNum,
-		mog.customer_material_code customerMaterialCode,
-		mog.buy_unit buyUnit
-		from
-		order_return_goods
-		org
-		left join order_return ore on org.relating_return_sn=ore.return_sn
-		left join master_order_goods mog on mog.master_order_sn=ore.relating_order_sn and mog.custom_code=org.custom_code and mog.extension_code=org.extension_code
-		where org.relating_return_sn=#{orderReturnSn,jdbcType=VARCHAR}
-		GROUP BY org.custom_code, org.extension_code;
-	</select>
+    </select>
 
-	<select id="selectUserOrderReturnInfoCount" resultType="java.lang.Integer"
-		parameterType="Map">
-		select count(*)
+    <select id="selectUserOrderReturnInfo" resultType="com.work.shop.oms.api.bean.OrderReturnPageInfo" parameterType="Map">
+        select
+        orn.master_order_sn orderSn,
+        orn.return_sn orderReturnSn,
+        orn.pay_status rpayStatus,
+        orn.return_allgoods_count returnAllgoodsCount,
+        orn.return_order_status returnOrderStatus,
+        grc.contact_name contactUser,
+        grc.contact_mobile contactMobile,
+        orf.backBalance backBalance,
+        orn.return_order_status returnOrderStatus,
+        orn.ship_status shipStatus,
+        orn.return_reason returnReason,
+        orn.channel_code shopCode,
+        orn.shop_name shopName,
+        moie.customer_contract_num customerContractNum,
+        DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') orderCreateTime
         from
         order_return orn
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
@@ -624,539 +543,619 @@
             <!--退款成功 -->
             and orf.backBalance = 1
         </if>
-	</select>
+        GROUP BY orn.return_sn
+        order by orn.add_time desc
+        limit #{start},#{pageSize}
+    </select>
 
-	<select id="selectReturnGoodsStatus" resultType="com.work.shop.oms.api.bean.ReturnGoodsStatus"
-		parameterType="Map">
-		select
-		orn.pay_status payStatus,
-		orn.process_type processType
-		from
-		order_return
-		orn 
-		left join order_return_goods org on orn.return_sn=org.relating_return_sn
-		where orn.relating_order_sn=#{subOrderSn,jdbcType=VARCHAR} and org.custom_code=#{sku,jdbcType=VARCHAR};
-	</select>
+    <select id="selectOrderReturnGoodsInfo" resultType="com.work.shop.oms.api.bean.OrderReturnGoodsInfo"
+            parameterType="Map">
+        select org.goods_return_number    goodsNum,
+               org.goods_price            transactionPrice,
+               org.goods_sn               goodsSn,
+               org.custom_code            skuSn,
+               org.goods_name             goodsName,
+               org.goods_thumb            goodsUrl,
+               org.extension_code         extensionCode,
+               org.pay_points             payPoints,
+               org.goods_color_name       goodsColor,
+               org.goods_size_name        goodsSize,
+               mog.min_buy_num            minBuyNum,
+               mog.customer_material_code customerMaterialCode,
+               mog.buy_unit               buyUnit
+        from order_return_goods org
+                 left join order_return ore on org.relating_return_sn = ore.return_sn
+                 left join master_order_goods mog on mog.master_order_sn = ore.relating_order_sn and mog.custom_code = org.custom_code and mog.extension_code = org.extension_code
+        where org.relating_return_sn = #{orderReturnSn,jdbcType=VARCHAR}
+        GROUP BY org.custom_code, org.extension_code;
+    </select>
 
-	<select id="selectOrderDetailInfo" resultType="com.work.shop.oms.api.bean.OrderDetailInfo" parameterType="Map">
-	SELECT a.*,
-		GROUP_CONCAT(DISTINCT oreturn.return_sn) returnSns,
-		GROUP_CONCAT(DISTINCT moi.master_order_sn) exChangeSns,
-		returnchange.return_type returnType,
-		od.got_code gotCode,
-		od.got_status gotStatus,
-        sp.pay_code payCode
-	FROM(
-		select 
-			DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
-			oi.master_order_sn orderSn,
-			oai.consignee receiver,
-			oai.mobile mobile,
-			oai.country country,
-			oai.province province,
-			oai.city city,
-			oai.district district,
-			oai.street street,
-			oai.address address,
-			oai.user_shop_name userShopName,
-			oi.shipping_total_fee postage,
-			oi.referer referer,
-			oi.bonus bonus,
-			oi.user_id userId,
-			oi.pay_status payStatus,
-			oi.ship_status shipStatus,
-			oi.order_status orderStatus,
-			oi.trans_type transType,
-			oi.money_paid payTotalfee,
-			oi.total_fee totalfee,
-			oi.total_payable totalPayable,
-			oi.surplus surplus,
-			oi.goods_amount goodsAmount,
-			oi.discount discount,
-			oie.inv_content invContent,
-			oie.inv_payee invPayee,
-			oie.inv_type invType,
-			oi.order_type orderType,
-			oie.is_order_print isOrderPrint,
-			oie.is_Review isReview,
-			oie.free_post_type freePostType,
-			oie.free_post_card freePostCard,
-			oie.free_post_fee freePostFee,
-			oie.is_cac isCac,
-			oie.shop_code storeCode,
-			oie.shop_name storeName,
-			oie.user_bank_no userBankNo,
-			oie.user_pay_apply userPayApply,
-			DATE_FORMAT(op.pay_time,'%Y-%m-%d %T') orderPayTime,
-			oi.money_paid moneyPaid,
-			op.pay_name paymentMethod,
-			op.pay_id payId,
-            op.pay_time payTime,
-            op.payment_period paymentPeriod,
-            op.payment_rate paymentRate,
-            op.pay_lasttime payLastTime,
-			oi.integral_money integralMoney,
-			oi.integral integral,
-			oi.source source,
-			oi.order_from channelCode,
-			oi.shop_name channelName,
-			oi.bv_value bvValue,
-			oi.points,
-            oi.cancel_reason orderCancel,
-			oie.is_advance isAdvance,
-            oie.rider_time riderTime,
-            oie.last_pay_date lastPayDate,
-            oie.company_code companyCode,
-            oie.company_name companyName,
-			oi.expected_ship_date expectedShipDate,
-			oi.tax tax,
-			oai.user_card_no userCardNo,
-			oai.user_card_name userCardName,
-			oai.province_code provinceCode,
-			oai.city_code cityCode,
-			oai.district_code districtCode,
-			oai.area_code areaCode,
-			oai.longitude,
-			oai.latitude,
-			oai.delivery_time deliveryTime,
-            oi.need_audit needAudit,
-            oi.audit_status auditStatus,
-            oi.need_sign needSign,
-            oi.sign_status signStatus,
-            oi.postscript postscript,
-            oie.customer_contract_num signContractNum,
-            oai.inv_consignee invConsignee,
-            oai.inv_mobile invMobile,
-            oai.inv_address invAddress,
-            oai.shipping_name shippingName
-		from
-		<if test="isHistory == 0">
-			master_order_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_info_history
-		</if>
-		oi
-		left join 
-		<if test="isHistory == 0">
-			master_order_pay
-		</if>
-		<if test="isHistory == 1">
-			master_order_pay_history
-		</if>
-		op on op.master_order_sn=oi.master_order_sn
-		left join master_order_info_extend oie on oie.master_order_sn=oi.master_order_sn
-		left join 
-		<if test="isHistory == 0">
-			master_order_address_info 
-		</if> 
-		<if test="isHistory == 1">
-			master_order_address_info_history 
-		</if>
-		oai on oi.master_order_sn=oai.master_order_sn
-		where
-			oi.master_order_sn= #{orderSn,jdbcType=VARCHAR}
-		and 
-			oi.channel_code= #{siteCode,jdbcType=VARCHAR}
-		<if test="userId != null">
-			and oi.user_id = #{userId,jdbcType=VARCHAR}
-		</if>
-        <if test="companyId != null">
-            and oie.company_code = #{companyId,jdbcType=VARCHAR}
+    <select id="selectUserOrderReturnInfoCount" resultType="java.lang.Integer"
+            parameterType="Map">
+        select count(*)
+        from
+        order_return orn
+        left join order_refund orf on orn.return_sn=orf.relating_return_sn
+        left join (SELECT contact_name, contact_mobile, order_sn FROM goods_return_change WHERE is_del=0 AND `status`=2 GROUP BY order_sn) grc
+        on grc.order_sn=orn.relating_order_sn
+        left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
+        where
+        orn.user_id= #{userId,jdbcType=VARCHAR}
+        AND
+        orn.site_code = #{siteCode,jdbcType=VARCHAR}
+        and
+        orn.return_type = 1
+        and
+        orn.process_type = 1
+        and
+        orn.return_order_status !=4
+        and
+        orn.return_order_status !=0
+        and
+        orn.is_del = 0
+        <if test="shopCode != null">
+            and orn.channel_code = #{shopCode,jdbcType=VARCHAR}
         </if>
-		GROUP BY oi.master_order_sn
-		) a
-	left join order_return oreturn on oreturn.master_order_sn = a.orderSn AND oreturn.return_order_status != 4
-	left join master_order_info moi on moi.relating_original_sn = a.orderSn AND moi.order_type = 2 AND moi.order_status != 2
-	left join goods_return_change returnchange on returnchange.order_sn = a.orderSn
-	left join order_distribute od on a.orderSn = od.master_order_sn and a.isCac = 1
-    left join system_payment sp on a.payId = sp.pay_id and sp.enabled = 1
-	GROUP BY a.orderSn;
-	</select>
-	
-	<select id="selectOrderReturnDetailInfo"
-		resultType="com.work.shop.oms.api.bean.OrderReturnDetailInfo"
-		parameterType="Map">
-		select 
-			DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') applyTime,
-			orn.return_bonus_money bonus,
-			orn.return_shipping returnPostage,
-			orn.return_goods_money returnGoodsMoney,
-			DATE_FORMAT(orn.clear_time,'%Y-%m-%d %T') clearingTime,
-			orn.return_sn orderReturnSn,
-			orn.user_id userId,
-			orn.pay_status payStatus,
-			DATE_FORMAT(ors.quality_time,'%Y-%m-%d %T') qualityTime,
-			DATE_FORMAT(ors.received_time,'%Y-%m-%d %T') receiveTime,
-			ors.return_express returnExpress,
-			ors.return_express_img returnExpressImg,
-			ors.return_invoice_no returnInvoiceNo,
-            orn.return_desc remark,
-            orn.return_reason returnReason,
-            orn.action_user actionUser,
-            orn.return_order_status returnOrderStatus,
-            orn.ship_status shipStatus,
-            orn.channel_code shopCode,
-            orn.shop_name shopName,
-            moai.consignee consignee,
-            grc.contact_name contactUser,
-            grc.contact_mobile contactMobile,
-            moie.customer_contract_num customerContractNum,
-            orf.backBalance backBalance
-		from order_return orn
-		left join order_return_ship ors on orn.return_sn=ors.relating_return_sn
+        <if test="returnSn != null">
+            and orn.return_sn = #{returnSn,jdbcType=VARCHAR}
+        </if>
+        <if test="type==7">
+            <!--正在退货 -->
+            and orn.pay_status in (0,2)
+        </if>
+        <if test="type==8">
+            <!--退货成功 -->
+            and orn.pay_status = 1
+        </if>
+        <if test="returnProcessStatus == 1">
+            <!--退货中 -->
+            and orn.return_order_status = 1
+            and orn.ship_status != 3
+            and orf.backBalance = 0
+        </if>
+        <if test="returnProcessStatus == 2">
+            <!--退货成功 -->
+            and orn.ship_status = 3
+        </if>
+        <if test="returnProcessStatus == 3">
+            <!--退款成功 -->
+            and orf.backBalance = 1
+        </if>
+    </select>
+
+    <select id="selectReturnGoodsStatus" resultType="com.work.shop.oms.api.bean.ReturnGoodsStatus"
+            parameterType="Map">
+        select orn.pay_status   payStatus,
+               orn.process_type processType
+        from order_return orn
+                 left join order_return_goods org on orn.return_sn = org.relating_return_sn
+        where orn.relating_order_sn = #{subOrderSn,jdbcType=VARCHAR}
+          and org.custom_code = #{sku,jdbcType=VARCHAR};
+    </select>
+
+    <select id="selectOrderDetailInfo" resultType="com.work.shop.oms.api.bean.OrderDetailInfo" parameterType="Map">
+        SELECT a.*,
+        GROUP_CONCAT(DISTINCT oreturn.return_sn) returnSns,
+        GROUP_CONCAT(DISTINCT moi.master_order_sn) exChangeSns,
+        returnchange.return_type returnType,
+        od.got_code gotCode,
+        od.got_status gotStatus,
+        sp.pay_code payCode
+        FROM(
+        select
+        DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
+        oi.master_order_sn orderSn,
+        oai.consignee receiver,
+        oai.mobile mobile,
+        oai.country country,
+        oai.province province,
+        oai.city city,
+        oai.district district,
+        oai.street street,
+        oai.address address,
+        oai.user_shop_name userShopName,
+        oi.shipping_total_fee postage,
+        oi.referer referer,
+        oi.bonus bonus,
+        oi.user_id userId,
+        oi.pay_status payStatus,
+        oi.ship_status shipStatus,
+        oi.order_status orderStatus,
+        oi.trans_type transType,
+        oi.money_paid payTotalfee,
+        oi.total_fee totalfee,
+        oi.total_payable totalPayable,
+        oi.surplus surplus,
+        oi.goods_amount goodsAmount,
+        oi.discount discount,
+        oie.inv_content invContent,
+        oie.inv_payee invPayee,
+        oie.inv_type invType,
+        oi.order_type orderType,
+        oie.is_order_print isOrderPrint,
+        oie.is_Review isReview,
+        oie.free_post_type freePostType,
+        oie.free_post_card freePostCard,
+        oie.free_post_fee freePostFee,
+        oie.is_cac isCac,
+        oie.shop_code storeCode,
+        oie.shop_name storeName,
+        oie.user_bank_no userBankNo,
+        oie.user_pay_apply userPayApply,
+        DATE_FORMAT(op.pay_time,'%Y-%m-%d %T') orderPayTime,
+        oi.money_paid moneyPaid,
+        op.pay_name paymentMethod,
+        op.pay_id payId,
+        op.pay_time payTime,
+        op.payment_period paymentPeriod,
+        op.payment_rate paymentRate,
+        op.pay_lasttime payLastTime,
+        oi.integral_money integralMoney,
+        oi.integral integral,
+        oi.source source,
+        oi.order_from channelCode,
+        oi.shop_name channelName,
+        oi.bv_value bvValue,
+        oi.points,
+        oi.cancel_reason orderCancel,
+        oie.is_advance isAdvance,
+        oie.rider_time riderTime,
+        oie.last_pay_date lastPayDate,
+        oie.company_code companyCode,
+        oie.company_name companyName,
+        oi.expected_ship_date expectedShipDate,
+        oi.tax tax,
+        oai.user_card_no userCardNo,
+        oai.user_card_name userCardName,
+        oai.province_code provinceCode,
+        oai.city_code cityCode,
+        oai.district_code districtCode,
+        oai.area_code areaCode,
+        oai.longitude,
+        oai.latitude,
+        oai.delivery_time deliveryTime,
+        oi.need_audit needAudit,
+        oi.audit_status auditStatus,
+        oi.need_sign needSign,
+        oi.sign_status signStatus,
+        oi.postscript postscript,
+        oi.sign_contract_num signContractNum,
+        oai.inv_consignee invConsignee,
+        oai.inv_mobile invMobile,
+        oai.inv_address invAddress,
+        oai.shipping_name shippingName
+        from
+        <if test="isHistory == 0">
+            master_order_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_info_history
+        </if>
+        oi
+        left join
+        <if test="isHistory == 0">
+            master_order_pay
+        </if>
+        <if test="isHistory == 1">
+            master_order_pay_history
+        </if>
+        op on op.master_order_sn=oi.master_order_sn
+        left join master_order_info_extend oie on oie.master_order_sn=oi.master_order_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_address_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_address_info_history
+        </if>
+        oai on oi.master_order_sn=oai.master_order_sn
+        where
+        oi.master_order_sn= #{orderSn,jdbcType=VARCHAR}
+        and
+        oi.channel_code= #{siteCode,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and oi.user_id = #{userId,jdbcType=VARCHAR}
+        </if>
+        GROUP BY oi.master_order_sn
+        ) a
+        left join order_return oreturn on oreturn.master_order_sn = a.orderSn AND oreturn.return_order_status != 4
+        left join master_order_info moi on moi.relating_original_sn = a.orderSn AND moi.order_type = 2 AND moi.order_status != 2
+        left join goods_return_change returnchange on returnchange.order_sn = a.orderSn
+        left join order_distribute od on a.orderSn = od.master_order_sn and a.isCac = 1
+        left join system_payment sp on a.payId = sp.pay_id and sp.enabled = 1
+        GROUP BY a.orderSn;
+    </select>
+
+    <select id="selectOrderReturnDetailInfo"
+            resultType="com.work.shop.oms.api.bean.OrderReturnDetailInfo"
+            parameterType="Map">
+        select
+        DATE_FORMAT(orn.add_time,'%Y-%m-%d %T') applyTime,
+        orn.return_bonus_money bonus,
+        orn.return_shipping returnPostage,
+        orn.return_goods_money returnGoodsMoney,
+        DATE_FORMAT(orn.clear_time,'%Y-%m-%d %T') clearingTime,
+        orn.return_sn orderReturnSn,
+        orn.user_id userId,
+        orn.pay_status payStatus,
+        DATE_FORMAT(ors.quality_time,'%Y-%m-%d %T') qualityTime,
+        DATE_FORMAT(ors.received_time,'%Y-%m-%d %T') receiveTime,
+        ors.return_express returnExpress,
+        ors.return_express_img returnExpressImg,
+        ors.return_invoice_no returnInvoiceNo,
+        orn.return_desc remark,
+        orn.return_reason returnReason,
+        orn.action_user actionUser,
+        orn.return_order_status returnOrderStatus,
+        orn.ship_status shipStatus,
+        orn.channel_code shopCode,
+        orn.shop_name shopName,
+        moai.consignee consignee,
+        grc.contact_name contactUser,
+        grc.contact_mobile contactMobile,
+        moie.customer_contract_num customerContractNum,
+        orf.backBalance backBalance
+        from order_return orn
+        left join order_return_ship ors on orn.return_sn=ors.relating_return_sn
         left join goods_return_change grc on grc.order_sn=orn.relating_order_sn and grc.is_del=0 and grc.status=2
         left join order_refund orf on orn.return_sn=orf.relating_return_sn
         left join master_order_info_extend moie on moie.master_order_sn=orn.relating_order_sn
         left join master_order_address_info moai on moai.master_order_sn=orn.relating_order_sn
-		where orn.return_sn= #{orderReturnSn,jdbcType=VARCHAR}
-		<if test="userId != null">
-			and orn.user_id = #{userId,jdbcType=VARCHAR}
-		</if>
+        where orn.return_sn= #{orderReturnSn,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and orn.user_id = #{userId,jdbcType=VARCHAR}
+        </if>
         group by orn.return_sn
-	</select>
-	
-	<select id="selectOrderExchangesDetailInfo" resultType="com.work.shop.oms.api.bean.OrderExchangesDetailInfo" parameterType="Map">
-		select 
-			DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') createPayTime,
-			DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
-			oi.master_order_sn orderSn,
-			oi.shipping_total_fee postage,
-			oi.goods_amount goodsAmount,
-			oi.user_id userId,
-			oi.pay_status payStatus,
-			oi.total_payable totalPayable,
-			oi.ship_status shipStatus,
-			oi.integral_money integralMoney,
-			oi.integral integral,
-			orn.return_shipping returnPostage,
-			orn.return_goods_money returnGoodsMoney,
-			orn.return_sn returnSn,
-			DATE_FORMAT(ors.received_time,'%Y-%m-%d %T') receiveTime,
-			DATE_FORMAT(ors.quality_time,'%Y-%m-%d %T') qualityTime,
-			ors.return_express returnExpress,
-			ors.return_express_img returnExpressImg,
-			ors.return_invoice_no returnInvoiceNo,
-			DATE_FORMAT(max(op.pay_time),'%Y-%m-%d %T') orderPayTime
-		from order_return orn
-		left join order_return_ship ors on orn.return_sn=ors.relating_return_sn
-		left join
-		<if test="isHistory == 0">
-			master_order_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_info_history
-		</if>
-		oi on orn.new_order_sn=oi.master_order_sn
-		left join
-		<if test="isHistory == 0">
-			master_order_pay
-		</if>
-		<if test="isHistory == 1">
-			master_order_pay_history
-		</if>
-		op on orn.new_order_sn=op.master_order_sn
-		where orn.new_order_sn= #{orderSn,jdbcType=VARCHAR}
-		<if test="userId != null">
-			and orn.user_id = #{userId,jdbcType=VARCHAR}
-		</if>
-		GROUP BY orn.new_order_sn
-	</select>
+    </select>
 
-	<select id="selectUserOrderCountByType" resultType="java.lang.Integer" parameterType="Map">
-		select count(*)
-		from
-		master_order_info
-		oi
-		LEFT JOIN master_order_info_extend oie ON oie.master_order_sn=oi.master_order_sn
-		<if test="type == 6">
-			LEFT JOIN order_return orn ON oi.master_order_sn=orn.master_order_sn
-		</if>
-		where
-            oie.is_del = 0
-		AND
-			oi.channel_code = #{siteCode,jdbcType=VARCHAR}
+    <select id="selectOrderExchangesDetailInfo" resultType="com.work.shop.oms.api.bean.OrderExchangesDetailInfo" parameterType="Map">
+        select
+        DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') createPayTime,
+        DATE_FORMAT(oi.add_time,'%Y-%m-%d %T') orderCreateTime,
+        oi.master_order_sn orderSn,
+        oi.shipping_total_fee postage,
+        oi.goods_amount goodsAmount,
+        oi.user_id userId,
+        oi.pay_status payStatus,
+        oi.total_payable totalPayable,
+        oi.ship_status shipStatus,
+        oi.integral_money integralMoney,
+        oi.integral integral,
+        orn.return_shipping returnPostage,
+        orn.return_goods_money returnGoodsMoney,
+        orn.return_sn returnSn,
+        DATE_FORMAT(ors.received_time,'%Y-%m-%d %T') receiveTime,
+        DATE_FORMAT(ors.quality_time,'%Y-%m-%d %T') qualityTime,
+        ors.return_express returnExpress,
+        ors.return_express_img returnExpressImg,
+        ors.return_invoice_no returnInvoiceNo,
+        DATE_FORMAT(max(op.pay_time),'%Y-%m-%d %T') orderPayTime
+        from order_return orn
+        left join order_return_ship ors on orn.return_sn=ors.relating_return_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_info_history
+        </if>
+        oi on orn.new_order_sn=oi.master_order_sn
+        left join
+        <if test="isHistory == 0">
+            master_order_pay
+        </if>
+        <if test="isHistory == 1">
+            master_order_pay_history
+        </if>
+        op on orn.new_order_sn=op.master_order_sn
+        where orn.new_order_sn= #{orderSn,jdbcType=VARCHAR}
+        <if test="userId != null">
+            and orn.user_id = #{userId,jdbcType=VARCHAR}
+        </if>
+        GROUP BY orn.new_order_sn
+    </select>
+
+    <select id="selectUserOrderCountByType" resultType="java.lang.Integer" parameterType="Map">
+        select count(*)
+        from
+        master_order_info
+        oi
+        LEFT JOIN master_order_info_extend oie ON oie.master_order_sn=oi.master_order_sn
+        <if test="type == 6">
+            LEFT JOIN order_return orn ON oi.master_order_sn=orn.master_order_sn
+        </if>
+        where
+        oie.is_del = 0
+        AND
+        oi.channel_code = #{siteCode,jdbcType=VARCHAR}
         <if test="userId != null">
             and oi.user_id= #{userId,jdbcType=VARCHAR}
         </if>
         <if test="companyId != null">
             and oie.company_code= #{companyId}
         </if>
-		<choose>
-			<when test="type == 1">
-				<!--待付款订单 -->
-				and oi.pay_status in (0,1) and oi.order_status=0
-			</when>
-			<when test="type == 2">
-				<!--待发货订单 -->
-				and oi.pay_status = 2 and oi.order_status in (0,1,5,6) and
-				oi.ship_status in (0,1)
-			</when>
-			<when test="type == 3">
-				<!--待收货订单 -->
-				and oi.ship_status in (2,3,4)
-			</when>
-			<when test="type == 4">
-				<!--已收货订单 -->
-				and oi.ship_status = 5 and oie.is_review = 0
-			</when>
-			<when test="type == 5">
-				<!--已评论 -->
-				and oi.ship_status = 5 and oie.is_review = 1
-			</when>
-			<when test="type == 6">
-				<!--退单数量 -->
-				and orn.return_type=1 and orn.process_type=1 and
-				orn.return_order_status !=4 
-			</when>
-			<when test="type == 7">
-				<!--交易关闭订单 -->
-				and oi.order_status = 2
-			</when>
-		</choose>
-	</select>
-	
+        <choose>
+            <when test="type == 1">
+                <!--待付款订单 -->
+                and oi.pay_status in (0,1) and oi.order_status=0
+            </when>
+            <when test="type == 2">
+                <!--待发货订单 -->
+                and oi.pay_status = 2 and oi.order_status in (0,1,5,6) and
+                oi.ship_status in (0,1)
+            </when>
+            <when test="type == 3">
+                <!--待收货订单 -->
+                and oi.ship_status in (2,3,4)
+            </when>
+            <when test="type == 4">
+                <!--已收货订单 -->
+                and oi.ship_status = 5 and oie.is_review = 0
+            </when>
+            <when test="type == 5">
+                <!--已评论 -->
+                and oi.ship_status = 5 and oie.is_review = 1
+            </when>
+            <when test="type == 6">
+                <!--退单数量 -->
+                and orn.return_type=1 and orn.process_type=1 and
+                orn.return_order_status !=4
+            </when>
+            <when test="type == 7">
+                <!--交易关闭订单 -->
+                and oi.order_status = 2
+            </when>
+        </choose>
+    </select>
 
-	
 
-	
-	
+    <select id="selectUserId" resultType="java.lang.String" parameterType="Map">
+        select user_id from master_order_info oi
+        where oi.order_from = #{orderFrom,jdbcType=VARCHAR}
+        <if test="orderStatus!=null">
+            and oi.order_status=#{orderStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dateStart!=null">
+            and oi.clear_time >= #{dateStart,jdbcType=VARCHAR}
+        </if>
+        <if test="dateEnd!=null">
+            and oi.clear_time &lt;= #{dateEnd,jdbcType=VARCHAR}
+        </if>
+        <if test="minMoneyPaid!=null">
+            and oi.money_paid >= #{minMoneyPaid,jdbcType=VARCHAR}
+        </if>
+        <if test="maxMoneyPaid!=null">
+            and oi.money_paid &lt; #{maxMoneyPaid,jdbcType=VARCHAR}
+        </if>
+        limit ${start},${num}
+    </select>
 
-	
-	<select id="selectUserId" resultType="java.lang.String" parameterType="Map">
-		select user_id from master_order_info oi
-		where oi.order_from = #{orderFrom,jdbcType=VARCHAR}
-		<if test="orderStatus!=null">
-			and oi.order_status=#{orderStatus,jdbcType=VARCHAR}
-		</if>
-		<if test="dateStart!=null">
-			and oi.clear_time >= #{dateStart,jdbcType=VARCHAR}
-		</if>
-		<if test="dateEnd!=null">
-			and oi.clear_time   &lt;= #{dateEnd,jdbcType=VARCHAR}
-		</if>
-		<if test="minMoneyPaid!=null">
-			and oi.money_paid >= #{minMoneyPaid,jdbcType=VARCHAR}
-		</if>
-		<if test="maxMoneyPaid!=null">
-			and oi.money_paid   &lt; #{maxMoneyPaid,jdbcType=VARCHAR}
-		</if>
-		limit ${start},${num}
-	</select>
-	
-		<select id="selectUserIdCount"
-		resultType="java.lang.Integer"
-		parameterType="Map">
-		select count(*) from
-			master_order_info
-		oi 
-		where oi.order_from=#{orderFrom,jdbcType=VARCHAR}
-		<if test="orderStatus!=null">
-		and oi.order_status=#{orderStatus,jdbcType=VARCHAR}
-		</if>
-		<if test="dateStart!=null">
-		and oi.clear_time >= #{dateStart,jdbcType=VARCHAR}
-		</if>
-		<if test="dateEnd!=null">
-		and oi.clear_time   &lt;= #{dateEnd,jdbcType=VARCHAR}
-		</if>
-		<if test="minMoneyPaid!=null">
-		and oi.money_paid >= #{minMoneyPaid,jdbcType=VARCHAR}
-		</if>
-		<if test="maxMoneyPaid!=null">
-		and oi.money_paid   &lt; #{maxMoneyPaid,jdbcType=VARCHAR}
-		</if>
-	</select>
-	
-	
+    <select id="selectUserIdCount"
+            resultType="java.lang.Integer"
+            parameterType="Map">
+        select count(*) from
+        master_order_info
+        oi
+        where oi.order_from=#{orderFrom,jdbcType=VARCHAR}
+        <if test="orderStatus!=null">
+            and oi.order_status=#{orderStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dateStart!=null">
+            and oi.clear_time >= #{dateStart,jdbcType=VARCHAR}
+        </if>
+        <if test="dateEnd!=null">
+            and oi.clear_time &lt;= #{dateEnd,jdbcType=VARCHAR}
+        </if>
+        <if test="minMoneyPaid!=null">
+            and oi.money_paid >= #{minMoneyPaid,jdbcType=VARCHAR}
+        </if>
+        <if test="maxMoneyPaid!=null">
+            and oi.money_paid &lt; #{maxMoneyPaid,jdbcType=VARCHAR}
+        </if>
+    </select>
 
-	
-		<select id="selectOrderSnByUser"
-		resultType="java.lang.String"
-		parameterType="Map">
-		select master_order_sn from
-			master_order_info
-		oi 
-		where oi.order_from=#{orderFrom,jdbcType=VARCHAR} and oi.user_id=#{userId,jdbcType=VARCHAR}
-		<if test="payStatus!=null">
-		and oi.pay_status >= (#{payStatus,jdbcType=TINYINT})
-		</if>
-		<if test="addTimeStart!=null">
-		and oi.add_time >= #{addTimeStart,jdbcType=VARCHAR}
-		</if>
-		<if test="addTimeEnd!=null">
-		and oi.add_time   &lt;= #{addTimeEnd,jdbcType=VARCHAR}
-		</if>
-		<if test="prizeMin!=null">
-		and oi.total_fee >= #{prizeMin,jdbcType=VARCHAR}
-		</if>
-		<if test="prizeMax!=null">
-		and oi.total_fee   &lt;= #{prizeMax,jdbcType=VARCHAR}
-		</if>
-	</select>
-	
-			<select id="selectOrderAddressInfo"
-		resultType="com.work.shop.oms.bean.OrderAddressInfo"
-		parameterType="Map">
-		select
-		master_order_sn orderSn,
-		consignee consignee,
-		country country,
-		province province,
-		city city,
-		district district,
-		street street,
-		address address,
-		mobile mobile
-		from
-		<if test="isHistory == 0">
-			master_order_address_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_address_info_history
-		</if>
-			oai
-		where oai.master_order_sn=#{orderSn,jdbcType=VARCHAR};  
-	</select>
-	
-	<update id="updateOrderUser" parameterType="Map">
-	update master_order_info set user_id=#{newUser,jdbcType=VARCHAR} , user_name=#{newUser,jdbcType=VARCHAR} 
-	where user_id=#{oldUser,jdbcType=VARCHAR}
-	</update>
-	
-	<update id="updateHistoryOrderUser" parameterType="Map">
-	update master_order_info_history set user_id=#{newUser,jdbcType=VARCHAR} , user_name=#{newUser,jdbcType=VARCHAR} 
-	where user_id=#{oldUser,jdbcType=VARCHAR}
-	</update>
-	
-	<update id="updateOrderReturn" parameterType="Map">
-	update order_return set user_id=#{newUser,jdbcType=VARCHAR}
-	where user_id=#{oldUser,jdbcType=VARCHAR}
-	</update>
-	
-	<update id="updateOrderReturnChange" parameterType="Map">
-	update goods_return_change set user_id=#{newUser,jdbcType=VARCHAR} 
-	where user_id=#{oldUser,jdbcType=VARCHAR}
-	</update>
-	
-	<update id="updateOrderReturnChangeAction" parameterType="Map">
-	update goods_return_change_action set action_user=#{newUser,jdbcType=VARCHAR}
-	where action_user=#{oldUser,jdbcType=VARCHAR}
-	</update>
-	
-	<!-- 邦购手机端查询换单详情 -->
-	<resultMap type="com.work.shop.oms.api.bean.GoodsMobile" id="goodsMoileMap">
-		<result column="goods_name"  property="goodsName" />
-		<result column="goods_number"  property="goodsNum" />
-		<result column="goods_color_name"  property="goodsColor" />
-		<result column="goods_size_name"  property="goodsSize" />
-		<result column="goods_thumb"  property="goodsUrl" />
-		<result column="custom_code"  property="customCode" />
-		<result column="settlement_price"  property="settlementPrice" />
-	</resultMap>
-	<resultMap type="com.work.shop.oms.api.bean.OrderMobile" id="orderMobileMap">
-		<result column="master_order_sn"  property="orderSn" />
-		<result column="order_status"  property="status" />
-		<result column="return_sn"  property="returnSn" />
-		<collection property="goodsMobileList" ofType="com.work.shop.oms.api.bean.GoodsMobile" resultMap="goodsMoileMap" />
-	</resultMap>
-	<select id="getExchangeOrderList" parameterType ="map" resultMap = "orderMobileMap">
-		select
-			oi.master_order_sn,
-			oi.order_status,
-			orn.return_sn,
-			og.goods_name,
-			og.goods_number,
-			og.goods_color_name,
-			og.goods_size_name,
-			og.goods_thumb,
-			og.custom_code,
-			og.settlement_price
-		from
-		<if test="isHistory == 0 or isHistory == null">
-			master_order_info
-		</if>
-		<if test="isHistory == 1">
-			master_order_info_history
-		</if> oi
-			left join 
-		<if test="isHistory == 0 or isHistory == null">
-			master_order_goods
-		</if>
-		<if test="isHistory == 1">
-			master_order_goods_history
-		</if> og 
-		on oi.master_order_sn = og.master_order_sn 
-		left join order_return orn on oi.relating_return_sn = orn.return_sn
-		where oi.order_type = 2 and orn.process_type =4
-		<if test="userId != null">
-			and oi.user_id = #{userId}
-		</if>
-		order by oi.add_time desc
-		<if test="start != null and limits != null">
-			limit #{start},#{limits}
-		</if>
-	</select>
-	
-	
-	<select id="selectRestrictionGoodsByWhere" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
-	    SELECT
-	        og.goods_price goodsPrice,
-	        og.transaction_price transactionPrice,
-	        og.settlement_price settlementPrice, 
-	        og.custom_code skuSn,
-	        og.goods_name goodsName,
-	        og.goods_thumb goodsUrl,
-	        sum(og.goods_number) goodsNum,
-	        og.goods_size_name goodsSize,
-	        og.goods_color_name goodsColor,
-	        og.discount discountedPrice,
-	        og.pay_points payPoints,
-	        og.extension_code extensionCode,
-	        og.integral_money integralMoney,
-	        og.integral integral,
-	        og.c2m_item c2mItemStr,
-	        og.send_number sendNumber
-		FROM
-		    master_order_info oi,
-		    master_order_goods og
-		WHERE
-		   oi.master_order_sn = og.master_order_sn
-		AND
-		   oi.order_status != 2
-		<if test="siteCode != null">
-	       and oi.channel_code=#{siteCode,jdbcType=VARCHAR}
-	    </if>
-	    <if test="shopCode != null">
-	        and oi.order_from = #{shopCode,jdbcType=VARCHAR}
-	    </if>
-	    <if test="userId != null">
-	        and oi.user_id = #{userId,jdbcType=VARCHAR}
-	    </if>
-	    <if test="startTime != null">
-	        and oi.add_time >= #{startTime,jdbcType=VARCHAR}
-	    </if>
-	    <if test="endTime != null">
-	        and oi.add_time &lt; #{endTime,jdbcType=VARCHAR}
-	    </if>
-	    AND
-	        og.custom_code IN
-	    <foreach collection="list" index="index" item="item" open="("  separator=","  close=")">
-	        #{item}
-	    </foreach>
-	    GROUP BY og.custom_code;
-  </select>
-	
-	<!-- 获取订单配送出库商品信息 -->
-	<select id="getOrderDistributeGoods" resultType="com.work.shop.oms.bean.MasterOrderGoods" parameterType="map">
-		select sum(goods_number) goodsNumber, box_gauge boxGauge, custom_code customCode
-		from master_order_goods
-		where master_order_sn = #{masterOrderSn}
-		and order_sn = #{orderSn}
-		<if test="depotCode != null">
-			and depot_code = #{depotCode}
-		</if>
-		and is_del = 0
-		group by custom_code;
-	</select>
+
+    <select id="selectOrderSnByUser"
+            resultType="java.lang.String"
+            parameterType="Map">
+        select master_order_sn from
+        master_order_info
+        oi
+        where oi.order_from=#{orderFrom,jdbcType=VARCHAR} and oi.user_id=#{userId,jdbcType=VARCHAR}
+        <if test="payStatus!=null">
+            and oi.pay_status >= (#{payStatus,jdbcType=TINYINT})
+        </if>
+        <if test="addTimeStart!=null">
+            and oi.add_time >= #{addTimeStart,jdbcType=VARCHAR}
+        </if>
+        <if test="addTimeEnd!=null">
+            and oi.add_time &lt;= #{addTimeEnd,jdbcType=VARCHAR}
+        </if>
+        <if test="prizeMin!=null">
+            and oi.total_fee >= #{prizeMin,jdbcType=VARCHAR}
+        </if>
+        <if test="prizeMax!=null">
+            and oi.total_fee &lt;= #{prizeMax,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="selectOrderAddressInfo"
+            resultType="com.work.shop.oms.bean.OrderAddressInfo"
+            parameterType="Map">
+        select
+        master_order_sn orderSn,
+        consignee consignee,
+        country country,
+        province province,
+        city city,
+        district district,
+        street street,
+        address address,
+        mobile mobile
+        from
+        <if test="isHistory == 0">
+            master_order_address_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_address_info_history
+        </if>
+        oai
+        where oai.master_order_sn=#{orderSn,jdbcType=VARCHAR};
+    </select>
+
+    <update id="updateOrderUser" parameterType="Map">
+        update master_order_info
+        set user_id=#{newUser,jdbcType=VARCHAR},
+            user_name=#{newUser,jdbcType=VARCHAR}
+        where user_id = #{oldUser,jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateHistoryOrderUser" parameterType="Map">
+        update master_order_info_history
+        set user_id=#{newUser,jdbcType=VARCHAR},
+            user_name=#{newUser,jdbcType=VARCHAR}
+        where user_id = #{oldUser,jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateOrderReturn" parameterType="Map">
+        update order_return
+        set user_id=#{newUser,jdbcType=VARCHAR}
+        where user_id = #{oldUser,jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateOrderReturnChange" parameterType="Map">
+        update goods_return_change
+        set user_id=#{newUser,jdbcType=VARCHAR}
+        where user_id = #{oldUser,jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateOrderReturnChangeAction" parameterType="Map">
+        update goods_return_change_action
+        set action_user=#{newUser,jdbcType=VARCHAR}
+        where action_user = #{oldUser,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 邦购手机端查询换单详情 -->
+    <resultMap type="com.work.shop.oms.api.bean.GoodsMobile" id="goodsMoileMap">
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_number" property="goodsNum"/>
+        <result column="goods_color_name" property="goodsColor"/>
+        <result column="goods_size_name" property="goodsSize"/>
+        <result column="goods_thumb" property="goodsUrl"/>
+        <result column="custom_code" property="customCode"/>
+        <result column="settlement_price" property="settlementPrice"/>
+    </resultMap>
+    <resultMap type="com.work.shop.oms.api.bean.OrderMobile" id="orderMobileMap">
+        <result column="master_order_sn" property="orderSn"/>
+        <result column="order_status" property="status"/>
+        <result column="return_sn" property="returnSn"/>
+        <collection property="goodsMobileList" ofType="com.work.shop.oms.api.bean.GoodsMobile" resultMap="goodsMoileMap"/>
+    </resultMap>
+    <select id="getExchangeOrderList" parameterType="map" resultMap="orderMobileMap">
+        select
+        oi.master_order_sn,
+        oi.order_status,
+        orn.return_sn,
+        og.goods_name,
+        og.goods_number,
+        og.goods_color_name,
+        og.goods_size_name,
+        og.goods_thumb,
+        og.custom_code,
+        og.settlement_price
+        from
+        <if test="isHistory == 0 or isHistory == null">
+            master_order_info
+        </if>
+        <if test="isHistory == 1">
+            master_order_info_history
+        </if>
+        oi
+        left join
+        <if test="isHistory == 0 or isHistory == null">
+            master_order_goods
+        </if>
+        <if test="isHistory == 1">
+            master_order_goods_history
+        </if>
+        og
+        on oi.master_order_sn = og.master_order_sn
+        left join order_return orn on oi.relating_return_sn = orn.return_sn
+        where oi.order_type = 2 and orn.process_type =4
+        <if test="userId != null">
+            and oi.user_id = #{userId}
+        </if>
+        order by oi.add_time desc
+        <if test="start != null and limits != null">
+            limit #{start},#{limits}
+        </if>
+    </select>
+
+
+    <select id="selectRestrictionGoodsByWhere" resultType="com.work.shop.oms.api.bean.OrderGoodsInfo" parameterType="Map">
+        SELECT
+        og.goods_price goodsPrice,
+        og.transaction_price transactionPrice,
+        og.settlement_price settlementPrice,
+        og.custom_code skuSn,
+        og.goods_name goodsName,
+        og.goods_thumb goodsUrl,
+        sum(og.goods_number) goodsNum,
+        og.goods_size_name goodsSize,
+        og.goods_color_name goodsColor,
+        og.discount discountedPrice,
+        og.pay_points payPoints,
+        og.extension_code extensionCode,
+        og.integral_money integralMoney,
+        og.integral integral,
+        og.c2m_item c2mItemStr,
+        og.send_number sendNumber
+        FROM
+        master_order_info oi,
+        master_order_goods og
+        WHERE
+        oi.master_order_sn = og.master_order_sn
+        AND
+        oi.order_status != 2
+        <if test="siteCode != null">
+            and oi.channel_code=#{siteCode,jdbcType=VARCHAR}
+        </if>
+        <if test="shopCode != null">
+            and oi.order_from = #{shopCode,jdbcType=VARCHAR}
+        </if>
+        <if test="userId != null">
+            and oi.user_id = #{userId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null">
+            and oi.add_time >= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null">
+            and oi.add_time &lt; #{endTime,jdbcType=VARCHAR}
+        </if>
+        AND
+        og.custom_code IN
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY og.custom_code;
+    </select>
+
+    <!-- 获取订单配送出库商品信息 -->
+    <select id="getOrderDistributeGoods" resultType="com.work.shop.oms.bean.MasterOrderGoods" parameterType="map">
+        select sum(goods_number) goodsNumber, box_gauge boxGauge, custom_code customCode
+        from master_order_goods
+        where master_order_sn = #{masterOrderSn}
+        and order_sn = #{orderSn}
+        <if test="depotCode != null">
+            and depot_code = #{depotCode}
+        </if>
+        and is_del = 0
+        group by custom_code;
+    </select>
+
+    <select id="getOrderFromByOrderSN" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select order_from, user_id, money_paid
+        from master_order_info
+        where master_order_sn = #{orderSN}
+    </select>
 </mapper>

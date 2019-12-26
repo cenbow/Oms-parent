@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.RewardPointChangeLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.RewardPointChangeLogBean">
+        <id column="id" property="id"/>
+        <result column="account_sn" property="accountSN"/>
+        <result column="company_sn" property="companySN"/>
+        <result column="order_sn" property="orderSN"/>
+        <result column="description" property="description"/>
+        <result column="change_point" property="changePoint"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="getCountOfRewardPointChangeLog" parameterType="com.work.shop.oms.param.bean.ParamRewardPointChangeLog" resultType="java.lang.Integer">
+        select count(*) from reward_point_change_log
+        where account_sn=#{accountSN}
+        <if test="companySN!=null">
+            or company_sn=#{companySN}
+        </if>
+    </select>
+
+    <select id="getRewardPointChangeLog" parameterType="com.work.shop.oms.param.bean.ParamRewardPointChangeLog" resultMap="BaseResultMap">
+        select * from reward_point_change_log
+        where account_sn=#{accountSN}
+        <if test="companySN!=null">
+            or company_sn=#{companySN}
+        </if>
+        limit ${start},${pageSize}
+    </select>
+
+    <insert id="addRewardPointChangeLog" parameterType="com.work.shop.oms.bean.RewardPointChangeLogBean">
+        insert into reward_point_change_log(account_sn ,company_sn, order_sn, description, change_point)
+        values(#{accountSN},#{companySN},#{orderSN},#{description},#{changePoint})
+    </insert>
+</mapper>
