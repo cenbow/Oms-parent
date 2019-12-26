@@ -16,12 +16,14 @@ import java.util.List;
 
 /**
  * 订单服务启动类
+ *
  * @author QuYachu
  */
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = {"com.work.shop.stockcenter.client.feign", "com.work.shop.oms.payment.feign",
-    "com.work.shop.pca.feign", "com.work.shop.stock.center.feign", "com.work.shop.oms.api.express.feign", "com.work.shop.cloud.feign.*"})
+        "com.work.shop.pca.feign", "com.work.shop.stock.center.feign", "com.work.shop.oms.api.express.feign"
+        , "com.work.shop.cloud.feign.*","com.work.shop.oms.controller.feign"})
 public class OmsClientApplication {
 
     public static void main(String[] args) {
