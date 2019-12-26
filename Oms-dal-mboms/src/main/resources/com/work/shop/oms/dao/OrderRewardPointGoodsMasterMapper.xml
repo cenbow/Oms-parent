@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.work.shop.oms.dao.OrderRewardPointGoodsMasterMapper">
 
-    <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean">
+    <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.ResultRewardPointGoodsBean">
         <id column="id" property="id"/>
         <result column="order_sn" property="orderSN"/>
         <result column="buyer_sn" property="buyerSN"/>
@@ -16,25 +16,62 @@
         <result column="cancel_sn" property="cancelSN"/>
         <result column="cancel_time" property="cancelTime"/>
         <result column="comment" property="comment"/>
+
+        <result column="goods_sn" property="goodsSN"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_brand" property="goodsBrand"/>
+        <result column="sale_count" property="saleCount"/>
+        <result column="need_point" property="needPoint"/>
+        <result column="express_sn" property="expressSN"/>
+        <result column="express_time" property="expressTime"/>
+        <result column="express_company" property="expressCompany"/>
+        <result column="express_time" property="expressTime"/>
     </resultMap>
 
-    <select id="getCountOfOrderRewardPointGoodsMaster" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultType="java.lang.Integer">
-        select count(*) from order_reward_point_goods_master where buyer_sn=#{buyerSN}
+    <select id="getCountOfOrderRewardPointGoods" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM order_reward_point_goods_master master
+        left join order_reward_point_goods_detail detail
+        on master.order_sn = detail.order_sn where master.buyer_sn=#{buyerSN}
         <if test="beginOrderTime!=null and endOrderTime!=null">
-            and create_time<![CDATA[<=]]>#{endOrderTime} and create_time<![CDATA[>=]]>#{beginOrderTime}
+            and master.create_time<![CDATA[<=]]>#{endOrderTime} and master.create_time<![CDATA[>=]]>#{beginOrderTime}
         </if>
         <if test="orderStatus gt 0">
-            and order_status=${orderStatus}
+            and master.order_status=${orderStatus}
         </if>
     </select>
 
     <select id="getOrderRewardPointGoods" parameterType="com.work.shop.oms.param.bean.ParamOrderRewardPointGoods" resultMap="BaseResultMap">
-        select * from order_reward_point_goods_master where buyer_sn=#{buyerSN}
+        SELECT master.id,
+        master.order_sn,
+        master.buyer_sn,
+        master.cancel_sn,
+        master.cancel_time,
+        master.total_point,
+        master.order_status,
+        master.receiver_name,
+        master.receiver_tel,
+        master.receiver_tel,
+        master.receiver_address,
+        master.create_time,
+        master.cancel_time,
+        master.comment,
+        detail.goods_sn,
+        detail.goods_name,
+        detail.goods_brand,
+        detail.need_point,
+        detail.sale_count,
+        detail.express_company,
+        detail.express_sn,
+        detail.express_time
+        FROM order_reward_point_goods_master master
+        left join order_reward_point_goods_detail detail
+        on master.order_sn = detail.order_sn where master.buyer_sn=#{buyerSN}
         <if test="beginOrderTime!=null and endOrderTime!=null">
-            and create_time<![CDATA[<=]]>#{endOrderTime} and create_time<![CDATA[>=]]>#{beginOrderTime}
+            and master.create_time<![CDATA[<=]]>#{endOrderTime} and master.create_time<![CDATA[>=]]>#{beginOrderTime}
         </if>
         <if test="orderStatus gt 0">
-            and order_status=${orderStatus}
+            and master.order_status=${orderStatus}
         </if>
         <if test="order!=null and sort!=null">
             order by ${order} ${sort}

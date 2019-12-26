@@ -47,11 +47,6 @@ public class ResultRewardPointGoodsBean implements Serializable {
     //收货人地址
     private String receiverAddress;
 
-    //发货时间
-    @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
-    private Date expressTime;
-
     //创建时间
     @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
@@ -65,6 +60,30 @@ public class ResultRewardPointGoodsBean implements Serializable {
     //备注
     private String comment;
 
-    List<OrderRewardPointGoodsDetailBean> detailList;
+    //积分商品编号
+    private String goodsSN;
+
+    //积分商品名称
+    private String goodsName;
+
+    //积分商品品牌
+    private String goodsBrand;
+
+    //兑换数量
+    private int saleCount;
+
+    //所需积分
+    private int needPoint;
+
+    //快递单号
+    private String expressSN;
+
+    //快递公司名称
+    private String expressCompany;
+
+    //发货时间
+    @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    private Date expressTime;
 
 }

@@ -2,10 +2,10 @@ package com.work.shop.oms.controller.service.impl;
 
 import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
 import com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean;
+import com.work.shop.oms.bean.ResultRewardPointGoodsBean;
 import com.work.shop.oms.controller.service.OrderRewardPointGoodsService;
 import com.work.shop.oms.dao.OrderRewardPointGoodsDetailMapper;
 import com.work.shop.oms.dao.OrderRewardPointGoodsMasterMapper;
-import com.work.shop.oms.dao.RewardPointChangeLogMapper;
 import com.work.shop.oms.param.bean.ParamOrderRewardPointGoods;
 import org.springframework.stereotype.Service;
 
@@ -47,23 +47,23 @@ public class OrderRewardPointGoodsServiceImpl implements OrderRewardPointGoodsSe
     }
 
     @Override
-    public int getCountOfOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param) {
-        return rewardPointGoodsMasterMapper.getCountOfOrderRewardPointGoodsMaster(param);
-    }
-
-    @Override
-    public List<OrderRewardPointGoodsMasterBean> getOrderRewardPointGoodsMaster(ParamOrderRewardPointGoods param) {
-        return rewardPointGoodsMasterMapper.getOrderRewardPointGoods(param);
-    }
-
-    @Override
-    public List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(List<String> orderSNLIst) {
-        return rewardPointGoodsDetailMapper.getOrderRewardPointGoodsDetail(orderSNLIst);
-    }
-
-    @Override
     public OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN) {
         return rewardPointGoodsMasterMapper.getOrderRewardPointGoodsByOrderSN(orderSN);
+    }
+
+    @Override
+    public List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(String orderSN) {
+        return rewardPointGoodsDetailMapper.getOrderRewardPointGoodsDetail(orderSN);
+    }
+
+    @Override
+    public int getCountOfOrderRewardPointGoods(ParamOrderRewardPointGoods param) {
+        return rewardPointGoodsMasterMapper.getCountOfOrderRewardPointGoods(param);
+    }
+
+    @Override
+    public List<ResultRewardPointGoodsBean> getOrderRewardPointGoods(ParamOrderRewardPointGoods param) {
+        return rewardPointGoodsMasterMapper.getOrderRewardPointGoods(param);
     }
 
 }
