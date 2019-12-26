@@ -2,10 +2,7 @@ package com.work.shop.oms.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.bean.ChangeUserAndCompanyPointMQBean;
-import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
-import com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean;
-import com.work.shop.oms.bean.RewardPointChangeLogBean;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.controller.feign.RewardPointGoodsFeign;
 import com.work.shop.oms.controller.feign.UserPointFeign;
@@ -193,11 +190,11 @@ public class CreateOrderController extends BaseController {
         return result;
     }
 
-    //查询积分商品订单主表
-    @PostMapping(value = "/getOrderRewardPointMaster")
+    //查询积分商品订单
+    @PostMapping(value = "/getOrderRewardPoint")
     @ResponseBody
-    public CommonResultData<List<OrderRewardPointGoodsMasterBean>> getOrderRewardPointMaster(@RequestBody ParamOrderRewardPointGoods param) {
-        CommonResultData<List<OrderRewardPointGoodsMasterBean>> result = new CommonResultData<>();
+    public CommonResultData<List<ResultRewardPointGoodsBean>> getOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
+        CommonResultData<List<ResultRewardPointGoodsBean>> result = new CommonResultData<>();
         result.setIsOk("0");
 
         if (!StringUtils.isEmpty(param.getOrder()) && (!"order_status".equals(param.getOrder()) || !("create_time".equals(param.getOrder())))) {
@@ -236,29 +233,41 @@ public class CreateOrderController extends BaseController {
             param.setStart(0);
         }
 
-        List<OrderRewardPointGoodsMasterBean> resultList = orderRewardPointGoodsService.getOrderRewardPointGoodsMaster(param);
-        result.setIsOk("1");
-        result.setTotal(resultList.size());
-        result.setResult(resultList);
-        return result;
-    }
+        List<ResultRewardPointGoodsBean> resulData = new ArrayList<>();
+        List<OrderRewardPointGoodsMasterBean> masterList = orderRewardPointGoodsService.getOrderRewardPointGoodsMaster(param);
+        List<OrderRewardPointGoodsDetailBean> detailList = new ArrayList<>();
+        if (masterList != null && masterList.size() > 0) {
+            List<String> orderSNList = new ArrayList<>();
+            for (int i = 0; i < masterList.size(); i++) {
+                orderSNList.add(masterList.get(i).getOrderSN());
 
-    //查询积分商品订单明细表
-    @PostMapping(value = "/getOrderRewardPointDetail")
-    @ResponseBody
-    public CommonResultData<List<OrderRewardPointGoodsDetailBean>> getOrderRewardPointDetail(@RequestBody ParamOrderRewardPointGoods param) {
-        CommonResultData<List<OrderRewardPointGoodsDetailBean>> result = new CommonResultData<>();
-        result.setIsOk("0");
+                ResultRewardPointGoodsBean rewardPointGoodsBean = new ResultRewardPointGoodsBean();
+                rewardPointGoodsBean.setBuyerSN(masterList.get(i).getBuyerSN());
+                rewardPointGoodsBean.setOrderSN(masterList.get(i).getOrderSN());
+                rewardPointGoodsBean.setCancelSN(masterList.get(i).getCancelSN());
+                rewardPointGoodsBean.setTotalPoint(masterList.get(i).getTotalPoint());
+                rewardPointGoodsBean.setOrderStatus(masterList.get(i).getOrderStatus());
+                rewardPointGoodsBean.setReceiverName(masterList.get(i).getReceiverName());
+                rewardPointGoodsBean.setReceiverTel(masterList.get(i).getReceiverTel());
+                rewardPointGoodsBean.setExpressTime(masterList.get(i).getExpressTime());
+                rewardPointGoodsBean.setCreateTime(masterList.get(i).getCreateTime());
+                rewardPointGoodsBean.setCancelTime(masterList.get(i).getCancelTime());
+                rewardPointGoodsBean.setComment(masterList.get(i).getComment());
 
-        List<OrderRewardPointGoodsDetailBean> resultList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(param.getOrderSN());
-        if (resultList == null || resultList.size() == 0) {
-            result.setMsg("查询积分商品订单明细表出错！");
-            return result;
+                resulData.add(rewardPointGoodsBean);
+            }
+            detailList.addAll(orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(orderSNList));
+
+            if (detailList.size() > 0) {
+                for (int i = 0; i < resulData.size(); i++) {
+
+                }
+            }
         }
 
         result.setIsOk("1");
-        result.setTotal(resultList.size());
-        result.setResult(resultList);
+        result.setTotal(resulData.size());
+        result.setResult(resulData);
         return result;
     }
 
@@ -426,7 +435,9 @@ public class CreateOrderController extends BaseController {
             return result;
         }
 
-        List<OrderRewardPointGoodsDetailBean> orderDetailList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(param.getOrderSN());
+        List<String> orderSNList = new ArrayList<>();
+        orderSNList.add(param.getOrderSN());
+        List<OrderRewardPointGoodsDetailBean> orderDetailList = orderRewardPointGoodsService.getOrderRewardPointGoodsDetail(orderSNList);
         if (orderDetailList == null || orderDetailList.size() == 0) {
             result.setMsg("积分订单明细表不存在！");
             return result;

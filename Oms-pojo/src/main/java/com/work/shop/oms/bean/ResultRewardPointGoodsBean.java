@@ -16,9 +16,9 @@ import java.util.List;
  **/
 
 @Data
-public class OrderRewardPointGoodsMasterBean implements Serializable {
+public class ResultRewardPointGoodsBean implements Serializable {
 
-    private static final long serialVersionUID = -4707565654225172935L;
+    private static final long serialVersionUID = -6268512167951411429L;
 
     private int id;
 
@@ -64,5 +64,7 @@ public class OrderRewardPointGoodsMasterBean implements Serializable {
 
     //备注
     private String comment;
+
+    List<OrderRewardPointGoodsDetailBean> detailList;
 
 }

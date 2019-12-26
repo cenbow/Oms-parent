@@ -16,8 +16,11 @@
         <result column="express_time" property="expressTime"/>
     </resultMap>
 
-    <select id="getOrderRewardPointGoodsDetail" parameterType="java.lang.String" resultMap="BaseResultMap">
-        select *  from order_reward_point_goods_detail where order_sn=#{orderSN}
+    <select id="getOrderRewardPointGoodsDetail" parameterType="java.util.List" resultMap="BaseResultMap">
+        select * from order_reward_point_goods_detail where order_sn in
+        <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
     </select>
 
     <insert id="createOrderDetail" parameterType="java.util.List">

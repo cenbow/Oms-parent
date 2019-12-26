@@ -57,8 +57,8 @@ public class OrderRewardPointGoodsServiceImpl implements OrderRewardPointGoodsSe
     }
 
     @Override
-    public List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(String orderSN) {
-        return rewardPointGoodsDetailMapper.getOrderRewardPointGoodsDetail(orderSN);
+    public List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(List<String> orderSNLIst) {
+        return rewardPointGoodsDetailMapper.getOrderRewardPointGoodsDetail(orderSNLIst);
     }
 
     @Override
