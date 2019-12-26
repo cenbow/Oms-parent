@@ -35,6 +35,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 
 /**
@@ -287,21 +288,33 @@ public class CreateOrderController extends BaseController {
                 result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品已经下架，无法兑换");
                 return result;
             }
-            if (goodsList.get(i).getGoodsStock() < param.getDetailBeanList().get(i).getSaleCount()) {
-                result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品库存不足，无法兑换");
-                return result;
-            }
 
             Date now = new Date();
             if (goodsList.get(i).getBeginning().getTime() > now.getTime() || goodsList.get(i).getValidity().getTime() < now.getTime()) {
                 result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品已经过了活动时间，无法兑换");
                 return result;
             }
-            param.getDetailBeanList().get(i).setGoodsSN(goodsList.get(i).getGoodsSN());
-            param.getDetailBeanList().get(i).setGoodsName(goodsList.get(i).getGoodsName());
-            param.getDetailBeanList().get(i).setGoodsBrand(goodsList.get(i).getGoodsBrand());
-            param.getDetailBeanList().get(i).setNeedPoint(goodsList.get(i).getNeedPoint());
-            totalPoint = totalPoint + goodsList.get(i).getNeedPoint() * param.getDetailBeanList().get(i).getSaleCount();
+
+            for (int j = 0; j < param.getDetailBeanList().size(); j++) {
+                if (goodsList.get(i).getGoodsSN().equals(param.getDetailBeanList().get(j).getGoodsSN())) {
+                    if (param.getDetailBeanList().get(j).getSaleCount() <= 0) {
+                        result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品兑换数量必须为正数");
+                        return result;
+                    }
+
+                    if (goodsList.get(i).getGoodsStock() < param.getDetailBeanList().get(j).getSaleCount()) {
+                        result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品库存不足，无法兑换");
+                        return result;
+                    }
+
+                    param.getDetailBeanList().get(j).setGoodsSN(goodsList.get(i).getGoodsSN());
+                    param.getDetailBeanList().get(j).setGoodsName(goodsList.get(i).getGoodsName());
+                    param.getDetailBeanList().get(j).setGoodsBrand(goodsList.get(i).getGoodsBrand());
+                    param.getDetailBeanList().get(j).setNeedPoint(goodsList.get(i).getNeedPoint());
+                    totalPoint = totalPoint + goodsList.get(i).getNeedPoint() * param.getDetailBeanList().get(j).getSaleCount();
+                    break;
+                }
+            }
         }
 
         //查询用户积分
