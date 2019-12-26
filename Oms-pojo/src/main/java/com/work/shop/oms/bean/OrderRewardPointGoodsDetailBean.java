@@ -33,6 +33,9 @@ public class OrderRewardPointGoodsDetailBean implements Serializable {
     //积分商品品牌
     private String goodsBrand;
 
+    //积分商品图片
+    private String pictureURL;
+
     //兑换数量
     private int saleCount;
 

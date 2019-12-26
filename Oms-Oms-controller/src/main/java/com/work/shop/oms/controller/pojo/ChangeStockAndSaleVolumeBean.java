@@ -2,6 +2,8 @@ package com.work.shop.oms.controller.pojo;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @Description
  * @Author caixiao
@@ -9,7 +11,9 @@ import lombok.Data;
  * @Version V1.0
  **/
 @Data
-public class ChangeStockAndSaleVolumeBean {
+public class ChangeStockAndSaleVolumeBean implements Serializable {
+
+    private static final long serialVersionUID = -7273563111296506595L;
 
     //商品编号
     private String goodsSN;
