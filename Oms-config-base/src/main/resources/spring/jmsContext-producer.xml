@@ -537,7 +537,7 @@
         <property name="defaultDestination" ref="change_stock_and_salesvolume"/>
     </bean>
     <bean id="change_stock_and_salesvolume" class="org.apache.activemq.command.ActiveMQQueue">
-        <constructor-arg index="0" value="change_stock_and_salesvolumel"/>
+        <constructor-arg index="0" value="change_stock_and_salesvolume"/>
     </bean>
 
     <!-- 积分变更记录 -->

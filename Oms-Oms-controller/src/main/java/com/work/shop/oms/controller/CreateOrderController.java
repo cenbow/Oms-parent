@@ -35,7 +35,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 
 
 /**
@@ -311,6 +310,7 @@ public class CreateOrderController extends BaseController {
                     param.getDetailBeanList().get(j).setGoodsName(goodsList.get(i).getGoodsName());
                     param.getDetailBeanList().get(j).setGoodsBrand(goodsList.get(i).getGoodsBrand());
                     param.getDetailBeanList().get(j).setNeedPoint(goodsList.get(i).getNeedPoint());
+                    param.getDetailBeanList().get(j).setPictureURL(goodsList.get(i).getPictureURL());
                     totalPoint = totalPoint + goodsList.get(i).getNeedPoint() * param.getDetailBeanList().get(j).getSaleCount();
                     break;
                 }
