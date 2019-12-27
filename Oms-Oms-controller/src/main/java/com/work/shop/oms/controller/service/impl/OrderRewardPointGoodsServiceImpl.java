@@ -1,6 +1,5 @@
 package com.work.shop.oms.controller.service.impl;
 
-import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
 import com.work.shop.oms.bean.OrderRewardPointGoodsMasterBean;
 import com.work.shop.oms.bean.ResultRewardPointGoodsBean;
 import com.work.shop.oms.controller.service.OrderRewardPointGoodsService;
@@ -47,13 +46,8 @@ public class OrderRewardPointGoodsServiceImpl implements OrderRewardPointGoodsSe
     }
 
     @Override
-    public OrderRewardPointGoodsMasterBean getOrderRewardPointGoodsByOrderSN(String orderSN) {
+    public List<ResultRewardPointGoodsBean> getOrderRewardPointGoodsByOrderSN(String orderSN) {
         return rewardPointGoodsMasterMapper.getOrderRewardPointGoodsByOrderSN(orderSN);
-    }
-
-    @Override
-    public List<OrderRewardPointGoodsDetailBean> getOrderRewardPointGoodsDetail(String orderSN) {
-        return rewardPointGoodsDetailMapper.getOrderRewardPointGoodsDetail(orderSN);
     }
 
     @Override
