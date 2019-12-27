@@ -18,6 +18,7 @@ import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.order.service.OrderValidateService;
 import com.work.shop.oms.order.service.SystemOrderSnService;
 import com.work.shop.oms.param.bean.ParamOrderRewardPointGoods;
+import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.utils.CommonUtils;
 import com.work.shop.oms.utils.Constant;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -46,6 +48,8 @@ import java.util.List;
 public class CreateOrderController extends BaseController {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final static String LOCK_ORDER_REWARD_COUNT = "LOCK_ORDER_REWARD_COUNT";
 
     @Resource(name = "masterOrderinfoServiceImpl")
     private MasterOrderInfoService masterOrderInfoService;
@@ -79,6 +83,9 @@ public class CreateOrderController extends BaseController {
 
     @Resource(name = "changeUserAndCompanyPointJmsTemplate")
     private JmsTemplate changeUserAndCompanyPointJmsTemplate;
+
+    @Resource(name = "redisClient")
+    private RedisClient redisClient;
 
     @RequestMapping(value = "/createOrder111")
     @ResponseBody
@@ -263,67 +270,8 @@ public class CreateOrderController extends BaseController {
             goodsSNList.add(param.getDetailBeanList().get(i).getGoodsSN());
         }
 
-        CommonResultData<List<ProductRewardPointGoodsBean>> beanList = rewardPointGoodsFeign.getRewardPointGoodsBySNList(goodsSNList);
-        if (beanList == null || beanList.getResult() == null || beanList.getResult().size() == 0) {
-            result.setMsg("积分商品查询为空！");
-            return result;
-        } else if (beanList.getResult().size() != goodsSNList.size()) {
-            result.setMsg("积分商品查询出错！");
-            return result;
-        }
-        List<ProductRewardPointGoodsBean> goodsList = beanList.getResult();
-
-        int totalPoint = 0;
-        for (int i = 0; i < goodsList.size(); i++) {
-            if (goodsList.get(i).getGoodsStatus() != 1) {
-                result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品已经下架，无法兑换");
-                return result;
-            }
-
-            Date now = new Date();
-            if (goodsList.get(i).getBeginning().getTime() > now.getTime() || goodsList.get(i).getValidity().getTime() < now.getTime()) {
-                result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品已经过了活动时间，无法兑换");
-                return result;
-            }
-
-            for (int j = 0; j < param.getDetailBeanList().size(); j++) {
-                if (goodsList.get(i).getGoodsSN().equals(param.getDetailBeanList().get(j).getGoodsSN())) {
-                    if (param.getDetailBeanList().get(j).getSaleCount() <= 0) {
-                        result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品兑换数量必须为正数");
-                        return result;
-                    }
-
-                    if (goodsList.get(i).getGoodsStock() < param.getDetailBeanList().get(j).getSaleCount()) {
-                        result.setMsg("积分商品编号" + goodsList.get(i).getGoodsSN() + "的商品库存不足，无法兑换");
-                        return result;
-                    }
-
-                    param.getDetailBeanList().get(j).setGoodsSN(goodsList.get(i).getGoodsSN());
-                    param.getDetailBeanList().get(j).setGoodsName(goodsList.get(i).getGoodsName());
-                    param.getDetailBeanList().get(j).setGoodsBrand(goodsList.get(i).getGoodsBrand());
-                    param.getDetailBeanList().get(j).setNeedPoint(goodsList.get(i).getNeedPoint());
-                    param.getDetailBeanList().get(j).setPictureURL(goodsList.get(i).getPictureURL());
-                    totalPoint = totalPoint + goodsList.get(i).getNeedPoint() * param.getDetailBeanList().get(j).getSaleCount();
-                    break;
-                }
-            }
-        }
-
-        //查询用户积分
-        UserShopPointsRequestBean userShopPointsRequestBean = new UserShopPointsRequestBean();
-        userShopPointsRequestBean.setAccountSN(param.getBuyerSN());
-        CommonResultData<UserShopPointBean> userShopPointResult = userPointFeign.getUserPointByUserAccount(userShopPointsRequestBean);
-        if (userShopPointResult == null) {
-            result.setMsg("用户：" + param.getBuyerSN() + "的积分查询出错！");
-            return result;
-        } else if (userShopPointResult.getResult().getPoint() < totalPoint) {
-            result.setMsg("用户：" + param.getBuyerSN() + "的积分小于" + totalPoint + ",无法兑换");
-            return result;
-        }
-
+        // 生成订单号
         ServiceReturnInfo<String> siSn = systemOrderSnService.createMasterOrderSn();
-
-        // 生成订单号失败
         if (!siSn.isIsok()) {
             logger.error("生成订单号失败" + siSn.getMessage());
             result.setMsg(siSn.getMessage());
@@ -331,13 +279,87 @@ public class CreateOrderController extends BaseController {
         }
         final String orderSN = "JF" + siSn.getResult();
         param.setOrderSN(orderSN);
-        param.setTotalPoint(totalPoint);
 
-        for (int i = 0; i < param.getDetailBeanList().size(); i++) {
-            param.getDetailBeanList().get(i).setOrderSN(orderSN);
+
+        try {
+            for (int i = 0; i < param.getDetailBeanList().size(); i++) {
+                redisClient.incrBy(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(i).getGoodsSN(), param.getDetailBeanList().get(i).getSaleCount());
+            }
+
+            CommonResultData<List<ProductRewardPointGoodsBean>> beanList = rewardPointGoodsFeign.getRewardPointGoodsBySNList(goodsSNList);
+            if (beanList == null || beanList.getResult() == null || beanList.getResult().size() == 0) {
+                result.setMsg("积分商品查询为空！");
+                return result;
+            } else if (beanList.getResult().size() != goodsSNList.size()) {
+                result.setMsg("积分商品查询出错！");
+                return result;
+            }
+            List<ProductRewardPointGoodsBean> goodsList = beanList.getResult();
+
+            int totalPoint = 0;
+            for (int i = 0; i < goodsList.size(); i++) {
+                if (goodsList.get(i).getGoodsStatus() != 1) {
+                    result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "已经下架，无法兑换");
+                    return result;
+                }
+
+                Date now = new Date();
+                if (goodsList.get(i).getBeginning() != null && goodsList.get(i).getValidity() != null) {
+                    if (goodsList.get(i).getBeginning().getTime() > now.getTime() || goodsList.get(i).getValidity().getTime() < now.getTime()) {
+                        result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "已经过了活动时间，无法兑换");
+                        return result;
+                    }
+                }
+
+                //查找对应的积分商品信息并填充
+                for (int j = 0; j < param.getDetailBeanList().size(); j++) {
+                    if (goodsList.get(i).getGoodsSN().equals(param.getDetailBeanList().get(j).getGoodsSN())) {
+                        if (param.getDetailBeanList().get(j).getSaleCount() <= 0) {
+                            result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "兑换数量必须为正数");
+                            return result;
+                        }
+
+                        int lockCount = Integer.parseInt(redisClient.get(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(i).getGoodsSN()));
+                        if (goodsList.get(i).getGoodsStock() - lockCount < param.getDetailBeanList().get(j).getSaleCount()) {
+                            result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "库存不足，无法兑换");
+                            return result;
+                        }
+
+                        param.getDetailBeanList().get(j).setGoodsSN(goodsList.get(i).getGoodsSN());
+                        param.getDetailBeanList().get(j).setGoodsName(goodsList.get(i).getGoodsName());
+                        param.getDetailBeanList().get(j).setGoodsBrand(goodsList.get(i).getGoodsBrand());
+                        param.getDetailBeanList().get(j).setNeedPoint(goodsList.get(i).getNeedPoint());
+                        param.getDetailBeanList().get(j).setPictureURL(goodsList.get(i).getPictureURL());
+                        totalPoint = totalPoint + goodsList.get(i).getNeedPoint() * param.getDetailBeanList().get(j).getSaleCount();
+                        break;
+                    }
+
+                    param.getDetailBeanList().get(i).setOrderSN(orderSN);
+                }
+            }
+
+            //查询用户积分
+            UserShopPointsRequestBean userShopPointsRequestBean = new UserShopPointsRequestBean();
+            userShopPointsRequestBean.setAccountSN(param.getBuyerSN());
+            CommonResultData<UserShopPointBean> userShopPointResult = userPointFeign.getUserPointByUserAccount(userShopPointsRequestBean);
+            if (userShopPointResult == null) {
+                result.setMsg("用户：" + param.getBuyerSN() + "的积分查询出错！");
+                return result;
+            } else if (userShopPointResult.getResult().getPoint() < totalPoint) {
+                result.setMsg("用户：" + param.getBuyerSN() + "的积分小于" + totalPoint + ",无法兑换");
+                return result;
+            }
+
+            param.setTotalPoint(totalPoint);
+
+            orderRewardPointGoodsService.createOrderRewardPoint(param);
+        } finally {
+            for (int i = 0; i < param.getDetailBeanList().size(); i++) {
+                if (redisClient.exists(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(i).getGoodsSN())) {
+                    redisClient.decrBy(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(i).getGoodsSN(), param.getDetailBeanList().get(i).getSaleCount());
+                }
+            }
         }
-
-        orderRewardPointGoodsService.createOrderRewardPoint(param);
 
         //下发"change_stock_and_salesvolumel"信道，修改商品库存和销量
         List<ChangeStockAndSaleVolumeBean> changeStockAndSaleVolumeBeanList = new ArrayList<>();
@@ -350,11 +372,11 @@ public class CreateOrderController extends BaseController {
         }
 
         String changeStockAndSalesVolumeMQ = JSONObject.toJSONString(changeStockAndSaleVolumeBeanList);
-        logger.info("修改积分商品库存和销量下发{}:", changeStockAndSalesVolumeMQ);
+        logger.info("修改积分商品库存和销量下发{}", changeStockAndSalesVolumeMQ);
         try {
             changeStockAndSalesVolumeJmsTemplate.send(new TextMessageCreator(changeStockAndSalesVolumeMQ));
         } catch (Exception e) {
-            logger.error("下发修改积分商品库存和销量MQ信息异常", e.getMessage());
+            logger.error("下发修改积分商品库存和销量MQ信息异常{}", e.getMessage());
         }
 
         //下发"add_reward_point_change_log"信道，添加积分变更记录
@@ -366,11 +388,11 @@ public class CreateOrderController extends BaseController {
         rewardPointChangeLogBean.setChangePoint(0 - param.getTotalPoint());
 
         String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
-        logger.info("添加积分变更记录下发{}:", addRewardPointChangeLogMQ);
+        logger.info("添加积分变更记录下发{}", addRewardPointChangeLogMQ);
         try {
             addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
         } catch (Exception e) {
-            logger.error("下发添加积分变更记录MQ信息异常", e.getMessage());
+            logger.error("下发添加积分变更记录MQ信息异常{}", e.getMessage());
         }
 
         //下发"change_user_and_company_point"信道，修改用户和公司积分
@@ -380,11 +402,11 @@ public class CreateOrderController extends BaseController {
         changeUserAndCompanyPointMQBean.setChangePoint(0 - param.getTotalPoint());
 
         String changeUserAndCompanyPointMQ = JSONObject.toJSONString(changeUserAndCompanyPointMQBean);
-        logger.info("修改用户和公司积分下发{}:", changeUserAndCompanyPointMQ);
+        logger.info("修改用户和公司积分下发{}", changeUserAndCompanyPointMQ);
         try {
             changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
         } catch (Exception e) {
-            logger.error("下发修改用户和公司积分MQ信息异常", e.getMessage());
+            logger.error("下发修改用户和公司积分MQ信息异常{}", e.getMessage());
         }
 
         result.setIsOk("1");
@@ -432,7 +454,7 @@ public class CreateOrderController extends BaseController {
         try {
             changeStockAndSalesVolumeJmsTemplate.send(new TextMessageCreator(changeStockAndSalesVolumeMQ));
         } catch (Exception e) {
-            logger.error("下发修改积分商品库存和销量MQ信息异常", e.getMessage());
+            logger.error("下发修改积分商品库存和销量MQ信息异常{}", e.getMessage());
         }
 
         //下发"add_reward_point_change_log"信道，添加积分变更记录
@@ -448,7 +470,7 @@ public class CreateOrderController extends BaseController {
         try {
             addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
         } catch (Exception e) {
-            logger.error("下发添加积分变更记录MQ信息异常", e.getMessage());
+            logger.error("下发添加积分变更记录MQ信息异常{}", e.getMessage());
         }
 
         //下发"change_user_and_company_point"信道，修改用户和公司积分
@@ -462,7 +484,7 @@ public class CreateOrderController extends BaseController {
         try {
             changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
         } catch (Exception e) {
-            logger.error("下发修改用户和公司积分MQ信息异常", e.getMessage());
+            logger.error("下发修改用户和公司积分MQ信息异常{}", e.getMessage());
         }
 
         result.setIsOk("1");
