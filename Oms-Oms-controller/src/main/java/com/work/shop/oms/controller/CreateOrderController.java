@@ -197,13 +197,13 @@ public class CreateOrderController extends BaseController {
         CommonResultData<List<ResultRewardPointGoodsBean>> result = new CommonResultData<>();
         result.setIsOk("0");
 
-        if (!StringUtils.isEmpty(param.getOrder()) && (!"order_status".equals(param.getOrder()) || !("create_time".equals(param.getOrder())))) {
-            result.setMsg("排序条件参数错误！");
-            return result;
-        } else if (!StringUtils.isEmpty(param.getSort()) && (!"desc".equals(param.getSort()) || !"asc".equals(param.getSort()))) {
-            result.setMsg("排序参数错误！");
-            return result;
-        }
+//        if (!StringUtils.isEmpty(param.getOrder()) && (!"order_status".equals(param.getOrder()) || !("create_time".equals(param.getOrder())))) {
+//            result.setMsg("排序条件参数错误！");
+//            return result;
+//        } else if (!StringUtils.isEmpty(param.getSort()) && (!"desc".equals(param.getSort()) || !"asc".equals(param.getSort()))) {
+//            result.setMsg("排序参数错误！");
+//            return result;
+//        }
 
         int count = orderRewardPointGoodsService.getCountOfOrderRewardPointGoods(param);
         if (count == 0) {

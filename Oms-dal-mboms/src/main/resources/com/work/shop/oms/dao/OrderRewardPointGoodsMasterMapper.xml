@@ -73,9 +73,7 @@
         <if test="orderStatus gt 0">
             and master.order_status=${orderStatus}
         </if>
-        <if test="order!=null and sort!=null">
-            order by ${order} ${sort}
-        </if>
+        order by master.create_time desc
         limit ${start},${pageSize}
     </select>
 

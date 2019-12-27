@@ -1,9 +1,9 @@
 package com.work.shop.oms.param.bean;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -41,17 +41,17 @@ public class ParamOrderRewardPointGoods implements Serializable {
     private int orderStatus;
 
     //订单开始时间
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JSONField(format = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date beginOrderTime;
 
     //订单结束时间
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JSONField(format = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endOrderTime;
 
     //订单取消时间
-    @DateTimeFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @JSONField(format = "yyyy-MM-dd hh:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date cancelTime;
 
