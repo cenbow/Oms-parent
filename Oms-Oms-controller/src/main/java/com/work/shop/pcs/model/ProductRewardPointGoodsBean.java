@@ -1,6 +1,5 @@
 package com.work.shop.pcs.model;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.io.Serializable;
