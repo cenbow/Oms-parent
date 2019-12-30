@@ -130,14 +130,14 @@ public class DistributeShipServiceImpl implements DistributeShipService {
     @Resource
     private MasterOrderInfoExtendService masterOrderInfoExtendService;
 
-	@Autowired
-	private RewardPointRatioService rewardPointRatioService;
+    @Autowired
+    private RewardPointRatioService rewardPointRatioService;
 
-	@Resource(name = "changeUserAndCompanyPointJmsTemplate")
-	private JmsTemplate changeUserAndCompanyPointJmsTemplate;
+    @Resource(name = "changeUserAndCompanyPointJmsTemplate")
+    private JmsTemplate changeUserAndCompanyPointJmsTemplate;
 
-	@Resource(name = "addRewardPointChangeLogJmsTemplate")
-	private JmsTemplate addRewardPointChangeLogJmsTemplate;
+    @Resource(name = "addRewardPointChangeLogJmsTemplate")
+    private JmsTemplate addRewardPointChangeLogJmsTemplate;
 
     private ThreadLocal<Boolean> isSend = new ThreadLocal<Boolean>();
 
@@ -1605,45 +1605,45 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             jmsSendQueueService.sendQueueMessage(MqConfig.order_sn_account_settlement, JSON.toJSONString(accountSettlementOrderBean));
 
 
-            //查询订单来源
-            String orderSN = masterOrderInfo.getMasterOrderSn();
-            String buyerSN = masterOrderInfo.getUserId();
-            String orderFrom = masterOrderInfo.getOrderFrom();
-            int totalPrice = ((BigDecimal) masterOrderInfo.getMoneyPaid()).intValue();
-
-            if (("hbis").equals(orderFrom) && totalPrice >= 1000) {
-                //查询积分比例
+            if (("hbis").equals(masterOrderInfo.getOrderFrom())) {
+                //查询订单来源
+                String orderSN = masterOrderInfo.getMasterOrderSn();
+                String buyerSN = masterOrderInfo.getUserId();
+                int totalPrice = masterOrderInfo.getMoneyPaid().intValue();
                 int ratio = rewardPointRatioService.getRewardPointRatio();
                 int point = totalPrice / ratio;
 
-                //下发"add_reward_point_change_log"信道，添加积分变更记录
-                RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
-                rewardPointChangeLogBean.setAccountSN(buyerSN);
+                if (point >= 1) {
+                    //查询积分比例
+                    //下发"add_reward_point_change_log"信道，添加积分变更记录
+                    RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
+                    rewardPointChangeLogBean.setAccountSN(buyerSN);
 //        rewardPointChangeLogBean.setCompanySN(1);
-                rewardPointChangeLogBean.setOrderSN(orderSN);
-                rewardPointChangeLogBean.setDescription("下单增加积分");
-                rewardPointChangeLogBean.setChangePoint(point);
+                    rewardPointChangeLogBean.setOrderSN(orderSN);
+                    rewardPointChangeLogBean.setDescription("下单增加积分");
+                    rewardPointChangeLogBean.setChangePoint(point);
 
-                String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
-                logger.info("添加积分变更记录下发:" + addRewardPointChangeLogMQ);
-                try {
-                    addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
-                } catch (Exception e) {
-                    logger.error("下发添加积分变更记录MQ信息异常：" + e.getMessage());
-                }
+                    String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
+                    logger.info("添加积分变更记录下发:" + addRewardPointChangeLogMQ);
+                    try {
+                        addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
+                    } catch (Exception e) {
+                        logger.error("下发添加积分变更记录MQ信息异常：" + e.getMessage());
+                    }
 
-                //下发"change_user_and_company_point"信道，修改用户和公司积分
-                ChangeUserAndCompanyPointMQBean changeUserAndCompanyPointMQBean = new ChangeUserAndCompanyPointMQBean();
-                changeUserAndCompanyPointMQBean.setAccountSN(buyerSN);
+                    //下发"change_user_and_company_point"信道，修改用户和公司积分
+                    ChangeUserAndCompanyPointMQBean changeUserAndCompanyPointMQBean = new ChangeUserAndCompanyPointMQBean();
+                    changeUserAndCompanyPointMQBean.setAccountSN(buyerSN);
 //        changeUserAndCompanyPointMQBean.setCompanySN(11);
-                changeUserAndCompanyPointMQBean.setChangePoint(point);
+                    changeUserAndCompanyPointMQBean.setChangePoint(point);
 
-                String changeUserAndCompanyPointMQ = JSONObject.toJSONString(changeUserAndCompanyPointMQBean);
-                logger.info("修改用户和公司积分下发:" + changeUserAndCompanyPointMQ);
-                try {
-                    changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
-                } catch (Exception e) {
-                    logger.error("下发修改用户和公司积分MQ信息异常:" + e.getMessage());
+                    String changeUserAndCompanyPointMQ = JSONObject.toJSONString(changeUserAndCompanyPointMQBean);
+                    logger.info("修改用户和公司积分下发:" + changeUserAndCompanyPointMQ);
+                    try {
+                        changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
+                    } catch (Exception e) {
+                        logger.error("下发修改用户和公司积分MQ信息异常:" + e.getMessage());
+                    }
                 }
             }
         }
