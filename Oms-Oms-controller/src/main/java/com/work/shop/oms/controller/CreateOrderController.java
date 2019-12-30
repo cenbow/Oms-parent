@@ -303,12 +303,17 @@ public class CreateOrderController extends BaseController {
                 }
 
                 long now = LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli();
+
                 if (goodsList.get(i).getBeginning() != null && goodsList.get(i).getValidity() != null) {
                     if (goodsList.get(i).getBeginning().getTime() > now || goodsList.get(i).getValidity().getTime() < now) {
                         result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "已经过了活动时间，无法兑换");
                         return result;
                     }
                 }
+
+                logger.info("getBeginning :"+goodsList.get(i).getBeginning().getTime());
+                logger.info("getValidity :"+goodsList.get(i).getValidity().getTime());
+                logger.info("now :"+now);
 
                 //查找对应的积分商品信息并填充
                 for (int j = 0; j < param.getDetailBeanList().size(); j++) {
