@@ -26,11 +26,12 @@
         <if test="companySN!=null">
             or company_sn=#{companySN}
         </if>
+        order by create_time desc
         limit ${start},${pageSize}
     </select>
 
     <insert id="addRewardPointChangeLog" parameterType="com.work.shop.oms.bean.RewardPointChangeLogBean">
-        insert into reward_point_change_log(account_sn ,company_sn, order_sn, description, change_point)
-        values(#{accountSN},#{companySN},#{orderSN},#{description},#{changePoint})
+        insert into reward_point_change_log(account_sn, company_sn, order_sn, description, change_point)
+        values (#{accountSN}, #{companySN}, #{orderSN}, #{description}, #{changePoint})
     </insert>
 </mapper>
