@@ -1,4 +1,4 @@
-package com.work.shop.oms.controller.service;
+package com.work.shop.oms.service;
 
 public interface RewardPointRatioService {
 

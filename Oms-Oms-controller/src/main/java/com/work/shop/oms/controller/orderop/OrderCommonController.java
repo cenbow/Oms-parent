@@ -2,16 +2,7 @@ package com.work.shop.oms.controller.orderop;
 
 import javax.annotation.Resource;
 
-import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
-import com.work.shop.oms.bean.ChangeUserAndCompanyPointMQBean;
-import com.work.shop.oms.bean.RewardPointChangeLogBean;
-import com.work.shop.oms.controller.service.RewardPointRatioService;
-import com.work.shop.oms.mq.bean.TextMessageCreator;
-import com.work.shop.oms.utils.Constant;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,11 +21,6 @@ import com.work.shop.oms.ship.request.DistOrderShipRequest;
 import com.work.shop.oms.ship.response.DistOrderShipResponse;
 import com.work.shop.oms.ship.service.DistributeShipService;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-
-import static sun.security.krb5.Confounder.intValue;
-
 /**
  * 订单服务操作
  *
@@ -51,18 +37,6 @@ public class OrderCommonController {
 
     @Resource
     private DistributeShipService distributeShipService;
-
-    @Autowired
-    private RewardPointRatioService rewardPointRatioService;
-
-    @Autowired
-    private BGOrderInfoService bgOrderInfoService;
-
-    @Resource(name = "changeUserAndCompanyPointJmsTemplate")
-    private JmsTemplate changeUserAndCompanyPointJmsTemplate;
-
-    @Resource(name = "addRewardPointChangeLogJmsTemplate")
-    private JmsTemplate addRewardPointChangeLogJmsTemplate;
 
 
     /**
@@ -349,51 +323,6 @@ public class OrderCommonController {
 
         try {
             returnInfo = orderCommonService.confirmationOfReceipt(bean);
-
-            if (returnInfo.getIsOk() == Constant.OS_YES) {
-                //查询订单来源
-                String orderSN = bean.getOrderSn();
-                HashMap<String, Object> orderMap = bgOrderInfoService.getOrderFromByOrderSN(orderSN);
-                String buyerSN = (String) orderMap.get("user_id");
-                String orderFrom = (String) orderMap.get("order_from");
-                int totalPrice = ((BigDecimal) orderMap.get("money_paid")).intValue();
-
-                if (orderMap != null && ("hbis").equals(orderFrom) && totalPrice >= 1000) {
-                    //查询积分比例
-                    int ratio = rewardPointRatioService.getRewardPointRatio();
-                    int point = totalPrice / ratio;
-
-                    //下发"add_reward_point_change_log"信道，添加积分变更记录
-                    RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
-                    rewardPointChangeLogBean.setAccountSN(buyerSN);
-//        rewardPointChangeLogBean.setCompanySN(1);
-                    rewardPointChangeLogBean.setOrderSN(orderSN);
-                    rewardPointChangeLogBean.setDescription("下单增加积分");
-                    rewardPointChangeLogBean.setChangePoint(point);
-
-                    String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
-                    logger.info("添加积分变更记录下发:" + addRewardPointChangeLogMQ);
-                    try {
-                        addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
-                    } catch (Exception e) {
-                        logger.error("下发添加积分变更记录MQ信息异常：" + e.getMessage());
-                    }
-
-                    //下发"change_user_and_company_point"信道，修改用户和公司积分
-                    ChangeUserAndCompanyPointMQBean changeUserAndCompanyPointMQBean = new ChangeUserAndCompanyPointMQBean();
-                    changeUserAndCompanyPointMQBean.setAccountSN(buyerSN);
-//        changeUserAndCompanyPointMQBean.setCompanySN(11);
-                    changeUserAndCompanyPointMQBean.setChangePoint(point);
-
-                    String changeUserAndCompanyPointMQ = JSONObject.toJSONString(changeUserAndCompanyPointMQBean);
-                    logger.info("修改用户和公司积分下发:" + changeUserAndCompanyPointMQ);
-                    try {
-                        changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
-                    } catch (Exception e) {
-                        logger.error("下发修改用户和公司积分MQ信息异常:" + e.getMessage());
-                    }
-                }
-            }
         } catch (Exception e) {
             logger.error("订单系统收货确认异常:" + JSON.toJSONString(bean), e);
             returnInfo.setMessage("订单系统收货确认异常");
