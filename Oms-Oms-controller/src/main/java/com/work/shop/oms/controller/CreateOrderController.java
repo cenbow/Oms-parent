@@ -7,7 +7,7 @@ import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.controller.feign.RewardPointGoodsFeign;
 import com.work.shop.oms.controller.feign.UserPointFeign;
 import com.work.shop.oms.controller.pojo.ChangeStockAndSaleVolumeBean;
-import com.work.shop.oms.controller.pojo.ProductRewardPointGoodsBean;
+import com.work.shop.pcs.model.ProductRewardPointGoodsBean;
 import com.work.shop.oms.controller.pojo.UserShopPointBean;
 import com.work.shop.oms.controller.pojo.UserShopPointsRequestBean;
 import com.work.shop.oms.controller.service.OrderRewardPointGoodsService;
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -244,6 +247,7 @@ public class CreateOrderController extends BaseController {
     }
 
     //创建积分商品订单
+    @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/createOrderRewardPoint")
     @ResponseBody
     public CommonResultData<String> createOrderRewardPoint(@RequestBody ParamOrderRewardPointGoods param) {
@@ -298,9 +302,9 @@ public class CreateOrderController extends BaseController {
                     return result;
                 }
 
-                Date now = new Date();
+                long now = LocalDateTime.now().toInstant(ZoneOffset.of("+8")).toEpochMilli();
                 if (goodsList.get(i).getBeginning() != null && goodsList.get(i).getValidity() != null) {
-                    if (goodsList.get(i).getBeginning().getTime() > now.getTime() || goodsList.get(i).getValidity().getTime() < now.getTime()) {
+                    if (goodsList.get(i).getBeginning().getTime() > now || goodsList.get(i).getValidity().getTime() < now) {
                         result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "已经过了活动时间，无法兑换");
                         return result;
                     }
@@ -315,8 +319,11 @@ public class CreateOrderController extends BaseController {
                         }
 
                         //获取锁定库存数量
-                        int lockCount = Integer.parseInt(redisClient.get(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN()));
+                        int lockCount = 0;
+                        if (redisClient.exists(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN())) {
+                            lockCount = Integer.parseInt(redisClient.get(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN()));
 //                        logger.info("获取库存锁 lockCount:" + param.getDetailBeanList().get(j).getGoodsSN() + "   :   " + lockCount);
+                        }
 
                         if (goodsList.get(i).getGoodsStock() - lockCount < param.getDetailBeanList().get(j).getSaleCount()) {
                             result.setMsg("积分商品:" + goodsList.get(i).getGoodsName() + "库存不足，无法兑换");
@@ -354,6 +361,10 @@ public class CreateOrderController extends BaseController {
 
             param.setTotalPoint(totalPoint);
             orderRewardPointGoodsService.createOrderRewardPoint(param);
+        } catch (Exception e) {
+            logger.error("创建积分订单出错:" + e.getMessage());
+            result.setMsg("创建积分订单出错！");
+            return result;
         } finally {
             for (int i = 0; i < lockedGoodsList.size(); i++) {
 //                logger.info("释放库存锁 lockCount:" + param.getDetailBeanList().get(i).getGoodsSN() + "   :   " + param.getDetailBeanList().get(i).getSaleCount());
