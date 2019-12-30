@@ -311,10 +311,6 @@ public class CreateOrderController extends BaseController {
                     }
                 }
 
-                logger.info("getBeginning :"+goodsList.get(i).getBeginning().getTime());
-                logger.info("getValidity :"+goodsList.get(i).getValidity().getTime());
-                logger.info("now :"+now);
-
                 //查找对应的积分商品信息并填充
                 for (int j = 0; j < param.getDetailBeanList().size(); j++) {
                     if (goodsList.get(i).getGoodsSN().equals(param.getDetailBeanList().get(j).getGoodsSN())) {
@@ -367,7 +363,7 @@ public class CreateOrderController extends BaseController {
             param.setTotalPoint(totalPoint);
             orderRewardPointGoodsService.createOrderRewardPoint(param);
         } catch (Exception e) {
-            logger.error("创建积分订单出错:" + e.getMessage());
+            logger.error("创建积分订单出错:" + orderSN, e);
             result.setMsg("创建积分订单出错！");
             return result;
         } finally {
@@ -394,7 +390,7 @@ public class CreateOrderController extends BaseController {
         try {
             changeStockAndSalesVolumeJmsTemplate.send(new TextMessageCreator(changeStockAndSalesVolumeMQ));
         } catch (Exception e) {
-            logger.error("下发修改积分商品库存和销量MQ信息异常{}", e.getMessage());
+            logger.error("下发修改积分商品库存和销量MQ信息异常", e);
         }
 
         //下发"add_reward_point_change_log"信道，添加积分变更记录
@@ -410,7 +406,7 @@ public class CreateOrderController extends BaseController {
         try {
             addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
         } catch (Exception e) {
-            logger.error("下发添加积分变更记录MQ信息异常{}", e.getMessage());
+            logger.error("下发添加积分变更记录MQ信息异常:", e);
         }
 
         //下发"change_user_and_company_point"信道，修改用户和公司积分
@@ -424,7 +420,7 @@ public class CreateOrderController extends BaseController {
         try {
             changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
         } catch (Exception e) {
-            logger.error("下发修改用户和公司积分MQ信息异常{}", e.getMessage());
+            logger.error("下发修改用户和公司积分MQ信息异常:", e);
         }
 
         result.setIsOk("1");
