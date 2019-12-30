@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.OrderRewardPointGoodsDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean">
+        <id column="id" property="id"/>
+        <result column="order_sn" property="orderSN"/>
+        <result column="goods_sn" property="goodsSN"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_brand" property="goodsBrand"/>
+        <result column="picture_url" property="pictureURL"/>
+        <result column="sale_count" property="saleCount"/>
+        <result column="need_point" property="needPoint"/>
+        <result column="express_sn" property="expressSN"/>
+        <result column="express_time" property="expressTime"/>
+        <result column="express_company" property="expressCompany"/>
+        <result column="express_time" property="expressTime"/>
+    </resultMap>
+
+    <select id="getOrderRewardPointGoodsDetail" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select *
+        from order_reward_point_goods_detail
+        where order_sn = #{orderSN}
+    </select>
+
+    <insert id="createOrderDetail" parameterType="java.util.List">
+        insert into order_reward_point_goods_detail(order_sn ,goods_sn, goods_name, goods_brand, need_point, sale_count, picture_url)
+        values
+        <foreach item="item" collection="list" index="index" separator=",">
+            (#{item.orderSN},#{item.goodsSN},#{item.goodsName},#{item.goodsBrand},#{item.needPoint},#{item.saleCount},#{item.pictureURL})
+        </foreach>
+    </insert>
+</mapper>

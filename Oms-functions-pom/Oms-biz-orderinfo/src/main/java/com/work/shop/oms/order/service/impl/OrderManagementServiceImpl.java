@@ -1390,16 +1390,46 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         }
 		String masterOrderSn = request.getMasterOrderSn();
 		try {
+
+			MasterOrderInfo master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+			if (master == null) {
+				response.setMessage("订单不存在");
+				return response;
+			}
+
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendService.getMasterOrderInfoExtendById(masterOrderSn);
+			if (masterOrderInfoExtend == null) {
+                response.setMessage("订单不存在");
+                return response;
+            }
+
 			OrderStatus orderStatus = new OrderStatus();
 			orderStatus.setMasterOrderSn(masterOrderSn);
 			orderStatus.setAdminUser(request.getActionUser());
 			orderStatus.setMessage("订单驳回,备注：" + request.getMessage());
-			// 不创建退单
-			orderStatus.setType("2");
-			// 不创建退单
-			orderStatus.setReturnType(7);
-			// 取消原因
-			orderStatus.setCode("8011");
+
+			// 订单来源
+			String orderFrom = master.getOrderFrom();
+
+			// 公司类型 1内部公司、2外部公司
+            Integer companyType = masterOrderInfoExtend.getCompanyType();
+            if (companyType == null) {
+                companyType = 0;
+            }
+
+            // 内部公司、自营店铺
+			if (Constant.DEFAULT_SHOP.equals(orderFrom) && 1 == companyType) {
+				// 不创建退单
+				orderStatus.setType("2");
+				// 不创建退单
+				orderStatus.setReturnType(7);
+			} else {
+                // 创建退单
+                orderStatus.setType("1");
+            }
+
+            // 取消原因
+            orderStatus.setCode("8011");
 			ReturnInfo<String> info = orderCommonService.cancelOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
 				response.setSuccess(true);

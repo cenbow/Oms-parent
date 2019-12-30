@@ -1,0 +1,49 @@
+--2019-12-05
+--蔡啸
+--添加数据表：积分商品订单主表、积分商品订单明细表、积分变更记录表
+                     mboms_mall（order_reward_point_goods_master、order_reward_point_goods_detail、reward_point_change_log）
+--执行sql语句：
+     CREATE TABLE `order_reward_point_goods_master` (
+       `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+       `order_sn` varchar(18) NOT NULL COMMENT '订单编号',
+       `buyer_sn` varchar(100) NOT NULL COMMENT '兑换人',
+       `total_point` int(10) unsigned NOT NULL COMMENT '所需总积分',
+       `order_status` int(11) NOT NULL DEFAULT '1' COMMENT '订单状态\n1、待确认 2、已发货 3、确认收货 4、取消',
+       `receiver_name` varchar(20) NOT NULL COMMENT '收货人姓名',
+       `receiver_tel` varchar(20) NOT NULL COMMENT '收货人电话',
+       `receiver_address` varchar(100) NOT NULL COMMENT '收货人地址',
+       `update_sn` varchar(20) DEFAULT NULL COMMENT '修改人编号',
+       `update_time` datetime DEFAULT NULL COMMENT '修改时间',
+       `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+       `cancel_sn` varchar(20) DEFAULT NULL COMMENT '取消用户编号',
+       `cancel_time` datetime DEFAULT NULL COMMENT '取消时间',
+       `comment` varchar(100) DEFAULT NULL COMMENT '备注',
+       PRIMARY KEY (`id`),
+       UNIQUE KEY `order_reward_goods_order_sn_uindex` (`order_sn`)
+     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='积分商品订单主表';
+
+     CREATE TABLE `order_reward_point_goods_detail` (
+       `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+       `order_sn` varchar(18) NOT NULL COMMENT '订单编号',
+       `goods_sn` varchar(6) NOT NULL COMMENT '积分商品编号',
+       `goods_name` varchar(20) NOT NULL COMMENT '商品名称',
+       `goods_brand` varchar(20) DEFAULT NULL COMMENT '品牌名称',
+       `need_point` int(10) unsigned NOT NULL COMMENT '所需积分',
+       `sale_count` int(10) unsigned NOT NULL COMMENT '兑换数量',
+       `express_sn` varchar(20) DEFAULT NULL COMMENT '快递单号',
+       `express_company` varchar(20) DEFAULT NULL COMMENT '快递公司名称',
+       `express_company_sn` varchar(20) DEFAULT NULL COMMENT '快递公司编号',
+       `express_time` datetime DEFAULT NULL COMMENT '发货时间',
+       PRIMARY KEY (`id`)
+     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='积分商品订单明细表';
+
+     CREATE TABLE `reward_point_change_log` (
+       `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+       `account_sn` varchar(100) NOT NULL COMMENT '账户编号',
+       `company_sn` varchar(100) DEFAULT NULL COMMENT '公司编号',
+       `order_sn` varchar(20) NOT NULL COMMENT '订单编号',
+       `change_point` int(10) NOT NULL COMMENT '积分变更',
+       `description` varchar(20)  COMMENT '描述',
+       `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       PRIMARY KEY (`id`)
+     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='积分变更记录';

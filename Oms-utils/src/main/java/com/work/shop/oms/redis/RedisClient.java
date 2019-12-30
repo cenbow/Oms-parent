@@ -181,7 +181,26 @@ public class RedisClient {
 			close(jedis);
 		}
 	}
-	
+
+	public void incrBy(String key, int i) {
+		Jedis jedis = null;
+		try {
+			jedis = getJedis(key);
+			jedis.incrBy(key, i);
+		} finally {
+			close(jedis);
+		}
+	}
+
+	public void decrBy(String key, int i) {
+		Jedis jedis = null;
+		try {
+			jedis = getJedis(key);
+			jedis.decrBy(key, i);
+		} finally {
+			close(jedis);
+		}
+	}
 
 	public void expire(String key, int i) {
 		Jedis jedis = null;

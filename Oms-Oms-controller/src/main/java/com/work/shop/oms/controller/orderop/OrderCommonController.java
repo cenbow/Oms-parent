@@ -23,6 +23,7 @@ import com.work.shop.oms.ship.service.DistributeShipService;
 
 /**
  * 订单服务操作
+ *
  * @author QuYachu
  */
 @RestController
@@ -33,19 +34,20 @@ public class OrderCommonController {
 
     @Resource
     private OrderCommonService orderCommonService;
-    
-	@Resource
-	private DistributeShipService distributeShipService;
+
+    @Resource
+    private DistributeShipService distributeShipService;
+
 
     /**
      * 主订单取消(共用方法)
      *
      * @param masterOrderSn 主订单号
-     * @param orderStatus code:取消原因code;note:备注;actionUser:操作人; POS:POS端;FRONT:前端;OS:后台取消;type:是否创建退单 1：创建;2：不创建
+     * @param orderStatus   code:取消原因code;note:备注;actionUser:操作人; POS:POS端;FRONT:前端;OS:后台取消;type:是否创建退单 1：创建;2：不创建
      * @return ReturnInfo
      */
     @PostMapping("/cancelOrderByMasterSn")
-    public ReturnInfo<Boolean> cancelOrderByMasterSn(@RequestParam(name="masterOrderSn") String masterOrderSn, @RequestBody OrderStatus orderStatus) {
+    public ReturnInfo<Boolean> cancelOrderByMasterSn(@RequestParam(name = "masterOrderSn") String masterOrderSn, @RequestBody OrderStatus orderStatus) {
 
         ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
         returnInfo.setMessage("取消失败");
@@ -61,6 +63,7 @@ public class OrderCommonController {
 
     /**
      * 子订单取消(共用方法)
+     *
      * @param orderStatus code:取消原因code;message:备注;actionUser:操作人; POS:POS端;FRONT:前端;OS:后台取消;type:是否创建退单 1：创建;2：不创建
      * @return ReturnInfo<Boolean>
      */
@@ -81,12 +84,12 @@ public class OrderCommonController {
     /**
      * 设置主订单问题单
      *
-     * @param orderSn 订单编码
+     * @param orderSn     订单编码
      * @param orderStatus adminUser:操作人;message:备注;code:问题单CODE;switchFlag:库存占用释放开关（true:开;false:关）
      * @return ReturnInfo
      */
     @PostMapping("/questionOrderByOrderSn")
-    public ReturnInfo<Boolean> questionOrderByOrderSn(@RequestParam(name="orderSn") String orderSn, @RequestBody OrderStatus orderStatus) {
+    public ReturnInfo<Boolean> questionOrderByOrderSn(@RequestParam(name = "orderSn") String orderSn, @RequestBody OrderStatus orderStatus) {
         ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
         returnInfo.setMessage("设置失败");
 
@@ -102,6 +105,7 @@ public class OrderCommonController {
 
     /**
      * 设置缺货问题单（短拣、短配、缺货问题单等）
+     *
      * @param orderStockQuestion 缺货信息
      * @return ReturnInfo
      */
@@ -122,13 +126,14 @@ public class OrderCommonController {
 
     /**
      * 第三方供应商发货前向OMS确认是否可以发货
+     *
      * @param request
      * @return DistOrderShipResponse
      */
     @PostMapping("/shippedConfirm")
     public DistOrderShipResponse shippedConfirm(@RequestBody DistOrderShipRequest request) {
-		DistOrderShipResponse response = new DistOrderShipResponse();
-		response.setSuccess(false);
+        DistOrderShipResponse response = new DistOrderShipResponse();
+        response.setSuccess(false);
 
         try {
             response = orderCommonService.shippedConfirm(request);
@@ -142,6 +147,7 @@ public class OrderCommonController {
 
     /**
      * 订单锁定
+     *
      * @param orderStatus 订单状态信息
      * @return ReturnInfo<String>
      */
@@ -162,6 +168,7 @@ public class OrderCommonController {
 
     /**
      * 订单解锁
+     *
      * @param orderStatus 订单状态信息
      * @return ReturnInfo<String>
      */
@@ -182,6 +189,7 @@ public class OrderCommonController {
 
     /**
      * 订单自提核销、订单配送签收
+     *
      * @param distributeShipBean 订单配送信息
      * @return ReturnInfo<String>
      */
@@ -200,13 +208,14 @@ public class OrderCommonController {
     }
 
     /**
-     *  订单确认收货
+     * 订单确认收货
+     *
      * @param masterOrderSn 订单编码
-     * @param actionUser 操作人
+     * @param actionUser    操作人
      * @return ReturnInfo<Boolean>
      */
     @PostMapping("/confirmReceipt")
-    public ReturnInfo<Boolean> confirmReceipt(@RequestParam(name="masterOrderSn") String masterOrderSn, @RequestParam(name="actionUser", required = false) String actionUser) {
+    public ReturnInfo<Boolean> confirmReceipt(@RequestParam(name = "masterOrderSn") String masterOrderSn, @RequestParam(name = "actionUser", required = false) String actionUser) {
         ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
 
         try {
@@ -221,6 +230,7 @@ public class OrderCommonController {
 
     /**
      * 处理仓库订单交货单发货
+     *
      * @param distributeShipBean 订单交货单信息
      * @return ReturnInfo<String>
      */
@@ -240,6 +250,7 @@ public class OrderCommonController {
 
     /**
      * 分配单发货确认
+     *
      * @param distributeShipBean 订单交货单信息
      * @return ReturnInfo<String>
      */
@@ -260,6 +271,7 @@ public class OrderCommonController {
 
     /**
      * 编辑承运商
+     *
      * @param modifyInfo
      * @return ReturnInfo<Boolean>
      */
@@ -278,53 +290,56 @@ public class OrderCommonController {
         return returnInfo;
     }
 
-	/**
-	 * 供应商订单发货结果
-	 * @param request
-	 * @return DistOrderShipResponse
-	 */
-	@PostMapping("/distOrderShip")
-	public DistOrderShipResponse distOrderShip(@RequestBody DistOrderShipRequest request) {
-		DistOrderShipResponse response = new DistOrderShipResponse();
-		response.setSuccess(false);
+    /**
+     * 供应商订单发货结果
+     *
+     * @param request
+     * @return DistOrderShipResponse
+     */
+    @PostMapping("/distOrderShip")
+    public DistOrderShipResponse distOrderShip(@RequestBody DistOrderShipRequest request) {
+        DistOrderShipResponse response = new DistOrderShipResponse();
+        response.setSuccess(false);
 
-		try {
-			response = distributeShipService.distOrderShip(request);
-		} catch (Exception e) {
-			logger.error("供应商订单发货异常：" + JSON.toJSONString(request), e);
-			response.setMessage("供应商订单发货异常：" + e.getMessage());
-		}
+        try {
+            response = distributeShipService.distOrderShip(request);
+        } catch (Exception e) {
+            logger.error("供应商订单发货异常：" + JSON.toJSONString(request), e);
+            response.setMessage("供应商订单发货异常：" + e.getMessage());
+        }
 
-		return response;
-	}
-	
-	/**
-	 * 收货确认(按照快递单号签收，快递单号不填写时按照订单签收)
-	 * @param bean
-	 * @return ReturnInfo<String>
-	 */
-	@PostMapping("/confirmationOfReceipt")
-	public ReturnInfo<String> confirmationOfReceipt(@RequestBody DistributeShippingBean bean) {
-		ReturnInfo<String> returnInfo = new ReturnInfo<String>();
+        return response;
+    }
 
-		try {
-			returnInfo = orderCommonService.confirmationOfReceipt(bean);
-		} catch (Exception e) {
-			logger.error("订单系统收货确认异常:" + JSON.toJSONString(bean), e);
-			returnInfo.setMessage("订单系统收货确认异常");
-		}
+    /**
+     * 收货确认(按照快递单号签收，快递单号不填写时按照订单签收)
+     *
+     * @param bean
+     * @return ReturnInfo<String>
+     */
+    @PostMapping("/confirmationOfReceipt")
+    public ReturnInfo<String> confirmationOfReceipt(@RequestBody DistributeShippingBean bean) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<String>();
 
-		return returnInfo;
-	}
+        try {
+            returnInfo = orderCommonService.confirmationOfReceipt(bean);
+        } catch (Exception e) {
+            logger.error("订单系统收货确认异常:" + JSON.toJSONString(bean), e);
+            returnInfo.setMessage("订单系统收货确认异常");
+        }
+
+        return returnInfo;
+    }
 
     /**
      * 主订单编辑订单地址
+     *
      * @param masterOrderSn
      * @param consignInfo
      * @return
      */
     @PostMapping("/editConsigneeInfoByMasterSn")
-    public ReturnInfo<String> editConsigneeInfoByMasterSn(@RequestParam(name="masterOrderSn") String masterOrderSn, @RequestBody ConsigneeModifyInfo consignInfo) {
+    public ReturnInfo<String> editConsigneeInfoByMasterSn(@RequestParam(name = "masterOrderSn") String masterOrderSn, @RequestBody ConsigneeModifyInfo consignInfo) {
         ReturnInfo<String> returnInfo = new ReturnInfo<String>();
 
         try {
@@ -339,6 +354,7 @@ public class OrderCommonController {
 
     /**
      * 主订单编辑发票信息
+     *
      * @param consignInfo
      * @return
      */
@@ -358,6 +374,7 @@ public class OrderCommonController {
 
     /**
      * 主订单编辑发票地址
+     *
      * @param consignInfo
      * @return
      */

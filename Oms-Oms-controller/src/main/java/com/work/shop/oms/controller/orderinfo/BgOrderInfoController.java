@@ -4,23 +4,32 @@ import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.api.bean.*;
 import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.api.param.bean.Paging;
+import com.work.shop.oms.bean.ChangeUserAndCompanyPointMQBean;
 import com.work.shop.oms.bean.MasterOrderInfo;
+import com.work.shop.oms.bean.RewardPointChangeLogBean;
 import com.work.shop.oms.bean.SystemRegionArea;
 import com.work.shop.oms.common.bean.ApiReturnData;
 import com.work.shop.oms.common.bean.ReturnInfo;
+import com.work.shop.oms.service.RewardPointRatioService;
+import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.utils.Constant;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * 订单信息查询
+ *
  * @author QuYachu
  */
 @RestController
@@ -29,11 +38,21 @@ public class BgOrderInfoController {
 
     private static final Logger logger = Logger.getLogger(BgOrderInfoController.class);
 
-    @Resource(name="bgOrderInfoService")
+    @Resource(name = "bgOrderInfoService")
     private BGOrderInfoService bgOrderInfoService;
+
+    @Autowired
+    private RewardPointRatioService rewardPointRatioService;
+
+    @Resource(name = "changeUserAndCompanyPointJmsTemplate")
+    private JmsTemplate changeUserAndCompanyPointJmsTemplate;
+
+    @Resource(name = "addRewardPointChangeLogJmsTemplate")
+    private JmsTemplate addRewardPointChangeLogJmsTemplate;
 
     /**
      * 平台前台查询用户订单列表
+     *
      * @param searchParam 订单列表查询参数
      * @return ApiReturnData 订单列表
      */
@@ -55,6 +74,7 @@ public class BgOrderInfoController {
 
     /**
      * 平台前台查询用户退单列表
+     *
      * @param searchParam 查询参数
      * @return ApiReturnData 退单列表
      */
@@ -75,6 +95,7 @@ public class BgOrderInfoController {
 
     /**
      * 查询退单详情
+     *
      * @param searchParam 退单编码
      * @return ApiReturnData 退单详情
      */
@@ -95,6 +116,7 @@ public class BgOrderInfoController {
 
     /**
      * 查询换单详情
+     *
      * @param searchParam 查询参数
      * @return ApiReturnData 换单详情
      */
@@ -115,6 +137,7 @@ public class BgOrderInfoController {
 
     /**
      * 平台前台查询用户订单详情
+     *
      * @param searchParam orderSn isHistory userId siteCode
      * @return ApiReturnData
      */
@@ -135,6 +158,7 @@ public class BgOrderInfoController {
 
     /**
      * 获取订单商品消息（app付款校验使用,平台pc统计商品用）
+     *
      * @param searchParam orderSns siteCode
      * @return ApiReturnData
      */
@@ -155,6 +179,7 @@ public class BgOrderInfoController {
 
     /**
      * 通过支付单号获取订单商品消息（app付款校验使用,平台pc统计商品用）
+     *
      * @param searchParam 查询参数
      * @return ApiReturnData
      */
@@ -175,9 +200,10 @@ public class BgOrderInfoController {
 
     /**
      * 统计用户订单数量
+     *
      * @param searchParam 查询参数
-     * 			userId 用户id
-     * 			siteCode 站点编码
+     *                    userId 用户id
+     *                    siteCode 站点编码
      * @return ApiReturnData
      */
     @PostMapping("/getUserOrderTypeNew")
@@ -197,6 +223,7 @@ public class BgOrderInfoController {
 
     /**
      * 根据条件查询用户（平台app用户升级调度任务使用）
+     *
      * @param searchParam 查询参数
      * @return ApiReturnData
      */
@@ -217,6 +244,7 @@ public class BgOrderInfoController {
 
     /**
      * 平台活动使用
+     *
      * @param activitySearchParam 查询参数
      * @return ApiReturnData
      */
@@ -237,10 +265,11 @@ public class BgOrderInfoController {
 
     /**
      * 取消订单
+     *
      * @param searchParam 查询参数
-     *          orderSn 订单编码
-     * 	        userId 用户id
-     * 		    siteCode 站点编码
+     *                    orderSn 订单编码
+     *                    userId 用户id
+     *                    siteCode 站点编码
      * @return ApiReturnData
      */
     @PostMapping("/cancelOrderByMasterSnNew")
@@ -250,6 +279,51 @@ public class BgOrderInfoController {
 
         try {
             returnBean = bgOrderInfoService.cancelOrderByMasterSnNew(searchParam);
+
+            if (returnBean.getIsOk() == Constant.OS_STR_YES) {
+                //查询订单来源
+                String orderSN = searchParam.getOrderSn();
+                HashMap<String, Object> orderMap = bgOrderInfoService.getOrderFromByOrderSN(orderSN);
+                String buyerSN = (String) orderMap.get("user_id");
+                String orderFrom = (String) orderMap.get("order_from");
+                int totalPrice = ((BigDecimal) orderMap.get("money_paid")).intValue();
+
+                if (orderMap != null && ("hbis").equals(orderFrom) && totalPrice >= 1000) {
+                    //查询积分比例
+                    int ratio = rewardPointRatioService.getRewardPointRatio();
+                    int point = totalPrice / ratio;
+
+                    //下发"add_reward_point_change_log"信道，添加积分变更记录
+                    RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
+                    rewardPointChangeLogBean.setAccountSN(buyerSN);
+//        rewardPointChangeLogBean.setCompanySN(1);
+                    rewardPointChangeLogBean.setOrderSN(orderSN);
+                    rewardPointChangeLogBean.setDescription("取消订单扣减积分");
+                    rewardPointChangeLogBean.setChangePoint(0 - point);
+
+                    String addRewardPointChangeLogMQ = JSONObject.toJSONString(rewardPointChangeLogBean);
+                    logger.info("添加积分变更记录下发:" + addRewardPointChangeLogMQ);
+                    try {
+                        addRewardPointChangeLogJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ));
+                    } catch (Exception e) {
+                        logger.error("下发添加积分变更记录MQ信息异常：" + e.getMessage());
+                    }
+
+                    //下发"change_user_and_company_point"信道，修改用户和公司积分
+                    ChangeUserAndCompanyPointMQBean changeUserAndCompanyPointMQBean = new ChangeUserAndCompanyPointMQBean();
+                    changeUserAndCompanyPointMQBean.setAccountSN(buyerSN);
+//        changeUserAndCompanyPointMQBean.setCompanySN(11);
+                    changeUserAndCompanyPointMQBean.setChangePoint(0 - point);
+
+                    String changeUserAndCompanyPointMQ = JSONObject.toJSONString(changeUserAndCompanyPointMQBean);
+                    logger.info("修改用户和公司积分下发:" + changeUserAndCompanyPointMQ);
+                    try {
+                        changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
+                    } catch (Exception e) {
+                        logger.error("下发修改用户和公司积分MQ信息异常:" + e.getMessage());
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error("取消订单异常:" + JSONObject.toJSONString(searchParam), e);
             returnBean.setMessage("取消订单异常");
@@ -260,9 +334,10 @@ public class BgOrderInfoController {
 
     /**
      * 根据支付单号查询主订单号
+     *
      * @param searchParam 查询参数
-     * 			paySn 支付单号
-     * 			siteCode 站点编码
+     *                    paySn 支付单号
+     *                    siteCode 站点编码
      * @return ApiReturnData
      */
     @PostMapping("/getMasterOrderSnByPaySnNew")
@@ -282,10 +357,10 @@ public class BgOrderInfoController {
 
     /**
      * 修改订单用户（平台）
-     * @param searchParam
-     *      userId 原用户
-     *      newUserId 新用户
-     *      siteCode 站点编码
+     *
+     * @param searchParam userId 原用户
+     *                    newUserId 新用户
+     *                    siteCode 站点编码
      * @return ReturnInfo
      */
     @PostMapping("/changeOrderUserNew")
@@ -304,10 +379,10 @@ public class BgOrderInfoController {
 
     /**
      * 订单评论接口（平台）
-     * @param searchParam
-     *      orderSn 订单编码
-     *      flag 标志
-     *      siteCode 站点编码
+     *
+     * @param searchParam orderSn 订单编码
+     *                    flag 标志
+     *                    siteCode 站点编码
      * @return ReturnInfo
      */
     @PostMapping("/orderReviewNew")
@@ -326,11 +401,12 @@ public class BgOrderInfoController {
 
     /**
      * 确认收货接口
+     *
      * @param searchParam 查询参数
-     *      orderSn 订单号
-     *      invoiceNo 快递单号
-     *      userId 用户id
-     *      siteCode 站点编码
+     *                    orderSn 订单号
+     *                    invoiceNo 快递单号
+     *                    userId 用户id
+     *                    siteCode 站点编码
      * @return ReturnInfo
      */
     @PostMapping("/confirmReceiptNew")
@@ -349,9 +425,10 @@ public class BgOrderInfoController {
 
     /**
      * 获取订单简易消息
+     *
      * @param searchParam 查询参数
-     *      userId 用户id
-     *      siteCode 站点编码
+     *                    userId 用户id
+     *                    siteCode 站点编码
      * @return ApiReturnData
      */
     @PostMapping("/getOrderSimpleInfoByUserNew")
@@ -371,6 +448,7 @@ public class BgOrderInfoController {
 
     /**
      * 平台前台查询用户未支付订单
+     *
      * @param searchParam userId siteCode
      * @return ApiReturnData
      */
@@ -380,7 +458,7 @@ public class BgOrderInfoController {
         returnBean.setIsOk(Constant.OS_STR_NO);
 
         try {
-            returnBean =bgOrderInfoService.queryNoPayOrder(searchParam);
+            returnBean = bgOrderInfoService.queryNoPayOrder(searchParam);
         } catch (Exception e) {
             logger.error("查询未支付订单异常:" + JSONObject.toJSONString(searchParam), e);
             returnBean.setMessage("查询异常");
@@ -391,9 +469,10 @@ public class BgOrderInfoController {
 
     /**
      * 平台前台查询用户限购订单
+     *
      * @param searchParam 查询参数
-     *      userId 用户id
-     *      siteCode 站点编码
+     *                    userId 用户id
+     *                    siteCode 站点编码
      * @return ApiReturnData
      */
     @PostMapping("/queryRestrictionOrder")
@@ -413,6 +492,7 @@ public class BgOrderInfoController {
 
     /**
      * 查询地区信息
+     *
      * @param searchParam 查询参数
      * @return OmsBaseResponse<SystemRegionArea>
      */
@@ -434,6 +514,7 @@ public class BgOrderInfoController {
 
     /**
      * 删除订单
+     *
      * @param searchParam 查询参数
      * @return ApiReturnData<Boolean>
      */
@@ -455,6 +536,7 @@ public class BgOrderInfoController {
 
     /**
      * 删除退单
+     *
      * @param searchParam 查询参数
      * @return ApiReturnData<Boolean>
      */
@@ -476,6 +558,7 @@ public class BgOrderInfoController {
 
     /**
      * 申请已支付
+     *
      * @param searchParam 申请信息
      * @return ApiReturnData<Boolean>
      */
@@ -498,6 +581,7 @@ public class BgOrderInfoController {
 
     /**
      * 延长收货
+     *
      * @param searchParam 请请信息
      * @return ApiReturnData<Boolean>
      */
@@ -520,6 +604,7 @@ public class BgOrderInfoController {
 
     /**
      * 统计用户退单数量
+     *
      * @param searchParam
      * @return
      */
