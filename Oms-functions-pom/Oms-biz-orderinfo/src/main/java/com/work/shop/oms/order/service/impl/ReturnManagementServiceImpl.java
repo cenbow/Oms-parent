@@ -156,7 +156,8 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 
 		ChannelShop channelInfo = new ChannelShop();
 		channelInfo.setShopCode(master.getStoreCode());
-		channelInfo.setShopTitle(master.getStoreName());
+        channelInfo.setShopTitle(master.getReferer());
+//		channelInfo.setShopTitle(master.getStoreName());
 		//配送信息（配送方式，快递号）
 		OrderReturnShip orderReturnShip = orderReturnShipMapper.selectByPrimaryKey(returnSn);
 		if (orderReturnShip == null) {
