@@ -1,7 +1,6 @@
 package com.work.shop.oms.bean;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -49,8 +48,7 @@ public class OrderRewardPointGoodsDetailBean implements Serializable {
     private String expressCompany;
 
     //发货时间
-    @JSONField(format = "yyyy-MM-dd hh:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date expressTime;
 
 }

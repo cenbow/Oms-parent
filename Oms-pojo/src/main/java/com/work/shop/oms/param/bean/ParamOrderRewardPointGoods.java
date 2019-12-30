@@ -1,7 +1,6 @@
 package com.work.shop.oms.param.bean;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.work.shop.oms.bean.OrderRewardPointGoodsDetailBean;
 import lombok.Data;
 
@@ -42,17 +41,14 @@ public class ParamOrderRewardPointGoods implements Serializable {
 
     //订单开始时间
     @JSONField(format = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date beginOrderTime;
 
     //订单结束时间
     @JSONField(format = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endOrderTime;
 
     //订单取消时间
-    @JSONField(format = "yyyy-MM-dd hh:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date cancelTime;
 
     //排序条件：  按订单状态:order_status、按上架时间:create_time

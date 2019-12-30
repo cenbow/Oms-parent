@@ -1,7 +1,6 @@
 package com.work.shop.oms.controller.pojo;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -63,12 +62,10 @@ public class ProductRewardPointGoodsBean implements Serializable {
 
     //开始日期
     @JSONField(format = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date beginning;
 
     //截止日期
     @JSONField(format = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date validity;
 
 }
