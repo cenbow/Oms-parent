@@ -1,4 +1,4 @@
-package com.work.shop.oms.controller.pojo;
+package com.work.shop.pcs.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
@@ -61,11 +61,11 @@ public class ProductRewardPointGoodsBean implements Serializable {
     private int goodsStatus;
 
     //开始日期
-    @JSONField(format = "yyyy-MM-dd")
+//    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date beginning;
 
     //截止日期
-    @JSONField(format = "yyyy-MM-dd")
+//    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date validity;
 
 }
