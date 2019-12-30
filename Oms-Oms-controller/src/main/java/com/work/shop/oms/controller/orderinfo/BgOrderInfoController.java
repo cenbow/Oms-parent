@@ -10,7 +10,7 @@ import com.work.shop.oms.bean.RewardPointChangeLogBean;
 import com.work.shop.oms.bean.SystemRegionArea;
 import com.work.shop.oms.common.bean.ApiReturnData;
 import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.controller.service.RewardPointRatioService;
+import com.work.shop.oms.service.RewardPointRatioService;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.utils.Constant;

@@ -1,6 +1,6 @@
-package com.work.shop.oms.controller.service.impl;
+package com.work.shop.oms.orderop.service.impl;
 
-import com.work.shop.oms.controller.service.RewardPointRatioService;
+import com.work.shop.oms.service.RewardPointRatioService;
 import com.work.shop.oms.dao.RewardPointRatioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

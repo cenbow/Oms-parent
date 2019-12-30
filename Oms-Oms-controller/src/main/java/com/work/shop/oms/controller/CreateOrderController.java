@@ -11,7 +11,7 @@ import com.work.shop.oms.controller.pojo.ProductRewardPointGoodsBean;
 import com.work.shop.oms.controller.pojo.UserShopPointBean;
 import com.work.shop.oms.controller.pojo.UserShopPointsRequestBean;
 import com.work.shop.oms.controller.service.OrderRewardPointGoodsService;
-import com.work.shop.oms.controller.service.RewardPointRatioService;
+import com.work.shop.oms.service.RewardPointRatioService;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
@@ -35,7 +35,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -280,7 +279,7 @@ public class CreateOrderController extends BaseController {
         final String orderSN = "JF" + siSn.getResult();
         param.setOrderSN(orderSN);
 
-
+        List<String> lockedGoodsList = new ArrayList<>();
         try {
             CommonResultData<List<ProductRewardPointGoodsBean>> beanList = rewardPointGoodsFeign.getRewardPointGoodsBySNList(goodsSNList);
             if (beanList == null || beanList.getResult() == null || beanList.getResult().size() == 0) {
@@ -334,6 +333,7 @@ public class CreateOrderController extends BaseController {
 
                         //加库存锁
                         redisClient.incrBy(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN(), param.getDetailBeanList().get(j).getSaleCount());
+                        lockedGoodsList.add(param.getDetailBeanList().get(j).getGoodsSN());
 //                        logger.info("添加库存锁 lockCount:" + param.getDetailBeanList().get(j).getGoodsSN() + "   :   " + param.getDetailBeanList().get(j).getSaleCount());
                         break;
                     }
@@ -355,10 +355,10 @@ public class CreateOrderController extends BaseController {
             param.setTotalPoint(totalPoint);
             orderRewardPointGoodsService.createOrderRewardPoint(param);
         } finally {
-            for (int i = 0; i < param.getDetailBeanList().size(); i++) {
+            for (int i = 0; i < lockedGoodsList.size(); i++) {
 //                logger.info("释放库存锁 lockCount:" + param.getDetailBeanList().get(i).getGoodsSN() + "   :   " + param.getDetailBeanList().get(i).getSaleCount());
-                if (redisClient.exists(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(i).getGoodsSN())) {
-                    redisClient.decrBy(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(i).getGoodsSN(), param.getDetailBeanList().get(i).getSaleCount());
+                if (redisClient.exists(LOCK_ORDER_REWARD_COUNT + "-" + lockedGoodsList.get(i))) {
+                    redisClient.decrBy(LOCK_ORDER_REWARD_COUNT + "-" + lockedGoodsList.get(i), param.getDetailBeanList().get(i).getSaleCount());
                 }
             }
         }
