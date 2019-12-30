@@ -325,6 +325,7 @@ public class CreateOrderController extends BaseController {
                             return result;
                         }
 
+                        param.getDetailBeanList().get(j).setOrderSN(orderSN);
                         param.getDetailBeanList().get(j).setGoodsSN(goodsList.get(i).getGoodsSN());
                         param.getDetailBeanList().get(j).setGoodsName(goodsList.get(i).getGoodsName());
                         param.getDetailBeanList().get(j).setGoodsBrand(goodsList.get(i).getGoodsBrand());
@@ -333,8 +334,6 @@ public class CreateOrderController extends BaseController {
                         totalPoint = totalPoint + goodsList.get(i).getNeedPoint() * param.getDetailBeanList().get(j).getSaleCount();
                         break;
                     }
-
-                    param.getDetailBeanList().get(i).setOrderSN(orderSN);
                 }
             }
 
@@ -351,7 +350,7 @@ public class CreateOrderController extends BaseController {
             }
 
             param.setTotalPoint(totalPoint);
-
+            logger.info("param:" + param.toString());
             orderRewardPointGoodsService.createOrderRewardPoint(param);
         } finally {
             for (int i = 0; i < param.getDetailBeanList().size(); i++) {
