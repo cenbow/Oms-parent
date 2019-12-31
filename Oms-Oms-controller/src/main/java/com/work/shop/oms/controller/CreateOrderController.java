@@ -520,22 +520,6 @@ public class CreateOrderController extends BaseController {
             logger.error("下发修改用户和公司积分MQ信息异常{}", e.getMessage());
         }
 
-        //下发"add_order_reward_point_actionLog"信道，添加积分订单操作日志
-        AddOrderRewardPointActionLogBean addOrderRewardPointActionLogBean = new AddOrderRewardPointActionLogBean();
-        addOrderRewardPointActionLogBean.setOrderSN(param.getOrderSN());
-        addOrderRewardPointActionLogBean.setActionUser(param.getBuyerSN());
-        addOrderRewardPointActionLogBean.setOrderStatus(4);
-        addOrderRewardPointActionLogBean.setActionNote("取消积分商品订单");
-        addOrderRewardPointActionLogBean.setLogTime(new Date());
-
-        String addOrderRewardPointActionLogMQ = JSONObject.toJSONString(addOrderRewardPointActionLogBean);
-        logger.info("添加积分订单操作日志下发{}", addOrderRewardPointActionLogMQ);
-        try {
-            addOrderRewardPointActionLogJmsTemplate.send(new TextMessageCreator(addOrderRewardPointActionLogMQ));
-        } catch (Exception e) {
-            logger.error("下发添加积分订单操作日志MQ信息异常:", e);
-        }
-
         result.setIsOk("1");
         result.setResult("取消订单成功！");
         return result;
