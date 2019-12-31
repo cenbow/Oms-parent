@@ -86,6 +86,9 @@ public class CreateOrderController extends BaseController {
     @Resource(name = "changeUserAndCompanyPointJmsTemplate")
     private JmsTemplate changeUserAndCompanyPointJmsTemplate;
 
+    @Resource(name = "addOrderRewardPointActionLogJmsTemplate")
+    private JmsTemplate addOrderRewardPointActionLogJmsTemplate;
+
     @Resource(name = "redisClient")
     private RedisClient redisClient;
 
@@ -323,7 +326,7 @@ public class CreateOrderController extends BaseController {
                         int lockCount = 0;
                         if (redisClient.exists(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN())) {
                             lockCount = Integer.parseInt(redisClient.get(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN()));
-//                        logger.info("获取库存锁 lockCount:" + param.getDetailBeanList().get(j).getGoodsSN() + "   :   " + lockCount);
+                            logger.info("获取库存锁 lockCount:" + param.getDetailBeanList().get(j).getGoodsSN() + "   :   " + lockCount);
                         }
 
                         if (goodsList.get(i).getGoodsStock() - lockCount < param.getDetailBeanList().get(j).getSaleCount()) {
@@ -342,7 +345,7 @@ public class CreateOrderController extends BaseController {
                         //加库存锁
                         redisClient.incrBy(LOCK_ORDER_REWARD_COUNT + "-" + param.getDetailBeanList().get(j).getGoodsSN(), param.getDetailBeanList().get(j).getSaleCount());
                         lockedGoodsList.add(param.getDetailBeanList().get(j).getGoodsSN());
-//                        logger.info("添加库存锁 lockCount:" + param.getDetailBeanList().get(j).getGoodsSN() + "   :   " + param.getDetailBeanList().get(j).getSaleCount());
+                        logger.info("添加库存锁 lockCount:" + param.getDetailBeanList().get(j).getGoodsSN() + "   :   " + param.getDetailBeanList().get(j).getSaleCount());
                         break;
                     }
                 }
@@ -368,9 +371,9 @@ public class CreateOrderController extends BaseController {
             return result;
         } finally {
             for (int i = 0; i < lockedGoodsList.size(); i++) {
-//                logger.info("释放库存锁 lockCount:" + param.getDetailBeanList().get(i).getGoodsSN() + "   :   " + param.getDetailBeanList().get(i).getSaleCount());
                 if (redisClient.exists(LOCK_ORDER_REWARD_COUNT + "-" + lockedGoodsList.get(i))) {
                     redisClient.decrBy(LOCK_ORDER_REWARD_COUNT + "-" + lockedGoodsList.get(i), param.getDetailBeanList().get(i).getSaleCount());
+                    logger.info("释放库存锁 lockCount:" + param.getDetailBeanList().get(i).getGoodsSN() + "   :   " + param.getDetailBeanList().get(i).getSaleCount());
                 }
             }
         }
@@ -421,6 +424,22 @@ public class CreateOrderController extends BaseController {
             changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
         } catch (Exception e) {
             logger.error("下发修改用户和公司积分MQ信息异常:", e);
+        }
+
+        //下发"add_order_reward_point_actionLog"信道，添加积分订单操作日志
+        AddOrderRewardPointActionLogBean addOrderRewardPointActionLogBean = new AddOrderRewardPointActionLogBean();
+        addOrderRewardPointActionLogBean.setOrderSN(orderSN);
+        addOrderRewardPointActionLogBean.setActionUser(param.getBuyerSN());
+        addOrderRewardPointActionLogBean.setOrderStatus(1);
+        addOrderRewardPointActionLogBean.setActionNote("创建积分商品订单");
+        addOrderRewardPointActionLogBean.setLogTime(new Date());
+
+        String addOrderRewardPointActionLogMQ = JSONObject.toJSONString(addOrderRewardPointActionLogBean);
+        logger.info("添加积分订单操作日志下发{}", addOrderRewardPointActionLogMQ);
+        try {
+            addOrderRewardPointActionLogJmsTemplate.send(new TextMessageCreator(addOrderRewardPointActionLogMQ));
+        } catch (Exception e) {
+            logger.error("下发添加积分订单操作日志MQ信息异常:", e);
         }
 
         result.setIsOk("1");
@@ -499,6 +518,22 @@ public class CreateOrderController extends BaseController {
             changeUserAndCompanyPointJmsTemplate.send(new TextMessageCreator(changeUserAndCompanyPointMQ));
         } catch (Exception e) {
             logger.error("下发修改用户和公司积分MQ信息异常{}", e.getMessage());
+        }
+
+        //下发"add_order_reward_point_actionLog"信道，添加积分订单操作日志
+        AddOrderRewardPointActionLogBean addOrderRewardPointActionLogBean = new AddOrderRewardPointActionLogBean();
+        addOrderRewardPointActionLogBean.setOrderSN(param.getOrderSN());
+        addOrderRewardPointActionLogBean.setActionUser(param.getBuyerSN());
+        addOrderRewardPointActionLogBean.setOrderStatus(4);
+        addOrderRewardPointActionLogBean.setActionNote("取消积分商品订单");
+        addOrderRewardPointActionLogBean.setLogTime(new Date());
+
+        String addOrderRewardPointActionLogMQ = JSONObject.toJSONString(addOrderRewardPointActionLogBean);
+        logger.info("添加积分订单操作日志下发{}", addOrderRewardPointActionLogMQ);
+        try {
+            addOrderRewardPointActionLogJmsTemplate.send(new TextMessageCreator(addOrderRewardPointActionLogMQ));
+        } catch (Exception e) {
+            logger.error("下发添加积分订单操作日志MQ信息异常:", e);
         }
 
         result.setIsOk("1");
