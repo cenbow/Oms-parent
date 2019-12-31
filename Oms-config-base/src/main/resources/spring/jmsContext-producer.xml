@@ -564,4 +564,15 @@
         <constructor-arg index="0" value="change_user_and_company_point"/>
     </bean>
 
+    <!-- 添加积分订单操作日志 -->
+    <bean id="addOrderRewardPointActionLogJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory"/>
+        <property name="sessionTransacted" value="true"/>
+        <property name="sessionAcknowledgeMode" value="1"/>
+        <property name="deliveryMode" value="2"/>
+        <property name="defaultDestination" ref="add_order_reward_point_actionLog"/>
+    </bean>
+    <bean id="add_order_reward_point_actionLog" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="add_order_reward_point_actionLog"/>
+    </bean>
 </beans>
