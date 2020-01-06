@@ -49,15 +49,11 @@ public class RewardPointChangeLogController {
         int pageCount = (int) Math.ceil(count * 1.0 / param.getPageSize());
         if (param.getCurrentPage() > 1) {
             //查询最后一页的逻辑
-            if (param.getCurrentPage() > pageCount) {
-                result.setIsOk("1");
-                result.setTotal(0);
-                return result;
-            } else if (param.getCurrentPage() == pageCount) {
+            if (param.getCurrentPage() >= pageCount) {
                 param.setStart(param.getPageSize() * (pageCount - 1));
                 param.setPageSize(count - param.getPageSize() * (pageCount - 1));
             } else {
-                param.setStart(param.getCurrentPage() * (param.getPageSize() - 1));
+                param.setStart(param.getPageSize()* (param.getCurrentPage() - 1));
             }
         } else {
             param.setStart(0);

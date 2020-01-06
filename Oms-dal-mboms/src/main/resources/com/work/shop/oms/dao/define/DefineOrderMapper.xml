@@ -719,7 +719,7 @@
         oi.need_sign needSign,
         oi.sign_status signStatus,
         oi.postscript postscript,
-        oi.sign_contract_num signContractNum,
+        oie.customer_contract_num signContractNum,
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress,
