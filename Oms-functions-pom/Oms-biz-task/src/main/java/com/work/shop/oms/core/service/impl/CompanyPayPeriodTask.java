@@ -10,6 +10,7 @@ import com.work.shop.oms.core.service.ATaskServiceProcess;
 import com.work.shop.oms.dao.define.OrderInfoSearchMapper;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.utils.Constant;
+import com.work.shop.oms.utils.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -40,10 +41,9 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 	
 	@Override
 	public List<BaseTask> queryServiceData(List<String> orderIdList, Integer dataLimit) {
-
-		Date date = new Date();
+		
 		Map<String, Object> queryMap = new HashMap<String, Object>(2);
-		queryMap.put("dateTime", date);
+		queryMap.put("dateTime", TimeUtil.getDate(TimeUtil.YYYY_MM_DD_HH_MM_SS));
 		logger.info("companyPayPeriodTask queryParam:" + JSONObject.toJSONString(queryMap));
 		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
 

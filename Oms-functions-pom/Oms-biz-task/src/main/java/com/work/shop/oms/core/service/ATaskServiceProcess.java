@@ -103,18 +103,18 @@ public abstract class ATaskServiceProcess implements ITaskServiceTemplate {
 				max = Math.min(max, size);
 				List<BaseTask> temp = queueList.subList(first, max);
 				if (CollectionUtils.isNotEmpty(temp)) {
-					logger.debug("TaskService.splitThread.datas.taskName:"+taskName+",execute....countThread:"+countThread+",totalSize:"+size+",from "+first+" to "+(max)+",temp:"+temp.size()+",(pageNo:"+pageNo+",pageSize:"+pageSize+")");
+					//logger.debug("TaskService.splitThread.datas.taskName:"+taskName+",execute....countThread:"+countThread+",totalSize:"+size+",from "+first+" to "+(max)+",temp:"+temp.size()+",(pageNo:"+pageNo+",pageSize:"+pageSize+")");
 					taskExecutor.execute(new OrderRunable(this, watch).initTaskDatas(temp, ">countThread:" + countThread + ",from " + first + " to " + max + ",totalSize:" + size + ",datas:" + temp.size()));
 				}
 				pageNo++;
 				countThread--;
-				logger.debug("TaskService Order runable after ,size:"+size + ",pageSize:"+pageSize+",pageNo:"+pageNo+",((pageNo - 1) * pageSize):"+((pageNo - 1) * pageSize));
+				//logger.debug("TaskService Order runable after ,size:"+size + ",pageSize:"+pageSize+",pageNo:"+pageNo+",((pageNo - 1) * pageSize):"+((pageNo - 1) * pageSize));
 			}
 			//稍等片刻
 			watch.await();
 		} catch (Exception e) {
 			logger.error("TaskService orderList failed! msg:"+e.getMessage(),e);
 		}
-		logger.debug(">>TaskService execute "+taskName+" info end,countThread="+threadNum+",cost:"+(System.currentTimeMillis() - currentTime));
+		//logger.debug(">>TaskService execute "+taskName+" info end,countThread="+threadNum+",cost:"+(System.currentTimeMillis() - currentTime));
 	}
 }
