@@ -730,6 +730,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             } else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
                 orderAccountPeriod.setPayType(1);
             }
+            logger.info("账期支付下发数据:" + JSONObject.toJSONString(orderAccountPeriod));
 			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
 		} catch (Exception e) {
 			logger.error("处理订单账期支付推送问题");
