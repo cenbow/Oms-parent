@@ -1,6 +1,7 @@
 package com.work.shop.oms.core.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.core.beans.BaseTask;
 import com.work.shop.oms.core.beans.ConstantTask;
@@ -43,6 +44,7 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 		Date date = new Date();
 		Map<String, Object> queryMap = new HashMap<String, Object>(2);
 		queryMap.put("dateTime", date);
+		logger.info("companyPayPeriodTask queryParam:" + JSONObject.toJSONString(queryMap));
 		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
 
 		List<BaseTask> taskDataList = new ArrayList<BaseTask>();
@@ -50,6 +52,7 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 			return taskDataList;
 		}
 
+		logger.info("companyPayPeriodTask query result:" + list.size());
 		for (OrderAccountPeriod orderAccountPeriod : list) {
             masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
 		}
