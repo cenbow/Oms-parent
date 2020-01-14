@@ -41,18 +41,16 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 	
 	@Override
 	public List<BaseTask> queryServiceData(List<String> orderIdList, Integer dataLimit) {
-		
+
 		Map<String, Object> queryMap = new HashMap<String, Object>(2);
 		queryMap.put("dateTime", TimeUtil.getDate(TimeUtil.YYYY_MM_DD_HH_MM_SS));
-		logger.info("companyPayPeriodTask queryParam:" + JSONObject.toJSONString(queryMap));
 		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
 
 		List<BaseTask> taskDataList = new ArrayList<BaseTask>();
-		if (list == null || list.size() > 0) {
+		if (list == null || list.size() == 0) {
 			return taskDataList;
 		}
 
-		logger.info("companyPayPeriodTask query result:" + list.size());
 		for (OrderAccountPeriod orderAccountPeriod : list) {
             masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
 		}
