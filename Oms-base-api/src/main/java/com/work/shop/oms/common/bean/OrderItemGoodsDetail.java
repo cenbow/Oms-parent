@@ -172,6 +172,8 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	private Integer goodsNumber;
 
+	private BigDecimal goodsDecimalNumber;
+
 	private BigDecimal goodsPrice;
 
 	private BigDecimal transactionPrice;
@@ -1132,5 +1134,13 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setCostPrice(BigDecimal costPrice) {
 		this.costPrice = costPrice;
+	}
+
+	public BigDecimal getGoodsDecimalNumber() {
+		return goodsDecimalNumber;
+	}
+
+	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
+		this.goodsDecimalNumber = goodsDecimalNumber;
 	}
 }
