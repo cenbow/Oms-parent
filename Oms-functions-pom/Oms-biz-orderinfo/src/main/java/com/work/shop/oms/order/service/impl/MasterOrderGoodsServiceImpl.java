@@ -69,8 +69,10 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		// 订单商品总财务价
 		double settlementPrice = 0D;
 		for (MasterOrderGoods orderGoods : orderGoodsList) {
-			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
-					* orderGoods.getGoodsNumber();
+//			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
+//					* orderGoods.getGoodsNumber();
+			settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
+					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();
 			masterOrderGoodsMapper.insertSelective(orderGoods);
 		}
 		// 商品结算价 = 商品结算价 + 综合税费
@@ -190,12 +192,17 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         masterOrderGoods.setGroupName("");
         // 商品数量
         masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
+        // 商品数量小数部分
+		masterOrderGoods.setGoodsDecimalNumber(masterGoods.getGoodsDecimals());
         // 父商品sn
         masterOrderGoods.setParentSn("");
         // 成交价格
         masterOrderGoods.setTransactionPrice(BigDecimal.valueOf(masterGoods.getTransactionPrice()));
+        //库存占用数量 向上取整
+		BigDecimal sendNumberDecimal = masterGoods.getGoodsDecimals().add(BigDecimal.valueOf(masterGoods.getSendNumber()));
+		int sendNumber = sendNumberDecimal.setScale( 0, BigDecimal.ROUND_UP ).intValue();
         // 占用库存数量
-        masterOrderGoods.setSendNumber(masterGoods.getSendNumber());
+        masterOrderGoods.setSendNumber(sendNumber);
         // 促销名称
         masterOrderGoods.setPromotionDesc(masterGoods.getPromotionDesc());
         // 财务结算价

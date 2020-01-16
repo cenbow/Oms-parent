@@ -522,6 +522,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setDiscount(BigDecimal.valueOf(masterOrder.getDiscount()));
 		// 商品数量
 		orderInfo.setGoodsCount(statisticsGoodsCount(masterOrder));
+		// 商品小数部分数量
+		orderInfo.setGoodsDecimalCount(statisticsGoodsDecimalCount(masterOrder));
 		// 下单时间
 		orderInfo.setAddTime(masterOrder.getAddTime() == null ? new Date() : masterOrder.getAddTime());
 		// 商家给客户的留言
@@ -630,6 +632,26 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 				if (goodsLists != null && goodsLists.size() > 0) {
 					for (MasterGoods masterGoods : goodsLists) {
 						count += masterGoods.getGoodsNumber();
+					}
+				}
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * 统计订单商品实际数量
+	 * @param masterOrder 订单数据
+	 * @return Integer
+	 */
+	private BigDecimal statisticsGoodsDecimalCount(MasterOrder masterOrder) {
+		BigDecimal count = BigDecimal.ZERO;
+		if (masterOrder != null) {
+			if (masterOrder.getShipList() != null && masterOrder.getShipList().size() > 0) {
+				List<MasterGoods> goodsLists = masterOrder.getShipList().get(0).getGoodsList();
+				if (goodsLists != null && goodsLists.size() > 0) {
+					for (MasterGoods masterGoods : goodsLists) {
+						count = count.add(masterGoods.getGoodsDecimals());
 					}
 				}
 			}
