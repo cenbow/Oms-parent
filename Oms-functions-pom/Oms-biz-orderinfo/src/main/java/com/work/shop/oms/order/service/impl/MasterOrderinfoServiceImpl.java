@@ -651,7 +651,11 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 				List<MasterGoods> goodsLists = masterOrder.getShipList().get(0).getGoodsList();
 				if (goodsLists != null && goodsLists.size() > 0) {
 					for (MasterGoods masterGoods : goodsLists) {
-						count = count.add(masterGoods.getGoodsDecimals());
+						if(masterGoods.getGoodsDecimals() != null){
+							count = count.add(masterGoods.getGoodsDecimals());
+						}else {
+							masterGoods.setGoodsDecimals(BigDecimal.ZERO);
+						}
 					}
 				}
 			}
