@@ -46,6 +46,8 @@ public class OrderItemDepotDetail implements Serializable {
     private String supplierName;
 	
 	private String goodsNumber;//商品数量
+
+	private String goodsDecimalNumber;//商品数量小数部分
 	
 	private int delivery;//修改承运商权限
 
@@ -185,4 +187,12 @@ public class OrderItemDepotDetail implements Serializable {
     public void setDepotStatus(int depotStatus) {
         this.depotStatus = depotStatus;
     }
+
+	public String getGoodsDecimalNumber() {
+		return goodsDecimalNumber;
+	}
+
+	public void setGoodsDecimalNumber(String goodsDecimalNumber) {
+		this.goodsDecimalNumber = goodsDecimalNumber;
+	}
 }

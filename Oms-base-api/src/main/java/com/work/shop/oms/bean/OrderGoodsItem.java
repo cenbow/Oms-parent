@@ -53,6 +53,11 @@ public class OrderGoodsItem implements Serializable {
 	 * 商品数量
 	 */
 	private Integer goodsNumber;
+
+	/**
+	 * 商品数量小数部分
+	 */
+	private BigDecimal goodsDecimalNumber;
 	
 	/**
 	 * 商品售价
@@ -512,5 +517,13 @@ public class OrderGoodsItem implements Serializable {
 
 	public void setCompanyId(String companyId) {
 		this.companyId = companyId;
+	}
+
+	public BigDecimal getGoodsDecimalNumber() {
+		return goodsDecimalNumber;
+	}
+
+	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
+		this.goodsDecimalNumber = goodsDecimalNumber;
 	}
 }

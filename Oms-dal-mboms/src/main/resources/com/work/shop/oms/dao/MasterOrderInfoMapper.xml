@@ -417,6 +417,9 @@
       <if test="goodsCount != null">
         goods_count,
       </if>
+      <if test="goodsDecimalCount != null">
+        goods_decimal_count,
+      </if>
       <if test="discount != null">
         discount,
       </if>
@@ -640,6 +643,9 @@
       </if>
       <if test="goodsCount != null">
         #{goodsCount,jdbcType=INTEGER},
+      </if>
+      <if test="goodsDecimalCount != null">
+        #{goodsDecimalCount,jdbcType=DECIMAL},
       </if>
       <if test="discount != null">
         #{discount,jdbcType=DECIMAL},
