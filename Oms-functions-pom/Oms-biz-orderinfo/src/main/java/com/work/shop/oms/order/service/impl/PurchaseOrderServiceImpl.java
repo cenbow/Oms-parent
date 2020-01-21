@@ -53,6 +53,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 	@Resource(name="supplierOrderSendJmsTemplate")
 	private JmsTemplate supplierOrderSendJmsTemplate;
 
+	@Resource(name="supplierStoreOrderSendJmsTemplate")
+	private JmsTemplate supplierStoreOrderSendJmsTemplate;
 	/**
 	 * 采购单创建
 	 * @param request
@@ -165,6 +167,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 		String orderFrom = master.getOrderFrom();
 		if (!Constant.DEFAULT_SHOP.equals(orderFrom)) {
+			if(master.getCreateOrderType()!=1){
+				//联采订单不扣除库存，只有正常订单才扣除供应商店铺中商品的数量
+				pushPurchaseStoreOrder(distribute.getOrderSn(),distribute.getSupplierCode());
+			}
 			info.setMessage("店铺订单,不需要转采购订单");
             info.setIsOk(Constant.OS_YES);
 			return info;
@@ -523,6 +529,25 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		supplierOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
 	}
 
+	/**
+	 * 采购订单下发
+	 * @param orderSn
+	 */
+	private void pushPurchaseStoreOrder(String orderSn,String vendorCode) {
+		Map<String, Object> paramMap = new HashMap<String, Object>(2);
+		paramMap.put("orderSn", orderSn);
+		paramMap.put("vendorCode", vendorCode);
+		supplierStoreOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
+	}
+	/**
+	 * 店铺采购扣除数量消息下发
+	 * @param orderSn
+	 */
+	private void pushSupplierProductDecuctCount(String orderSn, String su) {
+		Map<String, Object> paramMap = new HashMap<String, Object>(2);
+		paramMap.put("orderSn", orderSn);
+		supplierOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
+	}
     /**
      * 根据主订单号批量更新
      * @param purchaseOrder

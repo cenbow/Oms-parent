@@ -1,6 +1,7 @@
 package com.work.shop.oms.common.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -237,6 +238,11 @@ public class MasterOrder implements Serializable{
      * 订单商品总数
      */
 	private Integer goodsCount;
+
+	/**
+	 * 订单商品小数部分总数
+	 */
+	private BigDecimal goodsDecimalsCount;
 
     /**
      * 折扣金额
@@ -1368,5 +1374,13 @@ public class MasterOrder implements Serializable{
 
 	public void setCompanyType(Integer companyType) {
 		this.companyType = companyType;
+	}
+
+	public BigDecimal getGoodsDecimalsCount() {
+		return goodsDecimalsCount;
+	}
+
+	public void setGoodsDecimalsCount(BigDecimal goodsDecimalsCount) {
+		this.goodsDecimalsCount = goodsDecimalsCount;
 	}
 }

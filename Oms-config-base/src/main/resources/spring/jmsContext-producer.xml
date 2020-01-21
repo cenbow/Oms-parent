@@ -504,6 +504,17 @@
         <constructor-arg index="0" value="supplier_order_send"/>
     </bean>
 
+    <!-- 供应商店铺订单下发 -->
+    <bean id="supplierStoreOrderSendJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory"/>
+        <property name="sessionTransacted" value="true"/>
+        <property name="sessionAcknowledgeMode" value="1"/>
+        <property name="deliveryMode" value="2"/>
+        <property name="defaultDestination" ref="supplierStoreOrderSend"/>
+    </bean>
+    <bean id="supplierStoreOrderSend" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="supplier_store_order_send"/>
+    </bean>
     <!-- 创建退单 队列 -->
     <bean id="create_return_order" class="org.apache.activemq.command.ActiveMQQueue">
         <constructor-arg index="0" value="create_return_order"/>

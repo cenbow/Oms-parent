@@ -44,6 +44,11 @@ public class MasterGoods implements Serializable {
 	private Integer goodsNumber;
 
 	/**
+	 * 商品数量小数部分
+	 */
+	private BigDecimal goodsDecimals;
+
+	/**
 	 * 商品编码
 	 */
 	private String goodsSn;
@@ -696,4 +701,12 @@ public class MasterGoods implements Serializable {
     public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
         this.goodsAddPrice = goodsAddPrice;
     }
+
+	public BigDecimal getGoodsDecimals() {
+		return goodsDecimals;
+	}
+
+	public void setGoodsDecimals(BigDecimal goodsDecimals) {
+		this.goodsDecimals = goodsDecimals;
+	}
 }

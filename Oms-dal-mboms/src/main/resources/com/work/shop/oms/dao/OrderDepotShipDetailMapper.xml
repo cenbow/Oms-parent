@@ -97,6 +97,7 @@
     <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
     <result column="delivery_type" jdbcType="TINYINT" property="deliveryType" />
     <result column="goods_number" jdbcType="VARCHAR" property="goodsNumber" />
+    <result column="goods_decimal_number" property="goodsDecimalNumber" />
   </resultMap>
   <select id="getOrderItemDepotDetail" parameterType="String" resultMap="OrderItemDepotDetailMap">
 	SELECT
@@ -115,7 +116,8 @@
 	    od.supplier_code supplierCode,
 	    od.supplier_name supplierName,
 	    od.depot_status depotStatus,
-	    SUM(b.goods_number) AS goods_number
+	    SUM(b.goods_number) AS goods_number,
+	    SUM(b.goods_decimal_number) AS goodsDecimalNumber
 	FROM
 	    order_depot_ship t,
 	    master_order_goods b,

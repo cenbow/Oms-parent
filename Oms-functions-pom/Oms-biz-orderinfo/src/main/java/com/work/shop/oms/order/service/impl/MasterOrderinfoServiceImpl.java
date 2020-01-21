@@ -522,6 +522,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setDiscount(BigDecimal.valueOf(masterOrder.getDiscount()));
 		// 商品数量
 		orderInfo.setGoodsCount(statisticsGoodsCount(masterOrder));
+		// 商品小数部分数量
+		orderInfo.setGoodsDecimalCount(statisticsGoodsDecimalCount(masterOrder));
 		// 下单时间
 		orderInfo.setAddTime(masterOrder.getAddTime() == null ? new Date() : masterOrder.getAddTime());
 		// 商家给客户的留言
@@ -636,6 +638,30 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		}
 		return count;
 	}
+
+	/**
+	 * 统计订单商品实际数量
+	 * @param masterOrder 订单数据
+	 * @return Integer
+	 */
+	private BigDecimal statisticsGoodsDecimalCount(MasterOrder masterOrder) {
+		BigDecimal count = BigDecimal.ZERO;
+		if (masterOrder != null) {
+			if (masterOrder.getShipList() != null && masterOrder.getShipList().size() > 0) {
+				List<MasterGoods> goodsLists = masterOrder.getShipList().get(0).getGoodsList();
+				if (goodsLists != null && goodsLists.size() > 0) {
+					for (MasterGoods masterGoods : goodsLists) {
+						if(masterGoods.getGoodsDecimals() != null){
+							count = count.add(masterGoods.getGoodsDecimals());
+						}else {
+							masterGoods.setGoodsDecimals(BigDecimal.ZERO);
+						}
+					}
+				}
+			}
+		}
+		return count;
+	}
 	
 	/**
 	 * source类型
@@ -730,6 +756,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             } else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
                 orderAccountPeriod.setPayType(1);
             }
+            logger.info("账期支付下发数据:" + JSONObject.toJSONString(orderAccountPeriod));
 			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
 		} catch (Exception e) {
 			logger.error("处理订单账期支付推送问题");

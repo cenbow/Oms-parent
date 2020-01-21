@@ -38,6 +38,11 @@ public class OrderQueryExportResult implements Serializable {
     private Integer goodsNum;
 
     /**
+     * 商品数量小数部分
+     */
+    private BigDecimal goodsDecimalNum;
+
+    /**
      * 订单总金额
      */
     private BigDecimal orderTotalAmount;
@@ -153,5 +158,13 @@ public class OrderQueryExportResult implements Serializable {
 
     public void setConsignee(String consignee) {
         this.consignee = consignee;
+    }
+
+    public BigDecimal getGoodsDecimalNum() {
+        return goodsDecimalNum;
+    }
+
+    public void setGoodsDecimalNum(BigDecimal goodsDecimalNum) {
+        this.goodsDecimalNum = goodsDecimalNum;
     }
 }
