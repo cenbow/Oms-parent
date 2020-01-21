@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.work.shop.oms.api.express.feign.OrderExpressService;
-import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
@@ -18,7 +17,6 @@ import com.work.shop.oms.mq.ws.DataUtil;
 import com.work.shop.oms.mq.ws.OrderUtil;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
-import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.orderop.service.JmsSendQueueService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
@@ -49,7 +47,6 @@ import javax.annotation.Resource;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -127,9 +124,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
     @Resource
     private MasterOrderInfoService masterOrderInfoService;
 
-    @Resource
-    private MasterOrderInfoExtendService masterOrderInfoExtendService;
-
     @Autowired
     private RewardPointRatioService rewardPointRatioService;
 
@@ -138,6 +132,9 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     @Resource(name = "addRewardPointChangeLogJmsTemplate")
     private JmsTemplate addRewardPointChangeLogJmsTemplate;
+
+    @Resource(name = "uploadSaleSettlementJmsTemplate")
+    private JmsTemplate uploadSaleSettlementJmsTemplate;
 
     private ThreadLocal<Boolean> isSend = new ThreadLocal<Boolean>();
 
@@ -1645,6 +1642,11 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                         logger.error("下发修改用户和公司积分MQ信息异常:" + e.getMessage());
                     }
                 }
+                //确认收货后将销售结算单数据推送供应链-财智云
+                Map map=new HashMap();
+                map.put("masterOrderSn",masterOrderInfo.getMasterOrderSn());
+                map.put("userId",masterOrderInfo.getUserId());
+                uploadSaleSettlementJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(map)));
             }
         }
     }
