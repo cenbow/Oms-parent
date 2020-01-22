@@ -88,6 +88,7 @@
     <id column="order_sn" jdbcType="VARCHAR" property="orderSn" />
     <result column="shipping_status" jdbcType="TINYINT" property="shippingStatus" />
     <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime" />
+    <result column="delivery_confirm_time" jdbcType="TIMESTAMP" property="deliveryConfirmTime" />
     <result column="creat_time" jdbcType="TIMESTAMP" property="creatTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="pickup_date" jdbcType="TIMESTAMP" property="pickupDate" />
@@ -106,6 +107,7 @@
 	    t.order_sn,
 	    t.shipping_status,
 	    t.delivery_time,
+	    t.delivery_confirm_time,
 	    t.creat_time,
 	    t.update_time,
 	    t.pickup_date,
