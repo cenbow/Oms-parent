@@ -1,6 +1,7 @@
 package com.work.shop.oms.api.bean;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 订单商品信息
@@ -83,6 +84,22 @@ public class OrderGoodsInfo implements Serializable{
 	private int integral;
 	
 	private String c2mItemStr;
+
+	/**
+	 * 采购申请号集合
+	 */
+	private List<String> buyerNoList;
+
+	/**
+	 * 采购申请行项目号集合
+	 */
+	private List<String> buyerLineNoList;
+
+	/**
+	 * 采购申请行项目商品数量
+	 */
+	private List<String> buyerGoodsNum;
+
 
 	/**
 	 * 订单单个商品状态(1、退货中;2、换货中;3、退货完成;4、换货完成)
@@ -448,4 +465,28 @@ public class OrderGoodsInfo implements Serializable{
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
     }
+
+	public List<String> getBuyerNoList() {
+		return buyerNoList;
+	}
+
+	public void setBuyerNoList(List<String> buyerNoList) {
+		this.buyerNoList = buyerNoList;
+	}
+
+	public List<String> getBuyerLineNoList() {
+		return buyerLineNoList;
+	}
+
+	public void setBuyerLineNoList(List<String> buyerLineNoList) {
+		this.buyerLineNoList = buyerLineNoList;
+	}
+
+	public List<String> getBuyerGoodsNum() {
+		return buyerGoodsNum;
+	}
+
+	public void setBuyerGoodsNum(List<String> buyerGoodsNum) {
+		this.buyerGoodsNum = buyerGoodsNum;
+	}
 }

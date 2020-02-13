@@ -326,6 +326,9 @@
       <if test="goodsNumber != null">
         goods_number,
       </if>
+      <if test="goodsDecimalNumber != null">
+        goods_decimal_number,
+      </if>
       <if test="goodsPrice != null">
         goods_price,
       </if>
@@ -525,6 +528,9 @@
       </if>
       <if test="goodsNumber != null">
         #{goodsNumber,jdbcType=SMALLINT},
+      </if>
+      <if test="goodsDecimalNumber != null">
+        #{goodsDecimalNumber,jdbcType=DECIMAL},
       </if>
       <if test="goodsPrice != null">
         #{goodsPrice,jdbcType=DECIMAL},

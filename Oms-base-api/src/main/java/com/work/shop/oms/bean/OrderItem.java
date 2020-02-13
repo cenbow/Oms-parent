@@ -1,6 +1,7 @@
 package com.work.shop.oms.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 订单列表
@@ -119,6 +120,11 @@ public class OrderItem implements Serializable{
 	 * 商品数量
 	 */
 	private Integer goodsCount;
+
+	/**
+	 * 商品数量小数部分
+	 */
+	private BigDecimal goodsDecimalCount;
 
 	/**
 	 * 订单总金额
@@ -704,4 +710,12 @@ public class OrderItem implements Serializable{
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
     }
+
+	public BigDecimal getGoodsDecimalCount() {
+		return goodsDecimalCount;
+	}
+
+	public void setGoodsDecimalCount(BigDecimal goodsDecimalCount) {
+		this.goodsDecimalCount = goodsDecimalCount;
+	}
 }
