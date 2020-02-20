@@ -342,9 +342,12 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 				}
 				skuStock.setStock(skuStock.getStock() + stockNum);
 			} else {
-				skuStock.setStock(skuStock.getStock() + orderGoods.getGoodsNumber());
+				//无库存下单相关
+				skuStock.setStock(skuStock.getStock() + orderGoods.getWithStockNumber());
 			}
-			stockMap.put(sku, skuStock);
+			if (skuStock.getStock() > 0) {
+				stockMap.put(sku, skuStock);
+			}
 		}
 		return stockMap;
 	}

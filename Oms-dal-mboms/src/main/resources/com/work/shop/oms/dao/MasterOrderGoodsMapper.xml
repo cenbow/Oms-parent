@@ -71,6 +71,8 @@
       <result column="buyer_no" jdbcType="VARCHAR" property="buyerNo" />
       <result column="buyer_line_no" jdbcType="VARCHAR" property="buyerLineNo" />
       <result column="goods_add_price" jdbcType="DECIMAL" property="goodsAddPrice" />
+      <result column="with_stock_number" jdbcType="INTEGER" property="withStockNumber" />
+      <result column="without_stock_number" jdbcType="INTEGER" property="withoutStockNumber" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.work.shop.oms.bean.MasterOrderGoods">
     <!--
@@ -159,7 +161,7 @@
     goods_sn, sales_mode, channel_send_number, sap, bv_value, expected_ship_date, tax, 
     tax_rate, base_bv_value, input_tax, output_tax, cost_price, box_gauge, distribution_category, 
     seller_custom_code, seller_goods_sn, min_buy_num, customer_material_code, buy_unit, 
-    delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price
+    delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price,with_stock_number,without_stock_number
   </sql>
   <sql id="Blob_Column_List">
     <!--
@@ -500,6 +502,12 @@
         <if test="goodsAddPrice != null">
             goods_add_price,
         </if>
+        <if test="withStockNumber != null">
+            with_stock_number,
+        </if>
+        <if test="withoutStockNumber != null">
+          without_stock_number,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -703,6 +711,12 @@
         <if test="goodsAddPrice != null">
             #{goodsAddPrice},
         </if>
+      <if test="withStockNumber != null">
+        #{withStockNumber},
+      </if>
+      <if test="withoutStockNumber != null">
+        #{withoutStockNumber},
+      </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="com.work.shop.oms.bean.MasterOrderGoodsExample" resultType="java.lang.Integer">
