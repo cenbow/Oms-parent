@@ -136,7 +136,12 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 				? Constant.DETAILS_DEPOT_CODE : masterGoods.getDepotCode());
 
         fillGoodsBaseInfo(masterOrderGoods, masterGoods);
-
+		//处理无库存下单相关
+		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag());
+		masterOrderGoods.setWithStockNumber(masterGoods.getWithStockNumber());
+		masterOrderGoods.setWithoutStockNumber(masterGoods.getWithoutStockNumber());
+		masterOrderGoods.setPurchasesWithoutStockFlag(masterGoods.getPurchasesWithoutStockFlag());
+		masterOrderGoods.setWithoutStockDeliveryCycle(masterGoods.getWithoutStockDeliveryCycle());
         fillGoodsDetail(masterOrderGoods, masterGoods);
 
 		return masterOrderGoods;

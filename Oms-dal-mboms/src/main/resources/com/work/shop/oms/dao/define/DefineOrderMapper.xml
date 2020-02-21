@@ -415,7 +415,12 @@
         og.distribution_category distributionCategory,
         og.depot_code depotCode,
         og.supplier_code supplierCode,
-        og.supplier_name supplierName
+        og.supplier_name supplierName,
+        og.with_stock_number withStockNumber,
+        og.without_stock_number withoutStockNumber,
+        og.purchases_without_stock_flag purchasesWithoutStockFlag,
+        og.without_stock_delivery_cycle withoutStockDeliveryCycle,
+        og.delivery_cycle deliveryCycle
         from
         <if test="isHistory == 0">
             master_order_goods
