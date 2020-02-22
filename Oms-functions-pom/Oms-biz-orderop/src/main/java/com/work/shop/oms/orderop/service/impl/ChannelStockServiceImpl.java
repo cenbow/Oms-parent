@@ -293,6 +293,7 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 			logger.error(masterOrderSn + "平台支付库存占用, orderSn:" + masterOrderSn, e);
 			ri.setMessage("平台支付库存占用, orderSn:" + masterOrderSn);
 		}
+		logger.info("订单支付占用库存结束");
 		return ri;
 	}
 
