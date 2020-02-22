@@ -508,6 +508,12 @@
         <if test="withoutStockNumber != null">
           without_stock_number,
         </if>
+      <if test="purchasesWithoutStockFlag != null">
+        purchases_without_stock_flag,
+      </if>
+      <if test="withoutStockDeliveryCycle != null">
+        without_stock_delivery_cycle,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -716,6 +722,12 @@
       </if>
       <if test="withoutStockNumber != null">
         #{withoutStockNumber},
+      </if>
+      <if test="purchasesWithoutStockFlag != null">
+        #{purchasesWithoutStockFlag},
+      </if>
+      <if test="withoutStockDeliveryCycle != null">
+        #{withoutStockDeliveryCycle},
       </if>
     </trim>
   </insert>
