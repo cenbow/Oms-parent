@@ -73,6 +73,8 @@
       <result column="goods_add_price" jdbcType="DECIMAL" property="goodsAddPrice" />
       <result column="with_stock_number" jdbcType="INTEGER" property="withStockNumber" />
       <result column="without_stock_number" jdbcType="INTEGER" property="withoutStockNumber" />
+      <result column="purchases_without_stock_flag" jdbcType="INTEGER" property="purchasesWithoutStockFlag" />
+      <result column="without_stock_delivery_cycle" jdbcType="VARCHAR" property="withoutStockDeliveryCycle" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.work.shop.oms.bean.MasterOrderGoods">
     <!--
@@ -161,7 +163,7 @@
     goods_sn, sales_mode, channel_send_number, sap, bv_value, expected_ship_date, tax, 
     tax_rate, base_bv_value, input_tax, output_tax, cost_price, box_gauge, distribution_category, 
     seller_custom_code, seller_goods_sn, min_buy_num, customer_material_code, buy_unit, 
-    delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price,with_stock_number,without_stock_number
+    delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price,with_stock_number,without_stock_number,purchases_without_stock_flag,without_stock_delivery_cycle
   </sql>
   <sql id="Blob_Column_List">
     <!--
