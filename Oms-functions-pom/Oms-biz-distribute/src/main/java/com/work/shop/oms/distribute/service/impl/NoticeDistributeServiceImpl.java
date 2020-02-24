@@ -372,7 +372,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				continue;
 			}
 			// 商品数量
-			int goodsNum = orderGoods.getGoodsNumber();
+			int withStockNumber = orderGoods.getWithStockNumber();
 			// 发货单
 			Set<String> shipSns = shipSkuMap.keySet();
 			for (Iterator<String> iterator = shipSns.iterator(); iterator.hasNext();) {
@@ -386,28 +386,43 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				if (!tempShipSkuMap.containsKey(shipsku)) {
 					continue;
 				}
-
 				// 发货仓数量
 				int tempCount = tempShipSkuMap.get(shipsku);
 				MasterOrderGoods og = cloneGoods(orderGoods);
 				og.setDepotCode(shipSn);
 				newOrderGoodsList.add(og);
-				if (tempCount > goodsNum) {
-					tempShipSkuMap.put(shipsku, tempCount - goodsNum);
-                    tempCount = goodsNum;
-					og.setGoodsNumber(tempCount);
-					fillGoodsDisSendNm(og);
+				logger.info("processOrderGoods tempCount=" + tempCount + ",shipsku=" + shipsku + ",withStockNumber=" + withStockNumber + ",goodsNum=" + orderGoods.getGoodsNumber());
+				if (tempCount > withStockNumber) {
+					tempShipSkuMap.put(shipsku, tempCount - withStockNumber);
+//                    tempCount = goodsNum;
+                    logger.info("processOrderGoods 大于时");
+                    //不需要改GoodsNumber
+//					og.setGoodsNumber(tempCount);
+					og.setSendNumber(withStockNumber);
 					// 该商品已经处理完毕s
 					break;
 				}
-				og.setGoodsNumber(tempCount);
-				fillGoodsDisSendNm(og);
-
-				tempShipSkuMap.remove(shipsku);
-				if (tempCount == goodsNum) {
+				logger.info("processOrderGoods 小于等于时");
+				if (og.getWithoutStockNumber() == 0) {
+					//不存在无库存下单，则是原来的逻辑
+					og.setGoodsNumber(tempCount);
+					fillGoodsDisSendNm(og);
+					tempShipSkuMap.remove(shipsku);
+					//此时withStockNumber和goodsNum相等
+					if (tempCount == withStockNumber) {
+						break;
+					}
+					withStockNumber -= tempCount;
+				} else {
+					//如果不走库存的量大于0 则走了无库存 库存没有的都会走无库存 不会分单
+					//不需要改GoodsNumber
+//					og.setGoodsNumber(tempCount);
+					og.setSendNumber(og.getWithStockNumber());
+					tempShipSkuMap.remove(shipsku);
+					//此时withStockNumber小于goodsNum，不需要分单了直接退出
 					break;
 				}
-				goodsNum -= tempCount;
+
 			}
 		}
 
@@ -498,6 +513,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				if (orderGoods.getCustomCode().equals(goods.getCustomCode())
 						&& orderGoods.getExtensionCode().equals(goods.getExtensionCode())
 						&& orderGoods.getExtensionId().equals(goods.getExtensionId())) {
+					logger.info("groupOrderGoodsBySkuExtCode 设置goodsNum" + orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					orderGoods.setGoodsNumber(orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					flag = true;
 				}

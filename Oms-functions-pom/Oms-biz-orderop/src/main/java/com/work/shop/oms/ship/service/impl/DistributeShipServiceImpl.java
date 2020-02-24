@@ -1839,6 +1839,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 MasterOrderGoods updateItem = new MasterOrderGoods();
                 updateItem.setId(item.getId());
                 updateItem.setInvoiceNo(owner.getInvoiceNo());
+                logger.info("processOrderShip修改goodNumber=" + item.getGoodsNumber());
                 updateItem.setGoodsNumber(item.getGoodsNumber());
                 masterOrderGoodsMapper.updateByPrimaryKeySelective(updateItem);
             }

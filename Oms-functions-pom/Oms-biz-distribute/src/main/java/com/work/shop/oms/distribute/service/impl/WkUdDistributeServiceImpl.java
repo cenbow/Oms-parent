@@ -201,6 +201,8 @@ public class WkUdDistributeServiceImpl implements WkUdDistributeService {
             distribute.setCreateDate(new Date());
             distribute.setDistWarehCode(distributeRequest.getDeoptCode());
             distribute.setRcvWarehcode(distributeRequest.getDeoptCode());
+            //无库存下单相关
+            log.info("artificialDepotByOrderSn 设置goodsNum=" + goods.getWithStockNumber());
             distribute.setGoodsNumber(goods.getGoodsNumber() + "");
             distribute.setOuterCode(distributeRequest.getOrderSn());
             distribute.setProdId(goods.getCustomCode());
