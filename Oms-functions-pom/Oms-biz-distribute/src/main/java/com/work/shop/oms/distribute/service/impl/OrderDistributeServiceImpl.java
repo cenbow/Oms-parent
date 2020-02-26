@@ -244,7 +244,10 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                 }
 
                 //不需要审批直接下发计划回退
-				sendFallDemandByOrderMq(masterOrderSn, master.getUserId());
+				Integer companyType = masterOrderInfoExtend.getCompanyType();
+                if (companyType != null && companyType == 1) {
+					sendFallDemandByOrderMq(masterOrderSn, master.getUserId());
+				}
             }
         }
 
