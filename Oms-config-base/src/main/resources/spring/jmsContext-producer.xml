@@ -587,15 +587,15 @@
         <constructor-arg index="0" value="add_order_reward_point_actionLog"/>
     </bean>
 
-    <!--计划回退-->
-    <bean id="fall_demand_by_order" class="org.apache.activemq.command.ActiveMQQueue">
-        <constructor-arg index="0" value="fall_demand_by_order"/>
-    </bean>
-    <bean id="fallDemandByOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    <!-- 订单确认收货推送销售结算单 -->
+    <bean id="uploadSaleSettlementJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory"/>
         <property name="sessionTransacted" value="true"/>
         <property name="sessionAcknowledgeMode" value="1"/>
         <property name="deliveryMode" value="2"/>
-        <property name="defaultDestination" ref="fall_demand_by_order"/>
+        <property name="defaultDestination" ref="upload_sale_settlement"/>
+    </bean>
+    <bean id="upload_sale_settlement" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="upload_sale_settlement"/>
     </bean>
 </beans>
