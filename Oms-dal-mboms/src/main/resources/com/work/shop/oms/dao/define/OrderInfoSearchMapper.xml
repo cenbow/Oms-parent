@@ -2723,6 +2723,7 @@
         ) as purchaseTotalAmount,
         moi.user_id as userId,
         moie.company_name as companyName,
+        moie.company_code as companyCode,
         moi.add_time as addTime,
         moai.consignee as consignee
         from master_order_info moi, master_order_info_extend moie

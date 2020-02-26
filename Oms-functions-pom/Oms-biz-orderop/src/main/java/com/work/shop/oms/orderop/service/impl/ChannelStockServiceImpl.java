@@ -293,6 +293,7 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 			logger.error(masterOrderSn + "平台支付库存占用, orderSn:" + masterOrderSn, e);
 			ri.setMessage("平台支付库存占用, orderSn:" + masterOrderSn);
 		}
+		logger.info("订单支付占用库存结束");
 		return ri;
 	}
 
@@ -342,9 +343,12 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 				}
 				skuStock.setStock(skuStock.getStock() + stockNum);
 			} else {
-				skuStock.setStock(skuStock.getStock() + orderGoods.getGoodsNumber());
+				//无库存下单相关
+				skuStock.setStock(skuStock.getStock() + orderGoods.getWithStockNumber());
 			}
-			stockMap.put(sku, skuStock);
+			if (skuStock.getStock() > 0) {
+				stockMap.put(sku, skuStock);
+			}
 		}
 		return stockMap;
 	}
