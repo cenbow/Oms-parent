@@ -308,7 +308,7 @@
             <dependency>
                 <groupId>com.work.shop.stock.center</groupId>
                 <artifactId>StockCenterService-Api</artifactId>
-                <version>1.2.0</version>
+                <version>1.2.2</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.springframework</groupId>

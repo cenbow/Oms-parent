@@ -60,7 +60,7 @@ public interface ChannelStockService {
 	 * @param masterOrderSn
 	 * @return ReturnInfo
 	 */
-	ReturnInfo cancelRealese(String masterOrderSn);
+	ReturnInfo<List<MasterOrderGoods>> cancelRealese(String masterOrderSn);
 	
 	/**
 	 * 库存查询
