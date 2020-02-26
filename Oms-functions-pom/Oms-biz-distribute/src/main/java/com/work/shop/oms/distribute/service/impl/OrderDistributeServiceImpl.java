@@ -219,6 +219,12 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
             // 不需要审核正常订单 创建采购单
             if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
 
+				//不需要审批直接下发计划回退
+				Integer companyType = masterOrderInfoExtend.getCompanyType();
+				if (companyType != null && companyType == 1) {
+					sendFallDemandByOrderMq(masterOrderSn, master.getUserId());
+				}
+
                 //订单推送供应链
                 logger.info("拆单完成后:" + masterOrderSn + "订单推送供应链");
 				int type = 0;
@@ -243,12 +249,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                     }
                 }
 
-                //不需要审批直接下发计划回退
-				Integer companyType = masterOrderInfoExtend.getCompanyType();
-                if (companyType != null && companyType == 1) {
-					sendFallDemandByOrderMq(masterOrderSn, master.getUserId());
-				}
             }
+
+
         }
 
         if (orderType == null || orderType == 0) {
