@@ -586,4 +586,16 @@
     <bean id="add_order_reward_point_actionLog" class="org.apache.activemq.command.ActiveMQQueue">
         <constructor-arg index="0" value="add_order_reward_point_actionLog"/>
     </bean>
+
+    <!--计划回退-->
+    <bean id="fall_demand_by_order" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="fall_demand_by_order"/>
+    </bean>
+    <bean id="fallDemandByOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory"/>
+        <property name="sessionTransacted" value="true"/>
+        <property name="sessionAcknowledgeMode" value="1"/>
+        <property name="deliveryMode" value="2"/>
+        <property name="defaultDestination" ref="fall_demand_by_order"/>
+    </bean>
 </beans>

@@ -9,6 +9,7 @@ import com.work.shop.oms.dao.*;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.request.OrderManagementRequest;
+import com.work.shop.oms.order.request.OrderQueryRequest;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.order.service.PurchaseOrderService;
@@ -87,6 +88,10 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
     @Resource(name="userCompanyOrderApprovalJmsTemplate")
 	private JmsTemplate userCompanyOrderApprovalJmsTemplate;
+
+    @Resource(name = "fallDemandByOrderJmsTemplate")
+    private JmsTemplate fallDemandByOrderJmsTemplate;
+
 
 	/**
 	 * 判断订单拆交货单信息
@@ -237,6 +242,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                         distributeActionService.addOrderAction(orderSn, depotResult.getMessage());
                     }
                 }
+
+                //不需要审批直接下发计划回退
+				sendFallDemandByOrderMq(masterOrderSn, master.getUserId());
             }
         }
 
@@ -245,6 +253,18 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
             uniteStockService.distOccupy(masterOrderSn);
         }
     }
+
+	/**
+	 * 计划回退mq
+	 * @param masterOrderSn
+	 * @param userId
+	 */
+	private void sendFallDemandByOrderMq(String masterOrderSn, String userId) {
+		Map<String, String> param = new HashMap<>(2);
+		param.put("orderSn", masterOrderSn);
+		param.put("userId", userId);
+		fallDemandByOrderJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(param)));
+	}
 
     /**
      * 订单审批下发MQ
