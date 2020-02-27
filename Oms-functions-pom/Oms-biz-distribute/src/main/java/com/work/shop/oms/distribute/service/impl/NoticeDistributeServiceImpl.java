@@ -498,6 +498,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				if (orderGoods.getCustomCode().equals(goods.getCustomCode())
 						&& orderGoods.getExtensionCode().equals(goods.getExtensionCode())
 						&& orderGoods.getExtensionId().equals(goods.getExtensionId())) {
+					logger.info("groupOrderGoodsBySkuExtCode 设置goodsNum" + orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					orderGoods.setGoodsNumber(orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					flag = true;
 				}

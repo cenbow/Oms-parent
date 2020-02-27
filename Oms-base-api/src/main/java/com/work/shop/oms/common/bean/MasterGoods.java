@@ -298,6 +298,11 @@ public class MasterGoods implements Serializable {
 	 */
 	private String withoutStockDeliveryCycle;
 
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
     public Double getShareBonus() {
 		return shareBonus;
 	}
@@ -760,5 +765,13 @@ public class MasterGoods implements Serializable {
 
 	public void setWithoutStockDeliveryCycle(String withoutStockDeliveryCycle) {
 		this.withoutStockDeliveryCycle = withoutStockDeliveryCycle;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
 	}
 }

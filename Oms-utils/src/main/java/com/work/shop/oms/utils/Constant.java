@@ -1123,4 +1123,17 @@ public class Constant {
 	 * 内行银承
 	 */
 	public static final int USER_PAY_TYPE_YINCHENG = 5;
+	/**
+	 * 无库存下单补充库存类型（无库存入库）
+	 */
+	public static final String WKCRK = "WKCRK";
+
+	/**
+	 * 无库存下单减少库存类型（无库存出库）
+	 */
+	public static final String WKCCK = "WKCCK";
+	/**
+	 * 无库存
+	 */
+	public static final String WKC = "无库存下单";
 }
