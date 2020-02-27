@@ -137,11 +137,12 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 
         fillGoodsBaseInfo(masterOrderGoods, masterGoods);
 		//处理无库存下单相关
-		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag());
+		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag() + ",goodsNum=" + masterOrderGoods.getGoodsNumber());
 		masterOrderGoods.setWithStockNumber(masterGoods.getWithStockNumber());
 		masterOrderGoods.setWithoutStockNumber(masterGoods.getWithoutStockNumber());
 		masterOrderGoods.setPurchasesWithoutStockFlag(masterGoods.getPurchasesWithoutStockFlag());
 		masterOrderGoods.setWithoutStockDeliveryCycle(masterGoods.getWithoutStockDeliveryCycle());
+		masterOrderGoods.setWithoutStockDepotNo(masterGoods.getWithoutStockDepotNo());
         fillGoodsDetail(masterOrderGoods, masterGoods);
 
 		return masterOrderGoods;
@@ -196,7 +197,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         // 套装名称
         masterOrderGoods.setGroupName("");
         // 商品数量
-        masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
+		logger.info("fillGoodsBaseInfo masterOrderGoods goodsNum=" + masterGoods.getGoodsNumber());
+		masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
         // 商品数量小数部分
 		masterOrderGoods.setGoodsDecimalNumber(masterGoods.getGoodsDecimals());
         // 父商品sn

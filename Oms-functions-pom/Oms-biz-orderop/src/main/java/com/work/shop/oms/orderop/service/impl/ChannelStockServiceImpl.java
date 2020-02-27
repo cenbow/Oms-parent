@@ -163,7 +163,14 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 				ri.setIsOk(Constant.OS_YES);
 				return ri;
 			}
-
+			boolean isWaitStock = false;
+			for (MasterOrderGoods masterOrderGoods : goodsList) {
+				if (0 < masterOrderGoods.getWithoutStockNumber()) {
+					//有商品需要无库存下单，已异步补过库存，需要重试等待
+					isWaitStock = true;
+					break;
+				}
+			}
 			List<PlatformSkuStock> skuStockList = processGoodsStockList(master, goodsList);
 			// 已经全部占用库存
 			if (!StringUtil.isListNotNull(skuStockList)) {
@@ -179,9 +186,23 @@ public class ChannelStockServiceImpl implements ChannelStockService {
             stockPO.setSiteCode(master.getChannelCode());
             stockPO.setDepot(isDepot);
 			try {
-				logger.info("平台库存占用（预扣）：masterOrderSn= " + masterOrderSn + "json=" + JSON.toJSONString(stockPO));
-				PlatformStockOperateRst result = stockServiceByShop.occupy(stockPO);
-				logger.info("平台库存占用（预扣）：masterOrderSn= " + masterOrderSn + "result=" + JSON.toJSONString(result));
+				//由于无库存下单补库存同步库存是异步的，可能还没同步过来，重试3次，最多等11s
+				int tryCount = 1;
+				if (isWaitStock) {
+					tryCount = 3;
+				}
+				logger.info("平台库存占用（预扣）：masterOrderSn= " + masterOrderSn + ",json=" + JSON.toJSONString(stockPO));
+				PlatformStockOperateRst result = null;
+				for (int i = 0; i < tryCount; i++) {
+					result = stockServiceByShop.occupy(stockPO);
+					logger.info("第" + (i+1) + "次平台库存占用（预扣）：masterOrderSn= " + masterOrderSn + ",result=" + JSON.toJSONString(result));
+					if (result == null || !Constant.OS_STR_YES.equals(result.getReturnCode())) {
+						//第一次不行等2s再试。接下来分别是3s 和 6s
+						Thread.sleep(1000 * (i*i + 2));
+					} else {
+						break;
+					}
+				}
 				if (result != null && Constant.OS_STR_YES.equals(result.getReturnCode())) {
 					ri.setIsOk(Constant.OS_YES);
 					ri.setMessage("占用成功！");
@@ -343,12 +364,9 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 				}
 				skuStock.setStock(skuStock.getStock() + stockNum);
 			} else {
-				//无库存下单相关
-				skuStock.setStock(skuStock.getStock() + orderGoods.getWithStockNumber());
+				skuStock.setStock(skuStock.getStock() + orderGoods.getGoodsNumber());
 			}
-			if (skuStock.getStock() > 0) {
-				stockMap.put(sku, skuStock);
-			}
+			stockMap.put(sku, skuStock);
 		}
 		return stockMap;
 	}
@@ -504,7 +522,7 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 	 * @return ReturnInfo
 	 */
 	@Override
-	public ReturnInfo cancelRealese(String masterOrderSn) {
+	public ReturnInfo<List<MasterOrderGoods>> cancelRealese(String masterOrderSn) {
 		logger.info("订单[" + masterOrderSn + "]取消释放库存");
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
@@ -539,6 +557,8 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 			MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
 			goodsExample.or().andMasterOrderSnEqualTo(masterOrderSn).andChannelSendNumberGreaterThan((short)0);
 			List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByExample(goodsExample);
+			//将商品细表返回，检查是否有无库存下单情况，有则减当时补的库存
+			ri.setData(goodsList);
 			if (StringUtil.isListNull(goodsList)) {
 				ri.setMessage("订单[" + masterOrderSn + "] 已经占用过库存");
 				ri.setIsOk(Constant.OS_YES);

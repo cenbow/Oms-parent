@@ -257,10 +257,9 @@ public class UniteStockServiceImpl implements UniteStockService {
             for (MasterOrderGoods item : items) {
                 String customCode = item.getCustomCode();
                 Integer qty = itemQtyMap.get(customCode);
-                // 库存量 无库存下单相关，这里的数据用于扣减库存，使用订单商品走库存的数量
-                int stockNum = item.getWithStockNumber();
+                // 库存量
+                int stockNum = item.getGoodsNumber().intValue();
                 if (source == 6) {
-                	//目前业务没有这个箱规什么的，如果有的话这里要修改为无库存下单相关，创建订单那里也有这个判断
                     Short boxGauge = item.getBoxGauge();
                     if (boxGauge != null && boxGauge > 1) {
                         stockNum = stockNum * boxGauge;
