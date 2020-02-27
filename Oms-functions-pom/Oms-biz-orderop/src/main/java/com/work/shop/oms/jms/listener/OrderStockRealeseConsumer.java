@@ -66,7 +66,7 @@ public class OrderStockRealeseConsumer extends Consumer {
 							if (0 < masterOrderGoods.getWithoutStockNumber()) {
 								WithoutStockSyncDepotBean withoutStockSyncDepotBean = new WithoutStockSyncDepotBean();
 								withoutStockSyncDepotBean.setSku(masterOrderGoods.getGoodsSn());
-								withoutStockSyncDepotBean.setDepotNo(masterOrderGoods.getDepotCode());
+								withoutStockSyncDepotBean.setDepotNo(masterOrderGoods.getWithoutStockDepotNo());
 								withoutStockSyncDepotBean.setOrderType(Constant.WKCCK);
 								withoutStockSyncDepotBean.setOperUser("");
 								//需要补充的库存即为走无库存下单的量

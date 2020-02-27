@@ -142,6 +142,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		masterOrderGoods.setWithoutStockNumber(masterGoods.getWithoutStockNumber());
 		masterOrderGoods.setPurchasesWithoutStockFlag(masterGoods.getPurchasesWithoutStockFlag());
 		masterOrderGoods.setWithoutStockDeliveryCycle(masterGoods.getWithoutStockDeliveryCycle());
+		masterOrderGoods.setWithoutStockDepotNo(masterGoods.getWithoutStockDepotNo());
         fillGoodsDetail(masterOrderGoods, masterGoods);
 
 		return masterOrderGoods;
