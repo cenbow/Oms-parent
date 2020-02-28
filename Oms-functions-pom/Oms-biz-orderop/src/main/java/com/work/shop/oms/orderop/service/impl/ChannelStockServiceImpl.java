@@ -205,8 +205,11 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 				for (int i = 0; i < tryCount; i++) {
 					result = stockServiceByShop.occupy(stockPO);
 					logger.info("第" + (i+1) + "次平台库存占用（预扣）：masterOrderSn= " + masterOrderSn + ",result=" + JSON.toJSONString(result));
+					if ((i + 1) == tryCount) {
+						break;
+					}
 					if (result == null || !Constant.OS_STR_YES.equals(result.getReturnCode())) {
-						//第一次不行等2s再试。接下来分别是3s 和 6s
+						//第一次不行等2s再试。接下来是3s
 						Thread.sleep(1000 * (i*i + 2));
 					} else {
 						break;
