@@ -7,9 +7,14 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.MasterOrderInfoExtend;
 import com.work.shop.oms.dao.MasterOrderInfoExtendMapper;
+import com.work.shop.stock.center.bean.StockServiceBean;
+import com.work.shop.stock.center.dto.WithoutStockSyncDepotBean;
+import com.work.shop.stock.center.feign.DepotProcessService;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -27,6 +32,7 @@ import com.work.shop.stockcenter.client.dto.PlatformSkuStock;
 import com.work.shop.stockcenter.client.dto.PlatformStockOperateRst;
 import com.work.shop.stockcenter.client.dto.StockOperatePO;
 import com.work.shop.stockcenter.client.feign.StockServiceByShop;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 商城库存服务
@@ -48,6 +54,9 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 
 	@Resource
 	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+	@Autowired
+	private DepotProcessService depotProcessService;
 	
 	@Override
 	public ReturnInfo occupy(StockOperatePO bgpo, String isPayFirst) {
@@ -516,13 +525,39 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 		return ri;
 	}
 
+	@Override
+	public void checkAndDeductWithoutStockInventory(String masterOrderSn, List<MasterOrderGoods> masterOrderGoodsList) {
+		logger.info("归还无库存下单补上的库存,MasterOrderSn=" + masterOrderSn);
+		try {
+			if (!CollectionUtils.isEmpty(masterOrderGoodsList)) {
+				for (MasterOrderGoods masterOrderGoods : masterOrderGoodsList) {
+					if (0 < masterOrderGoods.getWithoutStockNumber()) {
+						WithoutStockSyncDepotBean withoutStockSyncDepotBean = new WithoutStockSyncDepotBean();
+						withoutStockSyncDepotBean.setSku(masterOrderGoods.getGoodsSn());
+						withoutStockSyncDepotBean.setDepotNo(masterOrderGoods.getWithoutStockDepotNo());
+						withoutStockSyncDepotBean.setOrderType(Constant.WKCCK);
+						withoutStockSyncDepotBean.setOperUser(Constant.OS_STRING_SYSTEM);
+						//需要补充的库存即为走无库存下单的量
+						withoutStockSyncDepotBean.setStock(masterOrderGoods.getWithoutStockNumber());
+						withoutStockSyncDepotBean.setMemo("订单号:" + masterOrderSn);
+						logger.info("无库存下单调减少库存withoutStockSyncDepotBean=" + JSONObject.toJSONString(withoutStockSyncDepotBean));
+						StockServiceBean<String> stringStockServiceBean = depotProcessService.withoutStockProcessDepotStock(withoutStockSyncDepotBean);
+						logger.info("无库存下单调减少库存response=" + JSONObject.toJSONString(stringStockServiceBean));
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error(masterOrderSn + "归还无库存下单补上的库存失败", e);
+		}
+	}
+
 	/**
 	 * 订单取消释放库存
 	 * @param masterOrderSn 订单编码
 	 * @return ReturnInfo
 	 */
 	@Override
-	public ReturnInfo<List<MasterOrderGoods>> cancelRealese(String masterOrderSn) {
+	public ReturnInfo cancelRealese(String masterOrderSn) {
 		logger.info("订单[" + masterOrderSn + "]取消释放库存");
 		ReturnInfo ri = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
@@ -536,6 +571,10 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 				ri.setMessage("订单" + masterOrderSn + "不存在,不能占用库存");
 				return ri;
 			}
+			// .andChannelSendNumberEqualTo((short)1);
+			MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
+			goodsExample.or().andMasterOrderSnEqualTo(masterOrderSn).andChannelSendNumberGreaterThan((short)0);
+			List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByExample(goodsExample);
 			boolean isPay = false;
 			// 如果订单已支付,并且主订单已取消，配送单的状态不是未发货，不需要返回库存
 			if (Constant.OI_PAY_STATUS_PAYED == master.getPayStatus()) {
@@ -544,6 +583,8 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 
 			if (isPay) {
 				ri.setMessage("订单" + masterOrderSn + "已付款,不返回库存");
+				//订单支付后如果被审核驳回，需要减去无库存下单补得库存
+				checkAndDeductWithoutStockInventory(masterOrderSn, goodsList);
 				return ri;
 			}
 			
@@ -553,12 +594,6 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 					return ri;
 				}
 			}
-			// .andChannelSendNumberEqualTo((short)1);
-			MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
-			goodsExample.or().andMasterOrderSnEqualTo(masterOrderSn).andChannelSendNumberGreaterThan((short)0);
-			List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByExample(goodsExample);
-			//将商品细表返回，检查是否有无库存下单情况，有则减当时补的库存
-			ri.setData(goodsList);
 			if (StringUtil.isListNull(goodsList)) {
 				ri.setMessage("订单[" + masterOrderSn + "] 已经占用过库存");
 				ri.setIsOk(Constant.OS_YES);
@@ -620,6 +655,8 @@ public class ChannelStockServiceImpl implements ChannelStockService {
 						}
 						ri.setIsOk(Constant.OS_YES);
 						ri.setMessage(result.getReturnMsg());
+						//订单取消后，需要减去无库存下单补得库存
+						checkAndDeductWithoutStockInventory(masterOrderSn, goodsList);
 					} else {
 						ri.setMessage(result.getReturnMsg());
 					}
