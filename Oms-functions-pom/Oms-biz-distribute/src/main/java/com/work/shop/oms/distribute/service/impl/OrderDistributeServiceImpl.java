@@ -9,6 +9,7 @@ import com.work.shop.oms.dao.*;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.request.OrderManagementRequest;
+import com.work.shop.oms.order.request.OrderQueryRequest;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.order.service.PurchaseOrderService;
@@ -87,6 +88,10 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
     @Resource(name="userCompanyOrderApprovalJmsTemplate")
 	private JmsTemplate userCompanyOrderApprovalJmsTemplate;
+
+    @Resource(name = "fallDemandByOrderJmsTemplate")
+    private JmsTemplate fallDemandByOrderJmsTemplate;
+
 
 	/**
 	 * 判断订单拆交货单信息
@@ -214,6 +219,12 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
             // 不需要审核正常订单 创建采购单
             if (master.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
 
+				//不需要审批直接下发计划回退
+				Integer companyType = masterOrderInfoExtend.getCompanyType();
+				if (companyType != null && companyType == 1) {
+					sendFallDemandByOrderMq(masterOrderSn, master.getUserId());
+				}
+
                 //订单推送供应链
                 logger.info("拆单完成后:" + masterOrderSn + "订单推送供应链");
 				int type = 0;
@@ -237,7 +248,10 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                         distributeActionService.addOrderAction(orderSn, depotResult.getMessage());
                     }
                 }
+
             }
+
+
         }
 
         if (orderType == null || orderType == 0) {
@@ -245,6 +259,18 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
             uniteStockService.distOccupy(masterOrderSn);
         }
     }
+
+	/**
+	 * 计划回退mq
+	 * @param masterOrderSn
+	 * @param userId
+	 */
+	private void sendFallDemandByOrderMq(String masterOrderSn, String userId) {
+		Map<String, String> param = new HashMap<>(2);
+		param.put("orderSn", masterOrderSn);
+		param.put("userId", userId);
+		fallDemandByOrderJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(param)));
+	}
 
     /**
      * 订单审批下发MQ

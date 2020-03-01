@@ -327,6 +327,16 @@ public class OrderItemGoodsDetail implements Serializable {
      */
 	private BigDecimal goodsAddPrice;
 
+	/**
+	 * 商品购买数量中走库存的数量
+	 */
+	private Integer withStockNumber;
+
+	/**
+	 * 商品购买数量中不走库存的数量
+	 */
+	private Integer withoutStockNumber;
+
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
     }
@@ -1142,5 +1152,21 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
 		this.goodsDecimalNumber = goodsDecimalNumber;
+	}
+
+	public Integer getWithStockNumber() {
+		return withStockNumber;
+	}
+
+	public void setWithStockNumber(Integer withStockNumber) {
+		this.withStockNumber = withStockNumber;
+	}
+
+	public Integer getWithoutStockNumber() {
+		return withoutStockNumber;
+	}
+
+	public void setWithoutStockNumber(Integer withoutStockNumber) {
+		this.withoutStockNumber = withoutStockNumber;
 	}
 }

@@ -531,6 +531,8 @@
     <result column="sap" jdbcType="VARCHAR" property="sap" />
     <result column="bv_value" jdbcType="VARCHAR" property="bvValue" />
     <result column="expected_ship_date" jdbcType="VARCHAR" property="expectedShipDate" />
+    <result column="with_stock_number"  property="withStockNumber" />
+    <result column="without_stock_number"  property="withoutStockNumber" />
     
     <result column="tax" jdbcType="DECIMAL" property="tax" />
     <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
@@ -555,7 +557,7 @@
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.customer_material_name customerMaterialName,
             t.buyer_no buyerNo, t.buyer_line_no buyerLineNo, t.input_tax inputTax, t.output_tax outputTax, t.cost_price costPrice,
-            t.goods_add_price goodsAddPrice
+            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number
         FROM 
             master_order_goods t
         LEFT JOIN
@@ -589,7 +591,7 @@
             t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value,
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.invoice_no invoiceNo,
-            t.goods_add_price goodsAddPrice
+            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number
         FROM
             master_order_goods t
         where
