@@ -1136,4 +1136,39 @@ public class Constant {
 	 * 无库存
 	 */
 	public static final String WKC = "无库存下单";
+
+    /**
+     * 商品销售类型 正常商品
+     */
+    public  static  final  int GOODS_SALE_TYPE_STANDARD = 0;
+
+    /**
+     * 商品销售类型 非标定制  customization
+     */
+    public  static  final  int GOODS_SALE_TYPE_CUSTOMIZATION = 1;
+
+    /**
+     * 商品销售类型  可改价商品
+     */
+    public  static  final  int GOODS_SALE_TYPE_CHANGE_PRICE = 2;
+
+    /**
+     * 价格变动确认状态   0 无
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_0 = 0;
+
+    /**
+     * 价格变动确认状态   2 未确认
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_1 = 1;
+
+    /**
+     * 价格变动确认状态   2 平台确认
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_2 = 2;
+
+    /**
+     * 价格变动确认状态   3 用户确认
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_3 = 3;
 }
