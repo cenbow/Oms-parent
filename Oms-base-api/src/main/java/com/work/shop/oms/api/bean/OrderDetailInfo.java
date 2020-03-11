@@ -435,6 +435,16 @@ public class OrderDetailInfo  implements Serializable{
      */
     private Byte needSign;
 
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Byte goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Byte priceChangeStatus;
+
     /**
      * 订单备注
      */
@@ -1068,4 +1078,20 @@ public class OrderDetailInfo  implements Serializable{
     public void setSignContractNum(String signContractNum) {
         this.signContractNum = signContractNum;
     }
+
+	public Byte getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Byte goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Byte getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Byte priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
 }

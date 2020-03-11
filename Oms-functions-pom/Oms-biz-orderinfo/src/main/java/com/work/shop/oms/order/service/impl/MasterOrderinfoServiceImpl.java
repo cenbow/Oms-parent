@@ -1,35 +1,34 @@
 package com.work.shop.oms.order.service.impl;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.common.bean.*;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.cardAPI.api.CardCartSearchServiceApi;
 import com.work.shop.cardAPI.bean.APIBackMsgBean;
 import com.work.shop.cardAPI.bean.ParaUserCardStatus;
-import com.work.shop.oms.api.ship.bean.WkUdDistribute;
+import com.work.shop.oms.bean.MasterOrderGoods;
+import com.work.shop.oms.bean.MasterOrderInfo;
+import com.work.shop.oms.bean.MasterOrderInfoExample;
+import com.work.shop.oms.bean.MasterOrderInfoExtend;
+import com.work.shop.oms.bean.MasterOrderPay;
+import com.work.shop.oms.bean.MergeOrderPay;
+import com.work.shop.oms.bean.OrderAccountPeriod;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
+import com.work.shop.oms.common.bean.AsynProcessOrderBean;
+import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
+import com.work.shop.oms.common.bean.MasterGoods;
+import com.work.shop.oms.common.bean.MasterOrder;
+import com.work.shop.oms.common.bean.MasterPay;
+import com.work.shop.oms.common.bean.MasterShip;
+import com.work.shop.oms.common.bean.OcpbStatus;
+import com.work.shop.oms.common.bean.OrderCreateReturnInfo;
+import com.work.shop.oms.common.bean.OrderStatus;
+import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
+import com.work.shop.oms.common.bean.ReturnInfo;
+import com.work.shop.oms.common.bean.ServiceReturnInfo;
+import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.dao.ChannelShopMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
@@ -47,6 +46,17 @@ import com.work.shop.oms.stock.service.ChannelStockService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.NumberUtil;
 import com.work.shop.oms.utils.StringUtil;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 主订单服务
@@ -536,6 +546,10 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         orderInfo.setNeedAudit(masterOrder.getNeedAudit());
         //是否需要合同签章
         orderInfo.setNeedSign(masterOrder.getNeedSign());
+        //订单商品销售类型
+		orderInfo.setGoodsSaleType(masterOrder.getGoodsSaleType());
+		//价格变动确认
+		orderInfo.setPriceChangeStatus(masterOrder.getPriceChangeStatus());
 	}
 
 	/**
@@ -610,6 +624,10 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setNeedAudit(masterOrder.getNeedAudit());
 		// 是否需要合同签章
 		orderInfo.setNeedSign(masterOrder.getNeedSign());
+		//订单商品销售类型
+		orderInfo.setGoodsSaleType(masterOrder.getGoodsSaleType());
+		//价格变动确认
+		orderInfo.setPriceChangeStatus(masterOrder.getPriceChangeStatus());
 		masterOrderInfoMapper.insertSelective(orderInfo);
 		byte payStatus = orderInfo.getPayStatus() == 2 ? orderInfo.getPayStatus() : 0;
 		// 写入订单日志

@@ -337,6 +337,11 @@ public class OrderItemGoodsDetail implements Serializable {
 	 */
 	private Integer withoutStockNumber;
 
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
+
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
     }
@@ -1168,5 +1173,13 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setWithoutStockNumber(Integer withoutStockNumber) {
 		this.withoutStockNumber = withoutStockNumber;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
 	}
 }

@@ -1,21 +1,7 @@
 package com.work.shop.oms.payment.service.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.orderop.service.OrderConfirmService;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.api.bean.OrderPayInfo;
 import com.work.shop.oms.api.param.bean.PayBackInfo;
 import com.work.shop.oms.api.param.bean.PayReturnInfo;
@@ -45,6 +31,17 @@ import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.utils.TimeUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * 订单支付业务逻辑
@@ -138,6 +135,9 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		ApiReturnData<OrderPayInfo> apiReturnData = new ApiReturnData<OrderPayInfo>();
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 		try {
+			//验证订单可支付
+			verifyOrder(paySn,masterOrderSnList);
+
 			OrderPayInfo orderPayInfo = new OrderPayInfo();
 			if (StringUtil.isNotNull(paySn)) {
 				if (paySn.startsWith(Constant.ORDER_PAY_MFK)) {
@@ -186,7 +186,8 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					orderPayInfo.setUserId(userId);
 				}
 			} else {
-				if (null != masterOrderSnList && masterOrderSnList.size() > 0) {
+				// 在方法 verifyOrder 中已做
+				/*if (null != masterOrderSnList && masterOrderSnList.size() > 0) {
 					for (String masterOrderSn : masterOrderSnList) {
 						MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
 						if (null == masterOrderInfo) {
@@ -195,7 +196,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					}
 				} else {
 					throw new Exception("参数不能都为空！");
-				}
+				}*/
 				//单个订单支付查询
 				if (masterOrderSnList.size() == 1){
 					MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
@@ -646,4 +647,81 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		
 		return data;
 	}
+
+	/**
+	 * 检查订单是否可以进行支付
+	 * @param paySn
+	 * @param masterOrderSnList
+	 */
+	private void verifyOrder(String paySn,List<String> masterOrderSnList) throws  Exception{
+		if (StringUtil.isNotNull(paySn)) {
+			if (paySn.startsWith(Constant.ORDER_PAY_MFK)) {
+				//工业品暂未用到合并支付
+			}else{
+				MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(paySn);
+				if (null == masterOrderPay){
+					throw new Exception("未找到对应支付单！");
+				}
+				MasterOrderInfo masterOrderInfo =  masterOrderInfoMapper.selectByPrimaryKey(masterOrderPay.getMasterOrderSn());
+				if (masterOrderInfo != null && masterOrderInfo.getGoodsSaleType() != null && masterOrderInfo.getPriceChangeStatus() != null){
+					switch (masterOrderInfo.getGoodsSaleType()){
+						case Constant.GOODS_SALE_TYPE_STANDARD :
+							//正常商品
+							break;
+						case  Constant.GOODS_SALE_TYPE_CUSTOMIZATION :
+							//非标定制商品
+							if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
+								//平台未确认
+								throw new Exception("订单："+masterOrderInfo.getMasterOrderSn()+" 商品询价中未生成支付单！");
+							}
+							break;
+						case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
+							//可改价商品
+							if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
+								//平台未确认
+								throw new Exception("订单："+masterOrderInfo.getMasterOrderSn()+" 商品改价中未生成支付单！");
+							}
+							break;
+					}
+				}else{
+					throw new Exception("未找到对应订单！");
+				}
+			}
+		}else{
+			if (null != masterOrderSnList && masterOrderSnList.size() > 0) {
+				for (String masterOrderSn : masterOrderSnList) {
+					MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+					if (null == masterOrderInfo) {
+						throw new Exception("未找到对应订单！");
+					}
+					if (masterOrderInfo.getGoodsSaleType() != null && masterOrderInfo.getPriceChangeStatus() != null){
+						switch (masterOrderInfo.getGoodsSaleType()){
+							case Constant.GOODS_SALE_TYPE_STANDARD :
+								//正常商品
+								break;
+							case  Constant.GOODS_SALE_TYPE_CUSTOMIZATION :
+								//非标定制商品
+								if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
+									//平台未确认
+									throw new Exception("订单："+masterOrderSn+" 商品询价中未生成支付单！");
+								}
+								break;
+							case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
+								//可改价商品
+								if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
+									//平台未确认
+									throw new Exception("订单："+masterOrderSn+" 商品改价中未生成支付单！");
+								}
+								break;
+						}
+					}else{
+						throw new Exception("未找到对应订单！");
+					}
+				}
+			} else {
+				throw new Exception("参数不能都为空！");
+			}
+		}
+	}
+
 }
