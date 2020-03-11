@@ -728,7 +728,9 @@
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress,
-        oai.shipping_name shippingName
+        oai.shipping_name shippingName,
+        oi.goods_sale_type goodsSaleType,
+        oi.price_change_status priceChangeStatus
         from
         <if test="isHistory == 0">
             master_order_info
