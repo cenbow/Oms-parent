@@ -855,8 +855,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			ReturnInfo<String> info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
 				//判断待询价与改价问题单
-				if(master.getGoodsSaleType() != null && master.getPriceChangeStatus() != null
-				 && master.getGoodsSaleType() != 0){
+				if( ( master.getGoodsSaleType() != null && master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD )
+				 || ( master.getPriceChangeStatus() != null && master.getPriceChangeStatus() > Constant.PRICE_CHANGE_AFFIRM_1 ) ){
 					//返回正常单，订单改价确认
 					logger.info("返回正常单:" + masterOrderSn + "订单改价确认 ");
 					orderConfirmService.changePriceConfirmOrder(masterOrderSn,orderStatus);
