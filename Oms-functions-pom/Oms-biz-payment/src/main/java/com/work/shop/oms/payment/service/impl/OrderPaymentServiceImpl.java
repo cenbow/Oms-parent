@@ -93,6 +93,8 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 
 		try {
+			//验证订单可查询支付金额信息   改价订单未确认不能查询
+			verifyOrder("",masterOrderSnList);
 			if (masterOrderSnList == null || masterOrderSnList.size() == 0) {
                 apiReturnData.setMessage("订单号为空");
                 return apiReturnData;
@@ -117,7 +119,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             apiReturnData.setIsOk(Constant.OS_STR_YES);
 		} catch (Exception e) {
 		    logger.error("获取订单: " + JSONObject.toJSONString(masterOrderSnList) + "支付信息异常", e);
-            apiReturnData.setMessage("查询异常");
+            apiReturnData.setMessage("查询异常 ："+e.getMessage());
         }
 
         return apiReturnData;

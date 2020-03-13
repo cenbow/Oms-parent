@@ -60,6 +60,8 @@
     <result column="invoices_organization" jdbcType="VARCHAR" property="invoicesOrganization" />
     <result column="isNow" jdbcType="INTEGER" property="isnow" />
     <result column="source" jdbcType="INTEGER" property="source" />
+  	<result column="goods_sale_type" jdbcType="INTEGER" property="goodsSaleType" />
+  	<result column="price_change_status" jdbcType="INTEGER" property="priceChangeStatus" />
     <!-- 扩展表相关字段 -->
     <result column="agdist" jdbcType="TINYINT" property="agdist" />
     <result column="is_group" jdbcType="TINYINT" property="isGroup" />
@@ -280,7 +282,9 @@
           b.inv_address invAddress,
           t.need_sign needSign,
           t.sign_status signStatus,
-          t.sign_contract_num signContractNum
+          t.sign_contract_num signContractNum,
+          t.goods_sale_type goodsSaleType,
+          t.price_change_status priceChangeStatus
 		FROM
 		<if test="isHistory == 0">
 		  master_order_info t 
