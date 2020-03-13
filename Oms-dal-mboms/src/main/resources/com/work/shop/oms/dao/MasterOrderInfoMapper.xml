@@ -1301,7 +1301,12 @@
         <if test="signContractNum != null" >
             sign_contract_num = #{signContractNum,jdbcType=VARCHAR},
         </if>
-
+      <if test="goodsSaleType != null" >
+        goods_sale_type = #{goodsSaleType,jdbcType=INTEGER},
+      </if>
+      <if test="priceChangeStatus != null " >
+        price_change_status = #{priceChangeStatus,jdbcType=INTEGER},
+      </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
