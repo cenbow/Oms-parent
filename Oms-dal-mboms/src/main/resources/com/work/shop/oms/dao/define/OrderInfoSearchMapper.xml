@@ -2796,6 +2796,9 @@
             <if test="endTime != null">
                 AND moi.add_time &lt;= #{endTime}
             </if>
+			<if test="masterOrderSn != null">
+				AND moi.master_order_sn = #{masterOrderSn}
+			</if>
             GROUP BY moi.master_order_sn, mog.supplier_code
         ) as countOrderQueryExport
 
