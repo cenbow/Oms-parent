@@ -175,6 +175,11 @@ public class OrderGoodsItem implements Serializable {
 	 */
 	private String supplierContactMobile;
 
+	/**
+	 * 商品销售类型  0 正常商品 1 非标定制
+	 */
+	private Integer saleType;
+
 	public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
@@ -525,5 +530,13 @@ public class OrderGoodsItem implements Serializable {
 
 	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
 		this.goodsDecimalNumber = goodsDecimalNumber;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
 	}
 }

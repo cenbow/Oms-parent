@@ -197,6 +197,16 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private Integer channelType;
 
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
     public Integer getPageNo() {
 		return pageNo;
 	}
@@ -499,5 +509,21 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setChannelType(Integer channelType) {
 		this.channelType = channelType;
+	}
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
 	}
 }
