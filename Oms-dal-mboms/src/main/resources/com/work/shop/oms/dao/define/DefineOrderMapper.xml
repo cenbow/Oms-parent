@@ -41,6 +41,8 @@
         oi.source source,
         oi.order_from channelCode,
         oi.shop_name channelName,
+        oi.goods_sale_type goodsSaleType,
+        oi.price_change_status priceChangeStatus,
         oie.is_advance isAdvance,
         oie.customer_contract_num customerContractNum,
         oi.expected_ship_date expectedShipDate,
@@ -127,6 +129,14 @@
         <!-- 签章状态 -->
         <if test="signStatus != null">
             and oi.sign_status = #{signStatus}
+        </if>
+        <!-- 订单商品销售类型 -->
+        <if test="goodsSaleType != null">
+            and oi.goods_sale_type = #{goodsSaleType}
+        </if>
+        <!-- 改价确认状态 -->
+        <if test="priceChangeStatus != null">
+            and oi.price_change_status = #{priceChangeStatus}
         </if>
         <!-- 公司id -->
         <if test="companyId != null">
