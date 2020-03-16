@@ -207,6 +207,16 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private Integer priceChangeStatus;
 
+	/**
+	 * 订单来源
+	 */
+	private String orderFrom;
+
+	/**
+	 * 商品数据来源
+	 */
+	private  Integer goodsDataSources;
+
     public Integer getPageNo() {
 		return pageNo;
 	}
@@ -525,5 +535,21 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setPriceChangeStatus(Integer priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getOrderFrom() {
+		return orderFrom;
+	}
+
+	public void setOrderFrom(String orderFrom) {
+		this.orderFrom = orderFrom;
+	}
+
+	public Integer getGoodsDataSources() {
+		return goodsDataSources;
+	}
+
+	public void setGoodsDataSources(Integer goodsDataSources) {
+		this.goodsDataSources = goodsDataSources;
 	}
 }
