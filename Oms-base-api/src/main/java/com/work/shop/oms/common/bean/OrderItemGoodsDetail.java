@@ -342,6 +342,11 @@ public class OrderItemGoodsDetail implements Serializable {
 	 */
 	private Integer saleType;
 
+	/**
+	 * 保护价
+	 */
+	private BigDecimal protectPrice;
+
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
     }
@@ -1181,5 +1186,13 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setSaleType(Integer saleType) {
 		this.saleType = saleType;
+	}
+
+	public BigDecimal getProtectPrice() {
+		return protectPrice;
+	}
+
+	public void setProtectPrice(BigDecimal protectPrice) {
+		this.protectPrice = protectPrice;
 	}
 }
