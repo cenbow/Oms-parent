@@ -2715,7 +2715,7 @@
 		<!--
         moi.total_fee as orderTotalAmount,
         -->
-		sum(ROUND(mog.transaction_price * (mog.goods_number + mog.goods_decimal_number) )) as orderTotalAmount,
+		sum(ROUND(mog.transaction_price * (mog.goods_number + mog.goods_decimal_number) ,2)) as orderTotalAmount,
         sum(
         if((mog.input_tax is not null and mog.input_tax > 0),
         ROUND(mog.cost_price * (1 + mog.input_tax/100) * (mog.goods_number + mog.goods_decimal_number) , 2),
@@ -2796,6 +2796,9 @@
             <if test="endTime != null">
                 AND moi.add_time &lt;= #{endTime}
             </if>
+			<if test="masterOrderSn != null">
+				AND moi.master_order_sn = #{masterOrderSn}
+			</if>
             GROUP BY moi.master_order_sn, mog.supplier_code
         ) as countOrderQueryExport
 
