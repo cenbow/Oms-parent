@@ -1,9 +1,9 @@
 package com.work.shop.oms.common.bean;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
-
-import com.alibaba.fastjson.JSON;
 
 /**
  * 配送商品信息
@@ -302,6 +302,11 @@ public class MasterGoods implements Serializable {
 	 * 无库存下单补库存时使用的仓库
 	 */
 	private String withoutStockDepotNo;
+
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
 
     public Double getShareBonus() {
 		return shareBonus;
@@ -773,5 +778,13 @@ public class MasterGoods implements Serializable {
 
 	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
 		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
 	}
 }

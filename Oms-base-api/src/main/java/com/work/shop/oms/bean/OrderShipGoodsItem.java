@@ -107,6 +107,11 @@ public class OrderShipGoodsItem implements Serializable {
 	 */
 	private Integer goodsNumber;
 
+	/**
+	 * 商品销售类型  0 正常商品 1 非标定制
+	 */
+	private Integer saleType;
+
 	public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
@@ -258,5 +263,12 @@ public class OrderShipGoodsItem implements Serializable {
 	public void setShipStatus(Integer shipStatus) {
 		this.shipStatus = shipStatus;
 	}
-	
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
+	}
 }

@@ -205,6 +205,11 @@ public class OrderGoodsInfo implements Serializable{
 	 */
 	private String deliveryCycle;
 
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
+
 	public int getGoodsStatus() {
 		return goodsStatus;
 	}
@@ -553,5 +558,13 @@ public class OrderGoodsInfo implements Serializable{
 
 	public void setDeliveryCycle(String deliveryCycle) {
 		this.deliveryCycle = deliveryCycle;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
 	}
 }

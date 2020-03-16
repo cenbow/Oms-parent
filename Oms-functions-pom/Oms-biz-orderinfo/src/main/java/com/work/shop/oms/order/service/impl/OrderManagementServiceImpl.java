@@ -1,30 +1,61 @@
 package com.work.shop.oms.order.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.common.bean.*;
-import com.work.shop.oms.dao.*;
-import com.work.shop.oms.order.service.*;
-import com.work.shop.oms.utils.CommonUtils;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.AdminUser;
+import com.work.shop.oms.bean.DistributeAction;
+import com.work.shop.oms.bean.DistributeActionExample;
+import com.work.shop.oms.bean.MasterOrderAction;
+import com.work.shop.oms.bean.MasterOrderActionExample;
+import com.work.shop.oms.bean.MasterOrderGoods;
+import com.work.shop.oms.bean.MasterOrderInfo;
+import com.work.shop.oms.bean.MasterOrderInfoExample;
+import com.work.shop.oms.bean.MasterOrderInfoExtend;
+import com.work.shop.oms.bean.OrderDistribute;
+import com.work.shop.oms.bean.OrderDistributeExample;
+import com.work.shop.oms.bean.OrderReturn;
+import com.work.shop.oms.bean.OrderReturnExample;
+import com.work.shop.oms.bean.OrderReturnGoods;
+import com.work.shop.oms.bean.PurchaseOrder;
+import com.work.shop.oms.bean.SystemShipping;
+import com.work.shop.oms.bean.SystemShippingExample;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
+import com.work.shop.oms.common.bean.ConstantValues;
+import com.work.shop.oms.common.bean.DistributeShippingBean;
+import com.work.shop.oms.common.bean.MasterOrderDetail;
+import com.work.shop.oms.common.bean.OrderItemAction;
+import com.work.shop.oms.common.bean.OrderItemActionDetail;
+import com.work.shop.oms.common.bean.OrderItemDepotDetail;
+import com.work.shop.oms.common.bean.OrderItemDepotInfo;
+import com.work.shop.oms.common.bean.OrderItemDetail;
+import com.work.shop.oms.common.bean.OrderItemGoodsDetail;
+import com.work.shop.oms.common.bean.OrderItemPayDetail;
+import com.work.shop.oms.common.bean.OrderItemStatusUtils;
+import com.work.shop.oms.common.bean.OrderStatus;
+import com.work.shop.oms.common.bean.ReturnInfo;
+import com.work.shop.oms.common.bean.ShippingInfo;
+import com.work.shop.oms.dao.DistributeActionMapper;
+import com.work.shop.oms.dao.MasterOrderActionMapper;
+import com.work.shop.oms.dao.MasterOrderGoodsDetailMapper;
+import com.work.shop.oms.dao.MasterOrderInfoDetailMapper;
+import com.work.shop.oms.dao.MasterOrderInfoMapper;
+import com.work.shop.oms.dao.MasterOrderPayTypeDetailMapper;
+import com.work.shop.oms.dao.OrderDepotShipDetailMapper;
+import com.work.shop.oms.dao.OrderDistributeDetailMapper;
+import com.work.shop.oms.dao.OrderDistributeMapper;
+import com.work.shop.oms.dao.OrderReturnGoodsDetailMapper;
+import com.work.shop.oms.dao.OrderReturnMapper;
+import com.work.shop.oms.dao.SystemShippingMapper;
 import com.work.shop.oms.order.request.OmsBaseRequest;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.response.OrderManagementResponse;
+import com.work.shop.oms.order.service.MasterOrderActionService;
+import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
+import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.oms.order.service.OrderManagementService;
+import com.work.shop.oms.order.service.OrderQueryService;
+import com.work.shop.oms.order.service.PurchaseOrderService;
 import com.work.shop.oms.orderop.service.OrderCommonService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderDistributeOpService;
@@ -34,6 +65,17 @@ import com.work.shop.oms.payment.feign.PayService;
 import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.StringUtil;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 订单管理服务
@@ -812,10 +854,18 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			orderStatus.setMessage(request.getMessage());
 			ReturnInfo<String> info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
-                //返回正常单，订单推送供应链
-                logger.info("返回正常单:" + masterOrderSn + "订单推送供应链");
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
-				response.setSuccess(true);
+				//判断待询价与改价问题单
+				if( ( master.getGoodsSaleType() != null && master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD )
+				 || ( master.getPriceChangeStatus() != null && master.getPriceChangeStatus() > Constant.PRICE_CHANGE_AFFIRM_1 ) ){
+					//返回正常单，订单改价确认
+					logger.info("返回正常单:" + masterOrderSn + "订单改价确认 ");
+					orderConfirmService.changePriceConfirmOrder(masterOrderSn,orderStatus);
+				}else{
+					//返回正常单，订单推送供应链
+					logger.info("返回正常单:" + masterOrderSn + "订单推送供应链");
+					purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
+				}
+                response.setSuccess(true);
 				response.setMessage("订单返回正常单成功");
 			} else {
 				response.setMessage("订单返回正常单失败：" + (info == null ? "返回结果为空" : info.getMessage()));

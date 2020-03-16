@@ -1,27 +1,17 @@
 package com.work.shop.oms.order.service.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.user.account.UserAccountService;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.MasterOrderAction;
+import com.work.shop.oms.bean.MasterOrderAddressInfo;
+import com.work.shop.oms.bean.MasterOrderInfo;
+import com.work.shop.oms.bean.MasterOrderInfoExample;
+import com.work.shop.oms.bean.MasterOrderPay;
+import com.work.shop.oms.bean.MasterOrderPayExample;
+import com.work.shop.oms.bean.SystemConfig;
+import com.work.shop.oms.bean.SystemConfigExample;
+import com.work.shop.oms.bean.SystemPayment;
+import com.work.shop.oms.bean.SystemShipping;
 import com.work.shop.oms.common.bean.GoodsCardInfo;
 import com.work.shop.oms.common.bean.MasterGoods;
 import com.work.shop.oms.common.bean.MasterOrder;
@@ -43,19 +33,32 @@ import com.work.shop.oms.config.service.SystemShippingService;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
 import com.work.shop.oms.dao.MasterOrderPayMapper;
 import com.work.shop.oms.dao.SystemConfigMapper;
-import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
 import com.work.shop.oms.order.service.OrderValidateService;
 import com.work.shop.oms.orderop.service.OrderQuestionService;
-import com.work.shop.oms.orderop.service.ShopUserService;
 import com.work.shop.oms.orderop.service.UserPointsService;
 import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.shoppay.service.ShopPayService;
 import com.work.shop.oms.stock.service.ChannelStockService;
+import com.work.shop.oms.user.account.UserAccountService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 订单校验服务
@@ -279,7 +282,20 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					+ "余额账户锁定问题单", "9974"));
 			orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 		}
-		
+		//待询价 或者改价问题单
+		if(orderInfo.getGoodsSaleType() != null && orderInfo.getGoodsSaleType() != 0){
+			switch (orderInfo.getGoodsSaleType()){
+				case Constant.GOODS_SALE_TYPE_CUSTOMIZATION :
+					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待询价问题单", "120"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					break;
+				case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
+					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "改价问题单", "121"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					break;
+			}
+		}
+
 		// 订单创建成功后积分扣减
 		if (orderInfo.getIntegral().intValue() > 0) {
 			Integer integral = orderInfo.getIntegral();
