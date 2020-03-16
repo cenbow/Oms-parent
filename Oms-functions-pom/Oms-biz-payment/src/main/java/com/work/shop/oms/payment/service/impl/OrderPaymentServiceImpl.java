@@ -119,7 +119,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             apiReturnData.setIsOk(Constant.OS_STR_YES);
 		} catch (Exception e) {
 		    logger.error("获取订单: " + JSONObject.toJSONString(masterOrderSnList) + "支付信息异常", e);
-            apiReturnData.setMessage("查询异常 ："+e.getMessage());
+            apiReturnData.setMessage(e.getMessage());
         }
 
         return apiReturnData;
