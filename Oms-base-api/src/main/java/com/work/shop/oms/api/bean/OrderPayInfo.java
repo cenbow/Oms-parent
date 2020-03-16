@@ -50,6 +50,11 @@ public class OrderPayInfo implements Serializable{
 	 * 订单状态
 	 */
 	private int orderStatus;
+
+	/**
+	 * 价格未定 状态
+	 */
+	private Integer  orderPayPriceNo;
 	
 	public String getPaySn() {
 		return paySn;
@@ -115,4 +120,11 @@ public class OrderPayInfo implements Serializable{
 		this.orderStatus = orderStatus;
 	}
 
+	public Integer getOrderPayPriceNo() {
+		return orderPayPriceNo;
+	}
+
+	public void setOrderPayPriceNo(Integer orderPayPriceNo) {
+		this.orderPayPriceNo = orderPayPriceNo;
+	}
 }
