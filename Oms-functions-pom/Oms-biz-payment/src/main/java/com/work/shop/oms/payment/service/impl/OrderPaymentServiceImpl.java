@@ -93,30 +93,29 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 
 		try {
-			//验证订单可查询支付金额信息   改价订单未确认不能查询
-			verifyOrder("",masterOrderSnList);
 			if (masterOrderSnList == null || masterOrderSnList.size() == 0) {
-                apiReturnData.setMessage("订单号为空");
-                return apiReturnData;
-            }
-
-            OrderPayInfo orderPayInfo = new OrderPayInfo();
-			BigDecimal totalMoney = BigDecimal.valueOf(0);
-            for (String masterOrderSn : masterOrderSnList) {
-                MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
-                if (null == masterOrderInfo) {
-                    apiReturnData.setMessage("无效的订单号");
-                    return apiReturnData;
-                }
-                // 支付总费用
-                totalMoney = totalMoney.add(masterOrderInfo.getPayTotalFee());
-            }
-
-            orderPayInfo.setPayTotalfee(totalMoney.doubleValue());
-
-            apiReturnData.setMessage("成功");
-            apiReturnData.setData(orderPayInfo);
-            apiReturnData.setIsOk(Constant.OS_STR_YES);
+				apiReturnData.setMessage("订单号为空");
+				return apiReturnData;
+			}
+			//验证订单可查询支付金额信息   改价订单未确认不能查询
+			OrderPayInfo orderPayInfo = verifyOrder("",masterOrderSnList);
+			if(orderPayInfo == null){
+				orderPayInfo = new OrderPayInfo();
+				BigDecimal totalMoney = BigDecimal.valueOf(0);
+				for (String masterOrderSn : masterOrderSnList) {
+					MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+					if (null == masterOrderInfo) {
+						apiReturnData.setMessage("无效的订单号");
+						return apiReturnData;
+					}
+					// 支付总费用
+					totalMoney = totalMoney.add(masterOrderInfo.getPayTotalFee());
+				}
+				orderPayInfo.setPayTotalfee(totalMoney.doubleValue());
+			}
+			apiReturnData.setMessage("成功");
+			apiReturnData.setData(orderPayInfo);
+			apiReturnData.setIsOk(Constant.OS_STR_YES);
 		} catch (Exception e) {
 		    logger.error("获取订单: " + JSONObject.toJSONString(masterOrderSnList) + "支付信息异常", e);
             apiReturnData.setMessage(e.getMessage());
@@ -138,57 +137,57 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		apiReturnData.setIsOk(Constant.OS_STR_NO);
 		try {
 			//验证订单可支付
-			verifyOrder(paySn,masterOrderSnList);
+			OrderPayInfo orderPayInfo = verifyOrder(paySn,masterOrderSnList);
+			if(orderPayInfo == null){
+				orderPayInfo = new OrderPayInfo();
+				if (StringUtil.isNotNull(paySn)) {
+					if (paySn.startsWith(Constant.ORDER_PAY_MFK)) {
+						MergeOrderPay mergeOrderPay = mergeOrderPayMapper.selectByPrimaryKey(paySn);
+						if (null == mergeOrderPay) {
+							throw new Exception("未找到对应支付单！");
+						}
+						orderPayInfo.setPaySn(mergeOrderPay.getMergePaySn());
+						orderPayInfo.setPayId(mergeOrderPay.getPayId());
+						orderPayInfo.setPayName(mergeOrderPay.getPayName());
+						orderPayInfo.setPayLastTime(TimeUtil.formatDate(mergeOrderPay.getPayLasttime()));
+						orderPayInfo.setPayStatus(mergeOrderPay.getPayStatus());
+						orderPayInfo.setPayTotalfee(mergeOrderPay.getMergePayFee().doubleValue());
 
-			OrderPayInfo orderPayInfo = new OrderPayInfo();
-			if (StringUtil.isNotNull(paySn)) {
-				if (paySn.startsWith(Constant.ORDER_PAY_MFK)) {
-					MergeOrderPay mergeOrderPay = mergeOrderPayMapper.selectByPrimaryKey(paySn);
-					if (null == mergeOrderPay) {
-						throw new Exception("未找到对应支付单！");
-					}
-					orderPayInfo.setPaySn(mergeOrderPay.getMergePaySn());
-					orderPayInfo.setPayId(mergeOrderPay.getPayId());
-					orderPayInfo.setPayName(mergeOrderPay.getPayName());
-					orderPayInfo.setPayLastTime(TimeUtil.formatDate(mergeOrderPay.getPayLasttime()));
-					orderPayInfo.setPayStatus(mergeOrderPay.getPayStatus());
-					orderPayInfo.setPayTotalfee(mergeOrderPay.getMergePayFee().doubleValue());
-					
-					HashSet<String> userSet = new HashSet<String>();
-					String[] paySnData = mergeOrderPay.getMasterPaySn().split(Constant.STRING_SPLIT_COMMA);
-					for (String masterPaySn : paySnData) {
-						MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(masterPaySn);
+						HashSet<String> userSet = new HashSet<String>();
+						String[] paySnData = mergeOrderPay.getMasterPaySn().split(Constant.STRING_SPLIT_COMMA);
+						for (String masterPaySn : paySnData) {
+							MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(masterPaySn);
+							MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderPay.getMasterOrderSn());
+							String userId = masterOrderInfo.getUserId();
+							if (masterOrderInfo.getOrderStatus() > 0) {
+								orderPayInfo.setOrderStatus(masterOrderInfo.getOrderStatus());
+							}
+							userSet.add(userId);
+						}
+						if (null == userSet || userSet.size() != 1) {
+							throw new Exception("userId异常！");
+						}
+						orderPayInfo.setUserId(userSet.iterator().next());
+					} else {
+						MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(paySn);
+						if (null == masterOrderPay) {
+							throw new Exception("未找到对应支付单！");
+						}
+						orderPayInfo.setPaySn(masterOrderPay.getMasterPaySn());
+						orderPayInfo.setPayId(masterOrderPay.getPayId());
+						orderPayInfo.setPayName(masterOrderPay.getPayName());
+						orderPayInfo.setPayLastTime(TimeUtil.formatDate(masterOrderPay.getPayLasttime()));
+						orderPayInfo.setPayStatus(masterOrderPay.getPayStatus());
+						orderPayInfo.setPayTotalfee(masterOrderPay.getPayTotalfee().doubleValue());
 						MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderPay.getMasterOrderSn());
 						String userId = masterOrderInfo.getUserId();
 						if (masterOrderInfo.getOrderStatus() > 0) {
 							orderPayInfo.setOrderStatus(masterOrderInfo.getOrderStatus());
 						}
-						userSet.add(userId);
+						orderPayInfo.setUserId(userId);
 					}
-					if (null == userSet || userSet.size() != 1) {
-						throw new Exception("userId异常！");
-					}
-					orderPayInfo.setUserId(userSet.iterator().next());
 				} else {
-					MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(paySn);
-					if (null == masterOrderPay){
-						throw new Exception("未找到对应支付单！");
-					}
-					orderPayInfo.setPaySn(masterOrderPay.getMasterPaySn());
-					orderPayInfo.setPayId(masterOrderPay.getPayId());
-					orderPayInfo.setPayName(masterOrderPay.getPayName());
-					orderPayInfo.setPayLastTime(TimeUtil.formatDate(masterOrderPay.getPayLasttime()));
-					orderPayInfo.setPayStatus(masterOrderPay.getPayStatus());
-					orderPayInfo.setPayTotalfee(masterOrderPay.getPayTotalfee().doubleValue());
-					MasterOrderInfo masterOrderInfo =  masterOrderInfoMapper.selectByPrimaryKey(masterOrderPay.getMasterOrderSn());
-					String userId = masterOrderInfo.getUserId();
-					if (masterOrderInfo.getOrderStatus() > 0) {
-						orderPayInfo.setOrderStatus(masterOrderInfo.getOrderStatus());
-					}
-					orderPayInfo.setUserId(userId);
-				}
-			} else {
-				// 在方法 verifyOrder 中已做
+					// 在方法 verifyOrder 中已做
 				/*if (null != masterOrderSnList && masterOrderSnList.size() > 0) {
 					for (String masterOrderSn : masterOrderSnList) {
 						MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
@@ -199,60 +198,61 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 				} else {
 					throw new Exception("参数不能都为空！");
 				}*/
-				//单个订单支付查询
-				if (masterOrderSnList.size() == 1){
-					MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
-					masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSnList.get(0)).andPayStatusEqualTo((byte)Constant.OP_PAY_STATUS_UNPAYED);
-					List<MasterOrderPay> masterOrderPayList = masterOrderPayMapper.selectByExample(masterOrderPayExample);
-					if (null == masterOrderPayList || masterOrderPayList.size() == 0) {
-						apiReturnData.setIsOk("0");
-						apiReturnData.setMessage("未找到需要支付的支付单！");
-						return apiReturnData;
-					} else if(masterOrderPayList.size() > 1) {
-						throw new Exception("支付单数据异常！");
-					}
-					orderPayInfo.setPaySn(masterOrderPayList!=null?masterOrderPayList.get(0).getMasterPaySn():"");
-					orderPayInfo.setPayId(masterOrderPayList!=null?masterOrderPayList.get(0).getPayId():(byte)0);
-					orderPayInfo.setPayName(masterOrderPayList.get(0).getPayName());
-					orderPayInfo.setPayLastTime(masterOrderPayList!=null?TimeUtil.formatDate(masterOrderPayList.get(0).getPayLasttime()):"");
-					orderPayInfo.setPayStatus(masterOrderPayList!=null?masterOrderPayList.get(0).getPayStatus():(byte)-1);
-					orderPayInfo.setPayTotalfee(masterOrderPayList!=null?masterOrderPayList.get(0).getPayTotalfee().doubleValue():0D);
-					MasterOrderInfo masterOrderInfo =  masterOrderInfoMapper.selectByPrimaryKey(masterOrderSnList.get(0));
-					String userId =masterOrderInfo.getUserId();
-					if(masterOrderInfo.getOrderStatus()>0){
-						orderPayInfo.setOrderStatus(masterOrderInfo.getOrderStatus());
-					}
-					orderPayInfo.setUserId(userId);
-				} else {
-					//合并支付查询
-					ReturnInfo<MergeOrderPay> reInfo = payService.createMergePay(masterOrderSnList);
-					if (reInfo.getIsOk() == 0 ) {
-						throw new Exception("创建合并支付单数据异常！" + reInfo.getMessage());
-					}
-					MergeOrderPay mergeOrderPay = reInfo.getData();
-					if (null == mergeOrderPay) {
-						throw new Exception("合并支付单数据异常！");
-					}
-					orderPayInfo.setPaySn(mergeOrderPay.getMergePaySn());
-					orderPayInfo.setPayId(mergeOrderPay.getPayId());
-					orderPayInfo.setPayName(mergeOrderPay.getPayName());
-					orderPayInfo.setPayLastTime(TimeUtil.formatDate(mergeOrderPay.getPayLasttime()));
-					orderPayInfo.setPayStatus(mergeOrderPay.getPayStatus());
-					orderPayInfo.setPayTotalfee(mergeOrderPay.getMergePayFee().doubleValue());
-					HashSet<String> userSet = new HashSet<String>();
-					for (String masterPaySn : mergeOrderPay.getMasterPaySn().split(Constant.STRING_SPLIT_COMMA)) {
-						MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(masterPaySn);
-						MasterOrderInfo masterOrderInfo =  masterOrderInfoMapper.selectByPrimaryKey(masterOrderPay.getMasterOrderSn());
+					//单个订单支付查询
+					if (masterOrderSnList.size() == 1) {
+						MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+						masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSnList.get(0)).andPayStatusEqualTo((byte) Constant.OP_PAY_STATUS_UNPAYED);
+						List<MasterOrderPay> masterOrderPayList = masterOrderPayMapper.selectByExample(masterOrderPayExample);
+						if (null == masterOrderPayList || masterOrderPayList.size() == 0) {
+							apiReturnData.setIsOk("0");
+							apiReturnData.setMessage("未找到需要支付的支付单！");
+							return apiReturnData;
+						} else if (masterOrderPayList.size() > 1) {
+							throw new Exception("支付单数据异常！");
+						}
+						orderPayInfo.setPaySn(masterOrderPayList != null ? masterOrderPayList.get(0).getMasterPaySn() : "");
+						orderPayInfo.setPayId(masterOrderPayList != null ? masterOrderPayList.get(0).getPayId() : (byte) 0);
+						orderPayInfo.setPayName(masterOrderPayList.get(0).getPayName());
+						orderPayInfo.setPayLastTime(masterOrderPayList != null ? TimeUtil.formatDate(masterOrderPayList.get(0).getPayLasttime()) : "");
+						orderPayInfo.setPayStatus(masterOrderPayList != null ? masterOrderPayList.get(0).getPayStatus() : (byte) -1);
+						orderPayInfo.setPayTotalfee(masterOrderPayList != null ? masterOrderPayList.get(0).getPayTotalfee().doubleValue() : 0D);
+						MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSnList.get(0));
 						String userId = masterOrderInfo.getUserId();
 						if (masterOrderInfo.getOrderStatus() > 0) {
 							orderPayInfo.setOrderStatus(masterOrderInfo.getOrderStatus());
 						}
-						userSet.add(userId);
+						orderPayInfo.setUserId(userId);
+					} else {
+						//合并支付查询
+						ReturnInfo<MergeOrderPay> reInfo = payService.createMergePay(masterOrderSnList);
+						if (reInfo.getIsOk() == 0) {
+							throw new Exception("创建合并支付单数据异常！" + reInfo.getMessage());
+						}
+						MergeOrderPay mergeOrderPay = reInfo.getData();
+						if (null == mergeOrderPay) {
+							throw new Exception("合并支付单数据异常！");
+						}
+						orderPayInfo.setPaySn(mergeOrderPay.getMergePaySn());
+						orderPayInfo.setPayId(mergeOrderPay.getPayId());
+						orderPayInfo.setPayName(mergeOrderPay.getPayName());
+						orderPayInfo.setPayLastTime(TimeUtil.formatDate(mergeOrderPay.getPayLasttime()));
+						orderPayInfo.setPayStatus(mergeOrderPay.getPayStatus());
+						orderPayInfo.setPayTotalfee(mergeOrderPay.getMergePayFee().doubleValue());
+						HashSet<String> userSet = new HashSet<String>();
+						for (String masterPaySn : mergeOrderPay.getMasterPaySn().split(Constant.STRING_SPLIT_COMMA)) {
+							MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByPrimaryKey(masterPaySn);
+							MasterOrderInfo masterOrderInfo = masterOrderInfoMapper.selectByPrimaryKey(masterOrderPay.getMasterOrderSn());
+							String userId = masterOrderInfo.getUserId();
+							if (masterOrderInfo.getOrderStatus() > 0) {
+								orderPayInfo.setOrderStatus(masterOrderInfo.getOrderStatus());
+							}
+							userSet.add(userId);
+						}
+						if (null == userSet || userSet.size() != 1) {
+							throw new Exception("userId异常！");
+						}
+						orderPayInfo.setUserId(userSet.iterator().next());
 					}
-					if (null == userSet || userSet.size() != 1) {
-						throw new Exception("userId异常！");
-					}
-					orderPayInfo.setUserId(userSet.iterator().next());
 				}
 			}
 			apiReturnData.setData(orderPayInfo);
@@ -655,7 +655,8 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 	 * @param paySn
 	 * @param masterOrderSnList
 	 */
-	private void verifyOrder(String paySn,List<String> masterOrderSnList) throws  Exception{
+	private OrderPayInfo verifyOrder(String paySn,List<String> masterOrderSnList) throws  Exception{
+		OrderPayInfo  orderPayInfo = new OrderPayInfo();
 		if (StringUtil.isNotNull(paySn)) {
 			if (paySn.startsWith(Constant.ORDER_PAY_MFK)) {
 				//工业品暂未用到合并支付
@@ -674,14 +675,18 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 							//非标定制商品
 							if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
 								//平台未确认
-								throw new Exception("订单："+masterOrderInfo.getMasterOrderSn()+" 商品询价中未生成支付单！");
+								//throw new Exception("订单："+masterOrderInfo.getMasterOrderSn()+" 商品询价中未生成支付单！");
+								orderPayInfo.setOrderPayPriceNo(1);
+								return orderPayInfo;
 							}
 							break;
 						case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
 							//可改价商品
 							if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
 								//平台未确认
-								throw new Exception("订单："+masterOrderInfo.getMasterOrderSn()+" 商品改价中未生成支付单！");
+								//throw new Exception("订单："+masterOrderInfo.getMasterOrderSn()+" 商品改价中未生成支付单！");
+								orderPayInfo.setOrderPayPriceNo(1);
+								return orderPayInfo;
 							}
 							break;
 					}
@@ -705,14 +710,18 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 								//非标定制商品
 								if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
 									//平台未确认
-									throw new Exception("订单："+masterOrderSn+" 商品询价中未生成支付单！");
+									//throw new Exception("订单："+masterOrderSn+" 商品询价中未生成支付单！");
+									orderPayInfo.setOrderPayPriceNo(1);
+									return orderPayInfo;
 								}
 								break;
 							case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
 								//可改价商品
 								if( masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
 									//平台未确认
-									throw new Exception("订单："+masterOrderSn+" 商品改价中未生成支付单！");
+									//throw new Exception("订单："+masterOrderSn+" 商品改价中未生成支付单！");
+									orderPayInfo.setOrderPayPriceNo(1);
+									return orderPayInfo;
 								}
 								break;
 						}
@@ -724,6 +733,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 				throw new Exception("参数不能都为空！");
 			}
 		}
+		return null;
 	}
 
 }
