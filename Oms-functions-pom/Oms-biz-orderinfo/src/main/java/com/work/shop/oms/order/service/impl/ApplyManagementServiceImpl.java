@@ -422,7 +422,7 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
         updateOrder.setTotalFee(totalFee.subtract(totalAmount));
         updateOrder.setDiscount(discount.subtract(totalDiscount));
         updateOrder.setUpdateTime(new Date());
-
+		updateOrder.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_1);
         //未支付，更新订单应付款金额；部分付款，若订单应付款金额 >= 差额，只更新订单应付款金额；若若订单应付款金额 < 差额,更新订单应付款金额和已付款金额；
         //已支付，更新已付款金额
         Byte payStatus = masterOrderInfo.getPayStatus();
