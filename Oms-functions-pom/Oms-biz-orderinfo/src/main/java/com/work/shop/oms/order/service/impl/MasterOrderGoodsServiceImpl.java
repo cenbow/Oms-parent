@@ -69,16 +69,21 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		// 订单商品总财务价
 		double settlementPrice = 0D;
 		for (MasterOrderGoods orderGoods : orderGoodsList) {
-//			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
-//					* orderGoods.getGoodsNumber();
-			settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
-					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();
+			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
+				* orderGoods.getGoodsNumber();
+			/*settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
+					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();*/
+			BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber();
+			if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+				settlementPrice += NumberUtil.getDecimalValue(orderGoods.getSettlementPrice().multiply(goodsDecimalNumber), 2).doubleValue();
+			}
 			masterOrderGoodsMapper.insertSelective(orderGoods);
 		}
 		// 商品结算价 = 商品结算价 + 综合税费
 		settlementPrice += masterOrder.getTax();
 		settlementPrice = NumberUtil.getDoubleByValue(settlementPrice, 2);
 		masterOrder.setGoodsSettlementPrice(settlementPrice);
+		logger.info("订单：" + masterOrderSn + "，商品总结算价格:" + settlementPrice + "," + masterOrder.getPaySettlementPrice());
 		try {
 			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(masterOrderInfo);
 			orderAction.setActionNote("优惠券和余额平摊计算正确！");
