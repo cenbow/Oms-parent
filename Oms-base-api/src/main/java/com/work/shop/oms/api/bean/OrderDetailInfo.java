@@ -455,6 +455,11 @@ public class OrderDetailInfo  implements Serializable{
      */
     private String signContractNum;
 
+	/**
+	 * 用户备注
+	 */
+	private String remark;
+
 	public int getOrderType() {
         return orderType;
     }
@@ -1093,5 +1098,13 @@ public class OrderDetailInfo  implements Serializable{
 
 	public void setPriceChangeStatus(Byte priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 }

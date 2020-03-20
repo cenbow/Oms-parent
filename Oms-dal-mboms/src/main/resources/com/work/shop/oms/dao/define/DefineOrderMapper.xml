@@ -740,7 +740,8 @@
         oai.inv_address invAddress,
         oai.shipping_name shippingName,
         oi.goods_sale_type goodsSaleType,
-        oi.price_change_status priceChangeStatus
+        oi.price_change_status priceChangeStatus,
+        oie.remark remark
         from
         <if test="isHistory == 0">
             master_order_info
