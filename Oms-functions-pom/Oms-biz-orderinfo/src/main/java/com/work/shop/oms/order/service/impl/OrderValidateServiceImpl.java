@@ -954,6 +954,11 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				// 商品数量
 				BigDecimal num = new BigDecimal(masterGoods.getGoodsNumber());
 				goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+				// 小数数量
+				BigDecimal goodsDecimalNumber = masterGoods.getGoodsDecimals();
+				if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+					goodsTranPrice += NumberUtil.getDoubleByDecimal(goodsDecimalNumber.multiply(tr), 2);
+				}
 			}
 		}
 		return goodsTranPrice;
