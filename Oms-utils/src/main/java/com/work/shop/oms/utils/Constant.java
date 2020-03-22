@@ -1171,4 +1171,19 @@ public class Constant {
      * 价格变动确认状态   3 用户确认
      */
     public  static  final  int PRICE_CHANGE_AFFIRM_3 = 3;
+
+	/**
+	 * 铁信支付
+	 */
+	public static final String PAY_TIEXIN = "tiexin";
+
+	/**
+	 * 公司类型 1内部公司、2外部公司
+	 */
+	public static final Integer INTERNAL_COMPANY = 1;
+
+	/**
+	 * 公司类型 1内部公司、2外部公司
+	 */
+	public static final Integer OUTSIDE_COMPANY = 2;
 }

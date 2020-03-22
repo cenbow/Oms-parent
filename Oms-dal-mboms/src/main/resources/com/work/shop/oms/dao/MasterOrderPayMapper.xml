@@ -417,4 +417,12 @@
       payment_rate = #{paymentRate,jdbcType=DECIMAL}
     where master_pay_sn = #{masterPaySn,jdbcType=VARCHAR}
   </update>
+
+  <select id="selectByMasterOrderSn" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from master_order_pay
+    where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
+  </select>
+
 </mapper>
