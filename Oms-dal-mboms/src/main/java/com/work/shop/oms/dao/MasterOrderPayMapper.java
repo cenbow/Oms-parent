@@ -105,4 +105,14 @@ public interface MasterOrderPayMapper {
      */
     @Writer
     int updateByPrimaryKey(MasterOrderPay record);
+
+    /**
+     * 根据订单号查询支付单
+     *
+     * @param masterOrderSn
+     * @return com.work.shop.oms.bean.MasterOrderPay
+     * @author matianqi
+     * @date 2020-03-22 15:08
+     */
+    MasterOrderPay selectByMasterOrderSn(String masterOrderSn);
 }
