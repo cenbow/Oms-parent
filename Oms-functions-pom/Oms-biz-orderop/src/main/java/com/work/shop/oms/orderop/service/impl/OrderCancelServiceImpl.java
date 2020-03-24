@@ -548,7 +548,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		}
 		logger.debug("订单取消 masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
 		String note = orderStatus.getMessage();
-		note += ",[取消code:"+ define.getCode() +", 取消原因:"+ define.getName()+"]";
+		note = (null == note ? "" : note+",") + "[取消code:" + define.getCode() + ", 取消原因:" + define.getName() + "]";
 		if (master.getOrderStatus().equals(ConstantValues.ORDER_STATUS.CANCELED)) {
 			logger.error("订单号[" + masterOrderSn + "]的订单已经取消，请不要重复操作");
 			info.setMessage("订单号[" + masterOrderSn + "]的订单已经取消，请不要重复操作");
