@@ -52,7 +52,8 @@
         oi.need_audit needAudit,
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
-        oai.inv_address invAddress
+        oai.inv_address invAddress,
+        oie.company_type companyType
         from
         <if test="isHistory == 0">
             master_order_info
@@ -741,7 +742,8 @@
         oai.shipping_name shippingName,
         oi.goods_sale_type goodsSaleType,
         oi.price_change_status priceChangeStatus,
-        oie.remark remark
+        oie.remark remark,
+        oie.company_type companyType
         from
         <if test="isHistory == 0">
             master_order_info

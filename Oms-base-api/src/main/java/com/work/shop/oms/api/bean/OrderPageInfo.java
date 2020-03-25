@@ -269,6 +269,16 @@ public class OrderPageInfo implements Serializable{
 	 */
 	private Integer priceChangeStatus;
 
+	/**
+	 * 公司类型
+	 */
+	private Integer companyType;
+
+	/**
+	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
+	 */
+	private int specialType;
+
 	public String getChannelCode() {
 		return channelCode;
 	}
@@ -676,5 +686,21 @@ public class OrderPageInfo implements Serializable{
 
 	public void setPriceChangeStatus(Integer priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public Integer getCompanyType() {
+		return companyType;
+	}
+
+	public void setCompanyType(Integer companyType) {
+		this.companyType = companyType;
+	}
+
+	public int getSpecialType() {
+		return specialType;
+	}
+
+	public void setSpecialType(int specialType) {
+		this.specialType = specialType;
 	}
 }

@@ -271,6 +271,11 @@ public class MasterOrderDetail implements Serializable {
      */
     private List<OrderItemDepotDetail> depotDetails;
 
+	/**
+	 * 支付方式名称
+	 */
+	private String payName;
+
     public String getSaleBd() {
         return saleBd;
     }
@@ -1493,5 +1498,13 @@ public class MasterOrderDetail implements Serializable {
 
 	public void setPriceChangeStatus(Integer priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getPayName() {
+		return payName;
+	}
+
+	public void setPayName(String payName) {
+		this.payName = payName;
 	}
 }
