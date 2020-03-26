@@ -880,10 +880,13 @@ public class OrderItemGoodsDetail implements Serializable {
 			if (null == transactionPrice) {
 				transactionPrice = new BigDecimal(0.00);
 			}
-			if (null == goodsNumber) {
+			if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO)==0)){
 				subTotal = new BigDecimal(0.00);
 			} else {
 				BigDecimal number = new BigDecimal(goodsNumber);
+				if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO)!=0){
+					number = number.add(goodsDecimalNumber);
+				}
 				subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//subTotal = transactionPrice.doubleValue() * goodsNumber;
 			}
