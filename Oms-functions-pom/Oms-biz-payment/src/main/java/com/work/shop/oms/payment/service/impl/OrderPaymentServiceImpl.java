@@ -6,21 +6,14 @@ import com.work.shop.oms.api.bean.OrderPayInfo;
 import com.work.shop.oms.api.param.bean.PayBackInfo;
 import com.work.shop.oms.api.param.bean.PayReturnInfo;
 import com.work.shop.oms.api.payment.service.OrderPaymentService;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderGoodsExample;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.MergeOrderPay;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.ApiReturnData;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.MasterPay;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.dao.MasterOrderGoodsMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.MergeOrderPayMapper;
+import com.work.shop.oms.config.service.SystemPaymentService;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.exception.OrderException;
 import com.work.shop.oms.order.feign.OrderManagementService;
 import com.work.shop.oms.order.request.OrderManagementRequest;
@@ -81,6 +74,12 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 
     /*@Resource
     private OrderConfirmService orderConfirmService;*/
+
+    @Resource
+	private SystemPaymentService systemPaymentService;
+
+    @Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
     /**
      * 获取指定的支付总金额
@@ -239,6 +238,15 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 							&& masterOrderInfo.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD
 							&& masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
 						orderPayInfo.setOrderPayPriceNo(1);
+					}
+					//判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
+					//获取铁信支付的payId
+					SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
+					if (orderPayInfo.getPayId() == systemPayment.getPayId()) {
+						MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSnList.get(0));
+						if (null != masterOrderInfoExtend && Constant.OUTSIDE_COMPANY.equals(masterOrderInfoExtend.getCompanyType())) {
+							orderPayInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
+						}
 					}
 				} else {
 					//合并支付查询
