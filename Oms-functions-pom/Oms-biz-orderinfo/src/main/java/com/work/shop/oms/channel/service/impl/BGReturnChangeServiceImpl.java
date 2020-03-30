@@ -1275,7 +1275,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 //                if (detailInfo.getReturnSum() > goodsNum) {
 //                    return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + "商品编码：" + detailInfo.getCustomCode() + "退换商品数量大于购买数量！退换单申请明细创建失败！");
 //                }
-                boolean checkGoodsNum = checkGoodsNum(detailInfo.getReturnSum(), goods, orderReturnGoodsMap);
+                boolean checkGoodsNum = checkGoodsNum(detailInfo.getReturnSum(), goods, orderReturnGoodsMap,goodsNum);
                 if (!checkGoodsNum) {
                     return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + ",sku编码：" + detailInfo.getCustomCode() + "退换商品数量大于可退换数量！退换单申请明细创建失败！");
                 }
@@ -1285,7 +1285,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 CommonUtils.copyPropertiesNew(detailInfo, goodsReturnChangeDetail);
                 goodsReturnChangeDetail.setOrderSn(orderSn);
                 goodsReturnChangeDetail.setGoodsName(goods.getGoodsName());
-                goodsReturnChangeDetail.setGoodsNumber((short) goodsNum);
+                goodsReturnChangeDetail.setGoodsNumber(goodsNum);
                 goodsReturnChangeDetail.setGoodsPrice(goods.getGoodsPrice());
                 goodsReturnChangeDetail.setTransactionPrice(goods.getTransactionPrice());
                 goodsReturnChangeDetail.setSettlementPrice(goods.getSettlementPrice());
@@ -1323,16 +1323,17 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
     /**
      * 校验商品数量
      * @param applyNum 申请退换商品数量
+     * @param goodsNum 商品购买总数量
      */
-    private boolean checkGoodsNum(int applyNum, MasterOrderGoods goods, Map<String, OrderReturnGoods> map) {
+    private boolean checkGoodsNum(int applyNum, MasterOrderGoods goods, Map<String, OrderReturnGoods> map, int goodsNum) {
         String key = goods.getCustomCode() + "_" + goods.getExtensionCode();
         OrderReturnGoods returnGoods = map.get(key);
         //可申请退换货数量
         int canChangeNum = 0;
         if (returnGoods == null) {
-            canChangeNum = goods.getGoodsNumber();
+            canChangeNum = goodsNum;
         } else {
-            canChangeNum = goods.getGoodsNumber() - returnGoods.getGoodsReturnNumber();
+            canChangeNum = goodsNum - returnGoods.getGoodsReturnNumber();
         }
 
         if (applyNum > canChangeNum) {
