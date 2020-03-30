@@ -1191,4 +1191,9 @@ public class Constant {
 	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
 	 */
 	public  static  final  Byte SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN = 1;
+
+	/**
+	 * 特殊业务类型：订单购买的是店铺商品
+	 */
+	public  static  final  Byte SPECIAL_TYPE_ORDER_BUY_STORE = 2;
 }
