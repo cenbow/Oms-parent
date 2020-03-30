@@ -32,7 +32,7 @@ public class OrderReturnListVO extends OrderReturn {
 	/**
 	 * 退货数量
 	 */
-	private Short prodscannum;
+	private Integer prodscannum;
 	
 	/**
 	 * 用户权限站点 
@@ -159,12 +159,12 @@ public class OrderReturnListVO extends OrderReturn {
 	/**
 	 * 退单商品数量
 	 */
-	private Short goodsReturnNumber;
+	private Integer goodsReturnNumber;
 
 	/**
 	 * 商品购买量
 	 */
-	private Short goodsBuyNumber;
+	private Integer goodsBuyNumber;
 
 	/**
 	 * 商品成交价
@@ -268,11 +268,11 @@ public class OrderReturnListVO extends OrderReturn {
 	 */
 	private Integer channelType;
 	
-	public Short getProdscannum() {
+	public Integer getProdscannum() {
 		return prodscannum;
 	}
 
-	public void setProdscannum(Short prodscannum) {
+	public void setProdscannum(Integer prodscannum) {
 		this.prodscannum = prodscannum;
 	}
 
@@ -893,19 +893,19 @@ public class OrderReturnListVO extends OrderReturn {
 		this.goodsName = goodsName;
 	}
 
-	public Short getGoodsReturnNumber() {
+	public Integer getGoodsReturnNumber() {
 		return goodsReturnNumber;
 	}
 
-	public void setGoodsReturnNumber(Short goodsReturnNumber) {
+	public void setGoodsReturnNumber(Integer goodsReturnNumber) {
 		this.goodsReturnNumber = goodsReturnNumber;
 	}
 
-	public Short getGoodsBuyNumber() {
+	public Integer getGoodsBuyNumber() {
 		return goodsBuyNumber;
 	}
 
-	public void setGoodsBuyNumber(Short goodsBuyNumber) {
+	public void setGoodsBuyNumber(Integer goodsBuyNumber) {
 		this.goodsBuyNumber = goodsBuyNumber;
 	}
 
