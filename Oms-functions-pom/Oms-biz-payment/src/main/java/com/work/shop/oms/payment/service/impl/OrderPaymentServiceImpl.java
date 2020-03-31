@@ -239,6 +239,10 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 							&& masterOrderInfo.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2 ){
 						orderPayInfo.setOrderPayPriceNo(1);
 					}
+					//判断是不是买的店铺商品
+					if (!Constant.DEFAULT_SHOP.equals(masterOrderInfo.getOrderFrom())) {
+						orderPayInfo.setSpecialType(Constant.SPECIAL_TYPE_ORDER_BUY_STORE);
+					}
 					//判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
 					//获取铁信支付的payId
 					SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
