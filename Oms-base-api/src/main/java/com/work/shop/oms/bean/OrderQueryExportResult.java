@@ -63,6 +63,11 @@ public class OrderQueryExportResult implements Serializable {
     private String companyName;
 
     /**
+     * 下单公司ID
+     */
+    private String companyCode;
+
+    /**
      * 下单时间
      */
     private Date addTime;
@@ -166,5 +171,13 @@ public class OrderQueryExportResult implements Serializable {
 
     public void setGoodsDecimalNum(BigDecimal goodsDecimalNum) {
         this.goodsDecimalNum = goodsDecimalNum;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }

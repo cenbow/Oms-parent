@@ -435,6 +435,16 @@ public class OrderDetailInfo  implements Serializable{
      */
     private Byte needSign;
 
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Byte goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Byte priceChangeStatus;
+
     /**
      * 订单备注
      */
@@ -444,6 +454,21 @@ public class OrderDetailInfo  implements Serializable{
      * 合同号
      */
     private String signContractNum;
+
+	/**
+	 * 用户备注
+	 */
+	private String remark;
+
+	/**
+	 * 公司类型
+	 */
+	private Integer companyType;
+
+	/**
+	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
+	 */
+	private int specialType;
 
 	public int getOrderType() {
         return orderType;
@@ -1068,4 +1093,44 @@ public class OrderDetailInfo  implements Serializable{
     public void setSignContractNum(String signContractNum) {
         this.signContractNum = signContractNum;
     }
+
+	public Byte getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Byte goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Byte getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Byte priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public Integer getCompanyType() {
+		return companyType;
+	}
+
+	public void setCompanyType(Integer companyType) {
+		this.companyType = companyType;
+	}
+
+	public int getSpecialType() {
+		return specialType;
+	}
+
+	public void setSpecialType(int specialType) {
+		this.specialType = specialType;
+	}
 }

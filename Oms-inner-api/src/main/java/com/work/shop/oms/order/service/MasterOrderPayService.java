@@ -46,4 +46,11 @@ public interface MasterOrderPayService {
      * @return
      */
     int updateByPrimaryKeySelective(MasterOrderPay masterOrderPay);
+
+	/**
+	 * 根据订单号 更新主支付单最后支付时间
+	 * @param masterOrderSn
+	 * @return
+	 */
+	int updateBymasterOrderSnLastTime(String masterOrderSn);
 }

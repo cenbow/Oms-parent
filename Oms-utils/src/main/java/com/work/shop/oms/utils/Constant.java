@@ -1123,4 +1123,77 @@ public class Constant {
 	 * 内行银承
 	 */
 	public static final int USER_PAY_TYPE_YINCHENG = 5;
+	/**
+	 * 无库存下单补充库存类型（无库存入库）
+	 */
+	public static final String WKCRK = "WKCRK";
+
+	/**
+	 * 无库存下单减少库存类型（无库存出库）
+	 */
+	public static final String WKCCK = "WKCCK";
+	/**
+	 * 无库存
+	 */
+	public static final String WKC = "无库存下单";
+
+    /**
+     * 商品销售类型 正常商品
+     */
+    public  static  final  int GOODS_SALE_TYPE_STANDARD = 0;
+
+    /**
+     * 商品销售类型 非标定制  customization
+     */
+    public  static  final  int GOODS_SALE_TYPE_CUSTOMIZATION = 1;
+
+    /**
+     * 商品销售类型  可改价商品
+     */
+    public  static  final  int GOODS_SALE_TYPE_CHANGE_PRICE = 2;
+
+    /**
+     * 价格变动确认状态   0 无
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_0 = 0;
+
+    /**
+     * 价格变动确认状态   2 未确认
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_1 = 1;
+
+    /**
+     * 价格变动确认状态   2 平台确认
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_2 = 2;
+
+    /**
+     * 价格变动确认状态   3 用户确认
+     */
+    public  static  final  int PRICE_CHANGE_AFFIRM_3 = 3;
+
+	/**
+	 * 铁信支付
+	 */
+	public static final String PAY_TIEXIN = "tiexin";
+
+	/**
+	 * 公司类型 1内部公司、2外部公司
+	 */
+	public static final Integer INTERNAL_COMPANY = 1;
+
+	/**
+	 * 公司类型 1内部公司、2外部公司
+	 */
+	public static final Integer OUTSIDE_COMPANY = 2;
+
+	/**
+	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
+	 */
+	public  static  final  Byte SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN = 1;
+
+	/**
+	 * 特殊业务类型：订单购买的是店铺商品
+	 */
+	public  static  final  Byte SPECIAL_TYPE_ORDER_BUY_STORE = 2;
 }

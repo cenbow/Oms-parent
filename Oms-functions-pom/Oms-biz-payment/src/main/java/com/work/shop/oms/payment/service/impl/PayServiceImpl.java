@@ -302,9 +302,17 @@ public class PayServiceImpl implements PayService {
 			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
 				throw new Exception("支付单：" + paySn + "已支付，不能进行支付操作！");
 			}
+			// 判断是否是问题单
+			if (Constant.OD_QUESTION_STATUS_YES.equals(masterOrderInfo.getQuestionStatus())) {
+				throw new Exception("订单：" + masterOrderSn + "要处于正常单状态！");
+			}
 			// 判断是否被非admin的当前人锁定
 			if (orderStatus.getAdminUser() != null && !orderStatus.getAdminUser().trim().equals("admin") 
 					&& !StringUtils.equalsIgnoreCase(ConstantValues.ACTION_USER_SYSTEM, orderStatus.getAdminUser())) {
+				if (Constant.OI_LOCK_STATUS_UNLOCKED == masterOrderInfo.getLockStatus()) {
+					//未锁定报错
+					throw new Exception("请锁定后，再进行支付操作！");
+				}
 				if (!orderStatus.getUserId().equals(masterOrderInfo.getLockStatus())) {
 					throw new Exception("订单非本人锁定，不能进行支付操作！");
 				}

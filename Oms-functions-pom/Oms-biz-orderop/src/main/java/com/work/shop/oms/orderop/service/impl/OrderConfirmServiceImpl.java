@@ -1,16 +1,5 @@
 package com.work.shop.oms.orderop.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.fastjson.JSON;
 import com.work.shop.oms.bean.DistributeAction;
@@ -47,6 +36,7 @@ import com.work.shop.oms.erp.service.ErpInterfaceProxy;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
+import com.work.shop.oms.order.service.MasterOrderPayService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderDistributeEditService;
 import com.work.shop.oms.orderop.service.OrderDistributeOpService;
@@ -55,6 +45,15 @@ import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.webservice.ErpWebserviceResultBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 订单确认服务
@@ -110,6 +109,9 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 
 	@Resource
 	private SystemPaymentMapper systemPaymentMapper;
+
+	@Resource
+	private MasterOrderPayService masterOrderPayService;
 
     /**
      * 订单确认
@@ -1230,6 +1232,62 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		}
 		info.setData(updateDistributes);
 		info.setIsOk(Constant.OS_YES);
+		return info;
+	}
+
+	/**
+	 *  订单改价确认
+	 * @param masterOrderSn 主订单号
+	 * @param orderStatus
+	 */
+	@Override
+	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus) {
+		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
+		if (StringUtil.isTrimEmpty(masterOrderSn)) {
+			logger.error("[masterOrderSn]不能都为空！");
+			info.setMessage("[masterOrderSn]不能都为空！");
+			return info;
+		}
+		if (orderStatus == null) {
+			logger.error("[orderStatus]传入参数为空，不能进行订单改价确认！");
+			info.setMessage("[orderStatus]传入参数为空，不能进行订单改价确认！");
+			return info;
+		}
+		logger.info("订单改价确认：masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
+		MasterOrderInfo master = null;
+		if (StringUtil.isNotEmpty(masterOrderSn)) {
+			master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+		}
+		//检查订单改价情况
+		if(master.getGoodsSaleType() != null && master.getPriceChangeStatus() != null
+				&& master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD && master.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2){
+			//未确认
+			//各单据价格验证
+
+			// 订单支付状态检查
+			if (!OrderAttributeUtil.isUpdateModifyFlag((int)master.getTransType(), (int)master.getPayStatus())) {
+				//未付款订单设置付款单最后支付期限
+				masterOrderPayService.updateBymasterOrderSnLastTime(master.getMasterOrderSn());
+			}
+
+			//设置平台确认
+			MasterOrderInfo updateMaster = new MasterOrderInfo();
+			// 确认
+			updateMaster.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_2);
+			updateMaster.setMasterOrderSn(masterOrderSn);
+			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+			// 主订单操作日志表
+			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
+			orderAction.setActionUser(orderStatus.getAdminUser());
+			orderAction.setActionNote("价格变动确认！ "+orderStatus.getMessage() != null ? orderStatus.getMessage():"");
+			masterOrderActionService.insertOrderActionByObj(orderAction);
+			//订单确认
+			confirmOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "自动确认", null));
+		}else{
+			logger.info("订单:" + masterOrderSn + " 不符合改价确认条件 ! ");
+		}
+		info.setIsOk(Constant.OS_YES);
+		info.setMessage("[" + masterOrderSn + "]订单改价确认成功");
 		return info;
 	}
 }

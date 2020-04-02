@@ -327,6 +327,26 @@ public class OrderItemGoodsDetail implements Serializable {
      */
 	private BigDecimal goodsAddPrice;
 
+	/**
+	 * 商品购买数量中走库存的数量
+	 */
+	private Integer withStockNumber;
+
+	/**
+	 * 商品购买数量中不走库存的数量
+	 */
+	private Integer withoutStockNumber;
+
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
+
+	/**
+	 * 保护价
+	 */
+	private BigDecimal protectPrice;
+
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
     }
@@ -860,10 +880,13 @@ public class OrderItemGoodsDetail implements Serializable {
 			if (null == transactionPrice) {
 				transactionPrice = new BigDecimal(0.00);
 			}
-			if (null == goodsNumber) {
+			if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO)==0)){
 				subTotal = new BigDecimal(0.00);
 			} else {
 				BigDecimal number = new BigDecimal(goodsNumber);
+				if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO)!=0){
+					number = number.add(goodsDecimalNumber);
+				}
 				subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//subTotal = transactionPrice.doubleValue() * goodsNumber;
 			}
@@ -1142,5 +1165,37 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
 		this.goodsDecimalNumber = goodsDecimalNumber;
+	}
+
+	public Integer getWithStockNumber() {
+		return withStockNumber;
+	}
+
+	public void setWithStockNumber(Integer withStockNumber) {
+		this.withStockNumber = withStockNumber;
+	}
+
+	public Integer getWithoutStockNumber() {
+		return withoutStockNumber;
+	}
+
+	public void setWithoutStockNumber(Integer withoutStockNumber) {
+		this.withoutStockNumber = withoutStockNumber;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
+	}
+
+	public BigDecimal getProtectPrice() {
+		return protectPrice;
+	}
+
+	public void setProtectPrice(BigDecimal protectPrice) {
+		this.protectPrice = protectPrice;
 	}
 }

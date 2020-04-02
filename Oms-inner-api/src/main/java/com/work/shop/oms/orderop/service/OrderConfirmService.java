@@ -80,4 +80,12 @@ public interface OrderConfirmService {
 	 * @return
 	 */
 	public void asynConfirmOrderByOrderSn(OrderStatus orderStatus);
+
+	/**
+	 *  订单改价确认
+	 * @param masterOrderSn 主订单号
+	 * @param orderStatus
+	 * @return
+	 */
+	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus);
 }

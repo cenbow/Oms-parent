@@ -69,16 +69,21 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		// 订单商品总财务价
 		double settlementPrice = 0D;
 		for (MasterOrderGoods orderGoods : orderGoodsList) {
-//			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
-//					* orderGoods.getGoodsNumber();
-			settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
-					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();
+			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
+				* orderGoods.getGoodsNumber();
+			/*settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
+					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();*/
+			BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber();
+			if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+				settlementPrice += NumberUtil.getDecimalValue(orderGoods.getSettlementPrice().multiply(goodsDecimalNumber), 2).doubleValue();
+			}
 			masterOrderGoodsMapper.insertSelective(orderGoods);
 		}
 		// 商品结算价 = 商品结算价 + 综合税费
 		settlementPrice += masterOrder.getTax();
 		settlementPrice = NumberUtil.getDoubleByValue(settlementPrice, 2);
 		masterOrder.setGoodsSettlementPrice(settlementPrice);
+		logger.info("订单：" + masterOrderSn + "，商品总结算价格:" + settlementPrice + "," + masterOrder.getPaySettlementPrice());
 		try {
 			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(masterOrderInfo);
 			orderAction.setActionNote("优惠券和余额平摊计算正确！");
@@ -136,7 +141,13 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 				? Constant.DETAILS_DEPOT_CODE : masterGoods.getDepotCode());
 
         fillGoodsBaseInfo(masterOrderGoods, masterGoods);
-
+		//处理无库存下单相关
+		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag() + ",goodsNum=" + masterOrderGoods.getGoodsNumber());
+		masterOrderGoods.setWithStockNumber(masterGoods.getWithStockNumber());
+		masterOrderGoods.setWithoutStockNumber(masterGoods.getWithoutStockNumber());
+		masterOrderGoods.setPurchasesWithoutStockFlag(masterGoods.getPurchasesWithoutStockFlag());
+		masterOrderGoods.setWithoutStockDeliveryCycle(masterGoods.getWithoutStockDeliveryCycle());
+		masterOrderGoods.setWithoutStockDepotNo(masterGoods.getWithoutStockDepotNo());
         fillGoodsDetail(masterOrderGoods, masterGoods);
 
 		return masterOrderGoods;
@@ -191,7 +202,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         // 套装名称
         masterOrderGoods.setGroupName("");
         // 商品数量
-        masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
+		logger.info("fillGoodsBaseInfo masterOrderGoods goodsNum=" + masterGoods.getGoodsNumber());
+		masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
         // 商品数量小数部分
 		masterOrderGoods.setGoodsDecimalNumber(masterGoods.getGoodsDecimals());
         // 父商品sn

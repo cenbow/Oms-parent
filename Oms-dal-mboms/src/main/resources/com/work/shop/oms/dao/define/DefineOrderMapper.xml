@@ -41,6 +41,8 @@
         oi.source source,
         oi.order_from channelCode,
         oi.shop_name channelName,
+        oi.goods_sale_type goodsSaleType,
+        oi.price_change_status priceChangeStatus,
         oie.is_advance isAdvance,
         oie.customer_contract_num customerContractNum,
         oi.expected_ship_date expectedShipDate,
@@ -50,7 +52,8 @@
         oi.need_audit needAudit,
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
-        oai.inv_address invAddress
+        oai.inv_address invAddress,
+        oie.company_type companyType
         from
         <if test="isHistory == 0">
             master_order_info
@@ -127,6 +130,14 @@
         <!-- 签章状态 -->
         <if test="signStatus != null">
             and oi.sign_status = #{signStatus}
+        </if>
+        <!-- 订单商品销售类型 -->
+        <if test="goodsSaleType != null">
+            and oi.goods_sale_type = #{goodsSaleType}
+        </if>
+        <!-- 改价确认状态 -->
+        <if test="priceChangeStatus != null">
+            and oi.price_change_status = #{priceChangeStatus}
         </if>
         <!-- 公司id -->
         <if test="companyId != null">
@@ -415,7 +426,12 @@
         og.distribution_category distributionCategory,
         og.depot_code depotCode,
         og.supplier_code supplierCode,
-        og.supplier_name supplierName
+        og.supplier_name supplierName,
+        og.with_stock_number withStockNumber,
+        og.without_stock_number withoutStockNumber,
+        og.purchases_without_stock_flag purchasesWithoutStockFlag,
+        og.without_stock_delivery_cycle withoutStockDeliveryCycle,
+        og.delivery_cycle deliveryCycle
         from
         <if test="isHistory == 0">
             master_order_goods
@@ -723,7 +739,11 @@
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress,
-        oai.shipping_name shippingName
+        oai.shipping_name shippingName,
+        oi.goods_sale_type goodsSaleType,
+        oi.price_change_status priceChangeStatus,
+        oie.remark remark,
+        oie.company_type companyType
         from
         <if test="isHistory == 0">
             master_order_info

@@ -60,6 +60,8 @@
     <result column="invoices_organization" jdbcType="VARCHAR" property="invoicesOrganization" />
     <result column="isNow" jdbcType="INTEGER" property="isnow" />
     <result column="source" jdbcType="INTEGER" property="source" />
+  	<result column="goods_sale_type" jdbcType="INTEGER" property="goodsSaleType" />
+  	<result column="price_change_status" jdbcType="INTEGER" property="priceChangeStatus" />
     <!-- 扩展表相关字段 -->
     <result column="agdist" jdbcType="TINYINT" property="agdist" />
     <result column="is_group" jdbcType="TINYINT" property="isGroup" />
@@ -125,6 +127,7 @@
     <result column="inv_taxer" jdbcType="VARCHAR" property="invTaxer" />
 	<result column="user_bank_no" jdbcType="VARCHAR" property="userBankNo" />
 	<result column="user_pay_apply"  property="userPayApply" />
+	<result column="pay_name"  property="payName" />
   </resultMap>
   
   <select id="selectMasOrdDetByMasterOrderSn" parameterType="java.util.HashMap" resultMap="MasterOrderDetailMap">
@@ -280,7 +283,10 @@
           b.inv_address invAddress,
           t.need_sign needSign,
           t.sign_status signStatus,
-          t.sign_contract_num signContractNum
+          t.sign_contract_num signContractNum,
+          t.goods_sale_type goodsSaleType,
+          t.price_change_status priceChangeStatus,
+	  	  mop.pay_name
 		FROM
 		<if test="isHistory == 0">
 		  master_order_info t 
@@ -290,6 +296,7 @@
 		  master_order_info_history t 
 		  LEFT JOIN master_order_address_info_history b ON b.master_order_sn = t.master_order_sn 
 		</if>
+	  	  left join master_order_pay mop on t.master_order_sn = mop.master_order_sn
 		  LEFT JOIN master_order_info_extend a  ON a.master_order_sn = t.master_order_sn 
 		  LEFT JOIN system_region_area d  ON d.region_id = b.country 
 		  LEFT JOIN system_region_area e  ON e.region_id = b.province 

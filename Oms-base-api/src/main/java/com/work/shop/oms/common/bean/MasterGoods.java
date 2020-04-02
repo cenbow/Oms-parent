@@ -1,9 +1,9 @@
 package com.work.shop.oms.common.bean;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
-
-import com.alibaba.fastjson.JSON;
 
 /**
  * 配送商品信息
@@ -277,6 +277,36 @@ public class MasterGoods implements Serializable {
      * 商品加价金额
      */
 	private BigDecimal goodsAddPrice;
+
+	/**
+	 * 商品是否支持无库存下单 0：不支持 1：支持
+	 */
+	private Integer purchasesWithoutStockFlag;
+
+	/**
+	 * 商品走库存的数量
+	 */
+	private Integer withStockNumber;
+
+	/**
+	 * 商品不走库存的数量
+	 */
+	private Integer withoutStockNumber;
+
+	/**
+	 * 无库存下单发货周期
+	 */
+	private String withoutStockDeliveryCycle;
+
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
 
     public Double getShareBonus() {
 		return shareBonus;
@@ -708,5 +738,53 @@ public class MasterGoods implements Serializable {
 
 	public void setGoodsDecimals(BigDecimal goodsDecimals) {
 		this.goodsDecimals = goodsDecimals;
+	}
+
+	public Integer getPurchasesWithoutStockFlag() {
+		return purchasesWithoutStockFlag;
+	}
+
+	public void setPurchasesWithoutStockFlag(Integer purchasesWithoutStockFlag) {
+		this.purchasesWithoutStockFlag = purchasesWithoutStockFlag;
+	}
+
+	public Integer getWithStockNumber() {
+		return withStockNumber;
+	}
+
+	public void setWithStockNumber(Integer withStockNumber) {
+		this.withStockNumber = withStockNumber;
+	}
+
+	public Integer getWithoutStockNumber() {
+		return withoutStockNumber;
+	}
+
+	public void setWithoutStockNumber(Integer withoutStockNumber) {
+		this.withoutStockNumber = withoutStockNumber;
+	}
+
+	public String getWithoutStockDeliveryCycle() {
+		return withoutStockDeliveryCycle;
+	}
+
+	public void setWithoutStockDeliveryCycle(String withoutStockDeliveryCycle) {
+		this.withoutStockDeliveryCycle = withoutStockDeliveryCycle;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
 	}
 }

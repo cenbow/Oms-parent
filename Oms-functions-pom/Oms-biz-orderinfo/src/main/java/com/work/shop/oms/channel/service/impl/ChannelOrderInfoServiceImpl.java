@@ -14,6 +14,7 @@ import com.work.shop.oms.api.bean.*;
 import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.GoodsReturnChangeService;
 import com.work.shop.oms.ship.service.DistributeShipService;
@@ -98,6 +99,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
     @Resource
     private DistributeShipService distributeShipService;
 
+    @Resource
+    private SystemPaymentService systemPaymentService;
     /**
      * 判断查询订单列表参数
      *
@@ -228,7 +231,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             Paging paging = new Paging();
             paging.setTotalProperty(defineOrderMapper.selectUserOrderInfoCount(params));
             List<OrderPageInfo> pageList = defineOrderMapper.selectUserOrderInfo(params);
-
+            //获取铁信支付的payId
+            SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
             for (OrderPageInfo orderPageInfo : pageList) {
                 // 未支付订单
                 if (orderPageInfo.getTotalOrderStatus() == 1) {
@@ -299,6 +303,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                     orderPageInfo.setOrderShipInfo(shipList);
                 }
                 orderPageInfo.setGoodsCount(goodsCount);
+                //判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
+                if (Constant.OUTSIDE_COMPANY.equals(orderPageInfo.getCompanyType())) {
+                    if (systemPayment.getPayId() == orderPageInfo.getPayId()) {
+                        orderPageInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
+                    }
+                }
             }
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             paging.setRoot(pageList);
@@ -840,6 +850,10 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             }
             orderDetailInfo.setOrderShipInfo(shipList);
             setOrderGoodsInfo(orderDetailInfo);
+            //判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
+            if (Constant.PAY_TIEXIN.equals(orderDetailInfo.getPayCode()) && Constant.OUTSIDE_COMPANY.equals(orderDetailInfo.getCompanyType())) {
+                orderDetailInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
+            }
             apiReturnData.setData(orderDetailInfo);
             apiReturnData.setIsOk(Constant.OS_STR_YES);
         } catch (Exception e) {

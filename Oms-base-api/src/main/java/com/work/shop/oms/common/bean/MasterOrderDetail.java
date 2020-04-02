@@ -1,7 +1,5 @@
 package com.work.shop.oms.common.bean;
 
-import com.work.shop.oms.bean.MasterOrderQuestionBean;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -87,6 +85,18 @@ public class MasterOrderDetail implements Serializable {
      * 签章合同号
      */
     private String signContractNum;
+
+
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
 
 	// 主单扩展表字段
 	private Byte agdist;// 订单二次分配总数
@@ -260,6 +270,11 @@ public class MasterOrderDetail implements Serializable {
      * 交货单信息
      */
     private List<OrderItemDepotDetail> depotDetails;
+
+	/**
+	 * 支付方式名称
+	 */
+	private String payName;
 
     public String getSaleBd() {
         return saleBd;
@@ -1468,4 +1483,28 @@ public class MasterOrderDetail implements Serializable {
     public void setSignContractNum(String signContractNum) {
         this.signContractNum = signContractNum;
     }
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getPayName() {
+		return payName;
+	}
+
+	public void setPayName(String payName) {
+		this.payName = payName;
+	}
 }

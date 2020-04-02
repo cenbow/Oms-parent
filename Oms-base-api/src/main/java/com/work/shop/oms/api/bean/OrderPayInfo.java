@@ -50,6 +50,16 @@ public class OrderPayInfo implements Serializable{
 	 * 订单状态
 	 */
 	private int orderStatus;
+
+	/**
+	 * 价格未定 状态
+	 */
+	private Integer  orderPayPriceNo;
+
+	/**
+	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
+	 */
+	private int specialType;
 	
 	public String getPaySn() {
 		return paySn;
@@ -115,4 +125,19 @@ public class OrderPayInfo implements Serializable{
 		this.orderStatus = orderStatus;
 	}
 
+	public Integer getOrderPayPriceNo() {
+		return orderPayPriceNo;
+	}
+
+	public void setOrderPayPriceNo(Integer orderPayPriceNo) {
+		this.orderPayPriceNo = orderPayPriceNo;
+	}
+
+	public int getSpecialType() {
+		return specialType;
+	}
+
+	public void setSpecialType(int specialType) {
+		this.specialType = specialType;
+	}
 }
