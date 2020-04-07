@@ -2750,8 +2750,9 @@
         LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
         WHERE moi.master_order_sn = moie.master_order_sn
 		and moi.master_order_sn = mog.master_order_sn
-        and moi.order_status != 2
+        and moi.order_status != 2 and moi.order_status != 0
         and moi.pay_status != 0
+        and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = 1))
         <if test="orderType != null">
 			AND moie.order_type = #{orderType}
 		</if>
@@ -2792,8 +2793,9 @@
             LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
             WHERE moi.master_order_sn = moie.master_order_sn
 			and moi.master_order_sn = mog.master_order_sn
-            and moi.order_status != 2
+            and moi.order_status != 2 and moi.order_status != 0
             and moi.pay_status != 0
+            and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = 1))
             <if test="orderType != null">
                 AND moie.order_type = #{orderType}
             </if>
