@@ -309,6 +309,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         if (goodsAddPrice != null) {
             masterOrderGoods.setGoodsAddPrice(goodsAddPrice);
         }
+        //商品数据来源
+		masterOrderGoods.setDataSources(masterGoods.getDataSources());
 
     }
 
