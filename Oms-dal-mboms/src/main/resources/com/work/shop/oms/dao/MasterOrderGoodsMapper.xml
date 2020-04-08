@@ -520,6 +520,9 @@
       <if test="withoutStockDepotNo != null">
         without_stock_depot_no,
       </if>
+      <if test="dataSources != null">
+        data_sources,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -737,6 +740,9 @@
       </if>
       <if test="withoutStockDepotNo != null">
         #{withoutStockDepotNo},
+      </if>
+      <if test="dataSources != null">
+        #{dataSources},
       </if>
     </trim>
   </insert>
