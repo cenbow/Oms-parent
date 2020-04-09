@@ -22,6 +22,11 @@ public class OrderItem implements Serializable{
 	private String outerOrderSn;
 
 	/**
+	 * 签章合同号
+	 */
+	private String signContractNum;
+
+	/**
 	 * 下单人
 	 */
 	private String userId;
@@ -110,6 +115,16 @@ public class OrderItem implements Serializable{
      * 问题单状态
      */
 	private Integer questionStatus;
+
+	/**
+	 * 签章状态 0未签章、1已签章
+	 */
+	private Integer signStatus;
+
+	/**
+	 * 需要合同签章 0不需要、1需要
+	 */
+	private Integer needSign;
 
 	/**
 	 * 下单时间
@@ -743,5 +758,29 @@ public class OrderItem implements Serializable{
 
 	public void setPriceChangeStatus(Integer priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getSignContractNum() {
+		return signContractNum;
+	}
+
+	public void setSignContractNum(String signContractNum) {
+		this.signContractNum = signContractNum;
+	}
+
+	public Integer getSignStatus() {
+		return signStatus;
+	}
+
+	public void setSignStatus(Integer signStatus) {
+		this.signStatus = signStatus;
+	}
+
+	public Integer getNeedSign() {
+		return needSign;
+	}
+
+	public void setNeedSign(Integer needSign) {
+		this.needSign = needSign;
 	}
 }

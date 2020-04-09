@@ -59,6 +59,16 @@ public class OrderContractRequest implements Serializable {
      */
     private String endTime;
 
+    /**
+     * 订单类型 0：正常订单  1联采订单
+     */
+    private Integer orderType;
+
+    /**
+     * 问题单状态 0 正常单 1 问题单
+     */
+    private Integer questionStatus;
+
     public String getMasterOrderSn() {
         return masterOrderSn;
     }
@@ -153,5 +163,21 @@ public class OrderContractRequest implements Serializable {
 
     public void setShopCode(String shopCode) {
         this.shopCode = shopCode;
+    }
+
+    public Integer getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(Integer orderType) {
+        this.orderType = orderType;
+    }
+
+    public Integer getQuestionStatus() {
+        return questionStatus;
+    }
+
+    public void setQuestionStatus(Integer questionStatus) {
+        this.questionStatus = questionStatus;
     }
 }

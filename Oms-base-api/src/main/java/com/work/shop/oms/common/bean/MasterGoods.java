@@ -308,6 +308,16 @@ public class MasterGoods implements Serializable {
 	 */
 	private Integer saleType;
 
+	/**
+	 * 商品数据来源  1、是店铺普通模板 2、店铺快速模板 3、快速自营模板
+	 */
+	private Integer  dataSources;
+
+	/**
+	 * 商品账期字典id，关联商品库system_payment_period表的id
+	 */
+	private Integer goodsPaymentPeriodId;
+
     public Double getShareBonus() {
 		return shareBonus;
 	}
@@ -786,5 +796,21 @@ public class MasterGoods implements Serializable {
 
 	public void setSaleType(Integer saleType) {
 		this.saleType = saleType;
+	}
+
+	public Integer getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Integer dataSources) {
+		this.dataSources = dataSources;
+	}
+
+	public Integer getGoodsPaymentPeriodId() {
+		return goodsPaymentPeriodId;
+	}
+
+	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
+		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
 	}
 }

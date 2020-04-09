@@ -217,6 +217,11 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private  Integer goodsDataSources;
 
+	/**
+	 * 供应商名称
+	 */
+	private String supplierName;
+
     public Integer getPageNo() {
 		return pageNo;
 	}
@@ -551,5 +556,13 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setGoodsDataSources(Integer goodsDataSources) {
 		this.goodsDataSources = goodsDataSources;
+	}
+
+	public String getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(String supplierName) {
+		this.supplierName = supplierName;
 	}
 }

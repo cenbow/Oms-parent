@@ -1643,10 +1643,16 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     }
                 }
                 //确认收货后将销售结算单数据推送供应链-财智云
-                Map map=new HashMap();
-                map.put("masterOrderSn",masterOrderInfo.getMasterOrderSn());
-                map.put("userId",masterOrderInfo.getUserId());
-                uploadSaleSettlementJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(map)));
+                try {
+                    Map map=new HashMap();
+                    map.put("masterOrderSn",masterOrderInfo.getMasterOrderSn());
+                    map.put("userId",masterOrderInfo.getUserId());
+                    logger.info("下发销售结算单MQ信息异常:" + JSON.toJSONString(map));
+                    uploadSaleSettlementJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(map)));
+                } catch (Exception e) {
+                    logger.error("下发销售结算单MQ信息异常:" + e.getMessage());
+                }
+
             }
         }
     }
