@@ -313,6 +313,11 @@ public class MasterGoods implements Serializable {
 	 */
 	private Integer  dataSources;
 
+	/**
+	 * 商品账期字典id，关联商品库system_payment_period表的id
+	 */
+	private Integer goodsPaymentPeriodId;
+
     public Double getShareBonus() {
 		return shareBonus;
 	}
@@ -799,5 +804,13 @@ public class MasterGoods implements Serializable {
 
 	public void setDataSources(Integer dataSources) {
 		this.dataSources = dataSources;
+	}
+
+	public Integer getGoodsPaymentPeriodId() {
+		return goodsPaymentPeriodId;
+	}
+
+	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
+		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
 	}
 }
