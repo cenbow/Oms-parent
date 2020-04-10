@@ -523,6 +523,9 @@
       <if test="dataSources != null">
         data_sources,
       </if>
+      <if test="goodsPaymentPeriodId != null">
+        goods_payment_period_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -743,6 +746,9 @@
       </if>
       <if test="dataSources != null">
         #{dataSources},
+      </if>
+      <if test="goodsPaymentPeriodId != null">
+        #{goodsPaymentPeriodId},
       </if>
     </trim>
   </insert>
