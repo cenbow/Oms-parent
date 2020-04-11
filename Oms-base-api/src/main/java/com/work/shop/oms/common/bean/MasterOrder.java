@@ -463,6 +463,11 @@ public class MasterOrder implements Serializable{
      */
 	private String customerContractNum;
 
+	/**
+	 * 签章合同号
+	 */
+	private String signContractNum;
+
     /**
      * 配送时间
      */
@@ -1408,5 +1413,13 @@ public class MasterOrder implements Serializable{
 
 	public void setPriceChangeStatus(Integer priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getSignContractNum() {
+		return signContractNum;
+	}
+
+	public void setSignContractNum(String signContractNum) {
+		this.signContractNum = signContractNum;
 	}
 }
