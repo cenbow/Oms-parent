@@ -550,6 +550,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setGoodsSaleType(masterOrder.getGoodsSaleType());
 		//价格变动确认
 		orderInfo.setPriceChangeStatus(masterOrder.getPriceChangeStatus());
+		//联采订单 签章合同号
+		orderInfo.setSignContractNum(masterOrder.getSignContractNum());
 	}
 
 	/**
