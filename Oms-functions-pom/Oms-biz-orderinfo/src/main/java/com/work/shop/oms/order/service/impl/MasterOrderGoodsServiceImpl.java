@@ -142,12 +142,14 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 
         fillGoodsBaseInfo(masterOrderGoods, masterGoods);
 		//处理无库存下单相关
-		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag() + ",goodsNum=" + masterOrderGoods.getGoodsNumber());
+		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag() + ",goodsNum=" + masterOrderGoods.getGoodsNumber() + ",goodsPaymentPeriodId" + masterGoods.getGoodsPaymentPeriodId());
 		masterOrderGoods.setWithStockNumber(masterGoods.getWithStockNumber());
 		masterOrderGoods.setWithoutStockNumber(masterGoods.getWithoutStockNumber());
 		masterOrderGoods.setPurchasesWithoutStockFlag(masterGoods.getPurchasesWithoutStockFlag());
 		masterOrderGoods.setWithoutStockDeliveryCycle(masterGoods.getWithoutStockDeliveryCycle());
 		masterOrderGoods.setWithoutStockDepotNo(masterGoods.getWithoutStockDepotNo());
+		//商品账期
+		masterOrderGoods.setGoodsPaymentPeriodId(masterGoods.getGoodsPaymentPeriodId());
         fillGoodsDetail(masterOrderGoods, masterGoods);
 
 		return masterOrderGoods;
@@ -309,6 +311,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         if (goodsAddPrice != null) {
             masterOrderGoods.setGoodsAddPrice(goodsAddPrice);
         }
+        //商品数据来源
+		masterOrderGoods.setDataSources(masterGoods.getDataSources());
 
     }
 

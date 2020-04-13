@@ -2208,7 +2208,14 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			paramMap.put("shopCode", shopCode);
 		}
 
-        try {
+		// 供应商名称
+		String supplierName = request.getSupplierName();
+		if (StringUtils.isNotBlank(supplierName)) {
+			paramMap.put("supplierName", supplierName);
+		}
+
+
+		try {
             // 订单列表
             List<OrderQueryExportResult> resultList = orderInfoSearchMapper.getOrderQueryExportList(paramMap);
             int exportList = orderInfoSearchMapper.countOrderQueryExportList(paramMap);

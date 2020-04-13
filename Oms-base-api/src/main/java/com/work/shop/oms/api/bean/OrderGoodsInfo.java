@@ -210,6 +210,11 @@ public class OrderGoodsInfo implements Serializable{
 	 */
 	private Integer saleType;
 
+	/**
+	 * 商品账期字典id，关联商品库system_payment_period表的id
+	 */
+	private Integer goodsPaymentPeriodId;
+
 	public int getGoodsStatus() {
 		return goodsStatus;
 	}
@@ -566,5 +571,13 @@ public class OrderGoodsInfo implements Serializable{
 
 	public void setSaleType(Integer saleType) {
 		this.saleType = saleType;
+	}
+
+	public Integer getGoodsPaymentPeriodId() {
+		return goodsPaymentPeriodId;
+	}
+
+	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
+		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
 	}
 }

@@ -2056,7 +2056,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 		String encMoile = consignInfo.getMobile();
 		String encTel = consignInfo.getTel();
 		MasterOrderAddressInfo updateOrderAddressInfo = new MasterOrderAddressInfo();
-		if (!StringUtils.equalsIgnoreCase(consignInfo.getConsignee(), orderAddressInfo.getConsignee()) && StringUtils.isBlank(consignInfo.getConsignee())) {
+		if (!StringUtils.equalsIgnoreCase(consignInfo.getConsignee(), orderAddressInfo.getConsignee()) && StringUtils.isNotBlank(consignInfo.getConsignee())) {
 			actionNote.append("收件人 "+orderAddressInfo.getConsignee()+" → " + consignInfo.getConsignee() + ";<br />");
 			updateOrderAddressInfo.setConsignee(consignInfo.getConsignee());
 		}
@@ -2107,7 +2107,7 @@ public class OrderDistributeEditServiceImpl implements OrderDistributeEditServic
 			actionNote.append("区县由 "+systemRegionMap.get(orderAddressInfo.getDistrict())+" → " + systemRegionMap.get(consignInfo.getDistrict()) + ";<br />");
 			updateOrderAddressInfo.setDistrict(consignInfo.getDistrict());
 		}
-//		consignInfo.setDistrict(systemRegionMap.get(consignInfo.getDistrict()));
+		consignInfo.setDistrict(systemRegionMap.get(consignInfo.getDistrict()));
 //		if (!StringUtils.equalsIgnoreCase(consignInfo.getStreet(), orderAddressInfo.getStreet())) {
 //			actionNote.append("街道由 "+systemRegionMap.get(orderAddressInfo.getStreet())+" → " + systemRegionMap.get(consignInfo.getStreet()) + ";<br />");
 //			updateOrderAddressInfo.setStreet(consignInfo.getStreet());
