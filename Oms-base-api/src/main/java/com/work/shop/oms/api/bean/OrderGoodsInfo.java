@@ -215,6 +215,16 @@ public class OrderGoodsInfo implements Serializable{
 	 */
 	private Integer goodsPaymentPeriodId;
 
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
+	/**
+	 * 商品数据来源  1、是店铺普通模板 2、店铺快速模板 3、快速自营模板
+	 */
+	private Integer  dataSources;
+
 	public int getGoodsStatus() {
 		return goodsStatus;
 	}
@@ -579,5 +589,21 @@ public class OrderGoodsInfo implements Serializable{
 
 	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
 		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Integer dataSources) {
+		this.dataSources = dataSources;
 	}
 }
