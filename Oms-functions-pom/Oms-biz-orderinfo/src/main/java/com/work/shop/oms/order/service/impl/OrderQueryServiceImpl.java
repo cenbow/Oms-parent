@@ -2213,6 +2213,21 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 		if (StringUtils.isNotBlank(supplierName)) {
 			paramMap.put("supplierName", supplierName);
 		}
+		// 问题单状态
+		Integer questionStatus = request.getQuestionStatus();
+		if (questionStatus != null) {
+			paramMap.put("questionStatus", questionStatus);
+		}
+		// 是否需要签章
+		Integer needSign = request.getNeedSign();
+		if (needSign != null) {
+			paramMap.put("needSign", needSign);
+		}
+		// 签章状态
+		Integer signStatus = request.getSignStatus();
+		if (signStatus != null) {
+			paramMap.put("signStatus", signStatus);
+		}
 
 
 		try {
