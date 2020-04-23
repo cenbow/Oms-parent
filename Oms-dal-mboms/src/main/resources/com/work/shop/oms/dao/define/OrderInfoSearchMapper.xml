@@ -2752,12 +2752,23 @@
 		and moi.master_order_sn = mog.master_order_sn
         and moi.order_status != 2 and moi.order_status != 0
         and moi.pay_status != 0
-        and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = 1))
         <if test="orderType != null">
 			AND moie.order_type = #{orderType}
 		</if>
 		<if test="shopCode != null">
 			AND moi.order_from = #{shopCode}
+		</if>
+		<if test="questionStatus != null">
+			and moi.question_status = #{questionStatus}
+		</if>
+		<if test="needSign == null and signStatus != null">
+			and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = #{signStatus}))
+		</if>
+		<if test="needSign != null and signStatus != null">
+			and moi.need_sign = #{needSign} and moi.sign_status = #{signStatus}
+		</if>
+		<if test="needSign != null and signStatus == null">
+			and moi.need_sign = #{needSign}
 		</if>
         <if test="companyIdList != null">
             AND moie.company_code in
@@ -2798,13 +2809,24 @@
 			and moi.master_order_sn = mog.master_order_sn
             and moi.order_status != 2 and moi.order_status != 0
             and moi.pay_status != 0
-            and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = 1))
             <if test="orderType != null">
                 AND moie.order_type = #{orderType}
             </if>
             <if test="shopCode != null">
                 AND moi.order_from = #{shopCode}
             </if>
+			<if test="questionStatus != null">
+				and moi.question_status = #{questionStatus}
+			</if>
+			<if test="needSign == null and signStatus != null">
+				and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = #{signStatus}))
+			</if>
+			<if test="needSign != null and signStatus != null">
+				and moi.need_sign = #{needSign} and moi.sign_status = #{signStatus}
+			</if>
+			<if test="needSign != null and signStatus == null">
+				and moi.need_sign = #{needSign}
+			</if>
             <if test="companyIdList != null">
                 AND moie.company_code in
                 <foreach collection="companyIdList" item="companyId" open="(" close=")" separator=",">
