@@ -352,6 +352,26 @@ public class OrderItemGoodsDetail implements Serializable {
 	 */
 	private Integer goodsPaymentPeriodId;
 
+	/**
+	 * 商城商品是否支持无库存下单 0：不支持 1：支持
+	 */
+	private Integer purchasesWithoutStockFlag;
+
+	/**
+	 * 无库存下单发货周期
+	 */
+	private String withoutStockDeliveryCycle;
+
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
+	/**
+	 * 商品数据来源  1、是店铺普通模板 2、店铺快速模板 3、快速自营模板
+	 */
+	private Integer  dataSources;
+
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
     }
@@ -1210,5 +1230,37 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
 		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
+	}
+
+	public Integer getPurchasesWithoutStockFlag() {
+		return purchasesWithoutStockFlag;
+	}
+
+	public void setPurchasesWithoutStockFlag(Integer purchasesWithoutStockFlag) {
+		this.purchasesWithoutStockFlag = purchasesWithoutStockFlag;
+	}
+
+	public String getWithoutStockDeliveryCycle() {
+		return withoutStockDeliveryCycle;
+	}
+
+	public void setWithoutStockDeliveryCycle(String withoutStockDeliveryCycle) {
+		this.withoutStockDeliveryCycle = withoutStockDeliveryCycle;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Integer dataSources) {
+		this.dataSources = dataSources;
 	}
 }

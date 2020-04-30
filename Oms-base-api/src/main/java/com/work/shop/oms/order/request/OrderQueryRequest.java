@@ -222,6 +222,16 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private String supplierName;
 
+	/**
+	 * 签章状态
+	 */
+	private Integer signStatus;
+
+	/**
+	 * 是否需要签章
+	 */
+	private Integer needSign;
+
     public Integer getPageNo() {
 		return pageNo;
 	}
@@ -564,5 +574,21 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setSupplierName(String supplierName) {
 		this.supplierName = supplierName;
+	}
+
+	public Integer getSignStatus() {
+		return signStatus;
+	}
+
+	public void setSignStatus(Integer signStatus) {
+		this.signStatus = signStatus;
+	}
+
+	public Integer getNeedSign() {
+		return needSign;
+	}
+
+	public void setNeedSign(Integer needSign) {
+		this.needSign = needSign;
 	}
 }

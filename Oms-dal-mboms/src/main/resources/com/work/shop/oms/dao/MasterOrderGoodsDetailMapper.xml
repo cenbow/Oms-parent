@@ -507,6 +507,11 @@
     <result column="protect_falg" jdbcType="INTEGER" property="protectFalg" />
     <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
     <result column="sales_mode" jdbcType="INTEGER" property="salesMode" />
+      <result column="purchases_without_stock_flag" jdbcType="INTEGER" property="purchasesWithoutStockFlag" />
+      <result column="without_stock_delivery_cycle" jdbcType="VARCHAR" property="withoutStockDeliveryCycle" />
+      <result column="without_stock_depot_no" jdbcType="VARCHAR" property="withoutStockDepotNo" />
+      <result column="data_sources" property="dataSources" />
+      <result column="goods_payment_period_id" property="goodsPaymentPeriodId" />
     <!-- 发货仓字段 -->
     <result column="shipping_id" jdbcType="TINYINT" property="shippingId" />
     <result column="shipping_name" jdbcType="VARCHAR" property="shippingName" />
@@ -557,7 +562,8 @@
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.customer_material_name customerMaterialName,
             t.buyer_no buyerNo, t.buyer_line_no buyerLineNo, t.input_tax inputTax, t.output_tax outputTax, t.cost_price costPrice,
-            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number
+            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number, t.purchases_without_stock_flag
+            ,t.without_stock_delivery_cycle,t.without_stock_depot_no,t.data_sources,t.goods_payment_period_id
         FROM 
             master_order_goods t
         LEFT JOIN

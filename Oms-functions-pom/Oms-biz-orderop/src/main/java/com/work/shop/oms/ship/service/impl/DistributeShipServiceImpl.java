@@ -1805,7 +1805,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             DistConfirmOwner owner = confirmOwnerMap.get(ownerCode);
 
             // 无需物流则不校验
-            if (!"无需物流".equals(owner.getShippingName())){
+//            if (!"无需物流".equals(owner.getShippingName())){
                 //验证配货仓发货单 依据订单号、快递单号、发货仓
                 OrderDepotShipKey verifyKey = new OrderDepotShipKey();
                 verifyKey.setOrderSn(owner.getOrderSn());
@@ -1815,7 +1815,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 if (orderDepotShip != null) {
                     throw new RuntimeException("该订单的此快递单已进行发货，不能重复添加");
                 }
-            }
+//            }
 
             // 更新发货仓包裹信息
             OrderDepotShip updateShip = new OrderDepotShip();
@@ -2015,7 +2015,8 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 }
                 String expressCode = orderPackage.getExpressCode();
                 // 不是无需物流时 单号必填
-                if (!"NOEX".equals(logisticsCode) && StringUtil.isTrimEmpty(expressCode)) {
+//                if (!"NOEX".equals(logisticsCode) && StringUtil.isTrimEmpty(expressCode)) {
+                if (StringUtil.isTrimEmpty(expressCode)) {
                     response.setMessage("参数[request.packages.expressCode] 不能为空");
                     return response;
                 }
