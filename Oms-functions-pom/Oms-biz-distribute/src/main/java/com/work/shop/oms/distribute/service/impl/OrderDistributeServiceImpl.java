@@ -1211,7 +1211,8 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	public String getSpliceOrderSn(String masterOrderSn, Integer index){
 		String orderSn = "";
 		index +=1;
-		String hexCode = Integer.toHexString(index);
+//		String hexCode = Integer.toHexString(index); 十六进制会产生‘S0a’的情况，所以弃用
+		String hexCode = index.toString();
 		if(hexCode.length() == 1){
 			orderSn= masterOrderSn + "S0"+hexCode;
 		} else {
