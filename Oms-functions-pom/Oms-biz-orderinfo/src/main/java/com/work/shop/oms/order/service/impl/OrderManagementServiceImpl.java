@@ -71,11 +71,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 订单管理服务
@@ -330,7 +326,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                     String key = orderSn + "_" + invoiceNo;
                     depotDetail.setGoodsDetailList(goodsMap.get(key));
                 }
-                Map<String, List<OrderItemDepotDetail>> depotMap = new HashMap<String, List<OrderItemDepotDetail>>();
+                Map<String, List<OrderItemDepotDetail>> depotMap = new LinkedHashMap<String, List<OrderItemDepotDetail>>();
                 for (OrderItemDepotDetail detail : depotDetails) {
                     String orderSn = detail.getOrderSn();
                     List<OrderItemDepotDetail> orderItemDepotDetails = depotMap.get(orderSn);
