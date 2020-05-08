@@ -1584,9 +1584,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             }
 
             String message = "更新账期支付扣款成功状态异常";
+            // 内行业务id
             String contractNo = request.getContractNo();
             // 成功
-            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo);
+            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo, true);
             if (payStatus) {
 
                 message = "账期支付扣款成功";
@@ -1626,6 +1627,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         String masterOrderSn = request.getMasterOrderSn();
 
         try {
+			// 更新订单内行扣款失败状态
+			boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, "", false);
+
             String note = "账期支付扣款失败处理！错误信息:" + request.getMessage();
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, note, Constant.OS_STRING_SYSTEM);
             // 处理失败，设置问题单

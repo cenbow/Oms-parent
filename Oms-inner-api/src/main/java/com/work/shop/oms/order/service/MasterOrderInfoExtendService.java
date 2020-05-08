@@ -40,7 +40,7 @@ public interface MasterOrderInfoExtendService {
 	 * @param masterOrderSn
 	 * @return boolean
 	 */
-	boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId);
+	boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId, boolean payStatus);
 
 	/**
 	 * 更新订单结算账户结算状态
