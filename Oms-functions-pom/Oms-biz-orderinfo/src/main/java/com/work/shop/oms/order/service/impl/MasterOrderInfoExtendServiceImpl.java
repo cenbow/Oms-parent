@@ -191,15 +191,23 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
      * @return boolean
      */
     @Override
-    public boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId) {
+    public boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId, boolean payStatus) {
         boolean bl = false;
         try {
             MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
             extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 
             MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
-            extend.setPayPeriodStatus(1);
-            extend.setPaySourceId(paySourceId);
+            if (payStatus) {
+                // 账期是否扣款(0未扣、1已扣)
+                extend.setPayPeriodStatus(1);
+                // 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+                extend.setPayPeriodPayStatus((byte) 1);
+                extend.setPaySourceId(paySourceId);
+            } else {
+                // 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+                extend.setPayPeriodPayStatus((byte) 2);
+            }
             int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
 
             bl = result > 0;
