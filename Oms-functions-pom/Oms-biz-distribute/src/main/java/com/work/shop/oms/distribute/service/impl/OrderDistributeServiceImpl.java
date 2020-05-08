@@ -1216,7 +1216,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		if(hexCode.length() == 1){
 			orderSn= masterOrderSn + "S0"+hexCode;
 		} else {
-			orderSn="S"+index;
+			orderSn= masterOrderSn + "S"+index;
 		}
 		return orderSn;
 	}
