@@ -71,11 +71,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 订单管理服务
@@ -330,7 +326,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                     String key = orderSn + "_" + invoiceNo;
                     depotDetail.setGoodsDetailList(goodsMap.get(key));
                 }
-                Map<String, List<OrderItemDepotDetail>> depotMap = new HashMap<String, List<OrderItemDepotDetail>>();
+                Map<String, List<OrderItemDepotDetail>> depotMap = new LinkedHashMap<String, List<OrderItemDepotDetail>>();
                 for (OrderItemDepotDetail detail : depotDetails) {
                     String orderSn = detail.getOrderSn();
                     List<OrderItemDepotDetail> orderItemDepotDetails = depotMap.get(orderSn);
@@ -1588,9 +1584,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             }
 
             String message = "更新账期支付扣款成功状态异常";
+            // 内行业务id
             String contractNo = request.getContractNo();
             // 成功
-            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo);
+            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo, true);
             if (payStatus) {
 
                 message = "账期支付扣款成功";
@@ -1630,6 +1627,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         String masterOrderSn = request.getMasterOrderSn();
 
         try {
+			// 更新订单内行扣款失败状态
+			boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, "", false);
+
             String note = "账期支付扣款失败处理！错误信息:" + request.getMessage();
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, note, Constant.OS_STRING_SYSTEM);
             // 处理失败，设置问题单
