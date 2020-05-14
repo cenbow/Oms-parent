@@ -1608,8 +1608,11 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 String buyerSN = masterOrderInfo.getUserId();
                 int totalPrice = masterOrderInfo.getMoneyPaid().intValue();
                 int ratio = rewardPointRatioService.getRewardPointRatio();
-                int point = totalPrice / ratio;
-
+                int point = 0;
+                // ratio 为零时不计积分
+                if (ratio != 0){
+                    point = totalPrice / ratio;
+                }
                 if (point >= 1) {
                     //查询积分比例
                     //下发"add_reward_point_change_log"信道，添加积分变更记录

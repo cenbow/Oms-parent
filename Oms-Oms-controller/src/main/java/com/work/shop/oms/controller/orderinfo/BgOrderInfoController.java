@@ -291,7 +291,10 @@ public class BgOrderInfoController {
                 if (orderMap != null && ("hbis").equals(orderFrom) && totalPrice >= 1000) {
                     //查询积分比例
                     int ratio = rewardPointRatioService.getRewardPointRatio();
-                    int point = totalPrice / ratio;
+                    int point = 0;
+                    if (ratio != 0){
+                        point = totalPrice / ratio;
+                    }
 
                     //下发"add_reward_point_change_log"信道，添加积分变更记录
                     RewardPointChangeLogBean rewardPointChangeLogBean = new RewardPointChangeLogBean();
