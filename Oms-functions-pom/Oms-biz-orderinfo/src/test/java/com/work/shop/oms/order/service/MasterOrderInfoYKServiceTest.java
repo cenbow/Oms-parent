@@ -209,7 +209,7 @@ public class MasterOrderInfoYKServiceTest extends TestCase {
 		masterGoods.setSizeName("1盒");
 		masterGoods.setColorName("无色");
 		masterGoods.setBarCode("16010011");
-		masterGoods.setGoodsSn(sku.substring(0, 6));
+		masterGoods.setGoodsSn(sku);
 		masterGoods.setBvValue(50);
 		masterGoods.setBaseBvValue(50);
 		masterGoods.setExpectedShipDate(expectedShipDate);

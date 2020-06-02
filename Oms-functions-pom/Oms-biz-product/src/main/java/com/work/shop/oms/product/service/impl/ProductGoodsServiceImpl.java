@@ -45,7 +45,7 @@ public class ProductGoodsServiceImpl implements ProductGoodsService {
 			String queryGoodsSn = null;
 			// 11位码处理
 			if (goodsSn.length() > 6) {
-				queryGoodsSn = goodsSn.substring(0, 6);
+				queryGoodsSn = goodsSn;
 			} else {
 				queryGoodsSn = goodsSn;
 			}

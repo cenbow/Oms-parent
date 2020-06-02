@@ -55,7 +55,7 @@ public class OrderPriceServiceImpl implements OrderPriceService{
 			if (extensionCodes.indexOf(orderGoods.getExtensionCode()) == -1) {
 				// 商品的保护价
 				try {
-					String doubleValue = getProtectedPrice(sku.substring(0, 6));
+					String doubleValue = getProtectedPrice(sku);
 					double protectPrice = StringUtil.isEmpty(doubleValue) ? 0d : Double.parseDouble(doubleValue);
 					if (subPrice(protectPrice, orderGoods.getTransactionPrice().doubleValue()) > 0d && protectPrice > 0) {
 						// 商品价格低于保护价

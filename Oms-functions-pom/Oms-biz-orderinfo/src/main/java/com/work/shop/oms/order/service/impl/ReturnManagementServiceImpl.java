@@ -1595,7 +1595,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setGoodsName(orderReturnGoods.getGoodsName());
 		returnGoodsVO.setExtensionCode(orderReturnGoods.getExtensionCode());
 		if (null != orderReturnGoods.getCustomCode()) {
-			String goodsSn = orderReturnGoods.getCustomCode().substring(0, 6);
+			String goodsSn = orderReturnGoods.getCustomCode();
 			returnGoodsVO.setGoodsSn(goodsSn);
 		}
 		returnGoodsVO.setGoodsColorName(orderReturnGoods.getGoodsColorName());
