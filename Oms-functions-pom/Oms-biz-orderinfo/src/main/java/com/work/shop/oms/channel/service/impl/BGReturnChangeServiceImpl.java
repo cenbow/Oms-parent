@@ -461,7 +461,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                         bGGoodsReturnGoods.setGoodsSn(masterOrderGoods.getGoodsSn());
                     } else {
                         if (masterOrderGoods.getCustomCode() != null && masterOrderGoods.getCustomCode().length() > 6) {
-                            bGGoodsReturnGoods.setGoodsSn(masterOrderGoods.getCustomCode().substring(0, 6));
+                            bGGoodsReturnGoods.setGoodsSn(masterOrderGoods.getCustomCode());
                         }
                     }
                     // 商品财务价
@@ -1085,7 +1085,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 orderMobile.setOrderPrice(orderInfo.getMoneyPaid().doubleValue());
 
                 for (GoodsMobile goodsMobile : orderMobile.getGoodsMobileList()) {
-                    goodsMobile.setGoodsSn(goodsMobile.getCustomCode().substring(0, 6));
+                    goodsMobile.setGoodsSn(goodsMobile.getCustomCode());
                 }
             }
             Paging<OrderMobile> paging = new Paging<OrderMobile>(countList.size(), orderMobileList);
