@@ -235,7 +235,7 @@ public class MasterOrderInfoNewForceServiceTest extends TestCase {
 		masterGoods.setSizeName("标准");
 		masterGoods.setColorName("罂粟红");
 		masterGoods.setBarCode("16010013");
-		masterGoods.setGoodsSn(sku.substring(0, 6));
+		masterGoods.setGoodsSn(sku);
 		masterGoods.setBvValue(10);
 		masterGoods.setExpectedShipDate(expectedShipDate);
 		masterGoods.setTax(0D);

@@ -1572,7 +1572,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				}
 				OrderReturnGoods orderReturnGoods = new OrderReturnGoods();
 				orderReturnGoods.setRelatingReturnSn(param.getOrderReturnSn());
-				orderReturnGoods.setGoodsSn(createGoods.getCustomCode().substring(0, 6));
+				orderReturnGoods.setGoodsSn(createGoods.getCustomCode());
                 //供销商编码
 				orderReturnGoods.setSeller(createGoods.getSeller());
 				if (param.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()) {
@@ -1580,7 +1580,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				}
 				
 				if (null != createGoods.getCustomCode()) {
-					String goodsSn = createGoods.getCustomCode().substring(0, 6);
+					String goodsSn = createGoods.getCustomCode();
 					/*ProductGoodsWithBLOBs productGoods = productGoodsMapper.selectByPrimaryKey(goodsSn);
 					if(null != productGoods){
 						orderReturnGoods.setGoodsName(productGoods.getGoodsName());
@@ -1682,7 +1682,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				}
 				OrderReturnGoods orderReturnGoods = new OrderReturnGoods();
 				orderReturnGoods.setRelatingReturnSn(param.getOrderReturnSn());
-				orderReturnGoods.setGoodsSn(createGoods.getCustomCode().substring(0, 6));
+				orderReturnGoods.setGoodsSn(createGoods.getCustomCode());
 				//供销商编码
 				orderReturnGoods.setSeller(createGoods.getSeller());
 				if(param.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){

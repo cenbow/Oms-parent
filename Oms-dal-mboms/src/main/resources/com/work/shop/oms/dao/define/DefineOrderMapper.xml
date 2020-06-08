@@ -431,7 +431,8 @@
         og.without_stock_number withoutStockNumber,
         og.purchases_without_stock_flag purchasesWithoutStockFlag,
         og.without_stock_delivery_cycle withoutStockDeliveryCycle,
-        og.delivery_cycle deliveryCycle
+        og.delivery_cycle deliveryCycle,
+        og.data_sources  dataSources
         from
         <if test="isHistory == 0">
             master_order_goods

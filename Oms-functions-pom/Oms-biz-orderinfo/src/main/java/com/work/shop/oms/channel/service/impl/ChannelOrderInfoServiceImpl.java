@@ -919,7 +919,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         if (CollectionUtils.isNotEmpty(orderGoodsList)) {
             for (OrderGoodsInfo orderGoods : orderGoodsList) {
                 if (orderGoods.getSkuSn() != null && orderGoods.getSkuSn().length() > 6) {
-                    orderGoods.setGoodsSn(orderGoods.getSkuSn().substring(0, 6));
+                    orderGoods.setGoodsSn(orderGoods.getSkuSn());
                 }
             }
         }
@@ -929,7 +929,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         if (CollectionUtils.isNotEmpty(orderReturnGoodsList)) {
             for (OrderReturnGoodsInfo orderReturnGoods : orderReturnGoodsList) {
                 if (orderReturnGoods.getSkuSn() != null && orderReturnGoods.getSkuSn().length() > 6) {
-                    orderReturnGoods.setGoodsSn(orderReturnGoods.getSkuSn().substring(0, 6));
+                    orderReturnGoods.setGoodsSn(orderReturnGoods.getSkuSn());
                 }
             }
         }
