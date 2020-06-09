@@ -79,7 +79,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 				info.setMessage("交货单信息不存在！");
 				return info;
 			}
-			Map<String, Object> paramMap = new HashMap<String, Object>();
+			Map<String, Object> paramMap = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
 			paramMap.put("masterOrderSn", distribute.getMasterOrderSn());
 			paramMap.put("isHistory", 0);
 			//查询主单信息（主单表、扩展表、地址信息表）
@@ -157,8 +157,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 	/**
 	 * 采购单创建
-	 * @param master
-	 * @param distribute
+	 * @param master 订单信息
+	 * @param distribute 交货单信息
 	 * @param request
 	 * @return ReturnInfo<String>
 	 */
