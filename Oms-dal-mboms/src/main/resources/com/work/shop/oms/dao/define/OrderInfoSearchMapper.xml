@@ -2209,6 +2209,7 @@
 	<result column="user_pay_apply" property="userPayApply" />
       <result column="user_bank_no" property="userBankNo" />
       <result column="goods_decimal_count" property="goodsDecimalCount" />
+	  <result column="erp_order_no" property="erpOrderNo" />
   </resultMap>
   
 	<!-- 默认订单列表  -->
@@ -2252,7 +2253,8 @@
 			oie.company_code as companyCode,
 			oi.sign_contract_num as signContractNum,
 			oi.sign_status as signStatus,
-			oi.need_sign as needSign
+			oi.need_sign as needSign,
+			oi.erp_order_no as erpOrderNo
         FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,

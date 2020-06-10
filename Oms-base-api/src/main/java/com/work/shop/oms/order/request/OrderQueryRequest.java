@@ -232,7 +232,20 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private Integer needSign;
 
-    public Integer getPageNo() {
+	/**
+	 * ERP订单号
+	 */
+	private String erpOrderNo;
+
+	public String getErpOrderNo() {
+		return erpOrderNo;
+	}
+
+	public void setErpOrderNo(String erpOrderNo) {
+		this.erpOrderNo = erpOrderNo;
+	}
+
+	public Integer getPageNo() {
 		return pageNo;
 	}
 
