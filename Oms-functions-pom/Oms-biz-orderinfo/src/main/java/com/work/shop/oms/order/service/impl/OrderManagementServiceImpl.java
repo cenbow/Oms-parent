@@ -34,18 +34,7 @@ import com.work.shop.oms.common.bean.OrderItemStatusUtils;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.common.bean.ShippingInfo;
-import com.work.shop.oms.dao.DistributeActionMapper;
-import com.work.shop.oms.dao.MasterOrderActionMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsDetailMapper;
-import com.work.shop.oms.dao.MasterOrderInfoDetailMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayTypeDetailMapper;
-import com.work.shop.oms.dao.OrderDepotShipDetailMapper;
-import com.work.shop.oms.dao.OrderDistributeDetailMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.OrderReturnGoodsDetailMapper;
-import com.work.shop.oms.dao.OrderReturnMapper;
-import com.work.shop.oms.dao.SystemShippingMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.request.OmsBaseRequest;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
@@ -138,6 +127,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
     @Resource
     private MasterOrderInfoService masterOrderInfoService;
+
+    @Resource
+    private PurchaseOrderMapper purchaseOrderMapper;
 
 	/**
 	 * 获取操作用户
@@ -1181,7 +1173,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 info = updatePushSupplyChain(masterOrderSn, request.getContractNo());
             } else {
                 // 变更合同签章状态为
-                updateSignStatus(masterOrderSn, request.getContractNo());
+                updateSignStatus(masterOrderSn, request.getContractNo(),request.getErpOrderNo());
                 //订单号返回正常单
                 info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
                 //账期支付填充最后支付时间
@@ -1661,6 +1653,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             msg = "订单号为空";
             return msg;
         }
+		if (StringUtil.isTrimEmpty(request.getErpOrderNo())) {
+			msg = "ERP订单号为空";
+			return msg;
+		}
 
         return msg;
     }
@@ -1733,7 +1729,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * 更新订单合同签章状态标志
      * @param masterOrderSn
      */
-    private void updateSignStatus(String masterOrderSn, String contractNo) {
+    private void updateSignStatus(String masterOrderSn, String contractNo,String erpOrderNo) {
     	MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
     	if (masterOrderInfo == null) {
     		logger.info("订单号:" + masterOrderSn + "不存在");
@@ -1747,12 +1743,23 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		}
         MasterOrderInfo updateOrder = new MasterOrderInfo();
         updateOrder.setMasterOrderSn(masterOrderSn);
+		updateOrder.setErpOrderNo(erpOrderNo);
         updateOrder.setUpdateTime(new Date());
         // 已签章
         updateOrder.setSignStatus(1);
         updateOrder.setSignCompleteTime(new Date());
         updateOrder.setSignContractNum(contractNo);
         masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrder);
+        //更新供应商端ERP订单编号
+		PurchaseOrder purchaseOrder = new PurchaseOrder();
+		purchaseOrder.setMasterOrderSn(masterOrderSn);
+		purchaseOrder.setErpOrderNo(erpOrderNo);
+		int count=purchaseOrderMapper.updateErpOrderNoByMasterOrderSn(purchaseOrder);
+		if(count>0){
+			logger.info("ERP订单号:" + erpOrderNo + "已更新供应商端");
+		}else{
+			logger.info("ERP订单号:" + erpOrderNo + "未更新供应商端");
+		}
     }
 
 

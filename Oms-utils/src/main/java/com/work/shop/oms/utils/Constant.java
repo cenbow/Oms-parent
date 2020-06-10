@@ -1196,4 +1196,9 @@ public class Constant {
 	 * 特殊业务类型：订单购买的是店铺商品
 	 */
 	public  static  final  Byte SPECIAL_TYPE_ORDER_BUY_STORE = 2;
+
+	/**
+	 * 交货期天数
+	 */
+	public static final Integer deliveryDay = 3;
 }

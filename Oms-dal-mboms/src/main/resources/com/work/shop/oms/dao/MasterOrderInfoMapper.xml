@@ -1307,6 +1307,9 @@
       <if test="priceChangeStatus != null " >
         price_change_status = #{priceChangeStatus,jdbcType=INTEGER},
       </if>
+      <if test="erpOrderNo != null " >
+        erp_order_no = #{erpOrderNo,jdbcType=VARCHAR},
+      </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
