@@ -1170,7 +1170,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             //交货单直接更新采购单签章状态和合同号
             if (masterOrderSn.contains(Constant.ORDER_DISTRIBUTE_BEFORE)) {
                 //更新采购单合同号
-                info = updatePushSupplyChain(masterOrderSn, request.getContractNo());
+                info = updatePushSupplyChain(masterOrderSn, request.getContractNo(),request.getErpOrderNo());
             } else {
                 // 变更合同签章状态为
                 updateSignStatus(masterOrderSn, request.getContractNo(),request.getErpOrderNo());
@@ -1305,12 +1305,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param contractNo
      * @return
      */
-    private ReturnInfo<String> updatePushSupplyChain(String masterOrderSn, String contractNo) {
+    private ReturnInfo<String> updatePushSupplyChain(String masterOrderSn, String contractNo,String erpOrderNo) {
         PurchaseOrder purchaseOrder = new PurchaseOrder();
         purchaseOrder.setPurchaseOrderCode(masterOrderSn);
         purchaseOrder.setSignComplete((byte) 1);
         purchaseOrder.setContractNo(contractNo);
         purchaseOrder.setSignCompleteTime(new Date());
+		purchaseOrder.setErpOrderNo(erpOrderNo);
         return purchaseOrderService.updatePushSupplyChain(purchaseOrder);
     }
 
@@ -1653,10 +1654,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             msg = "订单号为空";
             return msg;
         }
-		if (StringUtil.isTrimEmpty(request.getErpOrderNo())) {
-			msg = "ERP订单号为空";
-			return msg;
-		}
 
         return msg;
     }
@@ -1750,17 +1747,5 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         updateOrder.setSignCompleteTime(new Date());
         updateOrder.setSignContractNum(contractNo);
         masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrder);
-        //更新供应商端ERP订单编号
-		PurchaseOrder purchaseOrder = new PurchaseOrder();
-		purchaseOrder.setMasterOrderSn(masterOrderSn);
-		purchaseOrder.setErpOrderNo(erpOrderNo);
-		int count=purchaseOrderMapper.updateErpOrderNoByMasterOrderSn(purchaseOrder);
-		if(count>0){
-			logger.info("ERP订单号:" + erpOrderNo + "已更新供应商端");
-		}else{
-			logger.info("ERP订单号:" + erpOrderNo + "未更新供应商端");
-		}
     }
-
-
 }

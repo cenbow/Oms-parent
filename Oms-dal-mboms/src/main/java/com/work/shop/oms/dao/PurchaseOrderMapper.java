@@ -126,8 +126,4 @@ public interface PurchaseOrderMapper {
      * @return List<PurchaseOrder>
      */
     List<PurchaseOrder> getSupplierPurchaseOrderBill(Map<String, Object> queryMap);
-    /**
-     * 根据订单号更新交货单号中的ERP订单号
-     */
-    int updateErpOrderNoByMasterOrderSn(PurchaseOrder purchaseOrder);
 }
