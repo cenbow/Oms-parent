@@ -659,4 +659,7 @@
             limit #{start}, #{limit}
         </if>
     </select>
+  <update id="updateErpOrderNoByMasterOrderSn"  parameterType="com.work.shop.oms.bean.PurchaseOrder">
+    update purchase_order set erp_order_no=#{erpOrderNo} where master_order_sn =#{masterOrderSn}
+  </update>
 </mapper>

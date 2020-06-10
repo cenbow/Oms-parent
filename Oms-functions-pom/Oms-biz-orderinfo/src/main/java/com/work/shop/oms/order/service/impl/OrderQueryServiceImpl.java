@@ -334,6 +334,13 @@ public class OrderQueryServiceImpl implements OrderQueryService {
             }
         }
 
+		// ERP订单编号
+		String erpOrderNo = request.getErpOrderNo();
+		if (StringUtils.isNotBlank(erpOrderNo)) {
+			condition = false;
+			criteria.andeErpOrderNoLike("%" + erpOrderNo + "%");
+		}
+
 		//订单有效、隐藏、全部状态
 		if (null != request.getOrderView()) {
 			if (request.getOrderView() == 0) {//默认显示有效订单

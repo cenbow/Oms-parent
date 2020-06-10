@@ -305,7 +305,21 @@ public class OrderItem implements Serializable{
 	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
 	 */
 	private Integer priceChangeStatus;
-	
+
+	/**
+	 * erp订单号
+	 * @return
+	 */
+	private String erpOrderNo;
+
+	public String getErpOrderNo() {
+		return erpOrderNo;
+	}
+
+	public void setErpOrderNo(String erpOrderNo) {
+		this.erpOrderNo = erpOrderNo;
+	}
+
 	public String getMasterOrderSn() {
 		return masterOrderSn;
 	}

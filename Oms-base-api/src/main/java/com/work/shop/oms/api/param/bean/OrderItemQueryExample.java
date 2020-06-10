@@ -883,6 +883,10 @@ public class OrderItemQueryExample {
             addCriterion("oi.pay_status !=", value, "payStatus");
             return (Criteria) this;
         }
+        public Criteria andeErpOrderNoLike(String value) {
+            addCriterion("oi.erp_order_no like", value, "erpOrderNo");
+            return (Criteria) this;
+        }
     }
 
     /**
