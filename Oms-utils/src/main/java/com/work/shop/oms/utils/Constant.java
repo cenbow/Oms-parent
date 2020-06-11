@@ -1200,5 +1200,5 @@ public class Constant {
 	/**
 	 * 交货期天数
 	 */
-	public static final Integer deliveryDay = 3;
+	public static final Integer deliveryDay = 30;
 }
