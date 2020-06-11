@@ -42,17 +42,24 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 	@Override
 	public List<BaseTask> queryServiceData(List<String> orderIdList, Integer dataLimit) {
 
+		List<BaseTask> taskDataList = new ArrayList<BaseTask>();
+
 		Map<String, Object> queryMap = new HashMap<String, Object>(2);
 		queryMap.put("dateTime", TimeUtil.getDate(TimeUtil.YYYY_MM_DD_HH_MM_SS));
 		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
-
-		List<BaseTask> taskDataList = new ArrayList<BaseTask>();
-		if (list == null || list.size() == 0) {
-			return taskDataList;
+		if (list != null && list.size() > 0) {
+			for (OrderAccountPeriod orderAccountPeriod : list) {
+				masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
+			}
 		}
 
-		for (OrderAccountPeriod orderAccountPeriod : list) {
-            masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
+		// 查询订单发货单
+		List<OrderAccountPeriod> orderDepotShipList = orderInfoSearchMapper.selectCompanyPayPeriodListByOrderDepotShip(queryMap);
+		if (orderDepotShipList != null && orderDepotShipList.size() > 0) {
+			for (OrderAccountPeriod orderAccountPeriod : orderDepotShipList) {
+                orderAccountPeriod.setOrderType(1);
+				masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
+			}
 		}
 
 		return taskDataList;

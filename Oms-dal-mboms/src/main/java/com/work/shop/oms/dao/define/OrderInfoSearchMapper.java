@@ -178,6 +178,13 @@ public interface OrderInfoSearchMapper {
 	 */
 	List<OrderAccountPeriod> selectCompanyPayPeriodList(Map<String, Object> query);
 
+	/**
+	 * 获取订单发货单到期账期支付信息列表
+	 * @param query 查询条件
+	 * @return List<OrderAccountPeriod>
+	 */
+	List<OrderAccountPeriod> selectCompanyPayPeriodListByOrderDepotShip(Map<String, Object> query);
+
     /**
      * 订单合同列表
      * @param request

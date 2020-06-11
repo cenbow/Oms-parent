@@ -1,6 +1,7 @@
 package com.work.shop.oms.ship.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -98,6 +99,11 @@ public class DistConfirmOwner implements Serializable {
 	 * 预计发货周期
 	 */
 	private String overTransCycle;
+
+	/**
+	 * 支付金额
+	 */
+	private BigDecimal payMoney;
 
 	/**
 	 * 商品列表
@@ -246,5 +252,13 @@ public class DistConfirmOwner implements Serializable {
 
 	public void setProvincecity(String provincecity) {
 		this.provincecity = provincecity;
+	}
+
+	public BigDecimal getPayMoney() {
+		return payMoney;
+	}
+
+	public void setPayMoney(BigDecimal payMoney) {
+		this.payMoney = payMoney;
 	}
 }
