@@ -191,6 +191,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         record.setOperateUser(request.getActionUser());
 		record.setErpOrderNo(request.getErpOrderNo());
         fillOrderPrice(record, lines);
+		logger.info("-2020061111-ERP--"+ JSON.toJSONString(record));
 		purchaseOrderMapper.insertSelective(record);
 		
 		for (PurchaseOrderLine line : lines) {
