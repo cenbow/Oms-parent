@@ -82,6 +82,7 @@
     <result column="sign_contract_num" jdbcType="VARCHAR" property="signContractNum" />
     <result column="goods_sale_type" jdbcType="INTEGER" property="goodsSaleType" />
     <result column="price_change_status" jdbcType="INTEGER" property="priceChangeStatus" />
+    <result column="erp_order_no" jdbcType="VARCHAR" property="erpOrderNo" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <!--
