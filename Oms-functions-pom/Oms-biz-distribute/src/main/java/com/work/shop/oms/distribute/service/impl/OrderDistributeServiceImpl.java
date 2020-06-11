@@ -922,7 +922,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
      * @param goodsList 订单商品列表
      * @return Map<String, List<MasterOrderGoods>>
      */
-	private Map<String, List<MasterOrderGoods>> getOrderGoodsDistribute(List<MasterOrderGoods> goodsList) {
+	public Map<String, List<MasterOrderGoods>> getOrderGoodsDistribute(List<MasterOrderGoods> goodsList) {
         // 供应商与商品关系
         Map<String, List<MasterOrderGoods>> orderGoodsMap = new HashMap<String, List<MasterOrderGoods>>(Constant.DEFAULT_MAP_SIZE);
         for (MasterOrderGoods orderGoods : goodsList) {
@@ -1040,21 +1040,26 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
     }
 
 	public static void main(String[] args) {
-		//OrderDistributeServiceImpl impl = new OrderDistributeServiceImpl();
-		//System.out.println(impl.planDistTime(new Date(), 5));
-
-        Map<Integer, Integer> keyMap = new HashMap<>(Constant.DEFAULT_MAP_SIZE);
-        keyMap.put(2, 8);
-        keyMap.put(0, 1);
-        keyMap.put(1, 5);
-
-        Set<Integer> keySet = keyMap.keySet();
-        Arrays.sort(keySet.toArray());
-
-        for (Integer deliveryType : keySet) {
-            Integer goodsNumber = keyMap.get(deliveryType);
-            System.out.println(deliveryType + ":" + goodsNumber);
-        }
+        List<MasterOrderGoods> goodsList = new ArrayList<>();
+        MasterOrderGoods masterOrderGoods = new MasterOrderGoods();
+        masterOrderGoods.setSupplierCode("S0000185");
+        masterOrderGoods.setSupplierName("六个核桃");
+        masterOrderGoods.setDeliveryCycle("20");
+        masterOrderGoods.setWithoutStockDeliveryCycle("");
+        masterOrderGoods.setWithStockNumber(2);
+        masterOrderGoods.setWithoutStockNumber(0);
+        goodsList.add(masterOrderGoods);
+        masterOrderGoods = new MasterOrderGoods();
+        masterOrderGoods.setSupplierCode("S0000185");
+        masterOrderGoods.setSupplierName("六个核桃");
+        masterOrderGoods.setDeliveryCycle("40");
+        masterOrderGoods.setWithoutStockDeliveryCycle("");
+        masterOrderGoods.setWithStockNumber(2);
+        masterOrderGoods.setWithoutStockNumber(0);
+        goodsList.add(masterOrderGoods);
+        OrderDistributeServiceImpl service = new OrderDistributeServiceImpl();
+        Map<String, List<MasterOrderGoods>> returnMap = service.getOrderGoodsDistribute(goodsList);
+        System.out.println(JSONObject.toJSONString(returnMap));
 	}
 	
 	private String planDistTime(Date date, int week) {
@@ -1419,4 +1424,5 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		}
 		return "";
 	}
+
 }
