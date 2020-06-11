@@ -221,7 +221,7 @@ public class OrderNormalServiceImpl implements OrderNormalService {
                     && questionOrderTypeBean.isReviewFlg() && questionOrderTypeBean.isSignFlag()) {
 				processMasterOrderQuestion(masterOrderSn);
 				msg = "返回正常单成功";
-				logger.info("-2020061111-ERP--"+ JSON.toJSONString(master));
+				logger.info("-ERP获取订单号-"+ JSON.toJSONString(master));
 				//返回正常单后续操作（包含创建采购单）
                 processMasterOrderNormalFollow(master, orderStatus);
 			} else {
