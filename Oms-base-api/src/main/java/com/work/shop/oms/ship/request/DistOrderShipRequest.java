@@ -11,9 +11,6 @@ import com.work.shop.oms.ship.bean.DistOrderPackages;
  */
 public class DistOrderShipRequest extends OmsRequest {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1402127580757539546L;
 
 	/**

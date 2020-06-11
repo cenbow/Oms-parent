@@ -1576,20 +1576,29 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 return response;
             }
 
-            String message = "更新账期支付扣款成功状态异常";
+            String message = "账期支付扣款成功";
             // 内行业务id
             String contractNo = request.getContractNo();
-            // 成功
-            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo, true);
-            if (payStatus) {
 
-                message = "账期支付扣款成功";
+            boolean payStatus = false;
+            // 订单类型
+            int orderType = request.getOrderType();
+            if (orderType == 0) {
+                // 成功
+                payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo, true);
+            } else {
+                message += ":" + request.getShipSn() + "," + request.getSource();
+                payStatus = distributeShipService.updateOrderDepotShipPayPeriod(request.getShipSn(), request.getSource(), contractNo, true);
+            }
+            if (payStatus) {
                 if (StringUtils.isNotBlank(contractNo)) {
                     message += ",内行业务id:" + contractNo;
                 }
 
                 response.setSuccess(true);
                 response.setMessage("操作成功");
+            } else {
+                message += "异常";
             }
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, message, request.getActionUser());
         } catch (Exception e) {

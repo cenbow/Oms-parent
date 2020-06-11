@@ -291,8 +291,7 @@ public class OrderCommonController {
     }
 
     /**
-     * 供应商订单发货结果
-     *
+     * 供应商订单发货
      * @param request
      * @return DistOrderShipResponse
      */

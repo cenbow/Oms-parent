@@ -125,7 +125,7 @@ public interface DistributeShipService {
 	
 	/**
 	 * 供应商发货
-	 * @param request
+	 * @param request 发货数据
 	 * @return DistOrderShipResponse
 	 */
 	DistOrderShipResponse distOrderShip(DistOrderShipRequest request);
@@ -143,4 +143,20 @@ public interface DistributeShipService {
 	 */
 	void processMasterShipResult(String masterOrderSn);
 
+	/**
+	 * 处理订单发货单金额信息
+	 * @param distributeShippingBean 发货单信息
+	 * @return ReturnInfo<String>
+	 */
+	ReturnInfo<Boolean> processOrderDepotShip(DistributeShippingBean distributeShippingBean);
+
+	/**
+	 * 更新发货单内行扣款
+	 * @param orderSn 交货单号
+	 * @param invoiceNo 快递单号
+	 * @param paySourceId 内行扣款业务id
+	 * @param payStatus 状态
+	 * @return boolean
+	 */
+	boolean updateOrderDepotShipPayPeriod(String orderSn, String invoiceNo, String paySourceId, boolean payStatus);
 }
