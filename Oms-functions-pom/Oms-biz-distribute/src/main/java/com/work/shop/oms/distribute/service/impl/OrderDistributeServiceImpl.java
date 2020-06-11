@@ -323,6 +323,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
         String masterOrderSn = master.getMasterOrderSn();
         // 创建交货单
         Integer index = 0;
+        int orderNumber = 1;
         for (String supplierKey : supplierMap.keySet()) {
             GoodsDistribute goodsDistribute = supplierMap.get(supplierKey);
             final String orderSn = createOrderSn(masterOrderSn, index);

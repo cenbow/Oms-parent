@@ -263,4 +263,23 @@
 		<property name="concurrency" value="2-3"></property>
 	</bean>
 
+	<!-- 发货单签收结算处理 -->
+	<bean id="orderReceiveSettlement" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="order_receive_settlement" />
+	</bean>
+
+	<bean id="orderReceiveSettlementMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.work.shop.oms.jms.listener.OrderDepotShipReceiveConsumer" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="orderReceiveSettlementJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="destination" ref="orderReceiveSettlement" />
+		<property name="messageListener" ref="orderReceiveSettlementMessageListener" />
+		<!-- 2到3个消费者 -->
+		<property name="concurrency" value="1"></property>
+	</bean>
+
 </beans>

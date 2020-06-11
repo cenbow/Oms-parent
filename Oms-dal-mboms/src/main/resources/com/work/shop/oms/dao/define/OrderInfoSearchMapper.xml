@@ -2627,6 +2627,19 @@
 		and moie.pay_period_status = 0
 	</select>
 
+	<!-- 获取公司发货单账期支付 -->
+	<select id="selectCompanyPayPeriodListByOrderDepotShip" resultType="com.work.shop.oms.bean.OrderAccountPeriod" parameterType="map">
+		select moi.master_order_sn masterOrderSn, moi.add_time addTime, moi.user_id userId, moie.company_code companyId,
+			ods.order_sn as orderSn, ods.invoice_no as invoiceNo, ods.order_number as orderNumber
+		from master_order_info moi, master_order_info_extend moie, order_distribute od, order_depot_ship ods
+		where moi.master_order_sn = moie.master_order_sn
+		and moi.master_order_sn = od.master_order_sn
+		and od.order_sn = ods.order_sn
+		and moi.order_status != 2
+		and ods.last_pay_date &lt; #{dateTime}
+		and ods.pay_period_status = 0
+	</select>
+
     <!--订单合同查询-->
     <select id="selectOrderContractList" parameterType="com.work.shop.oms.api.bean.OrderContractRequest" resultType="com.work.shop.oms.api.bean.OrderContractBean">
         select moi.master_order_sn masterOrderSn,

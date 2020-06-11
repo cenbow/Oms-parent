@@ -58,4 +58,9 @@ public class MqConfig {
 	 * 订单结算账户
 	 */
 	public static final String order_account_settlement = "order_account_settlement";
+
+	/**
+	 * 订单发货单费用
+	 */
+	public static final String order_receive_settlement = "order_receive_settlement";
 }
