@@ -325,6 +325,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
         Integer index = 0;
         int orderNumber = 1;
         for (String supplierKey : supplierMap.keySet()) {
+            logger.info("masterOrderSn:" + masterOrderSn + ",supplierKey:" + supplierKey);
             GoodsDistribute goodsDistribute = supplierMap.get(supplierKey);
             final String orderSn = createOrderSn(masterOrderSn, index);
             logger.info("订单[" + masterOrderSn + "]创建子订单号:" + orderSn);
@@ -973,7 +974,8 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
             Arrays.sort(keySet.toArray());
 
             for (Integer deliveryType : keySet) {
-                List<MasterOrderGoods> list = orderGoodsMap.get(supplierKey + "-" + deliveryType);
+                String baseKey = supplierKey + "-" + deliveryType;
+                List<MasterOrderGoods> list = orderGoodsMap.get(baseKey);
                 if (list == null) {
                     list = new ArrayList<MasterOrderGoods>();
                 }
@@ -981,7 +983,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
                 Integer goodsNumber = keyMap.get(deliveryType);
                 orderGoods.setGoodsNumber(goodsNumber);
                 list.add(orderGoods);
-                orderGoodsMap.put(supplierKey, list);
+                orderGoodsMap.put(baseKey, list);
             }
 
         }
