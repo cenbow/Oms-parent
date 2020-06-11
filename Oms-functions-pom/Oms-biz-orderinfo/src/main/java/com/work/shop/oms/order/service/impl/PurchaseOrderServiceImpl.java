@@ -189,6 +189,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		PurchaseOrder record = new PurchaseOrder();
         fillPurchaseOrder(record, master, distribute);
         record.setOperateUser(request.getActionUser());
+		record.setErpOrderNo(request.getErpOrderNo());
         fillOrderPrice(record, lines);
 		purchaseOrderMapper.insertSelective(record);
 		
