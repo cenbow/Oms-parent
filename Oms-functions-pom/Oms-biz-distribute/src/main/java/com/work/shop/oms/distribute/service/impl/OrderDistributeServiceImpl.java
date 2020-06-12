@@ -232,7 +232,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 				if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
 					type = 2;
 				}
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, type);
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, null, type);
 
                 // 需要合同签章的，先设置问题单
                 if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
