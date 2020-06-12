@@ -169,7 +169,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		if (!Constant.DEFAULT_SHOP.equals(orderFrom)) {
 			if(master.getCreateOrderType()!=1){
 				//联采订单不扣除库存，只有正常订单才扣除供应商店铺中商品的数量
-				pushPurchaseStoreOrder(distribute.getOrderSn(),distribute.getSupplierCode());
+				pushPurchaseStoreOrder(distribute.getOrderSn(), distribute.getSupplierCode());
 			}
 			info.setMessage("店铺订单,不需要转采购订单");
             info.setIsOk(Constant.OS_YES);
@@ -215,7 +215,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             flag = true;
         }
         if (flag) {
-            pushJointPurchasing(master.getMasterOrderSn(), request.getActionUser(), request.getActionUserId(), distribute.getSupplierCode(), 1);
+            pushJointPurchasing(master.getMasterOrderSn(), request.getActionUser(), request.getActionUserId(), distribute.getSupplierCode(), distribute.getOrderSn(), 1);
         }
 
 		pushPurchaseOrder(distribute.getOrderSn());
@@ -392,10 +392,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * @param actionUser 操作人
      * @param actionUserId 操作人id
      * @param supplierCode 供应商编码
+	 * @param orderSn 交货单号
      * @param type 0买家->超市，1超市->供应商, 2 买家->店铺
      */
     @Override
-	public void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, int type) {
+	public void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, String orderSn, int type) {
         //校验订单类型；联采订单供应商编码不能为空，普通订单必须为企业用户
         logger.info("订单推送供应链信息：订单号" + masterOrderSn + ",供应商编码" + supplierCode + ",推送类型" + type);
         Map<String, Object> paramMap = new HashMap<String, Object>(4);
@@ -449,12 +450,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         if (StringUtils.isNotBlank(supplierCode)) {
             paramMap.put("supplierCode", supplierCode);
-            OrderDistributeExample distributeExample = new OrderDistributeExample();
-            distributeExample.or().andMasterOrderSnEqualTo(masterOrderSn).andSupplierCodeEqualTo(supplierCode);
-            List<OrderDistribute> orderDistributes = orderDistributeMapper.selectByExample(distributeExample);
-            if (StringUtil.isListNotNull(orderDistributes)) {
-                paramMap.put("orderSn", orderDistributes.get(0).getOrderSn());
-            }
+			paramMap.put("orderSn", orderSn);
         }
         paramMap.put("type", type);
         logger.info("订单推送供应链推送:" + JSONObject.toJSONString(paramMap));

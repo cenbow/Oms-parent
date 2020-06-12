@@ -852,7 +852,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				}else{
 					//返回正常单，订单推送供应链
 					logger.info("返回正常单:" + masterOrderSn + "订单推送供应链");
-					purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
+					purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, null, 0);
 				}
                 response.setSuccess(true);
 				response.setMessage("订单返回正常单成功");
@@ -1285,7 +1285,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
                 type = 2;
             }
-            purchaseOrderService.pushJointPurchasing(masterOrderSn, masterOrderInfo.getUserId(), "000000", null, type);
+            purchaseOrderService.pushJointPurchasing(masterOrderSn, masterOrderInfo.getUserId(), "000000", null, null, type);
 
             //设置待签章问题单
             orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
@@ -1390,7 +1390,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
 					type = 2;
 				}
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, type);
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, null, type);
                 // 需要合同签章的，先设置问题单
                 if (masterOrderInfo.getNeedSign() == 1 && masterOrderInfo.getSignStatus() == 0) {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
