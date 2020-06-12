@@ -559,6 +559,9 @@
       <if test="paySourceId != null">
         pay_source_id = #{paySourceId},
       </if>
+      <if test="paySourceId != null">
+        pay_source_id = #{paySourceId},
+      </if>
     </set>
     where depot_code = #{depotCode,jdbcType=VARCHAR}
       and invoice_no = #{invoiceNo,jdbcType=VARCHAR}
