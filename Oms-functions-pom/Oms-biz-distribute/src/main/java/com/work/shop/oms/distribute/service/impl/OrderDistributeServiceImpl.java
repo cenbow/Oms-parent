@@ -933,30 +933,12 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
             Map<Integer, Integer> keyMap = new HashMap<>(Constant.DEFAULT_MAP_SIZE);
             // 0 、1交货期小于30天、2交货期大于30天
             Integer goodsType = 0;
-            // 库存商品量
-            Integer withStockNumber = orderGoods.getWithStockNumber();
-            if (withStockNumber == null) {
-                withStockNumber = 0;
-            }
-            if (withStockNumber > 0) {
-                // 查看有货交货期
-                // 获取商品的交货期
-                String deliveryCycle = orderGoods.getDeliveryCycle();
-                goodsType = getOrderGoodsType(deliveryCycle);
-                Integer goodsNum = keyMap.get(goodsType);
-                if (goodsNum == null) {
-                    keyMap.put(goodsType, withStockNumber);
-                } else {
-                    keyMap.put(goodsType, withStockNumber + goodsNum);
-                }
-            }
 
             // 无库存商品量
             Integer withoutStockNumber = orderGoods.getWithoutStockNumber();
             if (withoutStockNumber == null) {
                 withoutStockNumber = 0;
             }
-
             if (withoutStockNumber > 0) {
                 // 查看无货交货期
                 String deliveryCycle = orderGoods.getWithoutStockDeliveryCycle();
@@ -964,9 +946,27 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
                 Integer goodsNum = keyMap.get(goodsType);
                 if (goodsNum == null) {
-                    keyMap.put(goodsType, withStockNumber);
+                    keyMap.put(goodsType, withoutStockNumber);
                 } else {
-                    keyMap.put(goodsType, withStockNumber + goodsNum);
+                    keyMap.put(goodsType, withoutStockNumber + goodsNum);
+                }
+            } else {
+                // 库存商品量
+                Integer withStockNumber = orderGoods.getWithStockNumber();
+                if (withStockNumber == null) {
+                    withStockNumber = 0;
+                }
+                if (withStockNumber > 0) {
+                    // 查看有货交货期
+                    // 获取商品的交货期
+                    String deliveryCycle = orderGoods.getDeliveryCycle();
+                    goodsType = getOrderGoodsType(deliveryCycle);
+                    Integer goodsNum = keyMap.get(goodsType);
+                    if (goodsNum == null) {
+                        keyMap.put(goodsType, withStockNumber);
+                    } else {
+                        keyMap.put(goodsType, withStockNumber + goodsNum);
+                    }
                 }
             }
 

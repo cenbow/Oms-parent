@@ -438,6 +438,9 @@
       <if test="record.paySourceId != null">
         pay_source_id = #{record.paySourceId},
       </if>
+      <if test="record.orderNumber != null">
+        order_number = #{record.orderNumber},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -475,7 +478,8 @@
       pay_money = #{record.payMoney},
       last_pay_date = #{record.lastPayDate},
       pay_period_status = #{record.payPeriodStatus},
-      pay_source_id = #{record.paySourceId}
+      pay_source_id = #{record.paySourceId},
+      order_number = #{record.orderNumber}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -562,6 +566,9 @@
       <if test="paySourceId != null">
         pay_source_id = #{paySourceId},
       </if>
+      <if test="orderNumber != null">
+        order_number = #{orderNumber},
+      </if>
     </set>
     where depot_code = #{depotCode,jdbcType=VARCHAR}
       and invoice_no = #{invoiceNo,jdbcType=VARCHAR}
@@ -596,7 +603,8 @@
       pay_money = #{payMoney},
       last_pay_date = #{lastPayDate},
       pay_period_status = #{payPeriodStatus},
-      pay_source_id = #{paySourceId}
+      pay_source_id = #{paySourceId},
+      order_number = #{orderNumber}
     where depot_code = #{depotCode,jdbcType=VARCHAR}
       and invoice_no = #{invoiceNo,jdbcType=VARCHAR}
       and order_sn = #{orderSn,jdbcType=VARCHAR}
