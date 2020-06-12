@@ -1655,6 +1655,16 @@ public class OrderDepotShipExample {
             addCriterion("is_receipt =", value, "isReceipt");
             return (Criteria) this;
         }
+
+        public Criteria andPayPeriodStatusEqualTo(Integer value) {
+            addCriterion("pay_period_status =", value, "payPeriodStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andPayPeriodStatusNotEqualTo(Integer value) {
+            addCriterion("pay_period_status <>", value, "payPeriodStatus");
+            return (Criteria) this;
+        }
     }
 
     /**

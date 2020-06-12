@@ -1026,7 +1026,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
         }
         try {
             Integer sendDay = Integer.valueOf(deliveryCycle);
-            if (sendDay < Constant.deliveryDay) {
+            if (sendDay <= Constant.deliveryDay) {
                 goodsType = 1;
             } else {
                 goodsType = 2;

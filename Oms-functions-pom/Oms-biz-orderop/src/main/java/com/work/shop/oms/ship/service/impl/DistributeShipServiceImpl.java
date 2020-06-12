@@ -22,6 +22,7 @@ import com.work.shop.oms.order.service.MasterOrderPayService;
 import com.work.shop.oms.orderop.service.JmsSendQueueService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
+import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.service.RewardPointRatioService;
 import com.work.shop.oms.ship.bean.DistConfirmOwner;
 import com.work.shop.oms.ship.bean.DistOrderPackageItems;
@@ -132,6 +133,9 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     @Autowired
     private RewardPointRatioService rewardPointRatioService;
+
+    @Resource
+    private RedisClient redisClient;
 
     @Resource(name = "changeUserAndCompanyPointJmsTemplate")
     private JmsTemplate changeUserAndCompanyPointJmsTemplate;
@@ -1902,10 +1906,12 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
         // 交货单号
         String orderSn = distributeShippingBean.getShipSn();
+        List<String> invoiceNoList = distributeShippingBean.getInvoiceNoList();
 
         // 查询交货单下所有已签收的发货单数据
         OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
-        depotShipExample.or().andOrderSnEqualTo(orderSn).andShippingStatusEqualTo((byte) Constant.OS_SHIPPING_STATUS_CONFIRM).andIsDelEqualTo(0);
+        depotShipExample.or().andOrderSnEqualTo(orderSn).andInvoiceNoIn(invoiceNoList).andPayPeriodStatusNotEqualTo(1).
+                andShippingStatusEqualTo((byte) Constant.OS_SHIPPING_STATUS_RECEIVED).andIsDelEqualTo(0);
         List<OrderDepotShip> depotShips = orderDepotShipMapper.selectByExample(depotShipExample);
 
         if (depotShips == null || depotShips.size() == 0) {
@@ -1913,7 +1919,71 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             return returnInfo;
         }
 
+        // 订单编号
+        String masterOrderSn = distributeShippingBean.getOrderSn();
+        List<String> orderSnList = getOrderSnList(masterOrderSn);
+        if (orderSnList == null || orderSnList.size() == 0) {
+            returnInfo.setMessage("订单无交货单信息");
+            return returnInfo;
+        }
 
+        String redisKey = "OrderDepotShip-" + masterOrderSn;
+        try {
+            // redis锁防止多发货单同时签收
+            while (lockRedisKey(redisKey, masterOrderSn) != 1) {
+                Thread.sleep(1000);
+            }
+
+            // 获取交货单下的发货单列表
+            OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
+            orderDepotShipExample.or().andOrderSnIn(orderSnList).andIsDelEqualTo(0);
+            List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
+
+            int maxOrderNumber = 0;
+            boolean last = true;
+
+            BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
+            OrderDepotShip lastOrderDepotShip = null;
+            for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+                Integer orderNumber = orderDepotShip.getOrderNumber();
+                if (orderNumber != null && orderNumber > maxOrderNumber) {
+                    maxOrderNumber = orderNumber;
+                }
+
+                if (orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_RECEIVED) {
+                    last = false;
+                    continue;
+                }
+
+                Date lastPayDate = orderDepotShip.getLastPayDate();
+                if (lastPayDate == null) {
+                    continue;
+                }
+
+                Integer payPeriodStatus = orderDepotShip.getPayPeriodStatus();
+                if (payPeriodStatus != null && payPeriodStatus == 1) {
+                    continue;
+                }
+            }
+            processOrderDepotShipMoney(distributeShippingBean, masterOrderPay, depotShips, maxOrderNumber, last);
+        } catch (Exception e) {
+            logger.error("发货单签收处理异常:" + JSONObject.toJSONString(distributeShippingBean), e);
+        } finally {
+            redisClient.del(redisKey);
+        }
+
+        return returnInfo;
+    }
+
+    /**
+     * 处理订单仓库发货单金额信息
+     * @param distributeShippingBean 发货单信息
+     * @param masterOrderPay 订单支付信息
+     * @param maxOrderNumber 最大序号
+     * @param last 最后的发货单
+     * @return ReturnInfo<Boolean>
+     */
+    private void processOrderDepotShipMoney(DistributeShippingBean distributeShippingBean, MasterOrderPay masterOrderPay, List<OrderDepotShip> depotShips, int maxOrderNumber, boolean last) {
         // 支付期数
         Short paymentPeriod = masterOrderPay.getPaymentPeriod();
         Date nowDate = new Date();
@@ -1922,29 +1992,27 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             lastPayDate = com.work.shop.oms.common.bean.TimeUtil.getBeforeMonth(nowDate, paymentPeriod.intValue());
         }
 
-        // 发货单快递单号列表
-        List<String> invoiceNoList = distributeShippingBean.getInvoiceNoList();
-        for (OrderDepotShip orderDepotShip : depotShips) {
-            String invoiceNo = orderDepotShip.getInvoiceNo();
-            if (!invoiceNoList.contains(invoiceNo)) {
-                continue;
-            }
-
-            // 扣款状态 1已扣款
-            Integer payPeriodStatus = orderDepotShip.getPayPeriodStatus();
-            if (payPeriodStatus != null && payPeriodStatus == 1) {
-                continue;
-            }
-
+        int size = depotShips.size();
+        for (int i = 0; i < size; i++) {
+            OrderDepotShip orderDepotShip = depotShips.get(i);
             OrderDepotShip updateOrderDepotShip = new OrderDepotShip();
             updateOrderDepotShip.setOrderSn(orderDepotShip.getOrderSn());
             updateOrderDepotShip.setDepotCode(orderDepotShip.getDepotCode());
             updateOrderDepotShip.setInvoiceNo(orderDepotShip.getInvoiceNo());
             updateOrderDepotShip.setPayPeriodStatus(0);
             updateOrderDepotShip.setLastPayDate(lastPayDate);
+            maxOrderNumber += 1;
+            // 序号
+            updateOrderDepotShip.setOrderNumber(maxOrderNumber);
+            // 金额
             orderDepotShipMapper.updateByPrimaryKeySelective(updateOrderDepotShip);
         }
-        return returnInfo;
+    }
+
+    private long lockRedisKey(String redisKey, String value) {
+        // redis锁防止多发货单同时签收
+        long result = redisClient.setnx(redisKey, value);
+        return result;
     }
 
     /**
@@ -2035,6 +2103,26 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 masterOrderGoodsMapper.updateByPrimaryKeySelective(updateItem);
             }
         }
+    }
+
+    /**
+     * 获取交货单列表
+     * @param masterOrderSn 订单编号
+     * @return List<String>
+     */
+    private List<String> getOrderSnList(String masterOrderSn) {
+        // 获取交货单
+        List<OrderDistribute> orderDistributeList = selectEffectiveDistributes(masterOrderSn);
+        if (orderDistributeList == null || orderDistributeList.size() == 0) {
+            return null;
+        }
+
+        List<String> orderSnList = new ArrayList<>();
+        for (OrderDistribute orderDistribute : orderDistributeList) {
+            orderSnList.add(orderDistribute.getOrderSn());
+        }
+
+        return orderSnList;
     }
 
     /**
