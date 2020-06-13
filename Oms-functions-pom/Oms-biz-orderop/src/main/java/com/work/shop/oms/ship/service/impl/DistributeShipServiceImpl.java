@@ -1911,10 +1911,13 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         String orderSn = distributeShippingBean.getShipSn();
         List<String> invoiceNoList = distributeShippingBean.getInvoiceNoList();
 
+        List<Byte> shippingStatusList = new ArrayList<>();
+        shippingStatusList.add((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
+        shippingStatusList.add((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
         // 查询交货单下所有已签收的发货单数据
         OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
-        depotShipExample.or().andOrderSnEqualTo(orderSn).andInvoiceNoIn(invoiceNoList).andPayPeriodStatusNotEqualTo(1).
-                andShippingStatusEqualTo((byte) Constant.OS_SHIPPING_STATUS_RECEIVED).andIsDelEqualTo(0);
+        depotShipExample.or().andOrderSnEqualTo(orderSn).andInvoiceNoIn(invoiceNoList).andPayPeriodStatusNotEqualTo(1)
+                .andShippingStatusIn(shippingStatusList).andIsDelEqualTo(0);
         List<OrderDepotShip> depotShips = orderDepotShipMapper.selectByExample(depotShipExample);
 
         if (depotShips == null || depotShips.size() == 0) {
@@ -1953,7 +1956,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     maxOrderNumber = orderNumber;
                 }
 
-                if (orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_RECEIVED) {
+                if (orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_RECEIVED && orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_CONFIRM) {
                     last = false;
                     continue;
                 }
@@ -1967,6 +1970,10 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 if (payPeriodStatus != null && payPeriodStatus == 1) {
                     continue;
                 }
+
+                if (lastOrderDepotShip == null) {
+                    lastOrderDepotShip = orderDepotShip;
+                }
             }
             processOrderDepotShipMoney(distributeShippingBean, masterOrderPay, depotShips, maxOrderNumber, last);
         } catch (Exception e) {
@@ -1976,6 +1983,19 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         }
 
         return returnInfo;
+    }
+
+    private OrderDepotShip getLastOrderDepotShip(List<OrderDepotShip> orderDepotShipList, MasterOrderPay masterOrderPay) {
+
+        OrderDepotShip lastOrderDepotShip = null;
+
+        // 订单费用
+        BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
+        for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+
+        }
+
+        return lastOrderDepotShip;
     }
 
     /**
@@ -2068,6 +2088,25 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 }
 //            }
 
+            // 更新商品所属包裹信息
+            List<MasterOrderGoods> goodsItems = owner.getGoodsItems();
+            if (StringUtil.isListNull(goodsItems)) {
+                continue;
+            }
+
+            BigDecimal payMoney = BigDecimal.valueOf(0);
+            for (MasterOrderGoods item : goodsItems) {
+                MasterOrderGoods updateItem = new MasterOrderGoods();
+                updateItem.setId(item.getId());
+                updateItem.setInvoiceNo(owner.getInvoiceNo());
+                Integer goodsNumber = item.getGoodsNumber();
+                updateItem.setGoodsNumber(goodsNumber);
+
+                BigDecimal currentGoodsMoney = MathOperation.mul(item.getSettlementPrice(), BigDecimal.valueOf(goodsNumber), 2);
+                payMoney = payMoney.add(currentGoodsMoney);
+                masterOrderGoodsMapper.updateByPrimaryKeySelective(updateItem);
+            }
+
             // 更新发货仓包裹信息
             OrderDepotShip updateShip = new OrderDepotShip();
             // 交货单编码
@@ -2089,22 +2128,10 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             updateShip.setPdwarhCode(owner.getPdwarhCode());
             updateShip.setPdwarhName(owner.getPdwarhName());
             updateShip.setIsDel(Constant.IS_DEL_NO);
-            updateShip.setPayMoney(owner.getPayMoney());
+            updateShip.setPayMoney(payMoney);
             OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
             depotShipExample.or().andOrderSnEqualTo(orderSn).andDepotCodeEqualTo(owner.getOwnerCode()).andInvoiceNoEqualTo("").andIsDelEqualTo(0);
             orderDepotShipMapper.updateByExampleSelective(updateShip, depotShipExample);
-            // 更新商品所属包裹信息
-            List<MasterOrderGoods> goodsItems = owner.getGoodsItems();
-            if (StringUtil.isListNull(goodsItems)) {
-                continue;
-            }
-            for (MasterOrderGoods item : goodsItems) {
-                MasterOrderGoods updateItem = new MasterOrderGoods();
-                updateItem.setId(item.getId());
-                updateItem.setInvoiceNo(owner.getInvoiceNo());
-                updateItem.setGoodsNumber(item.getGoodsNumber());
-                masterOrderGoodsMapper.updateByPrimaryKeySelective(updateItem);
-            }
         }
     }
 
@@ -2333,7 +2360,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     deliveryGoodsItems = new ArrayList<MasterOrderGoods>();
                 }
 
-                BigDecimal payMoney = new BigDecimal(0);
                 // oms商品数量
                 // 一个sku是多件时，遍历商品
                 int totalItemNum = 0;
@@ -2362,9 +2388,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                         quantity = 0;
                     }
 
-                    Integer goodsNumber = shipItem.getGoodsNumber();
-                    BigDecimal currentGoodsMoney = MathOperation.mul(shipItem.getSettlementPrice(), BigDecimal.valueOf(goodsNumber), 2);
-                    payMoney = payMoney.add(currentGoodsMoney);
                     deliveryGoodsItems.add(shipItem);
                 }
                 int totalQuantity = item.getQuantity();
@@ -2374,7 +2397,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     return response;
                 }
 
-                owner.setPayMoney(payMoney);
                 owner.setGoodsItems(deliveryGoodsItems);
                 // 置空发货单号MAP
                 deliveryItemsMap.put(itemCode, deliveryItems);
