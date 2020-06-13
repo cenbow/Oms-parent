@@ -1989,8 +1989,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         BigDecimal payTotalMoney = BigDecimal.valueOf(0);
 
         for (OrderDepotShip orderDepotShip : orderDepotShipList) {
-
-            payTotalMoney.add(orderDepotShip.getPayMoney());
+            payTotalMoney = payTotalMoney.add(orderDepotShip.getPayMoney());
             // 是否已扣款
             Integer payPeriodStatus = orderDepotShip.getPayPeriodStatus();
             if (payPeriodStatus != null && payPeriodStatus != 0) {
@@ -2005,6 +2004,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             // 差异放到最后一个发货单上
             BigDecimal payMoney = lastOrderDepotShip.getPayMoney();
             payMoney = payMoney.add(resultMoney);
+
             lastOrderDepotShip.setPayMoney(payMoney);
         }
 
@@ -3194,5 +3194,41 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             logger.error("设置账期支付已扣款状态异常:" + orderSn + "," + invoiceNo, e);
         }
         return bl;
+    }
+
+    public static void main(String[] args) {
+        DistributeShipServiceImpl distributeShipService = new DistributeShipServiceImpl();
+        MasterOrderPay masterOrderPay = new MasterOrderPay();
+        masterOrderPay.setMasterOrderSn("2006131512026035");
+        masterOrderPay.setPayTotalfee(BigDecimal.valueOf(533.36));
+
+        List<OrderDepotShip> list = new ArrayList<>();
+        OrderDepotShip orderDepotShip = new OrderDepotShip();
+        orderDepotShip.setOrderSn("2006131512026035S01");
+        orderDepotShip.setInvoiceNo("eeqqq1111");
+        orderDepotShip.setOrderNumber(1);
+        orderDepotShip.setShippingStatus((byte)2);
+        orderDepotShip.setPayMoney(BigDecimal.valueOf(266.68));
+        list.add(orderDepotShip);
+
+        orderDepotShip = new OrderDepotShip();
+        orderDepotShip.setOrderSn("2006131512026035S01");
+        orderDepotShip.setInvoiceNo("eeqqq11112222");
+        orderDepotShip.setOrderNumber(1);
+        orderDepotShip.setShippingStatus((byte)2);
+        orderDepotShip.setPayMoney(BigDecimal.valueOf(133.34));
+        list.add(orderDepotShip);
+
+        orderDepotShip = new OrderDepotShip();
+        orderDepotShip.setOrderSn("2006131512026035S01");
+        orderDepotShip.setInvoiceNo("yuancheng1112222");
+        orderDepotShip.setShippingStatus((byte)2);
+        orderDepotShip.setOrderNumber(1);
+        orderDepotShip.setPayMoney(BigDecimal.valueOf(133.34));
+        list.add(orderDepotShip);
+
+        OrderDepotShip lastOrderDepotShip = distributeShipService.getLastOrderDepotShip(list, masterOrderPay);
+
+        System.out.println(JSONObject.toJSONString(lastOrderDepotShip));
     }
 }
