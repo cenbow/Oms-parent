@@ -2630,7 +2630,7 @@
 	<!-- 获取公司发货单账期支付 -->
 	<select id="selectCompanyPayPeriodListByOrderDepotShip" resultType="com.work.shop.oms.bean.OrderAccountPeriod" parameterType="map">
 		select moi.master_order_sn masterOrderSn, moi.add_time addTime, moi.user_id userId, moie.company_code companyId,
-			ods.order_sn as orderSn, ods.invoice_no as invoiceNo, ods.order_number as orderNumber
+			ods.order_sn as orderSn, ods.invoice_no as invoiceNo, ods.order_number as orderNumber, ods.pay_money as orderMoney
 		from master_order_info moi, master_order_info_extend moie, order_distribute od, order_depot_ship ods
 		where moi.master_order_sn = moie.master_order_sn
 		and moi.master_order_sn = od.master_order_sn

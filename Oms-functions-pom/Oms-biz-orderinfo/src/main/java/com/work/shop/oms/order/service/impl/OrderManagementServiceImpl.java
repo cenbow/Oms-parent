@@ -1394,12 +1394,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 // 需要合同签章的，先设置问题单
                 if (masterOrderInfo.getNeedSign() == 1 && masterOrderInfo.getSignStatus() == 0) {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
-                } else {
-					//账期支付填充最后支付时间
-					//masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
-					// 是否账期支付, 0期立即扣款
-					//masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
-				}
+                }
 			} else {
 				response.setMessage("订单审单完成失败：" + (info == null ? "返回结果为空" : info.getMessage()));
 			}

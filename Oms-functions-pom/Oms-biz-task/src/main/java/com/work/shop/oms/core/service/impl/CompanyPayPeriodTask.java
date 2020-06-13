@@ -49,7 +49,7 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
 		if (list != null && list.size() > 0) {
 			for (OrderAccountPeriod orderAccountPeriod : list) {
-				masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
+				masterOrderInfoService.sendOrderPayPeriod(orderAccountPeriod);
 			}
 		}
 
@@ -58,7 +58,7 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 		if (orderDepotShipList != null && orderDepotShipList.size() > 0) {
 			for (OrderAccountPeriod orderAccountPeriod : orderDepotShipList) {
                 orderAccountPeriod.setOrderType(1);
-				masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
+				masterOrderInfoService.sendOrderPayPeriod(orderAccountPeriod);
 			}
 		}
 

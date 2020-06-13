@@ -139,9 +139,10 @@ public interface DistributeShipService {
 
 	/**
 	 * 处理订单确认收货结果
-	 * @param masterOrderSn
+	 * @param masterOrderSn 订单编号
+     * @int type 类型0订单、1发货单
 	 */
-	void processMasterShipResult(String masterOrderSn);
+	void processMasterShipResult(String masterOrderSn, int type);
 
 	/**
 	 * 处理订单发货单金额信息
@@ -159,4 +160,10 @@ public interface DistributeShipService {
 	 * @return boolean
 	 */
 	boolean updateOrderDepotShipPayPeriod(String orderSn, String invoiceNo, String paySourceId, boolean payStatus);
+
+	/**
+	 * 发货单签收
+	 * @param message 订单发货单信息
+	 */
+	void sendOrderReceiveSettlementInfo(DistributeShippingBean message);
 }
