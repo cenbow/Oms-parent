@@ -110,7 +110,7 @@
     depot_code, invoice_no, order_sn, shipping_status, delivery_time, pickup_date, shipping_id, 
     shipping_name, delivery_type, bak1, region_id, depot_time, pdwarh_code, pdwarh_name, 
     to_user, to_user_phone, provincecity, over_trans_cycle, creat_time, update_time, 
-    is_del, delivery_confirm_time, is_receipt, pay_money, last_pay_date, pay_source_id, pay_period_status
+    is_del, delivery_confirm_time, is_receipt, pay_money, last_pay_date, pay_source_id, pay_period_status, order_number
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.OrderDepotShipExample" resultMap="BaseResultMap">
     <!--
