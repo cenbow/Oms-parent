@@ -1945,20 +1945,26 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             orderDepotShipExample.or().andOrderSnIn(orderSnList).andIsDelEqualTo(0);
             List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
 
+            // 发货单序号
             int maxOrderNumber = 0;
+            // 是否全部已签收
             boolean last = true;
             for (OrderDepotShip orderDepotShip : orderDepotShipList) {
                 Integer orderNumber = orderDepotShip.getOrderNumber();
                 if (orderNumber != null && orderNumber > maxOrderNumber) {
                     maxOrderNumber = orderNumber;
                 }
-
                 if (orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_RECEIVED && orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_CONFIRM) {
                     last = false;
                     continue;
                 }
             }
-            processOrderDepotShipMoney(distributeShippingBean, masterOrderPay, depotShips, maxOrderNumber, last);
+
+            OrderDepotShip lastOrderDepotShip = null;
+            if (last) {
+                lastOrderDepotShip = getLastOrderDepotShip(orderDepotShipList, masterOrderPay);
+            }
+            processOrderDepotShipMoney(distributeShippingBean, masterOrderPay, depotShips, maxOrderNumber, lastOrderDepotShip);
         } catch (Exception e) {
             logger.error("发货单签收处理异常:" + JSONObject.toJSONString(distributeShippingBean), e);
         } finally {
@@ -1979,14 +1985,27 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         OrderDepotShip lastOrderDepotShip = null;
         // 订单费用
         BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
+        // 发货单总金额
         BigDecimal payTotalMoney = BigDecimal.valueOf(0);
-        for (OrderDepotShip orderDepotShip : orderDepotShipList) {
-            if (lastOrderDepotShip == null) {
-                lastOrderDepotShip = orderDepotShip;
-                payTotalMoney.add(orderDepotShip.getPayMoney());
-            } else {
 
+        for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+
+            payTotalMoney.add(orderDepotShip.getPayMoney());
+            // 是否已扣款
+            Integer payPeriodStatus = orderDepotShip.getPayPeriodStatus();
+            if (payPeriodStatus != null && payPeriodStatus != 0) {
+                continue;
             }
+            lastOrderDepotShip = orderDepotShip;
+        }
+
+        // 订单支付金额与发货单金额差异
+        BigDecimal resultMoney = payTotalFee.subtract(payTotalMoney);
+        if (lastOrderDepotShip != null) {
+            // 差异放到最后一个发货单上
+            BigDecimal payMoney = lastOrderDepotShip.getPayMoney();
+            payMoney = payMoney.add(resultMoney);
+            lastOrderDepotShip.setPayMoney(payMoney);
         }
 
         return lastOrderDepotShip;
@@ -1997,10 +2016,10 @@ public class DistributeShipServiceImpl implements DistributeShipService {
      * @param distributeShippingBean 发货单信息
      * @param masterOrderPay 订单支付信息
      * @param maxOrderNumber 最大序号
-     * @param last 最后的发货单
+     * @param lastOrderDepotShip 最后的发货单
      * @return ReturnInfo<Boolean>
      */
-    private void processOrderDepotShipMoney(DistributeShippingBean distributeShippingBean, MasterOrderPay masterOrderPay, List<OrderDepotShip> depotShips, int maxOrderNumber, boolean last) {
+    private void processOrderDepotShipMoney(DistributeShippingBean distributeShippingBean, MasterOrderPay masterOrderPay, List<OrderDepotShip> depotShips, int maxOrderNumber, OrderDepotShip lastOrderDepotShip) {
         // 支付期数
         Short paymentPeriod = masterOrderPay.getPaymentPeriod();
         Date nowDate = new Date();
@@ -2021,6 +2040,13 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             maxOrderNumber += 1;
             // 序号
             updateOrderDepotShip.setOrderNumber(maxOrderNumber);
+            if (lastOrderDepotShip != null) {
+                if (lastOrderDepotShip.getOrderSn().equals(orderDepotShip.getOrderSn())
+                        && lastOrderDepotShip.getDepotCode().equalsIgnoreCase(orderDepotShip.getDepotCode())
+                        && lastOrderDepotShip.getInvoiceNo().equalsIgnoreCase(orderDepotShip.getInvoiceNo())) {
+                    updateOrderDepotShip.setPayMoney(lastOrderDepotShip.getPayMoney());
+                }
+            }
             // 金额
             orderDepotShipMapper.updateByPrimaryKeySelective(updateOrderDepotShip);
         }
