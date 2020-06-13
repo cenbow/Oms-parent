@@ -1299,7 +1299,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     updateDepotShip.setInvoiceNo(depotShip.getInvoiceNo());
                     updateDepotShip.setOrderSn(depotShip.getOrderSn());
                     updateDepotShip.setDeliveryConfirmTime(new Date());
-                    updateDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+                    updateDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
                     orderDepotShipMapper.updateByPrimaryKeySelective(updateDepotShip);
                 }
             }
@@ -1947,9 +1947,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
             int maxOrderNumber = 0;
             boolean last = true;
-
-            BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
-            OrderDepotShip lastOrderDepotShip = null;
             for (OrderDepotShip orderDepotShip : orderDepotShipList) {
                 Integer orderNumber = orderDepotShip.getOrderNumber();
                 if (orderNumber != null && orderNumber > maxOrderNumber) {
@@ -1959,20 +1956,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 if (orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_RECEIVED && orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_CONFIRM) {
                     last = false;
                     continue;
-                }
-
-                Date lastPayDate = orderDepotShip.getLastPayDate();
-                if (lastPayDate == null) {
-                    continue;
-                }
-
-                Integer payPeriodStatus = orderDepotShip.getPayPeriodStatus();
-                if (payPeriodStatus != null && payPeriodStatus == 1) {
-                    continue;
-                }
-
-                if (lastOrderDepotShip == null) {
-                    lastOrderDepotShip = orderDepotShip;
                 }
             }
             processOrderDepotShipMoney(distributeShippingBean, masterOrderPay, depotShips, maxOrderNumber, last);
@@ -1985,14 +1968,25 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         return returnInfo;
     }
 
+    /**
+     * 获取最后一笔发货单数据和金额
+     * @param orderDepotShipList 发货单列表
+     * @param masterOrderPay 订单支付单
+     * @return OrderDepotShip
+     */
     private OrderDepotShip getLastOrderDepotShip(List<OrderDepotShip> orderDepotShipList, MasterOrderPay masterOrderPay) {
 
         OrderDepotShip lastOrderDepotShip = null;
-
         // 订单费用
         BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
+        BigDecimal payTotalMoney = BigDecimal.valueOf(0);
         for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+            if (lastOrderDepotShip == null) {
+                lastOrderDepotShip = orderDepotShip;
+                payTotalMoney.add(orderDepotShip.getPayMoney());
+            } else {
 
+            }
         }
 
         return lastOrderDepotShip;

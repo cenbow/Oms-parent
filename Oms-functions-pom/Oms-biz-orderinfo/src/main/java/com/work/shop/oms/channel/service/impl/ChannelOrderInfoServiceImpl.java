@@ -1397,10 +1397,18 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 for (OrderDepotShip orderDepotShip : orderDepotShipList) {
                     if (orderDepotShip.getOrderSn().indexOf(orderSn) != -1) {
                         shipSn = orderDepotShip.getOrderSn();
+                        if (orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_RECEIVED || orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_CONFIRM) {
+                            continue;
+                        }
                         orderDepotShip.setUpdateTime(new Date());
-                        orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+                        orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
                         orderDepotShip.setDeliveryConfirmTime(new Date());
                         orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
+
+                        // 通知发货单签收计算扣费信息
+                        List<String> invoiceNoList = new ArrayList<>();
+                        invoiceNoList.add(invoiceNo);
+                        sendOrderDepotShipReceive(orderSn, orderDepotShip.getOrderSn(), invoiceNoList);
                     }
                 }
                 orderDepotShipExample.clear();
@@ -1479,7 +1487,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 }
             }
             masterOrderActionService.insertOrderActionBySn(orderSn, "客户确认收货！", actionUser);
-            distributeShipService.processMasterShipResult(orderSn, 0);
+            distributeShipService.processMasterShipResult(orderSn, 1);
             ri.setIsOk(ConstantValues.YESORNO_YES);
             ri.setMessage("确认收货更新完成！");
             ri.setData(true);
@@ -1505,8 +1513,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
     /**
      * 设置交货单已收货
-     *
-     * @param orderDistributeList
+     * @param orderDistributeList 交货单列表
      */
     private void setOrderDistributeShipReceived(List<OrderDistribute> orderDistributeList) {
         for (OrderDistribute orderDistribute : orderDistributeList) {
@@ -1527,15 +1534,44 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 if (orderDepotShip.getIsDel() == 1) {
                     continue;
                 }
+                // 是否已收货
+                if (orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_RECEIVED || orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_CONFIRM) {
+                    continue;
+                }
+
+                // 未收货的发货单
+                String invoiceNo = orderDepotShip.getInvoiceNo();
+                if (StringUtils.isBlank(invoiceNo)) {
+                    invoiceNo = orderDepotShip.getDepotCode() + "-" + TimeUtil.getDate(TimeUtil.YYYY_MM_DD);
+                    orderDepotShip.setInvoiceNo(invoiceNo);
+                }
                 if (invoiceNoList.contains(orderDepotShip.getInvoiceNo())) {
                     invoiceNoList.add(orderDepotShip.getInvoiceNo());
                 }
                 orderDepotShip.setUpdateTime(new Date());
-                orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+                orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
                 orderDepotShip.setDeliveryConfirmTime(new Date());
                 orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
             }
+
+            // 通知发货单签收计算扣费信息
+            sendOrderDepotShipReceive(orderDistribute.getMasterOrderSn(), orderDistribute.getOrderSn(), invoiceNoList);
         }
+    }
+
+    /**
+     * 发货单签收
+     * @param masterOrderSn 订单编号
+     * @param orderSn 交货单号
+     * @param invoiceNoList 快递单号
+     */
+    private void sendOrderDepotShipReceive(String masterOrderSn, String orderSn, List<String> invoiceNoList) {
+        // 通知发货单签收计算扣费信息
+        DistributeShippingBean orderReceiveBean = new DistributeShippingBean();
+        orderReceiveBean.setOrderSn(masterOrderSn);
+        orderReceiveBean.setShipSn(orderSn);
+        orderReceiveBean.setInvoiceNoList(invoiceNoList);
+        distributeShipService.sendOrderReceiveSettlementInfo(orderReceiveBean);
     }
 
     /**

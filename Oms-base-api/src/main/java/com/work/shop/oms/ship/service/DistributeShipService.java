@@ -140,7 +140,7 @@ public interface DistributeShipService {
 	/**
 	 * 处理订单确认收货结果
 	 * @param masterOrderSn 订单编号
-     * @int type 类型0订单、1发货单
+     * @param type 类型0订单、1发货单
 	 */
 	void processMasterShipResult(String masterOrderSn, int type);
 
