@@ -1575,7 +1575,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, message, actionUser);
             ri.setIsOk(Constant.OS_YES);
             ri.setMessage("收货确认更新完成！");
-            processMasterShipResult(masterOrderSn);
+            processMasterShipResult(masterOrderSn, 1);
         } catch (Exception e) {
             logger.error(masterOrderSn + "收货确认更新失败:" + e.getMessage(), e);
             ri.setMessage("收货确认更新失败:" + e.toString());
@@ -1586,22 +1586,25 @@ public class DistributeShipServiceImpl implements DistributeShipService {
     /**
      * 处理订单确认收货结果
      * @param masterOrderSn 订单编号
+     * @param type 类型 0整单签收、1发货单签收
      */
     @Override
-    public void processMasterShipResult(String masterOrderSn) {
+    public void processMasterShipResult(String masterOrderSn, int type) {
 
         MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
         if (masterOrderInfo == null) {
             return;
         }
 
-        // 订单确认收货, 设置账期支付时间
-        masterOrderInfoService.processOrderPayPeriod(masterOrderInfo);
-
         int shipStatus = masterOrderInfo.getShipStatus();
         int orderStatus = masterOrderInfo.getOrderStatus();
         logger.info("processMasterShipResult:--shipStatus:" + shipStatus + ",orderStatus:" + orderStatus);
         if (orderStatus != Constant.OD_ORDER_STATUS_CANCLED && shipStatus == Constant.OI_SHIP_STATUS_ALLRECEIVED) {
+
+            if (type == 0) {
+                // 订单确认收货, 设置账期支付时间
+                masterOrderInfoService.processOrderPayPeriod(masterOrderInfo);
+            }
             // 下发MQ
             AccountSettlementOrderBean accountSettlementOrderBean = new AccountSettlementOrderBean();
             accountSettlementOrderBean.setOrderNo(masterOrderSn);
@@ -1609,8 +1612,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             logger.info("processMasterShipResult:--order_sn_account_settlement:" + JSONObject.toJSONString(accountSettlementOrderBean));
             jmsSendQueueService.sendQueueMessage(MqConfig.order_sn_account_settlement, JSON.toJSONString(accountSettlementOrderBean));
 
-
-            if (("hbis").equals(masterOrderInfo.getOrderFrom())) {
+            if (Constant.DEFAULT_SHOP.equals(masterOrderInfo.getOrderFrom())) {
                 //查询订单来源
                 String orderSN = masterOrderInfo.getMasterOrderSn();
                 String buyerSN = masterOrderInfo.getUserId();
@@ -1748,7 +1750,8 @@ public class DistributeShipServiceImpl implements DistributeShipService {
      * 发货单签收
      * @param message 订单发货单信息
      */
-    private void sendOrderReceiveSettlementInfo(DistributeShippingBean message) {
+    @Override
+    public void sendOrderReceiveSettlementInfo(DistributeShippingBean message) {
         jmsSendQueueService.sendQueueMessage(MqConfig.order_receive_settlement, JSON.toJSONString(message));
     }
 
@@ -1842,7 +1845,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         }
 
         // 处理订单支付信息
-        ReturnInfo<MasterOrderPay> masterOrderPayReturnInfo = processOrderPayPeriod(masterOrderInfo);
+        ReturnInfo<MasterOrderPay> masterOrderPayReturnInfo = checkOrderPayPeriod(masterOrderInfo);
         if (masterOrderPayReturnInfo.getIsOk() != Constant.OS_YES) {
             returnInfo.setMessage(masterOrderPayReturnInfo.getMessage());
             return returnInfo;
@@ -1863,7 +1866,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
      * @param masterOrderInfo 订单信息
      * @return ReturnInfo<MasterOrderPay>
      */
-    private ReturnInfo<MasterOrderPay> processOrderPayPeriod(MasterOrderInfo masterOrderInfo) {
+    private ReturnInfo<MasterOrderPay> checkOrderPayPeriod(MasterOrderInfo masterOrderInfo) {
         ReturnInfo<MasterOrderPay> returnInfo = new ReturnInfo<MasterOrderPay>();
         returnInfo.setIsOk(Constant.OS_NO);
 

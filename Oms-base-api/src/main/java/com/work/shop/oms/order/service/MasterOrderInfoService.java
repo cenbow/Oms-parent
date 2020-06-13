@@ -63,8 +63,8 @@ public interface MasterOrderInfoService {
 
 	/**
 	 * 设置账期支付支付时间和扣款
-	 * @param masterOrderInfo
-	 * @return
+	 * @param masterOrderInfo 订单编号
+	 * @return ReturnInfo<Boolean>
 	 */
 	ReturnInfo<Boolean> processOrderPayPeriod(MasterOrderInfo masterOrderInfo);
 
@@ -73,7 +73,7 @@ public interface MasterOrderInfoService {
 	 * @param orderAccountPeriod
 	 * @return
 	 */
-	ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod);
+	ReturnInfo<Boolean> sendOrderPayPeriod(OrderAccountPeriod orderAccountPeriod);
 
     /**
      * 通过订单编码获取订单商品列表

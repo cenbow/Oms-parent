@@ -753,7 +753,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 	 * @return
 	 */
 	@Override
-	public ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod) {
+	public ReturnInfo<Boolean> sendOrderPayPeriod(OrderAccountPeriod orderAccountPeriod) {
 		ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
 		returnInfo.setIsOk(Constant.OS_NO);
 
@@ -766,7 +766,9 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			}
 
 			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
-			orderAccountPeriod.setOrderMoney(masterOrderPay.getPayTotalfee());
+			if (orderAccountPeriod.getOrderType() == 0) {
+				orderAccountPeriod.setOrderMoney(masterOrderPay.getPayTotalfee());
+			}
 			orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
 			orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
 			orderAccountPeriod.setType(1);
@@ -787,8 +789,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
     /**
      * 设置账期支付支付时间和扣款
-     * @param masterOrderInfo
-     * @return
+     * @param masterOrderInfo 订单信息
+     * @return ReturnInfo<Boolean>
      */
     @Override
 	public ReturnInfo<Boolean> processOrderPayPeriod(MasterOrderInfo masterOrderInfo) {
@@ -1072,6 +1074,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
         orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
         orderAccountPeriod.setType(1);
+		orderAccountPeriod.setOrderType(0);
 
         if (Constant.PAYMENT_ZHANGQI_ID == masterOrderPay.getPayId()) {
             orderAccountPeriod.setPayType(0);

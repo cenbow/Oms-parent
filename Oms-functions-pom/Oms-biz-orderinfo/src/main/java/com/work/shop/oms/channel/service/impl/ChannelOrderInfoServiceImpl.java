@@ -1337,7 +1337,6 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
     /**
      * 确认收货
-     *
      * @param orderSn    订单编码
      * @param invoiceNo  运单号
      * @param actionUser 操作人
@@ -1479,10 +1478,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                     }
                 }
             }
-
             masterOrderActionService.insertOrderActionBySn(orderSn, "客户确认收货！", actionUser);
-
-            distributeShipService.processMasterShipResult(orderSn);
+            distributeShipService.processMasterShipResult(orderSn, 0);
             ri.setIsOk(ConstantValues.YESORNO_YES);
             ri.setMessage("确认收货更新完成！");
             ri.setData(true);
@@ -1524,9 +1521,14 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
             orderDepotShipExample.or().andOrderSnEqualTo(orderDistribute.getOrderSn());
             List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
+
+            List<String> invoiceNoList = new ArrayList<>();
             for (OrderDepotShip orderDepotShip : orderDepotShipList) {
                 if (orderDepotShip.getIsDel() == 1) {
                     continue;
+                }
+                if (invoiceNoList.contains(orderDepotShip.getInvoiceNo())) {
+                    invoiceNoList.add(orderDepotShip.getInvoiceNo());
                 }
                 orderDepotShip.setUpdateTime(new Date());
                 orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
