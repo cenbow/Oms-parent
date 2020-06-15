@@ -232,7 +232,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 				if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
 					type = 2;
 				}
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, type);
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, master.getUserId(), "000000", null, null, type);
 
                 // 需要合同签章的，先设置问题单
                 if (master.getNeedSign() == 1 && master.getSignStatus() == 0) {
@@ -296,7 +296,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
     /**
      * 设置订单拆单状态
-     * @param masterOrderSn
+     * @param masterOrderSn 订单编号
      */
     private void setMasterOrderSplitStatus(String masterOrderSn){
 	    Date date = new Date();
@@ -319,38 +319,29 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
         ReturnInfo<List<String>> returnInfo = new ReturnInfo<List<String>>(Constant.OS_YES);
         List<String> orderSns = new ArrayList<String>();
+        // 订单编号
         String masterOrderSn = master.getMasterOrderSn();
         // 创建交货单
         Integer index = 0;
+        int orderNumber = 1;
         for (String supplierKey : supplierMap.keySet()) {
+            logger.info("masterOrderSn:" + masterOrderSn + ",supplierKey:" + supplierKey);
             GoodsDistribute goodsDistribute = supplierMap.get(supplierKey);
             final String orderSn = createOrderSn(masterOrderSn, index);
             logger.info("订单[" + masterOrderSn + "]创建子订单号:" + orderSn);
             if (StringUtil.isEmpty(orderSn)) {
                 logger.error("订单[" + masterOrderSn + "]创建子订单号异常");
+                continue;
             }
             try {
-                List<String> depotCodes = goodsDistribute.getDepotCodes();
                 createOrderDistribute(master, orderSn, goodsDistribute, index, orderPays);
-                for (String depot : depotCodes) {
-                    OrderDepotShip depotShip = new OrderDepotShip();
-                    depotShip.setOrderSn(orderSn);
-                    // 发货仓
-                    depotShip.setDepotCode(depot);
-                    // 分配类型
-                    depotShip.setDeliveryType(2);
-                    // 发货状态 0 未发货
-                    depotShip.setShippingStatus((byte)Constant.OS_SHIPPING_STATUS_UNSHIPPED);
-                    depotShip.setCreatTime(new Date());
-                    // 是否被删除0否1是
-                    depotShip.setIsDel(0);
-                    orderDepotShipMapper.insertSelective(depotShip);
-                }
+                List<String> depotCodes = goodsDistribute.getDepotCodes();
+                saveOrderDepotShip(depotCodes, orderSn);
             } catch (Exception e) {
                 logger.error("订单[" + masterOrderSn + "]创建分配单异常" + e.getMessage() , e);
                 saveLogInfo("订单[" + masterOrderSn + "]创建分配单异常" + e.getMessage(), master);
                 returnInfo.setIsOk(Constant.OS_NO);
-                returnInfo.setMessage("订单[\" + masterOrderSn + \"]创建分配单异常");
+                returnInfo.setMessage("订单[" + masterOrderSn + "]创建分配单异常");
                 return returnInfo;
             }
             orderSns.add(orderSn);
@@ -358,6 +349,28 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 
         returnInfo.setData(orderSns);
         return returnInfo;
+    }
+
+    /**
+     * 根据交货单生成发货单
+     * @param depotCodes 仓库列表
+     * @param orderSn 交货单号
+     */
+    private void saveOrderDepotShip(List<String> depotCodes, String orderSn) {
+        for (String depot : depotCodes) {
+            OrderDepotShip depotShip = new OrderDepotShip();
+            depotShip.setOrderSn(orderSn);
+            // 发货仓
+            depotShip.setDepotCode(depot);
+            // 分配类型
+            depotShip.setDeliveryType(2);
+            // 发货状态 0 未发货
+            depotShip.setShippingStatus((byte)Constant.OS_SHIPPING_STATUS_UNSHIPPED);
+            depotShip.setCreatTime(new Date());
+            // 是否被删除0否1是
+            depotShip.setIsDel(0);
+            orderDepotShipMapper.insertSelective(depotShip);
+        }
     }
 
 	/**
@@ -404,6 +417,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		// 获取交货单商品列表
 		List<MasterOrderGoods> orderGoodsList = getOrderDistributeGoods(master);
 
+		// 订单交货单列表
 		List<String> orderSns = new ArrayList<String>();
 		try {
 			Map<String, GoodsDistribute> supplierMap = buildGoodsDistribute(orderGoodsList, master);
@@ -416,6 +430,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 				}
 			}
 
+			// 创建交货单
             ReturnInfo<List<String>> orderReturnInfo = createOrderDistributeInfo(master, orderPays, supplierMap);
 			if (orderReturnInfo.getIsOk() == Constant.OS_NO) {
                 depotResult.setMessage(orderReturnInfo.getMessage());
@@ -862,27 +877,21 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
      */
 	private Map<String, GoodsDistribute> buildGoodsDistribute(List<MasterOrderGoods> goodsList, MasterOrderInfo masterOrderInfo) {
 
-		// 供应商与商品关系
-		Map<String, List<MasterOrderGoods>> orderGoodsMap = new HashMap<String, List<MasterOrderGoods>>(Constant.DEFAULT_MAP_SIZE);
-		// 仓库
-		Map<String, Object> map = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
-		for (MasterOrderGoods orderGoods : goodsList) {
-			// 按照商品供应商拆分订单商品
-			String supplierKey = orderGoods.getSupplierCode();
-			map.put(orderGoods.getDepotCode(), orderGoods.getDepotCode());
-			List<MasterOrderGoods> list = orderGoodsMap.get(supplierKey);
-			if (list == null) {
-				list = new ArrayList<MasterOrderGoods>();
-				list.add(orderGoods);
-				orderGoodsMap.put(supplierKey, list);
-			} else {
-				list.add(orderGoods);
-				orderGoodsMap.put(supplierKey, list);
-			}
-		}
+        // 供应商与商品关系
+        Map<String, List<MasterOrderGoods>> orderGoodsMap = null;
+
+        // 订单来源
+        String orderFrom = masterOrderInfo.getOrderFrom();
+        if (Constant.DEFAULT_SHOP.equals(orderFrom)) {
+            // 供应商与商品关系
+            orderGoodsMap = getOrderGoodsDistribute(goodsList);
+        } else {
+            // 第三方店铺
+            orderGoodsMap = getOrderGoodsDistributeBySupplier(goodsList);
+        }
 
 		// 供应商交货信息
-        Map<String, GoodsDistribute> distributeMap = new HashMap<String, GoodsDistribute>(Constant.DEFAULT_MAP_SIZE);
+        Map<String, GoodsDistribute> distributeMap = new LinkedHashMap<>(Constant.DEFAULT_MAP_SIZE);
 
         // 处理供应商信息
 		for (String distKey : orderGoodsMap.keySet()) {
@@ -896,19 +905,161 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 					list.add(item.getDepotCode());
 				}
 			}
+
+            MasterOrderGoods masterOrderGoods = items.get(0);
 			distribute.setDepotCodes(list);
 			distribute.setOrderGoods(items);
-			distribute.setDepotCode(items.get(0).getDepotCode());
-			distribute.setSupplierCode(distKey);
-            distribute.setSupplierName(items.get(0).getSupplierName());
+			distribute.setDepotCode(masterOrderGoods.getDepotCode());
+			distribute.setSupplierCode(masterOrderGoods.getSupplierCode());
+            distribute.setSupplierName(masterOrderGoods.getSupplierName());
 			distributeMap.put(distKey, distribute);
 		}
 		return distributeMap;
 	}
-	
+
+    /**
+     * 订单商品拆交货单(供应商交货期拆单)
+     * @param goodsList 订单商品列表
+     * @return Map<String, List<MasterOrderGoods>>
+     */
+	public Map<String, List<MasterOrderGoods>> getOrderGoodsDistribute(List<MasterOrderGoods> goodsList) {
+        // 供应商与商品关系
+        Map<String, List<MasterOrderGoods>> orderGoodsMap = new HashMap<String, List<MasterOrderGoods>>(Constant.DEFAULT_MAP_SIZE);
+        for (MasterOrderGoods orderGoods : goodsList) {
+
+            // 按照商品供应商拆分订单商品
+            String supplierKey = orderGoods.getSupplierCode();
+
+            Map<Integer, Integer> keyMap = new HashMap<>(Constant.DEFAULT_MAP_SIZE);
+            // 0 、1交货期小于30天、2交货期大于30天
+            Integer goodsType = 0;
+
+            // 无库存商品量
+            Integer withoutStockNumber = orderGoods.getWithoutStockNumber();
+            if (withoutStockNumber == null) {
+                withoutStockNumber = 0;
+            }
+            if (withoutStockNumber > 0) {
+                // 查看无货交货期
+                String deliveryCycle = orderGoods.getWithoutStockDeliveryCycle();
+                goodsType = getOrderGoodsType(deliveryCycle);
+
+                Integer goodsNum = keyMap.get(goodsType);
+                if (goodsNum == null) {
+                    keyMap.put(goodsType, withoutStockNumber);
+                } else {
+                    keyMap.put(goodsType, withoutStockNumber + goodsNum);
+                }
+            } else {
+                // 库存商品量
+                Integer withStockNumber = orderGoods.getWithStockNumber();
+                if (withStockNumber == null) {
+                    withStockNumber = 0;
+                }
+                if (withStockNumber > 0) {
+                    // 查看有货交货期
+                    // 获取商品的交货期
+                    String deliveryCycle = orderGoods.getDeliveryCycle();
+                    goodsType = getOrderGoodsType(deliveryCycle);
+                    Integer goodsNum = keyMap.get(goodsType);
+                    if (goodsNum == null) {
+                        keyMap.put(goodsType, withStockNumber);
+                    } else {
+                        keyMap.put(goodsType, withStockNumber + goodsNum);
+                    }
+                }
+            }
+
+            Set<Integer> keySet = keyMap.keySet();
+            Arrays.sort(keySet.toArray());
+
+            for (Integer deliveryType : keySet) {
+                String baseKey = supplierKey + "-" + deliveryType;
+                List<MasterOrderGoods> list = orderGoodsMap.get(baseKey);
+                if (list == null) {
+                    list = new ArrayList<MasterOrderGoods>();
+                }
+
+                Integer goodsNumber = keyMap.get(deliveryType);
+                orderGoods.setGoodsNumber(goodsNumber);
+                list.add(orderGoods);
+                orderGoodsMap.put(baseKey, list);
+            }
+
+        }
+        return orderGoodsMap;
+    }
+
+    /**
+     * 订单商品拆交货单(根据供应商拆单)
+     * @param goodsList 订单商品列表
+     * @return Map<String, List<MasterOrderGoods>>
+     */
+    private Map<String, List<MasterOrderGoods>> getOrderGoodsDistributeBySupplier(List<MasterOrderGoods> goodsList) {
+        // 供应商与商品关系
+        Map<String, List<MasterOrderGoods>> orderGoodsMap = new HashMap<String, List<MasterOrderGoods>>(Constant.DEFAULT_MAP_SIZE);
+        for (MasterOrderGoods orderGoods : goodsList) {
+
+            // 按照商品供应商拆分订单商品
+            String supplierKey = orderGoods.getSupplierCode();
+            List<MasterOrderGoods> list = orderGoodsMap.get(supplierKey);
+            if (list == null) {
+                list = new ArrayList<MasterOrderGoods>();
+            }
+            list.add(orderGoods);
+            orderGoodsMap.put(supplierKey, list);
+        }
+        return orderGoodsMap;
+    }
+
+    /**
+     * 获取商品交货期
+     * @param deliveryCycle 商品交货期
+     * @return int
+     */
+    private int getOrderGoodsType(String deliveryCycle) {
+        // 0 、1交货期小于30天、2交货期大于30天
+        int goodsType = 0;
+
+        if (StringUtils.isBlank(deliveryCycle)) {
+            return goodsType;
+        }
+        try {
+            Integer sendDay = Integer.valueOf(deliveryCycle);
+            if (sendDay <= Constant.deliveryDay) {
+                goodsType = 1;
+            } else {
+                goodsType = 2;
+            }
+        } catch (Exception e) {
+            logger.error("商品有货交货期异常:" + deliveryCycle, e);
+            return goodsType;
+        }
+
+        return goodsType;
+    }
+
 	public static void main(String[] args) {
-		OrderDistributeServiceImpl impl = new OrderDistributeServiceImpl();
-		System.out.println(impl.planDistTime(new Date(), 5));
+        List<MasterOrderGoods> goodsList = new ArrayList<>();
+        MasterOrderGoods masterOrderGoods = new MasterOrderGoods();
+        masterOrderGoods.setSupplierCode("S0000185");
+        masterOrderGoods.setSupplierName("六个核桃");
+        masterOrderGoods.setDeliveryCycle("20");
+        masterOrderGoods.setWithoutStockDeliveryCycle("");
+        masterOrderGoods.setWithStockNumber(2);
+        masterOrderGoods.setWithoutStockNumber(0);
+        goodsList.add(masterOrderGoods);
+        masterOrderGoods = new MasterOrderGoods();
+        masterOrderGoods.setSupplierCode("S0000185");
+        masterOrderGoods.setSupplierName("六个核桃");
+        masterOrderGoods.setDeliveryCycle("40");
+        masterOrderGoods.setWithoutStockDeliveryCycle("");
+        masterOrderGoods.setWithStockNumber(2);
+        masterOrderGoods.setWithoutStockNumber(0);
+        goodsList.add(masterOrderGoods);
+        OrderDistributeServiceImpl service = new OrderDistributeServiceImpl();
+        Map<String, List<MasterOrderGoods>> returnMap = service.getOrderGoodsDistribute(goodsList);
+        System.out.println(JSONObject.toJSONString(returnMap));
 	}
 	
 	private String planDistTime(Date date, int week) {
@@ -1173,9 +1324,9 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	
 	/**
 	 * 创建子订单号
-	 * @param masterOrderSn
-	 * @param index
-	 * @return
+	 * @param masterOrderSn 订单号
+	 * @param index 顺序
+	 * @return String
 	 */
 	private String createOrderSn(String masterOrderSn, Integer index) {
 		String orderSn = null;
@@ -1273,4 +1424,5 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 		}
 		return "";
 	}
+
 }

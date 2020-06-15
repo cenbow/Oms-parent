@@ -81,10 +81,23 @@ public class OrderManagementRequest implements Serializable {
      */
     private Integer orderType;
 
-	/**
+	/**d
 	 * 采购订单下发 1强制下发
 	 */
 	private int purchaseOrderSend;
+
+	/**
+	 * ERP订单编号
+	 */
+	private String erpOrderNo;
+
+	public String getErpOrderNo() {
+		return erpOrderNo;
+	}
+
+	public void setErpOrderNo(String erpOrderNo) {
+		this.erpOrderNo = erpOrderNo;
+	}
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;

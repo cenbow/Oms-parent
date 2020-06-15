@@ -16,6 +16,21 @@ public class OrderAccountPeriod implements Serializable {
     private String masterOrderSn;
 
     /**
+     * 交货单号
+     */
+    private String orderSn;
+
+    /**
+     * 快递单号
+     */
+    private String invoiceNo;
+
+    /**
+     * 发货单序号
+     */
+    private int orderNumber;
+
+    /**
      * 下单人
      */
     private String userId;
@@ -54,6 +69,11 @@ public class OrderAccountPeriod implements Serializable {
      * 内行支付业务类型 0 内行现金、1内行银承
      */
     private int payType;
+
+    /**
+     * 订单类型 0订单、1发货单
+     */
+    private int orderType;
 
     public String getMasterOrderSn() {
         return masterOrderSn;
@@ -125,5 +145,37 @@ public class OrderAccountPeriod implements Serializable {
 
     public void setPayType(int payType) {
         this.payType = payType;
+    }
+
+    public String getOrderSn() {
+        return orderSn;
+    }
+
+    public void setOrderSn(String orderSn) {
+        this.orderSn = orderSn;
+    }
+
+    public String getInvoiceNo() {
+        return invoiceNo;
+    }
+
+    public void setInvoiceNo(String invoiceNo) {
+        this.invoiceNo = invoiceNo;
+    }
+
+    public int getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(int orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public int getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(int orderType) {
+        this.orderType = orderType;
     }
 }

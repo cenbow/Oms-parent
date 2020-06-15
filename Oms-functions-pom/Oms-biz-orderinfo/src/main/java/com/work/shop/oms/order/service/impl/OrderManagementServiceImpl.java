@@ -34,18 +34,7 @@ import com.work.shop.oms.common.bean.OrderItemStatusUtils;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.common.bean.ShippingInfo;
-import com.work.shop.oms.dao.DistributeActionMapper;
-import com.work.shop.oms.dao.MasterOrderActionMapper;
-import com.work.shop.oms.dao.MasterOrderGoodsDetailMapper;
-import com.work.shop.oms.dao.MasterOrderInfoDetailMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayTypeDetailMapper;
-import com.work.shop.oms.dao.OrderDepotShipDetailMapper;
-import com.work.shop.oms.dao.OrderDistributeDetailMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.OrderReturnGoodsDetailMapper;
-import com.work.shop.oms.dao.OrderReturnMapper;
-import com.work.shop.oms.dao.SystemShippingMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.request.OmsBaseRequest;
 import com.work.shop.oms.order.request.OrderManagementRequest;
 import com.work.shop.oms.order.response.OmsBaseResponse;
@@ -138,6 +127,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
     @Resource
     private MasterOrderInfoService masterOrderInfoService;
+
+    @Resource
+    private PurchaseOrderMapper purchaseOrderMapper;
 
 	/**
 	 * 获取操作用户
@@ -860,7 +852,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				}else{
 					//返回正常单，订单推送供应链
 					logger.info("返回正常单:" + masterOrderSn + "订单推送供应链");
-					purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, 0);
+					purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, null, 0);
 				}
                 response.setSuccess(true);
 				response.setMessage("订单返回正常单成功");
@@ -1178,10 +1170,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             //交货单直接更新采购单签章状态和合同号
             if (masterOrderSn.contains(Constant.ORDER_DISTRIBUTE_BEFORE)) {
                 //更新采购单合同号
-                info = updatePushSupplyChain(masterOrderSn, request.getContractNo());
+                info = updatePushSupplyChain(masterOrderSn, request.getContractNo(),request.getErpOrderNo());
             } else {
                 // 变更合同签章状态为
-                updateSignStatus(masterOrderSn, request.getContractNo());
+                updateSignStatus(masterOrderSn, request.getContractNo(),request.getErpOrderNo());
                 //订单号返回正常单
                 info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
                 //账期支付填充最后支付时间
@@ -1293,7 +1285,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
                 type = 2;
             }
-            purchaseOrderService.pushJointPurchasing(masterOrderSn, masterOrderInfo.getUserId(), "000000", null, type);
+            purchaseOrderService.pushJointPurchasing(masterOrderSn, masterOrderInfo.getUserId(), "000000", null, null, type);
 
             //设置待签章问题单
             orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
@@ -1313,12 +1305,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * @param contractNo
      * @return
      */
-    private ReturnInfo<String> updatePushSupplyChain(String masterOrderSn, String contractNo) {
+    private ReturnInfo<String> updatePushSupplyChain(String masterOrderSn, String contractNo,String erpOrderNo) {
         PurchaseOrder purchaseOrder = new PurchaseOrder();
         purchaseOrder.setPurchaseOrderCode(masterOrderSn);
         purchaseOrder.setSignComplete((byte) 1);
         purchaseOrder.setContractNo(contractNo);
         purchaseOrder.setSignCompleteTime(new Date());
+		purchaseOrder.setErpOrderNo(erpOrderNo);
         return purchaseOrderService.updatePushSupplyChain(purchaseOrder);
     }
 
@@ -1397,16 +1390,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 if (!Constant.DEFAULT_SHOP.equalsIgnoreCase(orderFrom)) {
 					type = 2;
 				}
-                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, type);
+                purchaseOrderService.pushJointPurchasing(masterOrderSn, request.getActionUser(), request.getActionUserId(), null, null, type);
                 // 需要合同签章的，先设置问题单
                 if (masterOrderInfo.getNeedSign() == 1 && masterOrderInfo.getSignStatus() == 0) {
                     orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待签章问题单", Constant.QUESTION_CODE_SIGN));
-                } else {
-					//账期支付填充最后支付时间
-					//masterOrderInfoExtendService.fillPayLastDate(masterOrderSn, new Date());
-					// 是否账期支付, 0期立即扣款
-					//masterOrderInfoService.processOrderPayPeriod(masterOrderSn);
-				}
+                }
 			} else {
 				response.setMessage("订单审单完成失败：" + (info == null ? "返回结果为空" : info.getMessage()));
 			}
@@ -1583,20 +1571,29 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                 return response;
             }
 
-            String message = "更新账期支付扣款成功状态异常";
+            String message = "账期支付扣款成功";
             // 内行业务id
             String contractNo = request.getContractNo();
-            // 成功
-            boolean payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo, true);
-            if (payStatus) {
 
-                message = "账期支付扣款成功";
+            boolean payStatus = false;
+            // 订单类型
+            int orderType = request.getOrderType();
+            if (orderType == 0) {
+                // 成功
+                payStatus = masterOrderInfoExtendService.updateMasterPayPeriod(masterOrderSn, contractNo, true);
+            } else {
+                message += ":" + request.getShipSn() + "," + request.getSource();
+                payStatus = distributeShipService.updateOrderDepotShipPayPeriod(request.getShipSn(), request.getSource(), contractNo, true);
+            }
+            if (payStatus) {
                 if (StringUtils.isNotBlank(contractNo)) {
                     message += ",内行业务id:" + contractNo;
                 }
 
                 response.setSuccess(true);
                 response.setMessage("操作成功");
+            } else {
+                message += "异常";
             }
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, message, request.getActionUser());
         } catch (Exception e) {
@@ -1733,7 +1730,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
      * 更新订单合同签章状态标志
      * @param masterOrderSn
      */
-    private void updateSignStatus(String masterOrderSn, String contractNo) {
+    private void updateSignStatus(String masterOrderSn, String contractNo,String erpOrderNo) {
     	MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
     	if (masterOrderInfo == null) {
     		logger.info("订单号:" + masterOrderSn + "不存在");
@@ -1747,6 +1744,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		}
         MasterOrderInfo updateOrder = new MasterOrderInfo();
         updateOrder.setMasterOrderSn(masterOrderSn);
+		updateOrder.setErpOrderNo(erpOrderNo);
         updateOrder.setUpdateTime(new Date());
         // 已签章
         updateOrder.setSignStatus(1);
@@ -1754,6 +1752,4 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         updateOrder.setSignContractNum(contractNo);
         masterOrderInfoMapper.updateByPrimaryKeySelective(updateOrder);
     }
-
-
 }
