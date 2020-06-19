@@ -246,11 +246,16 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					//判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
 					//获取铁信支付的payId
 					SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
+					MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSnList.get(0));
 					if (orderPayInfo.getPayId() == systemPayment.getPayId()) {
-						MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSnList.get(0));
 						if (null != masterOrderInfoExtend && Constant.OUTSIDE_COMPANY.equals(masterOrderInfoExtend.getCompanyType())) {
 							orderPayInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
 						}
+					}
+					//特殊情况 对应需求1351 子公司买店铺商品用铁信支付时 specialType = 3
+					if (!Constant.DEFAULT_SHOP.equals(masterOrderInfo.getOrderFrom()) && orderPayInfo.getPayId() == systemPayment.getPayId()
+							&& null != masterOrderInfoExtend && Constant.INTERNAL_COMPANY.equals(masterOrderInfoExtend.getCompanyType())) {
+						orderPayInfo.setSpecialType(Constant.SPECIAL_TYPE_INTERNAL_COMPANY_BUY_STORE_TIEXIN);
 					}
 				} else {
 					//合并支付查询
