@@ -432,7 +432,9 @@
         og.purchases_without_stock_flag purchasesWithoutStockFlag,
         og.without_stock_delivery_cycle withoutStockDeliveryCycle,
         og.delivery_cycle deliveryCycle,
-        og.data_sources  dataSources
+        og.data_sources  dataSources,
+        og.brand_id brandId,
+        og.brand_name brandName
         from
         <if test="isHistory == 0">
             master_order_goods
