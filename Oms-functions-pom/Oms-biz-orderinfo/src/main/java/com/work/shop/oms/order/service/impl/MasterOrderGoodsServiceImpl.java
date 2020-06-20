@@ -314,6 +314,11 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         //商品数据来源
 		masterOrderGoods.setDataSources(masterGoods.getDataSources());
 
+		//品牌ID
+		masterOrderGoods.setBrandId(masterGoods.getBrandId());
+		//品牌名称
+		masterOrderGoods.setBrandName(masterGoods.getBrandName());
+
     }
 
 	/**

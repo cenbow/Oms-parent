@@ -206,6 +206,17 @@ public class OrderGoodsInfo implements Serializable{
 	private String deliveryCycle;
 
 	/**
+	 * 品牌Id
+	 */
+	private Integer brandId;
+
+	/**
+	 * 品牌名称
+	 */
+	private String brandName;
+
+
+	/**
 	 * 商品销售类型
 	 */
 	private Integer saleType;
@@ -605,5 +616,21 @@ public class OrderGoodsInfo implements Serializable{
 
 	public void setDataSources(Integer dataSources) {
 		this.dataSources = dataSources;
+	}
+
+	public Integer getBrandId() {
+		return brandId;
+	}
+
+	public void setBrandId(Integer brandId) {
+		this.brandId = brandId;
+	}
+
+	public String getBrandName() {
+		return brandName;
+	}
+
+	public void setBrandName(String brandName) {
+		this.brandName = brandName;
 	}
 }
