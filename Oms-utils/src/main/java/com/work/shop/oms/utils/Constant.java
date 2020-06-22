@@ -1152,6 +1152,11 @@ public class Constant {
      */
     public  static  final  int GOODS_SALE_TYPE_CHANGE_PRICE = 2;
 
+	/**
+	 * 商品销售类型  盈合商品
+	 */
+	public  static  final  int GOODS_SALE_TYPE_BO = 3;
+
     /**
      * 价格变动确认状态   0 无
      */

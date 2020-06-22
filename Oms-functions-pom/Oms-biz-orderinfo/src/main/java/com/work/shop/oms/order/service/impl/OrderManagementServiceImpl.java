@@ -847,7 +847,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 						|| ( master.getPriceChangeStatus() != null && master.getPriceChangeStatus() > Constant.PRICE_CHANGE_AFFIRM_1 )
 						|| ("hbis".equals(master.getOrderFrom()) && "铁信支付".equals(master.getPayName()) )){
 					//返回正常单，订单改价确认
-					logger.info("返回正常单:" + masterOrderSn + "订单改价确认 ");
+					logger.info("返回正常单:" + masterOrderSn + "订单非正常商品确认 ");
 					orderConfirmService.changePriceConfirmOrder(masterOrderSn,orderStatus);
 				}else{
 					//返回正常单，订单推送供应链

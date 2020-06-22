@@ -529,6 +529,9 @@
       <if test="goodsPaymentPeriodId != null">
         goods_payment_period_id,
       </if>
+      <if test="saleType != null">
+        sale_type,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -752,6 +755,9 @@
       </if>
       <if test="goodsPaymentPeriodId != null">
         #{goodsPaymentPeriodId},
+      </if>
+      <if test="saleType != null">
+        #{saleType},
       </if>
     </trim>
   </insert>

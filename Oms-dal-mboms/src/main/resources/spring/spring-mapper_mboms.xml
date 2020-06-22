@@ -352,6 +352,11 @@
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
 	</bean>
 
+	<bean id="boSupplierOrderMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BoSupplierOrderMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
 	<bean id="orderTaskConfigMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
 		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderTaskConfigMapper" />
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />

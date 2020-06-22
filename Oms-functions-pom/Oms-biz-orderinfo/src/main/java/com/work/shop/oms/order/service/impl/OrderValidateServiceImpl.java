@@ -21,6 +21,7 @@ import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.common.utils.NumberUtil;
 import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.config.service.SystemShippingService;
+import com.work.shop.oms.dao.BoSupplierOrderMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
 import com.work.shop.oms.dao.MasterOrderPayMapper;
 import com.work.shop.oms.dao.SystemConfigMapper;
@@ -38,6 +39,7 @@ import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +99,8 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	private UserAccountService userAccountService;
 	@Resource
 	private MasterOrderInfoExtendService orderInfoExtendService;
+	@Resource
+	private BoSupplierOrderMapper boSupplierOrderMapper;
 	// 没有问题
 	public static Integer QUESTION_TYPE_NONE = 0;
 	// 订单部分商品低于保底价或者限定折扣价
@@ -298,7 +303,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 			}
 		}
-		//待询价 或者改价问题单
+		//待询价 或者改价问题单 或者 是盈合商品
 		if(orderInfo.getGoodsSaleType() != null && orderInfo.getGoodsSaleType() != 0){
 			switch (orderInfo.getGoodsSaleType()){
 				case Constant.GOODS_SALE_TYPE_CUSTOMIZATION :
@@ -308,6 +313,28 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
 					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "改价问题单", "121"));
 					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					break;
+				case Constant.GOODS_SALE_TYPE_BO :
+					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					//盈合商品需要处理 盈合子项目
+					List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
+					if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
+						info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
+						return info;
+					}
+					if(StringUtils.isBlank(masterOrderInfoExtendByOrder.get(0).getBoId())) {
+						info.setMessage("订单[" + masterOrderSn + "]的盈合ID不存在");
+						return info;
+					}
+					BoSupplierOrder  boSupplierOrder = new BoSupplierOrder();
+					boSupplierOrder.setMasterOrderSn(masterOrderSn);
+					boSupplierOrder.setBoId(masterOrderInfoExtendByOrder.get(0).getBoId());
+					boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
+					boSupplierOrder.setCreateTime(new Date());
+					boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
+					boSupplierOrder.setUpdateTime(new Date());
+					boSupplierOrderMapper.insertSelective(boSupplierOrder);
 					break;
 			}
 		}
