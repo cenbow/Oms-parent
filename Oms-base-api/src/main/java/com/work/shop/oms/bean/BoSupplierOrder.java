@@ -1,9 +1,10 @@
 package com.work.shop.oms.bean;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class BoSupplierOrder {
+public class BoSupplierOrder implements Serializable {
     private Integer id;
 
     private String boId;
@@ -37,6 +38,14 @@ public class BoSupplierOrder {
     private String updateUser;
 
     private Date updateTime;
+
+    private String companyName;
+
+    private String companyCode;
+
+    private Integer payId;
+
+    private String payName;
 
     public Integer getId() {
         return id;
@@ -172,5 +181,37 @@ public class BoSupplierOrder {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public Integer getPayId() {
+        return payId;
+    }
+
+    public void setPayId(Integer payId) {
+        this.payId = payId;
+    }
+
+    public String getPayName() {
+        return payName;
+    }
+
+    public void setPayName(String payName) {
+        this.payName = payName;
     }
 }

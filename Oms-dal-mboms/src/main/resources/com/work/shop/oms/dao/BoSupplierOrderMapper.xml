@@ -19,11 +19,15 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+    <result column="company_code" jdbcType="VARCHAR" property="companyCode" />
+    <result column="pay_id" jdbcType="INTEGER" property="payId" />
+    <result column="pay_name" jdbcType="VARCHAR" property="payName" />
   </resultMap>
   <sql id="Base_Column_List">
     id, bo_id, master_order_sn, has_insurance, sale_model, payment_period, occupy_debt, 
     allocation, allocation_income, platform_operating_fee, basic_profit_sharing, excess_profit_sharing, 
-    status, create_user, create_time, update_user, update_time
+    status, create_user, create_time, update_user, update_time, company_name, company_code, pay_id, pay_name
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -41,14 +45,16 @@
       occupy_debt, allocation, allocation_income, 
       platform_operating_fee, basic_profit_sharing, 
       excess_profit_sharing, status, create_user, 
-      create_time, update_user, update_time
+      create_time, update_user, update_time,company_name,
+      company_code, pay_id, pay_name
       )
     values (#{id,jdbcType=INTEGER}, #{boId,jdbcType=VARCHAR}, #{masterOrderSn,jdbcType=VARCHAR}, 
       #{hasInsurance,jdbcType=TINYINT}, #{saleModel,jdbcType=INTEGER}, #{paymentPeriod,jdbcType=INTEGER}, 
       #{occupyDebt,jdbcType=DECIMAL}, #{allocation,jdbcType=DECIMAL}, #{allocationIncome,jdbcType=DECIMAL}, 
       #{platformOperatingFee,jdbcType=DECIMAL}, #{basicProfitSharing,jdbcType=DECIMAL}, 
       #{excessProfitSharing,jdbcType=DECIMAL}, #{status,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{updateUser,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}
+      #{createTime,jdbcType=TIMESTAMP}, #{updateUser,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}, #{companyName,jdbcType=VARCHAR},
+      #{companyCode,jdbcType=VARCHAR}, #{payId,jdbcType=INTEGER}, #{payName,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.BoSupplierOrder">
@@ -105,6 +111,18 @@
       <if test="updateTime != null">
         update_time,
       </if>
+      <if test="companyName != null">
+        company_name,
+      </if>
+      <if test="companyCode != null">
+        company_code,
+      </if>
+      <if test="payId != null">
+        pay_id,
+      </if>
+      <if test="payName != null">
+        pay_name,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -157,6 +175,18 @@
       </if>
       <if test="updateTime != null">
         #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="companyName != null">
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyCode != null">
+        #{companyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="payId != null">
+        #{payId,jdbcType=INTEGER},
+      </if>
+      <if test="payName != null">
+        #{payName,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -211,6 +241,18 @@
       <if test="updateTime != null">
         update_time = #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="companyName != null">
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyCode != null">
+        company_code = #{companyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="payId != null">
+        pay_id = #{payId,jdbcType=INTEGER},
+      </if>
+      <if test="payName != null">
+        pay_name = #{payName,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -231,7 +273,11 @@
       create_user = #{createUser,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_user = #{updateUser,jdbcType=VARCHAR},
-      update_time = #{updateTime,jdbcType=TIMESTAMP}
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      company_name = #{companyName,jdbcType=VARCHAR},
+      company_code = #{companyCode,jdbcType=VARCHAR},
+      pay_id = #{payId,jdbcType=INTEGER},
+      pay_name = #{payName,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

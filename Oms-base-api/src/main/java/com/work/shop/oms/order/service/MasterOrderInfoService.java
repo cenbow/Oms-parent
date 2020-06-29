@@ -96,4 +96,14 @@ public interface MasterOrderInfoService {
      * @return
      */
     ReturnInfo<String> editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo);
+
+	/***
+	 * 主订单编辑创业团队id和盈合商品id
+	 * @param masterOrderDetail 订单信息
+	 * @param actionUser  修改人
+	 * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+	 * @author wk
+	 * @date 2020/6/23
+	 **/
+	ReturnInfo<String> editBindTeamInfoByMasterSn(String actionUser,MasterOrderDetail masterOrderDetail);
 }

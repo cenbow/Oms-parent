@@ -236,7 +236,12 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			info.setMessage("订单[" + masterOrderSn + "]不存在");
 			return info;
 		}
-
+		List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
+		if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
+			info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
+			return info;
+		}
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendByOrder.get(0);
 		// 余额锁定判断
 		if (!ocpbStatus.equals(OcpbStatus.lock)) {
 			// 使用余额支付
@@ -288,21 +293,37 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			info.setMessage("订单[" + masterOrderSn + "]的支付单不存在");
 			return info;
 		}
+		//盈合问题单
+		if(StringUtils.isNotBlank(masterOrderInfoExtend.getBoId())) {
+			//设置盈合问题单
+			orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+			orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+			//设置营销合伙人系统的子项目
+			BoSupplierOrder  boSupplierOrder = new BoSupplierOrder();
+			boSupplierOrder.setMasterOrderSn(masterOrderSn);
+			boSupplierOrder.setBoId(masterOrderInfoExtend.getBoId());
+			boSupplierOrder.setCompanyCode(masterOrderInfoExtend.getCompanyCode());
+			boSupplierOrder.setCompanyName(masterOrderInfoExtend.getCompanyName());
+			boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
+			boSupplierOrder.setPayName(masterOrderPay.getPayName());
+			boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
+			boSupplierOrder.setCreateTime(new Date());
+			boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
+			boSupplierOrder.setUpdateTime(new Date());
+			boSupplierOrderMapper.insertSelective(boSupplierOrder);
+		}
 		//获取铁信支付的payId
 		SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
 		if (masterOrderPay.getPayId().equals(systemPayment.getPayId())) {
 			//是铁信支付，获取订单扩展信息判断是否外部公司
-			List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
-			if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
-				info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
-				return info;
-			}
 			if (Constant.OUTSIDE_COMPANY.equals(masterOrderInfoExtendByOrder.get(0).getCompanyType())) {
 				//是外部买家创建问题单
 				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "铁信支付改价问题单", "122"));
 				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 			}
 		}
+		//盈合支付的问题单判断  暂时只处理设置了盈合id的
+		//,,
 		//待询价 或者改价问题单 或者 是盈合商品
 		if(orderInfo.getGoodsSaleType() != null && orderInfo.getGoodsSaleType() != 0){
 			switch (orderInfo.getGoodsSaleType()){
@@ -315,26 +336,14 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 					break;
 				case Constant.GOODS_SALE_TYPE_BO :
-					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+					//暂时只处理设置了盈合id的
+					/*orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
 					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 					//盈合商品需要处理 盈合子项目
-					List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
-					if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
-						info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
-						return info;
-					}
 					if(StringUtils.isBlank(masterOrderInfoExtendByOrder.get(0).getBoId())) {
 						info.setMessage("订单[" + masterOrderSn + "]的盈合ID不存在");
 						return info;
-					}
-					BoSupplierOrder  boSupplierOrder = new BoSupplierOrder();
-					boSupplierOrder.setMasterOrderSn(masterOrderSn);
-					boSupplierOrder.setBoId(masterOrderInfoExtendByOrder.get(0).getBoId());
-					boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
-					boSupplierOrder.setCreateTime(new Date());
-					boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
-					boSupplierOrder.setUpdateTime(new Date());
-					boSupplierOrderMapper.insertSelective(boSupplierOrder);
+					}*/
 					break;
 			}
 		}
