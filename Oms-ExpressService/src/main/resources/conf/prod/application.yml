@@ -1,0 +1,39 @@
+
+server:
+  port: 7799
+
+eureka:
+  instance:
+    hostname: ExpressService
+    prefer-ip-address: true
+    #ip-address: 39.100.42.211
+    #服务过期时间配置,超过这个时间没有接收到心跳EurekaServer就会将这个实例剔除
+    #注意，EurekaServer一定要设置eureka.server.eviction-interval-timer-in-ms否则这个配置无效，这个配置一般为服务刷新时间配置的三倍
+    #默认90s
+    lease-expiration-duration-in-seconds: 9
+    #服务刷新时间配置，每隔这个时间会主动心跳一次
+    #默认30s
+    lease-renewal-interval-in-seconds: 3
+  server:
+    #关闭自我保护
+    enable-self-preservation: false
+  client:
+    serviceUrl:
+      defaultZone: http://172.16.107.2:7700/eureka/
+
+spring:
+  application:
+    name: express-service
+  main:
+    allow-bean-definition-overriding: true
+
+#log配置
+logging:
+  config:
+    classpath: log4j.xml
+
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
+  eager-load:
+    enabled: true
