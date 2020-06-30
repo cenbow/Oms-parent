@@ -318,6 +318,21 @@ public class MasterGoods implements Serializable {
 	 */
 	private Integer goodsPaymentPeriodId;
 
+	/**
+	 * 商品品牌id
+	 */
+	private Integer brandId;
+
+	/**
+	 * 商品品牌Code
+	 */
+	private String brandCode;
+
+	/**
+	 * 商品品牌名称
+	 */
+	private String brandName;
+
     public Double getShareBonus() {
 		return shareBonus;
 	}
@@ -812,5 +827,29 @@ public class MasterGoods implements Serializable {
 
 	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
 		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
+	}
+
+	public Integer getBrandId() {
+		return brandId;
+	}
+
+	public void setBrandId(Integer brandId) {
+		this.brandId = brandId;
+	}
+
+	public String getBrandCode() {
+		return brandCode;
+	}
+
+	public void setBrandCode(String brandCode) {
+		this.brandCode = brandCode;
+	}
+
+	public String getBrandName() {
+		return brandName;
+	}
+
+	public void setBrandName(String brandName) {
+		this.brandName = brandName;
 	}
 }

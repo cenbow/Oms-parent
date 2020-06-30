@@ -309,6 +309,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                         orderPageInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
                     }
                 }
+                //特殊情况 对应需求1351 子公司买店铺商品用铁信支付时 specialType = 3
+                if (Constant.INTERNAL_COMPANY.equals(orderPageInfo.getCompanyType())
+                        && systemPayment.getPayId() == orderPageInfo.getPayId()
+                        && !Constant.DEFAULT_SHOP.equals(orderPageInfo.getOrderFrom())) {
+                        orderPageInfo.setSpecialType(Constant.SPECIAL_TYPE_INTERNAL_COMPANY_BUY_STORE_TIEXIN);
+                }
             }
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             paging.setRoot(pageList);
@@ -853,6 +859,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             //判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
             if (Constant.PAY_TIEXIN.equals(orderDetailInfo.getPayCode()) && Constant.OUTSIDE_COMPANY.equals(orderDetailInfo.getCompanyType())) {
                 orderDetailInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
+            }
+
+            //特殊情况 对应需求1351 子公司买店铺商品用铁信支付时 specialType = 3
+            if (Constant.PAY_TIEXIN.equals(orderDetailInfo.getPayCode()) && Constant.INTERNAL_COMPANY.equals(orderDetailInfo.getCompanyType())
+                    && !Constant.DEFAULT_SHOP.equals(orderDetailInfo.getChannelCode())) {
+                orderDetailInfo.setSpecialType(Constant.SPECIAL_TYPE_INTERNAL_COMPANY_BUY_STORE_TIEXIN);
             }
             apiReturnData.setData(orderDetailInfo);
             apiReturnData.setIsOk(Constant.OS_STR_YES);
