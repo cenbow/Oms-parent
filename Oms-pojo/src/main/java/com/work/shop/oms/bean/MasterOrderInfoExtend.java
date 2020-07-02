@@ -365,6 +365,11 @@ public class MasterOrderInfoExtend {
     private String saleBd;
 
     /**
+     * 盈合Id
+     */
+    private String boId;
+
+    /**
      * 结算账户是否结算 0 未结算、1已结算
      */
     private int settlementAccount;
@@ -1292,5 +1297,13 @@ public class MasterOrderInfoExtend {
 
     public void setPaySourceId(String paySourceId) {
         this.paySourceId = paySourceId;
+    }
+
+    public String getBoId() {
+        return boId;
+    }
+
+    public void setBoId(String boId) {
+        this.boId = boId;
     }
 }

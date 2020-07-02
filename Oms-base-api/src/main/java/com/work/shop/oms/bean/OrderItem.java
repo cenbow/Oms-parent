@@ -257,6 +257,11 @@ public class OrderItem implements Serializable{
 	private String insteadUserId;
 
 	/**
+	 * 盈合id
+	 */
+	private String boId;
+
+	/**
 	 * 仓库编码
 	 */
 	private String depotCode;
@@ -796,5 +801,13 @@ public class OrderItem implements Serializable{
 
 	public void setNeedSign(Integer needSign) {
 		this.needSign = needSign;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
 	}
 }

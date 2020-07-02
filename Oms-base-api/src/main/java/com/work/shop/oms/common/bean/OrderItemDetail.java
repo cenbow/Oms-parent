@@ -243,9 +243,14 @@ public class OrderItemDetail implements Serializable {
     private String insteadUserId;
 
     /**
-     * bd编码
-     */
-    private String saleBd;
+	 * bd编码
+	 */
+	private String saleBd;
+
+	/**
+	 * 盈合Id
+	 */
+	private String boId;
 
     /**
      * 需要合同签章 0不需要、1需要
@@ -1551,5 +1556,13 @@ public class OrderItemDetail implements Serializable {
 
 	public void setPriceChangeStatus(Integer priceChangeStatus) {
 		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
 	}
 }

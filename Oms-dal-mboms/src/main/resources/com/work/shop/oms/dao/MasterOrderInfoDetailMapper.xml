@@ -278,6 +278,7 @@
           a.inv_phone invPhone,
           a.push_supply_chain pushSupplyChain,
           a.sale_bd saleBd,
+	  	  a.bo_id boId,
           b.inv_consignee invConsignee,
           b.inv_mobile invMobile,
           b.inv_address invAddress,
