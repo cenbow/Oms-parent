@@ -531,14 +531,14 @@
       <if test="goodsPaymentPeriodId != null">
         goods_payment_period_id,
       </if>
+      <if test="saleType != null">
+        sale_type,
+      </if>
       <if test="brandId != null">
         brand_id,
       </if>
       <if test="brandName != null">
         brand_name,
-      </if>
-      <if test="saleType != null">
-        sale_type,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
