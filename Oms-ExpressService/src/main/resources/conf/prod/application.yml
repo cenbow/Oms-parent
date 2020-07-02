@@ -19,7 +19,7 @@ eureka:
     enable-self-preservation: false
   client:
     serviceUrl:
-      defaultZone: http://172.16.107.2:7700/eureka/
+      defaultZone: http://172.16.107.2:7700/eureka/,http://172.16.107.4:7700/eureka/,http://172.16.107.6:7700/eureka/
 
 spring:
   application:
