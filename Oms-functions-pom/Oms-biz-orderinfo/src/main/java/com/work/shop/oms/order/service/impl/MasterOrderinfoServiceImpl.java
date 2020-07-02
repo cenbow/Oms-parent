@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.work.shop.cardAPI.api.CardCartSearchServiceApi;
 import com.work.shop.cardAPI.bean.APIBackMsgBean;
 import com.work.shop.cardAPI.bean.ParaUserCardStatus;
+import com.work.shop.oms.bean.BoSupplierOrder;
 import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.MasterOrderInfoExample;
@@ -18,6 +19,7 @@ import com.work.shop.oms.common.bean.AsynProcessOrderBean;
 import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
 import com.work.shop.oms.common.bean.MasterGoods;
 import com.work.shop.oms.common.bean.MasterOrder;
+import com.work.shop.oms.common.bean.MasterOrderDetail;
 import com.work.shop.oms.common.bean.MasterPay;
 import com.work.shop.oms.common.bean.MasterShip;
 import com.work.shop.oms.common.bean.OcpbStatus;
@@ -27,8 +29,10 @@ import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.common.bean.ServiceReturnInfo;
 import com.work.shop.oms.common.bean.ValidateOrder;
+import com.work.shop.oms.dao.BoSupplierOrderMapper;
 import com.work.shop.oms.dao.ChannelShopMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
+import com.work.shop.oms.dao.MasterOrderPayMapper;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
@@ -120,6 +124,12 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 	@Resource(name="orderAccountPeriodJmsTemplate")
 	private JmsTemplate orderAccountPeriodJmsTemplate;
+
+	@Resource
+	private BoSupplierOrderMapper boSupplierOrderMapper;
+
+	@Resource
+	private MasterOrderPayMapper masterOrderPayMapper;
 
 	/**
 	 * 问题单类型
@@ -1030,7 +1040,128 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         return returnInfo;
     }
 
-    /**
+	/***
+	 * 主订单编辑创业团队id和盈合商品id
+	 * @param masterOrderDetail 订单信息
+	 * @param actionUser  修改人
+	 * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+	 * @author wk
+	 * @date 2020/6/23
+	 **/
+	@Override
+	public ReturnInfo<String> editBindTeamInfoByMasterSn(String actionUser,MasterOrderDetail masterOrderDetail) {
+		ReturnInfo<String> returnInfo = new ReturnInfo<>();
+		returnInfo.setMessage("主订单编辑创业团队id和盈合商品id失败");
+
+		if (masterOrderDetail == null) {
+			returnInfo.setMessage("请求参数为空");
+			return returnInfo;
+		}
+
+		String orderSn = masterOrderDetail.getMasterOrderSn();
+		if (StringUtils.isBlank(orderSn)) {
+			returnInfo.setMessage("主订单号为空");
+			return returnInfo;
+		}
+
+		if (StringUtils.isBlank(actionUser)) {
+			returnInfo.setMessage("操作人为空");
+			return returnInfo;
+		}
+
+		if(StringUtils.isBlank(masterOrderDetail.getBoId()) && StringUtils.isBlank(masterOrderDetail.getSaleBd())){
+			returnInfo.setMessage("团队id为空（盈合id与创业团队id）");
+			return returnInfo;
+		}
+
+		try {
+			//校验订单
+			MasterOrderInfo masterOrderInfo = getOrderInfoBySn(orderSn);
+			if (masterOrderInfo == null) {
+				returnInfo.setMessage(orderSn + "订单不存在");
+				return returnInfo;
+			}
+
+			//校验扩展信息
+			List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendService.getMasterOrderInfoExtendByOrder(orderSn);
+			if (StringUtil.isListNull(extendList)) {
+				returnInfo.setMessage(orderSn + "订单扩展信息不存在");
+				return returnInfo;
+			}
+			MasterOrderInfoExtend extendBydb = extendList.get(0);
+
+			StringBuffer sb = new StringBuffer();
+			MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+			//推送盈合标记
+			Boolean  sendFlag = false;
+			//如果输入创业团队ID，则计算收益推送创业团队H5    优先级高于盈合
+			//创业团队id
+			String saleBd = masterOrderDetail.getSaleBd();
+			if (StringUtils.isNotBlank(saleBd) && !saleBd.equalsIgnoreCase(extendBydb.getSaleBd())) {
+				extend.setSaleBd(saleBd);
+				sb.append("销售BD号由‘" + extendBydb.getSaleBd() + "’→‘" + saleBd + "’；<br />");
+			}else{
+				//盈合id
+				String boId = masterOrderDetail.getBoId();
+				if (StringUtils.isNotBlank(boId) && !boId.equalsIgnoreCase(extendBydb.getBoId())) {
+					extend.setBoId(boId);
+					sb.append("盈合id由‘" + extendBydb.getBoId() + "’→‘" + boId + "’；<br />");
+				}
+				//推送盈合标记
+				sendFlag = true;
+			}
+
+			//无修改，返回
+			String msg = sb.toString();
+			if (StringUtils.isBlank(msg)) {
+				returnInfo.setIsOk(1);
+				returnInfo.setMessage("修改成功");
+				return returnInfo;
+			}
+
+			extend.setMasterOrderSn(orderSn);
+			int update = masterOrderInfoExtendService.updateByPrimaryKeySelective(extend);
+			if (update > 0) {
+				returnInfo.setIsOk(1);
+				returnInfo.setMessage("修改成功");
+			}
+
+			//添加日志
+			masterOrderActionService.insertOrderActionBySn(orderSn, "绑定团队信息修改：<br />" + msg, actionUser);
+
+			//推送盈合
+			if(sendFlag){
+				MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderDetail.getMasterOrderSn());
+				if(masterOrderPay != null){
+					//设置营销合伙人系统的子项目
+					BoSupplierOrder boSupplierOrder = new BoSupplierOrder();
+					boSupplierOrder.setMasterOrderSn(masterOrderDetail.getMasterOrderSn());
+					boSupplierOrder.setBoId(masterOrderDetail.getBoId());
+					boSupplierOrder.setCompanyCode(extendBydb.getCompanyCode());
+					boSupplierOrder.setCompanyName(extendBydb.getCompanyName());
+					boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
+					boSupplierOrder.setPayName(masterOrderPay.getPayName());
+					boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
+					boSupplierOrder.setCreateTime(new Date());
+					boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
+					boSupplierOrder.setUpdateTime(new Date());
+					boSupplierOrderMapper.insertSelective(boSupplierOrder);
+					//添加日志
+					masterOrderActionService.insertOrderActionBySn(orderSn, "推送盈合系统成功", actionUser);
+				}else{
+					//添加日志
+					masterOrderActionService.insertOrderActionBySn(orderSn, "推送盈合系统失败：<br /> 支付单不存在", actionUser);
+				}
+			}
+
+		} catch (Exception e) {
+			logger.error("主订单编辑绑定团队信息异常" + JSONObject.toJSONString(masterOrderDetail), e);
+		}
+
+		return returnInfo;
+	}
+
+	/**
      * 处理订单账期支付信息
      * @param masterOrderPay
      */

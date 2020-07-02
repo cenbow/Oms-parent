@@ -601,6 +601,11 @@ public class MasterOrderInfo implements Serializable {
     private Integer priceChangeStatus;
 
     /**
+     * 盈合id
+     */
+    private String boId;
+
+    /**
      * ERP订单编号
      */
     private String erpOrderNo;
@@ -2347,5 +2352,13 @@ public class MasterOrderInfo implements Serializable {
 
     public void setPriceChangeStatus(Integer priceChangeStatus) {
         this.priceChangeStatus = priceChangeStatus;
+    }
+
+    public String getBoId() {
+        return boId;
+    }
+
+    public void setBoId(String boId) {
+        this.boId = boId;
     }
 }

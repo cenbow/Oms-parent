@@ -519,6 +519,11 @@ public class MasterOrder implements Serializable{
     private String saleBd;
 
 	/**
+	 * 盈合id
+	 */
+	private String boId;
+
+	/**
 	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
 	 */
 	private Integer goodsSaleType;
@@ -1421,5 +1426,13 @@ public class MasterOrder implements Serializable{
 
 	public void setSignContractNum(String signContractNum) {
 		this.signContractNum = signContractNum;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
 	}
 }

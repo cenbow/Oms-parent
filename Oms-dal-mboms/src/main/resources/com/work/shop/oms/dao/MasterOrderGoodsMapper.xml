@@ -169,7 +169,7 @@
     tax_rate, base_bv_value, input_tax, output_tax, cost_price, box_gauge, distribution_category, 
     seller_custom_code, seller_goods_sn, min_buy_num, customer_material_code, buy_unit, 
     delivery_cycle, invoice_no, supplier_name, customer_material_name, buyer_no, buyer_line_no, goods_add_price,with_stock_number,without_stock_number,purchases_without_stock_flag
-    ,without_stock_delivery_cycle,without_stock_depot_no,data_sources,goods_payment_period_id,brand_id,brand_name
+    ,without_stock_delivery_cycle,without_stock_depot_no,data_sources,goods_payment_period_id
   </sql>
   <sql id="Blob_Column_List">
     <!--
@@ -537,6 +537,9 @@
       <if test="brandName != null">
         brand_name,
       </if>
+      <if test="saleType != null">
+        sale_type,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -760,6 +763,9 @@
       </if>
       <if test="goodsPaymentPeriodId != null">
         #{goodsPaymentPeriodId},
+      </if>
+      <if test="saleType != null">
+        #{saleType},
       </if>
       <if test="brandId != null">
         #{brandId},

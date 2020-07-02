@@ -21,6 +21,7 @@ import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.common.utils.NumberUtil;
 import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.config.service.SystemShippingService;
+import com.work.shop.oms.dao.BoSupplierOrderMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
 import com.work.shop.oms.dao.MasterOrderPayMapper;
 import com.work.shop.oms.dao.SystemConfigMapper;
@@ -38,6 +39,7 @@ import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +99,8 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	private UserAccountService userAccountService;
 	@Resource
 	private MasterOrderInfoExtendService orderInfoExtendService;
+	@Resource
+	private BoSupplierOrderMapper boSupplierOrderMapper;
 	// 没有问题
 	public static Integer QUESTION_TYPE_NONE = 0;
 	// 订单部分商品低于保底价或者限定折扣价
@@ -231,7 +236,12 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			info.setMessage("订单[" + masterOrderSn + "]不存在");
 			return info;
 		}
-
+		List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
+		if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
+			info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
+			return info;
+		}
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendByOrder.get(0);
 		// 余额锁定判断
 		if (!ocpbStatus.equals(OcpbStatus.lock)) {
 			// 使用余额支付
@@ -283,22 +293,38 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			info.setMessage("订单[" + masterOrderSn + "]的支付单不存在");
 			return info;
 		}
+		//盈合问题单
+		if(StringUtils.isNotBlank(masterOrderInfoExtend.getBoId())) {
+			//设置盈合问题单
+			orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+			orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+			//设置营销合伙人系统的子项目
+			BoSupplierOrder  boSupplierOrder = new BoSupplierOrder();
+			boSupplierOrder.setMasterOrderSn(masterOrderSn);
+			boSupplierOrder.setBoId(masterOrderInfoExtend.getBoId());
+			boSupplierOrder.setCompanyCode(masterOrderInfoExtend.getCompanyCode());
+			boSupplierOrder.setCompanyName(masterOrderInfoExtend.getCompanyName());
+			boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
+			boSupplierOrder.setPayName(masterOrderPay.getPayName());
+			boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
+			boSupplierOrder.setCreateTime(new Date());
+			boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
+			boSupplierOrder.setUpdateTime(new Date());
+			boSupplierOrderMapper.insertSelective(boSupplierOrder);
+		}
 		//获取铁信支付的payId
 		SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
 		if (masterOrderPay.getPayId().equals(systemPayment.getPayId())) {
 			//是铁信支付，获取订单扩展信息判断是否外部公司
-			List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
-			if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
-				info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
-				return info;
-			}
 			if (Constant.OUTSIDE_COMPANY.equals(masterOrderInfoExtendByOrder.get(0).getCompanyType())) {
 				//是外部买家创建问题单
 				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "铁信支付改价问题单", "122"));
 				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 			}
 		}
-		//待询价 或者改价问题单
+		//盈合支付的问题单判断  暂时只处理设置了盈合id的
+		//,,
+		//待询价 或者改价问题单 或者 是盈合商品
 		if(orderInfo.getGoodsSaleType() != null && orderInfo.getGoodsSaleType() != 0){
 			switch (orderInfo.getGoodsSaleType()){
 				case Constant.GOODS_SALE_TYPE_CUSTOMIZATION :
@@ -308,6 +334,16 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
 					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "改价问题单", "121"));
 					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					break;
+				case Constant.GOODS_SALE_TYPE_BO :
+					//暂时只处理设置了盈合id的
+					/*orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					//盈合商品需要处理 盈合子项目
+					if(StringUtils.isBlank(masterOrderInfoExtendByOrder.get(0).getBoId())) {
+						info.setMessage("订单[" + masterOrderSn + "]的盈合ID不存在");
+						return info;
+					}*/
 					break;
 			}
 		}
