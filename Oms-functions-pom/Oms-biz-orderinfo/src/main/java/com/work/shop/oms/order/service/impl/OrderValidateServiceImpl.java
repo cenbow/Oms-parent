@@ -21,6 +21,7 @@ import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.common.utils.NumberUtil;
 import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.config.service.SystemShippingService;
+import com.work.shop.oms.dao.BoSupplierContractMapper;
 import com.work.shop.oms.dao.BoSupplierOrderMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
 import com.work.shop.oms.dao.MasterOrderPayMapper;
@@ -101,6 +102,8 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	private MasterOrderInfoExtendService orderInfoExtendService;
 	@Resource
 	private BoSupplierOrderMapper boSupplierOrderMapper;
+	@Resource
+	private BoSupplierContractMapper boSupplierContractMapper;
 	// 没有问题
 	public static Integer QUESTION_TYPE_NONE = 0;
 	// 订单部分商品低于保底价或者限定折扣价
@@ -310,6 +313,11 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			boSupplierOrder.setCreateTime(new Date());
 			boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
 			boSupplierOrder.setUpdateTime(new Date());
+			//查询商业合伙人供应商合同  如果只有一个默认写入对应子公司id
+			List<BoSupplierContract> boSupplierContracts = boSupplierContractMapper.selectByBoId(masterOrderInfoExtend.getBoId());
+			if(boSupplierContracts != null && boSupplierContracts.size()==1){
+				boSupplierOrder.setChildCompanyId(boSupplierContracts.get(0).getChildCompanyId());
+			}
 			boSupplierOrderMapper.insertSelective(boSupplierOrder);
 		}
 		//获取铁信支付的payId
