@@ -9,6 +9,10 @@ public class BoSupplierOrder implements Serializable {
 
     private String boId;
 
+    private String supplierCode;
+
+    private Integer childCompanyId;
+
     private String masterOrderSn;
 
     private Byte hasInsurance;
@@ -46,6 +50,10 @@ public class BoSupplierOrder implements Serializable {
     private Integer payId;
 
     private String payName;
+
+    private BigDecimal lastAllocation;
+
+    private BigDecimal lastOccupyDebt;
 
     public Integer getId() {
         return id;
@@ -213,5 +221,37 @@ public class BoSupplierOrder implements Serializable {
 
     public void setPayName(String payName) {
         this.payName = payName;
+    }
+
+    public String getSupplierCode() {
+        return supplierCode;
+    }
+
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
+    }
+
+    public Integer getChildCompanyId() {
+        return childCompanyId;
+    }
+
+    public void setChildCompanyId(Integer childCompanyId) {
+        this.childCompanyId = childCompanyId;
+    }
+
+    public BigDecimal getLastAllocation() {
+        return lastAllocation;
+    }
+
+    public void setLastAllocation(BigDecimal lastAllocation) {
+        this.lastAllocation = lastAllocation;
+    }
+
+    public BigDecimal getLastOccupyDebt() {
+        return lastOccupyDebt;
+    }
+
+    public void setLastOccupyDebt(BigDecimal lastOccupyDebt) {
+        this.lastOccupyDebt = lastOccupyDebt;
     }
 }
