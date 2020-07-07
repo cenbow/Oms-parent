@@ -352,6 +352,11 @@
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
 	</bean>
 
+	<bean id="boSupplierCooperationMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BoSupplierCooperationMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
 	<bean id="boSupplierContractMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
 		<property name="mapperInterface" value="com.work.shop.oms.dao.BoSupplierContractMapper" />
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />

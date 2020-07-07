@@ -6,6 +6,7 @@ import com.work.shop.cardAPI.api.CardCartSearchServiceApi;
 import com.work.shop.cardAPI.bean.APIBackMsgBean;
 import com.work.shop.cardAPI.bean.ParaUserCardStatus;
 import com.work.shop.oms.bean.BoSupplierContract;
+import com.work.shop.oms.bean.BoSupplierCooperation;
 import com.work.shop.oms.bean.BoSupplierOrder;
 import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
@@ -31,6 +32,7 @@ import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.common.bean.ServiceReturnInfo;
 import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.dao.BoSupplierContractMapper;
+import com.work.shop.oms.dao.BoSupplierCooperationMapper;
 import com.work.shop.oms.dao.BoSupplierOrderMapper;
 import com.work.shop.oms.dao.ChannelShopMapper;
 import com.work.shop.oms.dao.MasterOrderInfoMapper;
@@ -134,7 +136,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 	private MasterOrderPayMapper masterOrderPayMapper;
 
 	@Resource
-	private BoSupplierContractMapper boSupplierContractMapper;
+	private BoSupplierCooperationMapper boSupplierCooperationMapper;
 
 	/**
 	 * 问题单类型
@@ -1151,9 +1153,10 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 					boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
 					boSupplierOrder.setUpdateTime(new Date());
 					//查询商业合伙人供应商合同  如果只有一个默认写入对应子公司id
-					List<BoSupplierContract> boSupplierContracts = boSupplierContractMapper.selectByBoId(masterOrderDetail.getBoId());
-					if(boSupplierContracts != null && boSupplierContracts.size()==1){
-						boSupplierOrder.setChildCompanyId(boSupplierContracts.get(0).getChildCompanyId());
+					List<BoSupplierCooperation> boSupplierCooperation = boSupplierCooperationMapper.selectByBoId(masterOrderDetail.getBoId());
+					if(boSupplierCooperation != null && boSupplierCooperation.size()==1){
+						boSupplierOrder.setChildCompanyId(boSupplierCooperation.get(0).getChildCompanyId());
+						boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
 					}
 					boSupplierOrderMapper.insertSelective(boSupplierOrder);
 					//添加日志
