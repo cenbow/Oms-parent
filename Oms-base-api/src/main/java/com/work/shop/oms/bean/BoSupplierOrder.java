@@ -47,6 +47,8 @@ public class BoSupplierOrder implements Serializable {
 
     private String companyCode;
 
+    private Integer companyType;
+
     private Integer payId;
 
     private String payName;
@@ -253,5 +255,13 @@ public class BoSupplierOrder implements Serializable {
 
     public void setLastOccupyDebt(BigDecimal lastOccupyDebt) {
         this.lastOccupyDebt = lastOccupyDebt;
+    }
+
+    public Integer getCompanyType() {
+        return companyType;
+    }
+
+    public void setCompanyType(Integer companyType) {
+        this.companyType = companyType;
     }
 }
