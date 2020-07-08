@@ -320,6 +320,8 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			if(boSupplierCooperation != null && boSupplierCooperation.size()==1){
 				boSupplierOrder.setChildCompanyId(boSupplierCooperation.get(0).getChildCompanyId());
 				boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
+			}else if(boSupplierCooperation != null && boSupplierCooperation.size() > 0){
+				boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
 			}
 			boSupplierOrderMapper.insertSelective(boSupplierOrder);
 		}
