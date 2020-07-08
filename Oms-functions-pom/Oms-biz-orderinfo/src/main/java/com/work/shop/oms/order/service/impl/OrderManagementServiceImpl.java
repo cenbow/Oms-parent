@@ -845,7 +845,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				//判断待询价与改价问题单
 				if( ( master.getGoodsSaleType() != null && master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD )
 						|| ( master.getPriceChangeStatus() != null && master.getPriceChangeStatus() > Constant.PRICE_CHANGE_AFFIRM_1 )
-						|| ("hbis".equals(master.getOrderFrom()) && "铁信支付".equals(master.getPayName()) )){
+						|| ("hbis".equals(master.getOrderFrom()) && "铁信支付".equals(master.getPayName()))
+				       || StringUtils.isNotBlank(master.getBoId()) ){
 					//返回正常单，订单改价确认
 					logger.info("返回正常单:" + masterOrderSn + "订单非正常商品确认 ");
 					orderConfirmService.changePriceConfirmOrder(masterOrderSn,orderStatus);
