@@ -23,6 +23,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="company_name" jdbcType="VARCHAR" property="companyName" />
     <result column="company_code" jdbcType="VARCHAR" property="companyCode" />
+    <result column="company_type" jdbcType="INTEGER" property="companyType" />
     <result column="pay_id" jdbcType="INTEGER" property="payId" />
     <result column="pay_name" jdbcType="VARCHAR" property="payName" />
     <result column="last_allocation" jdbcType="DECIMAL" property="lastAllocation" />
@@ -32,7 +33,7 @@
     id, bo_id, supplier_code, child_company_id, master_order_sn, has_insurance, sale_model,
     payment_period, occupy_debt, allocation, allocation_income, platform_operating_fee,
     basic_profit_sharing, excess_profit_sharing, status, create_user, create_time, update_user,
-    update_time, company_name, company_code, pay_id, pay_name, last_allocation, last_occupy_debt
+    update_time, company_name, company_code, company_type, pay_id, pay_name, last_allocation, last_occupy_debt
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select
@@ -52,7 +53,7 @@
       basic_profit_sharing, excess_profit_sharing,
       status, create_user, create_time,
       update_user, update_time, company_name,
-      company_code, pay_id, pay_name,
+      company_code, company_type, pay_id, pay_name,
       last_allocation, last_occupy_debt)
     values (#{id,jdbcType=INTEGER}, #{boId,jdbcType=VARCHAR}, #{supplierCode,jdbcType=VARCHAR},
       #{childCompanyId,jdbcType=INTEGER}, #{masterOrderSn,jdbcType=VARCHAR}, #{hasInsurance,jdbcType=TINYINT},
@@ -61,7 +62,7 @@
       #{basicProfitSharing,jdbcType=DECIMAL}, #{excessProfitSharing,jdbcType=DECIMAL},
       #{status,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
       #{updateUser,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}, #{companyName,jdbcType=VARCHAR},
-      #{companyCode,jdbcType=VARCHAR}, #{payId,jdbcType=INTEGER}, #{payName,jdbcType=VARCHAR},
+      #{companyCode,jdbcType=VARCHAR},#{companyType,jdbcType=INTEGER}, #{payId,jdbcType=INTEGER}, #{payName,jdbcType=VARCHAR},
       #{lastAllocation,jdbcType=DECIMAL}, #{lastOccupyDebt,jdbcType=DECIMAL})
   </insert>
   <insert id="insertSelective" parameterType="com.work.shop.oms.bean.BoSupplierOrder">
@@ -129,6 +130,9 @@
       </if>
       <if test="companyCode != null">
         company_code,
+      </if>
+      <if test="companyType != null">
+        company_type,
       </if>
       <if test="payId != null">
         pay_id,
@@ -207,6 +211,9 @@
       <if test="companyCode != null">
         #{companyCode,jdbcType=VARCHAR},
       </if>
+      <if test="companyType != null">
+        #{companyType,jdbcType=INTEGER},
+      </if>
       <if test="payId != null">
         #{payId,jdbcType=INTEGER},
       </if>
@@ -284,6 +291,9 @@
       <if test="companyCode != null">
         company_code = #{companyCode,jdbcType=VARCHAR},
       </if>
+      <if test="companyType != null">
+        company_type = #{companyType,jdbcType=INTEGER},
+      </if>
       <if test="payId != null">
         pay_id = #{payId,jdbcType=INTEGER},
       </if>
@@ -321,6 +331,7 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       company_name = #{companyName,jdbcType=VARCHAR},
       company_code = #{companyCode,jdbcType=VARCHAR},
+      company_type = #{companyType,jdbcType=INTEGER},
       pay_id = #{payId,jdbcType=INTEGER},
       pay_name = #{payName,jdbcType=VARCHAR},
       last_allocation = #{lastAllocation,jdbcType=DECIMAL},
