@@ -151,6 +151,11 @@ public class OrderQueryRequest implements Serializable {
 	private String insteadUserId;
 
 	/**
+	 * 盈合编码
+	 */
+	private String boId;
+
+	/**
 	 * 配送编码
 	 */
 	private String tmsCode;
@@ -603,5 +608,13 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setNeedSign(Integer needSign) {
 		this.needSign = needSign;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
 	}
 }

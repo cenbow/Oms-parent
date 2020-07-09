@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.BoSupplierOrderMapper">
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.BoSupplierOrder">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="bo_id" jdbcType="VARCHAR" property="boId" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="child_company_id" jdbcType="INTEGER" property="childCompanyId" />
+    <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
+    <result column="has_insurance" jdbcType="TINYINT" property="hasInsurance" />
+    <result column="sale_model" jdbcType="INTEGER" property="saleModel" />
+    <result column="payment_period" jdbcType="INTEGER" property="paymentPeriod" />
+    <result column="occupy_debt" jdbcType="DECIMAL" property="occupyDebt" />
+    <result column="allocation" jdbcType="DECIMAL" property="allocation" />
+    <result column="allocation_income" jdbcType="DECIMAL" property="allocationIncome" />
+    <result column="platform_operating_fee" jdbcType="DECIMAL" property="platformOperatingFee" />
+    <result column="basic_profit_sharing" jdbcType="DECIMAL" property="basicProfitSharing" />
+    <result column="excess_profit_sharing" jdbcType="DECIMAL" property="excessProfitSharing" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+    <result column="company_code" jdbcType="VARCHAR" property="companyCode" />
+    <result column="company_type" jdbcType="INTEGER" property="companyType" />
+    <result column="pay_id" jdbcType="INTEGER" property="payId" />
+    <result column="pay_name" jdbcType="VARCHAR" property="payName" />
+    <result column="last_allocation" jdbcType="DECIMAL" property="lastAllocation" />
+    <result column="last_occupy_debt" jdbcType="DECIMAL" property="lastOccupyDebt" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, bo_id, supplier_code, child_company_id, master_order_sn, has_insurance, sale_model,
+    payment_period, occupy_debt, allocation, allocation_income, platform_operating_fee,
+    basic_profit_sharing, excess_profit_sharing, status, create_user, create_time, update_user,
+    update_time, company_name, company_code, company_type, pay_id, pay_name, last_allocation, last_occupy_debt
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bo_supplier_order
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from bo_supplier_order
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.work.shop.oms.bean.BoSupplierOrder">
+    insert into bo_supplier_order (id, bo_id, supplier_code,
+      child_company_id, master_order_sn, has_insurance,
+      sale_model, payment_period, occupy_debt,
+      allocation, allocation_income, platform_operating_fee,
+      basic_profit_sharing, excess_profit_sharing,
+      status, create_user, create_time,
+      update_user, update_time, company_name,
+      company_code, company_type, pay_id, pay_name,
+      last_allocation, last_occupy_debt)
+    values (#{id,jdbcType=INTEGER}, #{boId,jdbcType=VARCHAR}, #{supplierCode,jdbcType=VARCHAR},
+      #{childCompanyId,jdbcType=INTEGER}, #{masterOrderSn,jdbcType=VARCHAR}, #{hasInsurance,jdbcType=TINYINT},
+      #{saleModel,jdbcType=INTEGER}, #{paymentPeriod,jdbcType=INTEGER}, #{occupyDebt,jdbcType=DECIMAL},
+      #{allocation,jdbcType=DECIMAL}, #{allocationIncome,jdbcType=DECIMAL}, #{platformOperatingFee,jdbcType=DECIMAL},
+      #{basicProfitSharing,jdbcType=DECIMAL}, #{excessProfitSharing,jdbcType=DECIMAL},
+      #{status,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+      #{updateUser,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}, #{companyName,jdbcType=VARCHAR},
+      #{companyCode,jdbcType=VARCHAR},#{companyType,jdbcType=INTEGER}, #{payId,jdbcType=INTEGER}, #{payName,jdbcType=VARCHAR},
+      #{lastAllocation,jdbcType=DECIMAL}, #{lastOccupyDebt,jdbcType=DECIMAL})
+  </insert>
+  <insert id="insertSelective" parameterType="com.work.shop.oms.bean.BoSupplierOrder">
+    insert into bo_supplier_order
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="boId != null">
+        bo_id,
+      </if>
+      <if test="supplierCode != null">
+        supplier_code,
+      </if>
+      <if test="childCompanyId != null">
+        child_company_id,
+      </if>
+      <if test="masterOrderSn != null">
+        master_order_sn,
+      </if>
+      <if test="hasInsurance != null">
+        has_insurance,
+      </if>
+      <if test="saleModel != null">
+        sale_model,
+      </if>
+      <if test="paymentPeriod != null">
+        payment_period,
+      </if>
+      <if test="occupyDebt != null">
+        occupy_debt,
+      </if>
+      <if test="allocation != null">
+        allocation,
+      </if>
+      <if test="allocationIncome != null">
+        allocation_income,
+      </if>
+      <if test="platformOperatingFee != null">
+        platform_operating_fee,
+      </if>
+      <if test="basicProfitSharing != null">
+        basic_profit_sharing,
+      </if>
+      <if test="excessProfitSharing != null">
+        excess_profit_sharing,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="createUser != null">
+        create_user,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateUser != null">
+        update_user,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="companyName != null">
+        company_name,
+      </if>
+      <if test="companyCode != null">
+        company_code,
+      </if>
+      <if test="companyType != null">
+        company_type,
+      </if>
+      <if test="payId != null">
+        pay_id,
+      </if>
+      <if test="payName != null">
+        pay_name,
+      </if>
+      <if test="lastAllocation != null">
+        last_allocation,
+      </if>
+      <if test="lastOccupyDebt != null">
+        last_occupy_debt,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="boId != null">
+        #{boId,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierCode != null">
+        #{supplierCode,jdbcType=VARCHAR},
+      </if>
+      <if test="childCompanyId != null">
+        #{childCompanyId,jdbcType=INTEGER},
+      </if>
+      <if test="masterOrderSn != null">
+        #{masterOrderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="hasInsurance != null">
+        #{hasInsurance,jdbcType=TINYINT},
+      </if>
+      <if test="saleModel != null">
+        #{saleModel,jdbcType=INTEGER},
+      </if>
+      <if test="paymentPeriod != null">
+        #{paymentPeriod,jdbcType=INTEGER},
+      </if>
+      <if test="occupyDebt != null">
+        #{occupyDebt,jdbcType=DECIMAL},
+      </if>
+      <if test="allocation != null">
+        #{allocation,jdbcType=DECIMAL},
+      </if>
+      <if test="allocationIncome != null">
+        #{allocationIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="platformOperatingFee != null">
+        #{platformOperatingFee,jdbcType=DECIMAL},
+      </if>
+      <if test="basicProfitSharing != null">
+        #{basicProfitSharing,jdbcType=DECIMAL},
+      </if>
+      <if test="excessProfitSharing != null">
+        #{excessProfitSharing,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="createUser != null">
+        #{createUser,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUser != null">
+        #{updateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="companyName != null">
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyCode != null">
+        #{companyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="companyType != null">
+        #{companyType,jdbcType=INTEGER},
+      </if>
+      <if test="payId != null">
+        #{payId,jdbcType=INTEGER},
+      </if>
+      <if test="payName != null">
+        #{payName,jdbcType=VARCHAR},
+      </if>
+      <if test="lastAllocation != null">
+        #{lastAllocation,jdbcType=DECIMAL},
+      </if>
+      <if test="lastOccupyDebt != null">
+        #{lastOccupyDebt,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.work.shop.oms.bean.BoSupplierOrder">
+    update bo_supplier_order
+    <set>
+      <if test="boId != null">
+        bo_id = #{boId,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierCode != null">
+        supplier_code = #{supplierCode,jdbcType=VARCHAR},
+      </if>
+      <if test="childCompanyId != null">
+        child_company_id = #{childCompanyId,jdbcType=INTEGER},
+      </if>
+      <if test="masterOrderSn != null">
+        master_order_sn = #{masterOrderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="hasInsurance != null">
+        has_insurance = #{hasInsurance,jdbcType=TINYINT},
+      </if>
+      <if test="saleModel != null">
+        sale_model = #{saleModel,jdbcType=INTEGER},
+      </if>
+      <if test="paymentPeriod != null">
+        payment_period = #{paymentPeriod,jdbcType=INTEGER},
+      </if>
+      <if test="occupyDebt != null">
+        occupy_debt = #{occupyDebt,jdbcType=DECIMAL},
+      </if>
+      <if test="allocation != null">
+        allocation = #{allocation,jdbcType=DECIMAL},
+      </if>
+      <if test="allocationIncome != null">
+        allocation_income = #{allocationIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="platformOperatingFee != null">
+        platform_operating_fee = #{platformOperatingFee,jdbcType=DECIMAL},
+      </if>
+      <if test="basicProfitSharing != null">
+        basic_profit_sharing = #{basicProfitSharing,jdbcType=DECIMAL},
+      </if>
+      <if test="excessProfitSharing != null">
+        excess_profit_sharing = #{excessProfitSharing,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="createUser != null">
+        create_user = #{createUser,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUser != null">
+        update_user = #{updateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="companyName != null">
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyCode != null">
+        company_code = #{companyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="companyType != null">
+        company_type = #{companyType,jdbcType=INTEGER},
+      </if>
+      <if test="payId != null">
+        pay_id = #{payId,jdbcType=INTEGER},
+      </if>
+      <if test="payName != null">
+        pay_name = #{payName,jdbcType=VARCHAR},
+      </if>
+      <if test="lastAllocation != null">
+        last_allocation = #{lastAllocation,jdbcType=DECIMAL},
+      </if>
+      <if test="lastOccupyDebt != null">
+        last_occupy_debt = #{lastOccupyDebt,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.work.shop.oms.bean.BoSupplierOrder">
+    update bo_supplier_order
+    set bo_id = #{boId,jdbcType=VARCHAR},
+      supplier_code = #{supplierCode,jdbcType=VARCHAR},
+      child_company_id = #{childCompanyId,jdbcType=INTEGER},
+      master_order_sn = #{masterOrderSn,jdbcType=VARCHAR},
+      has_insurance = #{hasInsurance,jdbcType=TINYINT},
+      sale_model = #{saleModel,jdbcType=INTEGER},
+      payment_period = #{paymentPeriod,jdbcType=INTEGER},
+      occupy_debt = #{occupyDebt,jdbcType=DECIMAL},
+      allocation = #{allocation,jdbcType=DECIMAL},
+      allocation_income = #{allocationIncome,jdbcType=DECIMAL},
+      platform_operating_fee = #{platformOperatingFee,jdbcType=DECIMAL},
+      basic_profit_sharing = #{basicProfitSharing,jdbcType=DECIMAL},
+      excess_profit_sharing = #{excessProfitSharing,jdbcType=DECIMAL},
+      status = #{status,jdbcType=INTEGER},
+      create_user = #{createUser,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_user = #{updateUser,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      company_name = #{companyName,jdbcType=VARCHAR},
+      company_code = #{companyCode,jdbcType=VARCHAR},
+      company_type = #{companyType,jdbcType=INTEGER},
+      pay_id = #{payId,jdbcType=INTEGER},
+      pay_name = #{payName,jdbcType=VARCHAR},
+      last_allocation = #{lastAllocation,jdbcType=DECIMAL},
+      last_occupy_debt = #{lastOccupyDebt,jdbcType=DECIMAL}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

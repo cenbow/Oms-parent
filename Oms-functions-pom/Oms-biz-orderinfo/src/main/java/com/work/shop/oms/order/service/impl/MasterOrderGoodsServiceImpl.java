@@ -314,6 +314,9 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         //商品数据来源
 		masterOrderGoods.setDataSources(masterGoods.getDataSources());
 
+        //商品销售类型  0：正常商品；1：非标定制商品；2：改价商品；3：盈合商品
+		masterOrderGoods.setSaleType(masterGoods.getSaleType());
+
 		//品牌ID
 		masterOrderGoods.setBrandId(masterGoods.getBrandId());
 		//品牌名称
