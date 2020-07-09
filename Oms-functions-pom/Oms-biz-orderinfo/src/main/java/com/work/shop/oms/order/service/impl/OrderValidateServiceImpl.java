@@ -318,7 +318,11 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			//查询商业合伙人供应商合同  如果只有一个默认写入对应子公司id
 			List<BoSupplierCooperation> boSupplierCooperation = boSupplierCooperationMapper.selectByBoId(masterOrderInfoExtend.getBoId());
 			if(boSupplierCooperation != null && boSupplierCooperation.size()==1){
-				boSupplierOrder.setChildCompanyId(boSupplierCooperation.get(0).getChildCompanyId());
+				Byte cooperationStatus = boSupplierCooperation.get(0).getCooperationStatus();
+				//子公司与供应商合作状态有效
+				if (1 == (int) cooperationStatus){
+					boSupplierOrder.setChildCompanyId(boSupplierCooperation.get(0).getChildCompanyId());
+				}
 				boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
 			}else if(boSupplierCooperation != null && boSupplierCooperation.size() > 0){
 				boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
