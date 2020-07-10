@@ -39,6 +39,11 @@ public class MasterGoods implements Serializable {
 	private Double transactionPrice;
 
 	/**
+	 * 未税成交价格
+	 */
+	private BigDecimal transactionPriceNoTax;
+
+	/**
 	 * 商品数量
 	 */
 	private Integer goodsNumber;
@@ -72,6 +77,11 @@ public class MasterGoods implements Serializable {
 	 * 商品销售价
 	 */
 	private Double goodsPrice;
+
+	/**
+	 * 商品销售价未税
+	 */
+	private BigDecimal goodsPriceNoTax;
 
 	/**
 	 * 促销信息
@@ -851,5 +861,21 @@ public class MasterGoods implements Serializable {
 
 	public void setBrandName(String brandName) {
 		this.brandName = brandName;
+	}
+
+	public BigDecimal getTransactionPriceNoTax() {
+		return transactionPriceNoTax;
+	}
+
+	public void setTransactionPriceNoTax(BigDecimal transactionPriceNoTax) {
+		this.transactionPriceNoTax = transactionPriceNoTax;
+	}
+
+	public BigDecimal getGoodsPriceNoTax() {
+		return goodsPriceNoTax;
+	}
+
+	public void setGoodsPriceNoTax(BigDecimal goodsPriceNoTax) {
+		this.goodsPriceNoTax = goodsPriceNoTax;
 	}
 }
