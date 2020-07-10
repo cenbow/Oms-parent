@@ -592,7 +592,7 @@
     <select id="getOrderGoodsDetailByOrder" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
         SELECT
             t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code,
-            t.extension_id, t.goods_number AS goods_number,t.goods_decimal_number AS goodsDecimalNumber, t.goods_price, t.market_price, t.transaction_price, t.settlement_price, t.discount AS discount,
+            t.extension_id, t.goods_number AS goods_number,t.goods_decimal_number AS goodsDecimalNumber, t.goods_price,t.goods_price_no_tax, t.market_price, t.transaction_price,t.transaction_price_no_tax, t.settlement_price, t.discount AS discount,
             t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb,
             t.send_number AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points,
             t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId,
