@@ -176,7 +176,11 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	private BigDecimal goodsPrice;
 
+	private BigDecimal goodsPriceNoTax;
+
 	private BigDecimal transactionPrice;
+
+	private BigDecimal transactionPriceNoTax;
 
 	private BigDecimal settlementPrice;
 
@@ -1262,5 +1266,21 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setDataSources(Integer dataSources) {
 		this.dataSources = dataSources;
+	}
+
+	public BigDecimal getGoodsPriceNoTax() {
+		return goodsPriceNoTax;
+	}
+
+	public void setGoodsPriceNoTax(BigDecimal goodsPriceNoTax) {
+		this.goodsPriceNoTax = goodsPriceNoTax;
+	}
+
+	public BigDecimal getTransactionPriceNoTax() {
+		return transactionPriceNoTax;
+	}
+
+	public void setTransactionPriceNoTax(BigDecimal transactionPriceNoTax) {
+		this.transactionPriceNoTax = transactionPriceNoTax;
 	}
 }

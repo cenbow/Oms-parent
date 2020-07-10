@@ -183,6 +183,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         setGoodsDiscount(masterGoods, goodsPrice, masterOrderGoods);
         // 商品价格
         masterOrderGoods.setGoodsPrice(BigDecimal.valueOf(masterGoods.getGoodsPrice()));
+        // 商品价格 - 未税
+        masterOrderGoods.setGoodsPriceNoTax(masterGoods.getGoodsPriceNoTax());
         // 商品市场价
         masterOrderGoods.setMarketPrice(BigDecimal.valueOf(goodsPrice));
         // 商品11位码
@@ -212,6 +214,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         masterOrderGoods.setParentSn("");
         // 成交价格
         masterOrderGoods.setTransactionPrice(BigDecimal.valueOf(masterGoods.getTransactionPrice()));
+        // 成交价格 - 未税
+        masterOrderGoods.setTransactionPriceNoTax(masterGoods.getTransactionPriceNoTax());
         //库存占用数量 向上取整
 		BigDecimal sendNumberDecimal = masterGoods.getGoodsDecimals().add(BigDecimal.valueOf(masterGoods.getSendNumber()));
 		int sendNumber = sendNumberDecimal.setScale( 0, BigDecimal.ROUND_UP ).intValue();
