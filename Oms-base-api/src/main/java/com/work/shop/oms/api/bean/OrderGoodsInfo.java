@@ -1,6 +1,7 @@
 package com.work.shop.oms.api.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -59,9 +60,13 @@ public class OrderGoodsInfo implements Serializable{
 	private double	discountedPrice;
 	
 	private double	goodsPrice;
-	
+
+	private double	goodsPriceNoTax;
+
 	private double transactionPrice;
-	
+
+	private double transactionPriceNoTax;
+
 	private double settlementPrice;
 
 	/**
@@ -124,6 +129,16 @@ public class OrderGoodsInfo implements Serializable{
 	 * 综合税率
 	 */
 	private Double taxRate;
+
+	/**
+	 * 进项税
+	 */
+	private BigDecimal inputTax;
+
+	/**
+	 * 销项税
+	 */
+	private BigDecimal outputTax;
 
 	/**
 	 * 基础BV值
@@ -632,5 +647,37 @@ public class OrderGoodsInfo implements Serializable{
 
 	public void setBrandName(String brandName) {
 		this.brandName = brandName;
+	}
+
+	public double getGoodsPriceNoTax() {
+		return goodsPriceNoTax;
+	}
+
+	public void setGoodsPriceNoTax(double goodsPriceNoTax) {
+		this.goodsPriceNoTax = goodsPriceNoTax;
+	}
+
+	public double getTransactionPriceNoTax() {
+		return transactionPriceNoTax;
+	}
+
+	public void setTransactionPriceNoTax(double transactionPriceNoTax) {
+		this.transactionPriceNoTax = transactionPriceNoTax;
+	}
+
+	public BigDecimal getInputTax() {
+		return inputTax;
+	}
+
+	public void setInputTax(BigDecimal inputTax) {
+		this.inputTax = inputTax;
+	}
+
+	public BigDecimal getOutputTax() {
+		return outputTax;
+	}
+
+	public void setOutputTax(BigDecimal outputTax) {
+		this.outputTax = outputTax;
 	}
 }

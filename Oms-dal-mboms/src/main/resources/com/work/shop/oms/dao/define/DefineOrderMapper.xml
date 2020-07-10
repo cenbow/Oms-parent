@@ -396,7 +396,9 @@
         select
         og.order_sn subOrderSn,
         og.goods_price goodsPrice,
+        og.goods_price_no_tax goodsPriceNoTax,
         og.transaction_price transactionPrice,
+        og.transaction_price_no_tax transactionPriceNoTax,
         og.settlement_price settlementPrice,
         og.goods_sn goodsSn,
         og.custom_code skuSn,
@@ -417,6 +419,8 @@
         og.expected_ship_date expectedShipDate,
         og.tax,
         og.tax_rate taxRate,
+        og.input_tax inputTax,
+        og.output_tax outputTax,
         og.base_bv_value baseBvValue,
         og.min_buy_num minBuyNum,
         og.buy_unit buyUnit,
