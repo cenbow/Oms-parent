@@ -1603,7 +1603,11 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setCustomCode(orderReturnGoods.getCustomCode());
 		returnGoodsVO.setMarketPrice(orderReturnGoods.getMarketPrice().doubleValue());
 		returnGoodsVO.setGoodsPrice(orderReturnGoods.getSalePrice().doubleValue());
+		returnGoodsVO.setGoodsPriceNoTax(orderReturnGoods.getGoodsPriceNoTax().doubleValue());
         returnGoodsVO.setTransactionPrice(orderReturnGoods.getGoodsPrice().doubleValue());
+        returnGoodsVO.setTransactionPriceNoTax(orderReturnGoods.getTransactionPriceNoTax().doubleValue());
+        returnGoodsVO.setInputTax(orderReturnGoods.getInputTax());
+        returnGoodsVO.setOutputTax(orderReturnGoods.getOutputTax());
 		returnGoodsVO.setSettlementPrice(orderReturnGoods.getSettlementPrice().doubleValue());
 		returnGoodsVO.setShareBonus(orderReturnGoods.getShareBonus().doubleValue());
 		returnGoodsVO.setGoodsBuyNumber(orderReturnGoods.getGoodsBuyNumber().intValue());
