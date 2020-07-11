@@ -295,10 +295,10 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
             //获取订单商品信息
             List<UpdateGoodsItem> updateGoodsItems = applyItem.getUpdateGoodsItems();
             List<String> skuList = new ArrayList<>();
-            Map<String, BigDecimal> priceMap = new HashMap<String, BigDecimal>(updateGoodsItems.size());
+            Map<String, UpdateGoodsItem> priceMap = new HashMap<String, UpdateGoodsItem>(updateGoodsItems.size());
             for (UpdateGoodsItem item : updateGoodsItems) {
                 skuList.add(item.getSku());
-                priceMap.put(item.getSku(), item.getGoodsPrice());
+                priceMap.put(item.getSku(), item);
             }
             MasterOrderGoodsExample example = new MasterOrderGoodsExample();
             example.or().andMasterOrderSnEqualTo(masterOrderSn).andCustomCodeIn(skuList).andExtensionCodeEqualTo("common");
@@ -323,13 +323,16 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 BigDecimal goodsPrice = masterOrderGoods.getGoodsPrice();
                 //商品成交价
                 BigDecimal transactionPrice = masterOrderGoods.getTransactionPrice();
+                BigDecimal transactionPriceNoTax = masterOrderGoods.getTransactionPriceNoTax();
                 //商品折扣
                 BigDecimal discount = masterOrderGoods.getDiscount();
                 //商品数量
                 Integer goodsNumber = masterOrderGoods.getGoodsNumber();
 
                 //需改成修改价格
-                BigDecimal updatePrice = priceMap.get(customCode);
+                BigDecimal updatePrice = priceMap.get(customCode).getGoodsPrice();
+                //修改的未税成交价
+                BigDecimal updatePriceNoTax = priceMap.get(customCode).getTransactionPriceNoTax();
                 //累加差额
                 totalAmount = totalAmount.add(transactionPrice.subtract(updatePrice).multiply(BigDecimal.valueOf(goodsNumber)));
 
@@ -341,6 +344,7 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 //更新商品价格信息
                 updateGoods = new MasterOrderGoods();
                 updateGoods.setTransactionPrice(updatePrice);
+                updateGoods.setTransactionPriceNoTax(updatePriceNoTax);
                 updateGoods.setSettlementPrice(updatePrice);
                 updateGoods.setDiscount(updateDiscount);
                 updateGoods.setId(masterOrderGoods.getId());
@@ -350,7 +354,8 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 }
 
                 //添加日志
-                note += customCode + "商品成交价由" + transactionPrice + "改为" + updatePrice + messageBefore + ";";
+                note += customCode + "商品成交价含税由" + transactionPrice + "改为" + updatePrice + messageBefore + ";<br>";
+                note += customCode + "商品成交价未税由" + transactionPriceNoTax + "改为" + updatePriceNoTax + messageBefore + ";<br>";
             }
 
             //更新支付单应付金额
