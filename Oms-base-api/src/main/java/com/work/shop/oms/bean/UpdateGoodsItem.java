@@ -19,6 +19,8 @@ public class UpdateGoodsItem implements Serializable {
      */
     private BigDecimal goodsPrice;
 
+    private BigDecimal transactionPriceNoTax;
+
     public String getSku() {
         return sku;
     }
@@ -33,5 +35,13 @@ public class UpdateGoodsItem implements Serializable {
 
     public void setGoodsPrice(BigDecimal goodsPrice) {
         this.goodsPrice = goodsPrice;
+    }
+
+    public BigDecimal getTransactionPriceNoTax() {
+        return transactionPriceNoTax;
+    }
+
+    public void setTransactionPriceNoTax(BigDecimal transactionPriceNoTax) {
+        this.transactionPriceNoTax = transactionPriceNoTax;
     }
 }
