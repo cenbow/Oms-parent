@@ -9,6 +9,8 @@ import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.MasterOrderInfoExtend;
 import com.work.shop.oms.bean.MasterOrderPay;
 import com.work.shop.oms.bean.MasterOrderPayExample;
+import com.work.shop.oms.bean.MasterOrderQuestion;
+import com.work.shop.oms.bean.MasterOrderQuestionExample;
 import com.work.shop.oms.bean.OrderDistribute;
 import com.work.shop.oms.bean.OrderDistributeExample;
 import com.work.shop.oms.bean.OrderReturn;
@@ -1241,7 +1243,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	 * @param orderStatus
 	 */
 	@Override
-	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus) {
+	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus,List<MasterOrderQuestion> orderQuestionList) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		if (StringUtil.isTrimEmpty(masterOrderSn)) {
 			logger.error("[masterOrderSn]不能都为空！");
@@ -1254,10 +1256,57 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			return info;
 		}
 		logger.info("订单改价确认：masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
+
+		//2020-07-14 发版逻辑
 		MasterOrderInfo master = null;
+
+		//可改价的问题单
+		boolean priceEideFlag = false;
+		if (StringUtil.isNotEmpty(masterOrderSn)) {
+			master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+			if(orderQuestionList != null && orderQuestionList.size() >0){
+				for(MasterOrderQuestion orderQuestion:orderQuestionList){
+					if(Constant.EDIT_PRICE_QUESTION_NO.indexOf(orderQuestion.getQuestionCode()+"_") != -1){
+						priceEideFlag = true;
+					}
+				};
+			}
+		}
+
+		//检查订单改价情况
+		if( master != null && priceEideFlag && master.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2){
+			//未确认
+			//各单据价格验证
+
+			// 订单支付状态检查
+			if (!OrderAttributeUtil.isUpdateModifyFlag((int)master.getTransType(), (int)master.getPayStatus())) {
+				//未付款订单设置付款单最后支付期限
+				masterOrderPayService.updateBymasterOrderSnLastTime(master.getMasterOrderSn());
+			}
+
+			//设置平台确认
+			MasterOrderInfo updateMaster = new MasterOrderInfo();
+			// 确认
+			updateMaster.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_2);
+			updateMaster.setMasterOrderSn(masterOrderSn);
+			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+			// 主订单操作日志表
+			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
+			orderAction.setActionUser(orderStatus.getAdminUser());
+			orderAction.setActionNote("价格变动确认！ "+orderStatus.getMessage() != null ? orderStatus.getMessage():"");
+			masterOrderActionService.insertOrderActionByObj(orderAction);
+			//订单确认
+			confirmOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "自动确认", null));
+		}else{
+			logger.info("订单:" + masterOrderSn + " 不符合改价确认条件 ! ");
+		}
+
+		//2020-07-14 发版之前的逻辑  由于之前只有特殊商品会进行改价   在改变逻辑之后 正常商品的盈合问题单也是可以改价的
+		/*MasterOrderInfo master = null;
 		if (StringUtil.isNotEmpty(masterOrderSn)) {
 			master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
 		}
+
 		//检查订单改价情况
 		if(master.getGoodsSaleType() != null && master.getPriceChangeStatus() != null
 				&& master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD && master.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2){
@@ -1285,7 +1334,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			confirmOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "自动确认", null));
 		}else{
 			logger.info("订单:" + masterOrderSn + " 不符合改价确认条件 ! ");
-		}
+		}*/
 		info.setIsOk(Constant.OS_YES);
 		info.setMessage("[" + masterOrderSn + "]订单改价确认成功");
 		return info;
