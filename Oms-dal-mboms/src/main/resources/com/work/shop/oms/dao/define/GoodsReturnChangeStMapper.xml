@@ -57,7 +57,11 @@
         mog.supplier_name supplierName,
         mog.supplier_code supplierCode,
         mog.cost_price costPrice,
-        mog.order_sn orderSn
+        mog.order_sn orderSn,
+        mog.goods_price_no_tax goodsPriceNoTax,
+        mog.transaction_price_no_tax transactionPriceNoTax,
+        mog.input_tax inputTax,
+        mog.output_tax outputTax
         from goods_return_change_detail grcd
         left join master_order_goods mog
         on grcd.order_sn = mog.master_order_sn and grcd.custom_code = mog.custom_code and grcd.extension_code = mog.extension_code
