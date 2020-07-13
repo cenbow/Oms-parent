@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import com.work.shop.oms.bean.*;
+import com.work.shop.oms.order.service.MasterOrderPayService;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,9 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 
 	@Resource
 	MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+    @Resource
+    private MasterOrderPayService masterOrderPayService;
 
 	@Resource
 	OrderActionService orderActionService;
@@ -322,11 +326,54 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 					distributes = checkInfo.getData();
 				}
 			}
+            setMasterOrderReturnInfo(master, orderStatus);
 			info = cancelOrder(master, null, distributes, orderStatus, Constant.order_type_master);
 		} finally {
 			clearRedis(redisKey);
 		}
 		return info;
+	}
+
+    /**
+     * 设置订单取消是否创建退单
+     * @param master
+     * @param orderStatus
+     */
+	private void setMasterOrderReturnInfo(MasterOrderInfo master, OrderStatus orderStatus) {
+		// 订单来源
+		String orderFrom = master.getOrderFrom();
+		if (!Constant.DEFAULT_SHOP.equals(orderFrom)) {
+			return;
+		}
+		// 订单是否付款
+        int payStatus = master.getPayStatus().intValue();
+		if (payStatus == Constant.OI_PAY_STATUS_UNPAYED) {
+		    return;
+        }
+		String masterOrderSn = master.getMasterOrderSn();
+		// 获取订单支付信息
+        List<MasterOrderPay> masterOrderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
+        if (masterOrderPayList == null || masterOrderPayList.size() == 0) {
+            return;
+        }
+        MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
+        int payId = masterOrderPay.getPayId().intValue();
+        if (payId != Constant.PAYMENT_ZHANGQI_ID && payId != Constant.PAYMENT_YINCHENG) {
+            return;
+        }
+		// 公司类型
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+		if (masterOrderInfoExtend == null) {
+			return;
+		}
+		// 公司类型 1内部公司、2外部公司
+		Integer companyType = masterOrderInfoExtend.getCompanyType();
+		if (companyType != null && companyType == 1) {
+			// 不创建退单
+			orderStatus.setType("2");
+			// 不创建退单
+			orderStatus.setReturnType(7);
+		}
 	}
 
 	/**
