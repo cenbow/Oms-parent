@@ -206,7 +206,7 @@
     <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
     <result column="base_bv_value" jdbcType="INTEGER" property="baseBvValue" />
   </resultMap>
-  <select id="getXOMSMasterOrderGoods" parameterType="String" resultMap="MasterOrderGoodsBaseResultMap">
+  <select id="getXOMSMasterOrderGoods" parameterType="string" resultMap="MasterOrderGoodsBaseResultMap">
 	SELECT
 		id,
 		depot_code,
@@ -328,7 +328,7 @@
     <result column="promotion_id" jdbcType="VARCHAR" property="promotionId" />
   </resultMap>
   
-  <select id="getXOMSOrderReturnGoods" parameterType="String" resultMap="OrderReturnGoodsBaseResultMap">
+  <select id="getXOMSOrderReturnGoods" parameterType="string" resultMap="OrderReturnGoodsBaseResultMap">
 	<!-- SELECT
 		id,
 		relating_return_sn,
@@ -604,9 +604,10 @@
             t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value,
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.invoice_no invoiceNo,
-            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number
+            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number,i.order_from sellerCode,t.input_tax,t.output_tax
         FROM
             master_order_goods t
+        left join master_order_info i on t.master_order_sn = i.master_order_sn
         where
             t.is_del = 0
             and t.order_sn in
