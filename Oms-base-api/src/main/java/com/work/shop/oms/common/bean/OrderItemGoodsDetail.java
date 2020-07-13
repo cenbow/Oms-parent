@@ -19,6 +19,8 @@ public class OrderItemGoodsDetail implements Serializable {
 	 */
 	private String goodsSn;
 
+
+	private String sellerCode;
 	/**
 	 * 条形码
 	 */
@@ -652,7 +654,15 @@ public class OrderItemGoodsDetail implements Serializable {
 		return isDel;
 	}
 
-	public void setIsDel(Integer isDel) {
+    public String getSellerCode() {
+        return sellerCode;
+    }
+
+    public void setSellerCode(String sellerCode) {
+        this.sellerCode = sellerCode;
+    }
+
+    public void setIsDel(Integer isDel) {
 		this.isDel = isDel;
 	}
 
@@ -905,21 +915,41 @@ public class OrderItemGoodsDetail implements Serializable {
 	}
 
 	public BigDecimal getSubTotal() {
-		if (null == subTotal || subTotal.doubleValue() == 0) {
-			if (null == transactionPrice) {
-				transactionPrice = new BigDecimal(0.00);
-			}
-			if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO)==0)){
-				subTotal = new BigDecimal(0.00);
-			} else {
-				BigDecimal number = new BigDecimal(goodsNumber);
-				if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO)!=0){
-					number = number.add(goodsDecimalNumber);
-				}
-				subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
-				//subTotal = transactionPrice.doubleValue() * goodsNumber;
-			}
-		}
+        if (null == subTotal || subTotal.doubleValue() == 0) {
+            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode)) {
+                if (null == transactionPriceNoTax) {
+                    transactionPriceNoTax = BigDecimal.ZERO;
+                }
+                if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO) == 0)) {
+                    subTotal = BigDecimal.ZERO;
+                } else {
+                    BigDecimal number = new BigDecimal(goodsNumber);
+                    if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO) != 0) {
+                        number = number.add(goodsDecimalNumber);
+                    }
+                    BigDecimal noTax = transactionPriceNoTax.multiply(number).setScale(6, BigDecimal.ROUND_HALF_UP);
+                    if (null == outputTax) {
+                        outputTax = BigDecimal.ZERO;
+                    }
+                    BigDecimal tax = transactionPriceNoTax.multiply(outputTax).multiply(number).divide(new BigDecimal("100")).setScale(6, BigDecimal.ROUND_HALF_UP);
+                    subTotal = noTax.add(tax).setScale(2,BigDecimal.ROUND_HALF_UP);
+                }
+            } else {
+                if (null == transactionPrice) {
+                    transactionPrice = new BigDecimal(0.00);
+                }
+                if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO) == 0)) {
+                    subTotal = new BigDecimal(0.00);
+                } else {
+                    BigDecimal number = new BigDecimal(goodsNumber);
+                    if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO) != 0) {
+                        number = number.add(goodsDecimalNumber);
+                    }
+                    subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    //subTotal = transactionPrice.doubleValue() * goodsNumber;
+                }
+            }
+        }
 		return subTotal;
 	}
 
