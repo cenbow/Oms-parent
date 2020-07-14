@@ -931,7 +931,7 @@ public class OrderItemGoodsDetail implements Serializable {
                     if (null == outputTax) {
                         outputTax = BigDecimal.ZERO;
                     }
-                    BigDecimal tax = transactionPriceNoTax.multiply(outputTax).multiply(number).divide(new BigDecimal("100")).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal tax = noTax.multiply(outputTax).divide(new BigDecimal("100")).setScale(2, BigDecimal.ROUND_HALF_UP);
                     subTotal = noTax.add(tax).setScale(2,BigDecimal.ROUND_HALF_UP);
                 }
             } else {
