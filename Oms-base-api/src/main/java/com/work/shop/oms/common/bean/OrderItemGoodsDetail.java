@@ -927,11 +927,11 @@ public class OrderItemGoodsDetail implements Serializable {
                     if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO) != 0) {
                         number = number.add(goodsDecimalNumber);
                     }
-                    BigDecimal noTax = transactionPriceNoTax.multiply(number).setScale(6, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal noTax = transactionPriceNoTax.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
                     if (null == outputTax) {
                         outputTax = BigDecimal.ZERO;
                     }
-                    BigDecimal tax = transactionPriceNoTax.multiply(outputTax).multiply(number).divide(new BigDecimal("100")).setScale(6, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal tax = transactionPriceNoTax.multiply(outputTax).multiply(number).divide(new BigDecimal("100")).setScale(2, BigDecimal.ROUND_HALF_UP);
                     subTotal = noTax.add(tax).setScale(2,BigDecimal.ROUND_HALF_UP);
                 }
             } else {
