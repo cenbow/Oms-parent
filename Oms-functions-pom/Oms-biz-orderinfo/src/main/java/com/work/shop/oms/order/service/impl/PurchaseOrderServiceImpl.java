@@ -284,9 +284,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 // 进项税
                 BigDecimal inputTax = line.getInputTax();
                 if (inputTax != null && inputTax.doubleValue() > 0) {
+                	//原订单总价： 成本价*数量*((税率+100)/100) 保留两位小数
+					//改： 成本价*（（税率+100）/100）（保留两位小数）*数量
+					//税率：
                     BigDecimal rate = MathOperation.div(inputTax.add(BigDecimal.valueOf(100)), BigDecimal.valueOf(100), 2);
-                    BigDecimal totalFee = MathOperation.mul(goodsTotalPrice, rate, 2);
-                    totalPrice = totalPrice.add(totalFee);
+                    //商品结算价：
+					BigDecimal settlementGoodsPrice = MathOperation.mul(price, rate, 2);
+					//该商品的订单总价
+					BigDecimal totalFee = MathOperation.mul(settlementGoodsPrice, new BigDecimal(goodsNumber), 2);
+					totalPrice = totalPrice.add(totalFee);
                 } else {
                     totalPrice = totalPrice.add(goodsTotalPrice);
                 }
