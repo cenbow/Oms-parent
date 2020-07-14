@@ -3200,7 +3200,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         DistributeShipServiceImpl distributeShipService = new DistributeShipServiceImpl();
         MasterOrderPay masterOrderPay = new MasterOrderPay();
         masterOrderPay.setMasterOrderSn("2006131512026035");
-        masterOrderPay.setPayTotalfee(BigDecimal.valueOf(533.36));
+        masterOrderPay.setPayTotalfee(BigDecimal.valueOf(1533.36));
 
         List<OrderDepotShip> list = new ArrayList<>();
         OrderDepotShip orderDepotShip = new OrderDepotShip();

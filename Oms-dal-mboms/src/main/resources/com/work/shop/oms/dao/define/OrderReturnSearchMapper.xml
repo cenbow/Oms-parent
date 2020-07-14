@@ -1268,9 +1268,13 @@ GROUP BY
         <result column="have_return_count"  property="haveReturnCount" />
         <result column="market_price"  property="marketPrice" />
         <result column="goods_price"  property="goodsPrice" />
+        <result column="goods_price_no_tax"  property="goodsPriceNoTax" />
         <result column="extension_code"  property="extensionCode" />
         <result column="extension_id"  property="extensionId" />
         <result column="settlement_price"  property="settlementPrice" />
+        <result column="transaction_price_no_tax"  property="transactionPriceNoTax" />
+        <result column="input_tax"  property="inputTax" />
+        <result column="output_tax"  property="outputTax" />
         <result column="share_bonus" property="shareBonus" />
         <result column="share_settle"  property="shareSettle" />
         <result column="os_depot_code"  property="osDepotCode" />
@@ -1317,11 +1321,20 @@ GROUP BY
     org.is_real, org.is_gift, org.rank_points, org.pay_points, org.seller, org.is_good_received, org.checkin_status,
     org.quality_status, org.integral_money, org.barcode, org.remark, org.prodScanNum, org.master_order_sn, org.order_sn,
     org.sales_mode, org.to_erp, org.storage_time_stamp, org.storage_status, org.storage_treate_time, org.checkin_time,
-    org.sap, org.bv_value, org.discount, org.base_bv_value, org.box_gauge, org.cost_price, mog.goods_price salePrice
+    org.sap, org.bv_value, org.discount, org.base_bv_value, org.box_gauge, org.cost_price, mog.goods_price salePrice,
+    mog.goods_price_no_tax,mog.transaction_price_no_tax
   </sql>
     <select id="getReturnGoodsByReturnSn" parameterType="map" resultMap="OrderReturnGoodsResultMap">
         select
-        <include refid="Order_Return_Goods_Column_List" />
+        org.id, org.relating_return_sn, org.custom_code, org.goods_sn, org.goods_name, org.goods_return_number, org.goods_buy_number,
+        org.charge_back_count, org.have_return_count, org.market_price, org.goods_price, org.extension_code, org.extension_id,
+        org.settlement_price, org.share_bonus, org.share_settle, org.os_depot_code, org.price_difference, org.price_differ_num,
+        org.price_differ_reason, org.return_reason, org.goods_thumb, org.goods_color_name, org.goods_size_name, org.group_name,
+        org.is_real, org.is_gift, org.rank_points, org.pay_points, org.seller, org.is_good_received, org.checkin_status,
+        org.quality_status, org.integral_money, org.barcode, org.remark, org.prodScanNum, org.master_order_sn, org.order_sn,
+        org.sales_mode, org.to_erp, org.storage_time_stamp, org.storage_status, org.storage_treate_time, org.checkin_time,
+        org.sap, org.bv_value, org.discount, org.base_bv_value, org.box_gauge, org.cost_price, mog.goods_price salePrice,
+        mog.goods_price_no_tax,mog.transaction_price_no_tax,mog.input_tax,mog.output_tax
         from order_return_goods org
         left join master_order_goods mog on org.master_order_sn = mog.master_order_sn and org.custom_code = mog.custom_code
             and org.extension_code = mog.extension_code

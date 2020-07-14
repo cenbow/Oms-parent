@@ -2,6 +2,7 @@ package com.work.shop.oms.vo;
 
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class ReturnGoodsVO implements Serializable{
 
@@ -19,8 +20,12 @@ public class ReturnGoodsVO implements Serializable{
 	private String goodsSizeName;//尺寸
 	private String customCode;//企业商品编码
 	private Double marketPrice;//商品价格
-	private Double goodsPrice;//销售价
-    private Double transactionPrice;//成交价
+	private Double goodsPrice;//销售价(含税)
+	private Double goodsPriceNoTax;//销售价(未税)
+    private Double transactionPrice;//成交价(含税)
+    private Double transactionPriceNoTax;//成交价(未税)
+    private BigDecimal inputTax;//进项税
+    private BigDecimal outputTax;//销项税
 	private Double settlementPrice;//财务价格;
 	private Double shareBonus;	//分摊金额
 	private Double shareSettle;//财务分摊金额
@@ -82,7 +87,39 @@ public class ReturnGoodsVO implements Serializable{
      */
     private String supplierName;
 
-	public Integer getProdScanNum() {
+    public Double getGoodsPriceNoTax() {
+        return goodsPriceNoTax;
+    }
+
+    public void setGoodsPriceNoTax(Double goodsPriceNoTax) {
+        this.goodsPriceNoTax = goodsPriceNoTax;
+    }
+
+    public Double getTransactionPriceNoTax() {
+        return transactionPriceNoTax;
+    }
+
+    public void setTransactionPriceNoTax(Double transactionPriceNoTax) {
+        this.transactionPriceNoTax = transactionPriceNoTax;
+    }
+
+    public BigDecimal getInputTax() {
+        return inputTax;
+    }
+
+    public void setInputTax(BigDecimal inputTax) {
+        this.inputTax = inputTax;
+    }
+
+    public BigDecimal getOutputTax() {
+        return outputTax;
+    }
+
+    public void setOutputTax(BigDecimal outputTax) {
+        this.outputTax = outputTax;
+    }
+
+    public Integer getProdScanNum() {
 		return prodScanNum;
 	}
 	public void setProdScanNum(Integer prodScanNum) {
