@@ -266,7 +266,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     private void fillOrderPrice(PurchaseOrder record, List<PurchaseOrderLine> lines) {
         int goodsCount = 0;
+        //含税商品总价
         BigDecimal totalPrice = new BigDecimal(0);
+        //未税 的商品总价
         BigDecimal totalUntaxPrice = new BigDecimal(0);
         for (PurchaseOrderLine line : lines) {
             Integer goodsNumber = line.getGoodsNumber();
@@ -275,6 +277,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             }
 
             goodsCount += goodsNumber;
+            //协议价
             BigDecimal price = line.getPrice();
             if (price != null) {
                 // 未税商品总价
@@ -285,13 +288,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 BigDecimal inputTax = line.getInputTax();
                 if (inputTax != null && inputTax.doubleValue() > 0) {
                 	//原订单总价： 成本价*数量*((税率+100)/100) 保留两位小数
-					//改： 成本价*（（税率+100）/100）（保留两位小数）*数量
-					//税率：
-                    BigDecimal rate = MathOperation.div(inputTax.add(BigDecimal.valueOf(100)), BigDecimal.valueOf(100), 2);
-                    //商品结算价：
-					BigDecimal settlementGoodsPrice = MathOperation.mul(price, rate, 2);
+					//改： 未税商品总价+税额   税额 = 未税商品总价*税率（保留两位小数）
+                    //未税商品总价
+					BigDecimal notaxTotal = price.multiply(new BigDecimal(goodsNumber + "")).setScale(2, 4);
+					//总税率
+					BigDecimal taxTotal = notaxTotal.multiply(inputTax.divide(new BigDecimal("100"))).setScale(2, 4);
 					//该商品的订单总价
-					BigDecimal totalFee = MathOperation.mul(settlementGoodsPrice, new BigDecimal(goodsNumber), 2);
+					BigDecimal totalFee = notaxTotal.add(taxTotal);
 					totalPrice = totalPrice.add(totalFee);
                 } else {
                     totalPrice = totalPrice.add(goodsTotalPrice);
