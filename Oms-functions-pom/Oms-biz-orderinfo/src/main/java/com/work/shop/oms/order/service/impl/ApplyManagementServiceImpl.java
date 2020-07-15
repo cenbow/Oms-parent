@@ -338,13 +338,17 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 BigDecimal updatePrice = priceMap.get(customCode).getGoodsPrice();
                 //修改的未税成交价
                 BigDecimal updatePriceNoTax = priceMap.get(customCode).getTransactionPriceNoTax();
+                //计算原来的总价
+                BigDecimal totalPriceOld = fillTotalPayPrice(transactionPriceNoTax,outputTax,goodsNumber);
+                //计算出新的总价
+                BigDecimal totalPriceNew = fillTotalPayPrice(updatePriceNoTax,outputTax,goodsNumber);
                 //累加差额
-                totalAmount = totalAmount.add(transactionPrice.subtract(updatePrice).multiply(BigDecimal.valueOf(goodsNumber)));
+                totalAmount = totalAmount.add(totalPriceOld.subtract(totalPriceNew));
 
                 //计算修改后的折扣
                 BigDecimal updateDiscount = goodsPrice.subtract(updatePrice);
                 //累加差折扣
-                totalDiscount = totalDiscount.add(discount.subtract(updateDiscount).multiply(BigDecimal.valueOf(goodsNumber)));
+                totalDiscount = totalDiscount.add(totalPriceOld.subtract(totalPriceNew));
 
                 //更新商品价格信息
                 updateGoods = new MasterOrderGoods();
@@ -464,7 +468,8 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
         updateOrder.setPayTotalFee(totalPay);
         //updateOrder.setTotalFee(totalFee.subtract(totalAmount));
         updateOrder.setTotalFee(totalPay);
-        updateOrder.setDiscount(discount.subtract(totalDiscount));
+        //折扣 = 原来的折扣 + （现在的新的商品小计 - 原来的商品小计）
+        updateOrder.setDiscount(discount.add(totalDiscount));
         updateOrder.setUpdateTime(new Date());
 		updateOrder.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_1);
         //未支付，更新订单应付款金额；部分付款，若订单应付款金额 >= 差额，只更新订单应付款金额；若若订单应付款金额 < 差额,更新订单应付款金额和已付款金额；
