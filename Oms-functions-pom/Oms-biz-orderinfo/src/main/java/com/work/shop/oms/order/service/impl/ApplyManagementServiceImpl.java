@@ -343,7 +343,7 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 //计算出新的总价
                 BigDecimal totalPriceNew = fillTotalPayPrice(updatePriceNoTax,outputTax,goodsNumber);
                 //累加差额
-                totalAmount = totalAmount.add(transactionPrice.subtract(updatePrice).multiply(BigDecimal.valueOf(goodsNumber)));
+                totalAmount = totalAmount.add(totalPriceOld.subtract(totalPriceNew));
 
                 //计算修改后的折扣
                 BigDecimal updateDiscount = goodsPrice.subtract(updatePrice);
