@@ -2553,16 +2553,22 @@ public class OrderReturnServiceImpl implements OrderReturnService {
                         costPrice = MathOperation.setScale(costPrice, 2);
                         returnGoods.setCostPrice(costPrice);
                         BigDecimal totalCostPrice = MathOperation.mul(costPrice, BigDecimal.valueOf(goodsReturnNumber));
+                        //退款结算未税总金额
                         returnTotalSettlementUntaxPrice = returnTotalSettlementUntaxPrice.add(totalCostPrice);
 
                         BigDecimal totalTaxPrice = totalCostPrice;
                         BigDecimal inputTax = masterOrderGoods.getInputTax();
                         if (inputTax != null && inputTax.doubleValue() > 0) {
-                            inputTax = inputTax.add(BigDecimal.valueOf(100));
-                            BigDecimal taxPrice = costPrice.multiply(inputTax);
-                            totalTaxPrice = MathOperation.mul(taxPrice, BigDecimal.valueOf(goodsReturnNumber));
-                            totalTaxPrice = MathOperation.div(totalTaxPrice, BigDecimal.valueOf(100), 2);
-                        }
+
+							//未税商品总价
+							BigDecimal notaxTotal = costPrice.multiply(BigDecimal.valueOf(goodsReturnNumber)).setScale(2, 4);
+							//总税额 未税商品总价* 税率
+							BigDecimal taxTotal = notaxTotal.multiply(inputTax.divide(BigDecimal.valueOf(100))).setScale(2, 4);
+							//该订单中此商品总价
+							totalTaxPrice = notaxTotal.add(taxTotal);
+
+						}
+                        //退款结算总金额
                         returnTotalSettlementPrice = returnTotalSettlementPrice.add(totalTaxPrice);
                     }
 
