@@ -1655,18 +1655,27 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                         logger.error("下发修改用户和公司积分MQ信息异常:" + e.getMessage());
                     }
                 }
-                //确认收货后将销售结算单数据推送供应链-财智云
-                try {
+            }
+        }
+        //查询当前订单的所有交货单将已收货的交货单生成销售结算单推送供应链-财智云
+
+        //确认收货后将销售结算单数据推送供应链-财智云
+        try {
+            OrderDistributeExample distributeExample = new OrderDistributeExample();
+            distributeExample.or().andMasterOrderSnEqualTo(masterOrderInfo.getMasterOrderSn()).andOrderStatusNotEqualTo((byte) Constant.OI_ORDER_STATUS_CANCLED);
+            List<OrderDistribute> distributes = orderDistributeMapper.selectByExample(distributeExample);
+            for(OrderDistribute orderDistribute:distributes){
+                if(orderDistribute.getShipStatus()==Constant.OI_SHIP_STATUS_ALLRECEIVED){
                     Map map=new HashMap();
                     map.put("masterOrderSn",masterOrderInfo.getMasterOrderSn());
+                    map.put("orderSn",orderDistribute.getOrderSn());
                     map.put("userId",masterOrderInfo.getUserId());
                     logger.info("下发销售结算单MQ信息异常:" + JSON.toJSONString(map));
                     uploadSaleSettlementJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(map)));
-                } catch (Exception e) {
-                    logger.error("下发销售结算单MQ信息异常:" + e.getMessage());
                 }
-
             }
+        } catch (Exception e) {
+            logger.error("下发销售结算单MQ信息异常:" + e.getMessage());
         }
     }
 

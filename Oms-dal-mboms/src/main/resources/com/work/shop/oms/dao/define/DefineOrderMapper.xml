@@ -726,6 +726,7 @@
         oie.last_pay_date lastPayDate,
         oie.company_code companyCode,
         oie.company_name companyName,
+        oie.company_full_name companyFullName,
         oi.expected_ship_date expectedShipDate,
         oi.tax tax,
         oai.user_card_no userCardNo,
@@ -750,7 +751,8 @@
         oi.goods_sale_type goodsSaleType,
         oi.price_change_status priceChangeStatus,
         oie.remark remark,
-        oie.company_type companyType
+        oie.company_type companyType,
+        oie.bo_id  boId
         from
         <if test="isHistory == 0">
             master_order_info

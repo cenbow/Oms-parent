@@ -335,6 +335,11 @@ public class MasterOrderInfoExtend {
     private String companyName;
 
     /**
+     * 子公司全称
+     */
+    private String companyFullName;
+
+    /**
      * 公司类型 1内部公司、2外部公司
      */
     private Integer companyType;
@@ -1305,5 +1310,13 @@ public class MasterOrderInfoExtend {
 
     public void setBoId(String boId) {
         this.boId = boId;
+    }
+
+    public String getCompanyFullName() {
+        return companyFullName;
+    }
+
+    public void setCompanyFullName(String companyFullName) {
+        this.companyFullName = companyFullName;
     }
 }

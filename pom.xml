@@ -227,7 +227,7 @@
             <dependency>
                 <groupId>com.work.shop.oms</groupId>
                 <artifactId>Oms-base-api</artifactId>
-                <version>1.5.13</version>
+                <version>1.5.14</version>
             </dependency>
 
             <dependency>
