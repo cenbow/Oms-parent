@@ -307,7 +307,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			boSupplierOrder.setMasterOrderSn(masterOrderSn);
 			boSupplierOrder.setBoId(masterOrderInfoExtend.getBoId());
 			boSupplierOrder.setCompanyCode(masterOrderInfoExtend.getCompanyCode());
-			boSupplierOrder.setCompanyName(masterOrderInfoExtend.getCompanyName());
+			boSupplierOrder.setCompanyName(masterOrderInfoExtend.getCompanyFullName());
 			boSupplierOrder.setCompanyType(masterOrderInfoExtend.getCompanyType());
 			boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
 			boSupplierOrder.setPayName(masterOrderPay.getPayName());

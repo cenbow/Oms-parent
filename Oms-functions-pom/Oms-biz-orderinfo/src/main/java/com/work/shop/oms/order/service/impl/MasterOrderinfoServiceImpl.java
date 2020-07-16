@@ -1145,7 +1145,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 					boSupplierOrder.setMasterOrderSn(masterOrderDetail.getMasterOrderSn());
 					boSupplierOrder.setBoId(masterOrderDetail.getBoId());
 					boSupplierOrder.setCompanyCode(extendBydb.getCompanyCode());
-					boSupplierOrder.setCompanyName(extendBydb.getCompanyName());
+					boSupplierOrder.setCompanyName(extendBydb.getCompanyFullName());
 					boSupplierOrder.setCompanyType(extendBydb.getCompanyType());
 					boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
 					boSupplierOrder.setPayName(masterOrderPay.getPayName());
