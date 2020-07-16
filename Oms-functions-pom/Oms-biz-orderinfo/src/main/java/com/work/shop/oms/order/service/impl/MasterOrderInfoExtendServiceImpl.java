@@ -132,6 +132,10 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         if (StringUtils.isNotBlank(masterOrder.getCompanyName())) {
             moie.setCompanyName(masterOrder.getCompanyName());
         }
+        //公司全称
+        if (StringUtils.isNotBlank(masterOrder.getCompanyFullName())) {
+            moie.setCompanyFullName(masterOrder.getCompanyFullName());
+        }
 
         moie.setInvPhone(masterOrder.getInvPhone());
 
