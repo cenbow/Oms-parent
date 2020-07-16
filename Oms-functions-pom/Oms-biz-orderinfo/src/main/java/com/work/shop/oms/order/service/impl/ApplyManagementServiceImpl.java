@@ -346,7 +346,7 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 totalAmount = totalAmount.add(totalPriceOld.subtract(totalPriceNew));
 
                 //计算修改后的折扣
-                BigDecimal updateDiscount = goodsPrice.subtract(updatePrice);
+                BigDecimal updateDiscount = discount.add(transactionPrice.subtract(updatePrice));
                 //累加差折扣
                 totalDiscount = totalDiscount.add(totalPriceOld.subtract(totalPriceNew));
 
