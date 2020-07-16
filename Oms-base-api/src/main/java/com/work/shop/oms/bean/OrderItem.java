@@ -296,6 +296,12 @@ public class OrderItem implements Serializable{
      */
     private String companyName;
 
+
+	/**
+	 * 公司全称
+	 */
+	private String companyFullName;
+
     /**
      * 公司id
      */
@@ -809,5 +815,13 @@ public class OrderItem implements Serializable{
 
 	public void setBoId(String boId) {
 		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }

@@ -63,6 +63,11 @@ public class OrderQueryExportResult implements Serializable {
     private String companyName;
 
     /**
+     * 下单公司全称
+     */
+    private String companyFullName;
+
+    /**
      * 下单公司ID
      */
     private String companyCode;
@@ -179,5 +184,13 @@ public class OrderQueryExportResult implements Serializable {
 
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
+    }
+
+    public String getCompanyFullName() {
+        return companyFullName;
+    }
+
+    public void setCompanyFullName(String companyFullName) {
+        this.companyFullName = companyFullName;
     }
 }
