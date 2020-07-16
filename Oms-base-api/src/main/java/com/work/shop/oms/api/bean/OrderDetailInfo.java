@@ -410,6 +410,11 @@ public class OrderDetailInfo  implements Serializable{
      */
     private String companyName;
 
+	/**
+	 * 子公司全称
+	 */
+	private String companyFullName;
+
     /**
      * 最后确认收货时间
      */
@@ -469,6 +474,11 @@ public class OrderDetailInfo  implements Serializable{
 	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
 	 */
 	private int specialType;
+
+	/**
+	 * 盈合ID
+	 */
+	private String boId;
 
 	public int getOrderType() {
         return orderType;
@@ -1132,5 +1142,21 @@ public class OrderDetailInfo  implements Serializable{
 
 	public void setSpecialType(int specialType) {
 		this.specialType = specialType;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }

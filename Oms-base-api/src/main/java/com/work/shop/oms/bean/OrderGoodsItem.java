@@ -146,6 +146,11 @@ public class OrderGoodsItem implements Serializable {
 	private String companyName;
 
 	/**
+	 * 下单公司全称
+	 */
+	private String companyFullName;
+
+	/**
 	 * 物料描述
 	 */
 	private String customerMaterialName;
@@ -538,5 +543,13 @@ public class OrderGoodsItem implements Serializable {
 
 	public void setSaleType(Integer saleType) {
 		this.saleType = saleType;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }
