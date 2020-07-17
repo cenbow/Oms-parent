@@ -279,6 +279,11 @@ public class OrderPageInfo implements Serializable{
 	 */
 	private int specialType;
 
+	/**
+	 * 盈合id
+	 */
+	private String boId;
+
 	public String getChannelCode() {
 		return channelCode;
 	}
@@ -702,5 +707,13 @@ public class OrderPageInfo implements Serializable{
 
 	public void setSpecialType(int specialType) {
 		this.specialType = specialType;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
 	}
 }

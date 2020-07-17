@@ -53,7 +53,8 @@
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress,
-        oie.company_type companyType
+        oie.company_type companyType,
+        oie.bo_id boId
         from
         <if test="isHistory == 0">
             master_order_info
@@ -142,6 +143,10 @@
         <!-- 公司id -->
         <if test="companyId != null">
             and oie.company_code = #{companyId}
+        </if>
+        <!-- 盈合id -->
+        <if test="boId != null">
+            and oie.bo_id = #{boId}
         </if>
 
         <!--app列表只显示订单 -->
