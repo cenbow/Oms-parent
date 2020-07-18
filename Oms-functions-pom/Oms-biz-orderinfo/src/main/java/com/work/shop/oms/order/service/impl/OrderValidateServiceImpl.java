@@ -969,7 +969,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		// 订单支付财务价
 		masterOrder.setPaySettlementPrice(payTotalFee);
 		List<MasterShip> shipLists = masterOrder.getShipList();
-		double goodsTranPrice = getGoodsPrice(shipLists);
+		double goodsTranPrice = getGoodsPrice(shipLists,masterOrder.getOrderFrom());
 		if (masterOrder.getPayStatus() == Constant.OI_PAY_STATUS_PAYED) {
 			// 付款单为已付款
 			// 订单财务价 = 商品成交价*数量 + 邮费  -红包 - 积分
@@ -1013,20 +1013,40 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	 * @param shipLists 商品配送列表
 	 * @return double
 	 */
-	private double getGoodsPrice(List<MasterShip> shipLists) {
+	private double getGoodsPrice(List<MasterShip> shipLists, String orderFrom) {
 		double goodsTranPrice = 0;
 		for (int i = 0; i < shipLists.size(); i++) {
 			MasterShip shipList = shipLists.get(i);
-			for (MasterGoods masterGoods : shipList.getGoodsList()) {
-				// sum商品成交价
-				BigDecimal tr = new BigDecimal(masterGoods.getTransactionPrice().toString());
-				// 商品数量
-				BigDecimal num = new BigDecimal(masterGoods.getGoodsNumber());
-				goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-				// 小数数量
-				BigDecimal goodsDecimalNumber = masterGoods.getGoodsDecimals();
-				if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
-					goodsTranPrice += NumberUtil.getDoubleByDecimal(goodsDecimalNumber.multiply(tr), 2);
+			// 需求1272 修改含税总额计算方式，未税总额加税额
+			if ("hbis".equals(orderFrom)){
+				for (MasterGoods masterGoods : shipList.getGoodsList()) {
+					//未税成交价
+					BigDecimal transactionPriceNoTax = masterGoods.getTransactionPriceNoTax();
+					//数量
+					BigDecimal goodsNumber = new BigDecimal(masterGoods.getGoodsNumber());
+					//未税总额
+					BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber).setScale(2, BigDecimal.ROUND_HALF_UP);
+					//销项税
+					BigDecimal outputTax = new BigDecimal(masterGoods.getOutputTax().toString());
+					//税额
+					BigDecimal tax = totalNoTax.multiply(outputTax.divide(new BigDecimal(100))).setScale(2, BigDecimal.ROUND_HALF_UP);
+					//含税总额
+					BigDecimal totalPrice = totalNoTax.add(tax);
+
+					goodsTranPrice += NumberUtil.getDoubleByDecimal(totalPrice, 2);
+				}
+			}else {
+				for (MasterGoods masterGoods : shipList.getGoodsList()) {
+					// sum商品成交价
+					BigDecimal tr = new BigDecimal(masterGoods.getTransactionPrice().toString());
+					// 商品数量
+					BigDecimal num = new BigDecimal(masterGoods.getGoodsNumber());
+					goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+					// 小数数量
+					BigDecimal goodsDecimalNumber = masterGoods.getGoodsDecimals();
+					if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+						goodsTranPrice += NumberUtil.getDoubleByDecimal(goodsDecimalNumber.multiply(tr), 2);
+					}
 				}
 			}
 		}
