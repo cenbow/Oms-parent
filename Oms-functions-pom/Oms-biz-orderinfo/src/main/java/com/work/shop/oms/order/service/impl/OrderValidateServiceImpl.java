@@ -1024,8 +1024,10 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					BigDecimal transactionPriceNoTax = masterGoods.getTransactionPriceNoTax();
 					//数量
 					BigDecimal goodsNumber = new BigDecimal(masterGoods.getGoodsNumber());
+					//小数数量
+					BigDecimal goodsDecimals = masterGoods.getGoodsDecimals();
 					//未税总额
-					BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber).setScale(2, BigDecimal.ROUND_HALF_UP);
+					BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber.add(goodsDecimals)).setScale(2, BigDecimal.ROUND_HALF_UP);
 					//销项税
 					BigDecimal outputTax = new BigDecimal(masterGoods.getOutputTax().toString());
 					//税额

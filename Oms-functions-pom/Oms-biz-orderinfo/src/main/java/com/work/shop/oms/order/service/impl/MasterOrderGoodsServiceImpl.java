@@ -75,8 +75,10 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 				BigDecimal transactionPriceNoTax = orderGoods.getTransactionPriceNoTax();
 				//数量
 				BigDecimal goodsNumber = new BigDecimal(orderGoods.getGoodsNumber());
+				//小数数量
+				BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber();
 				//未税总额
-				BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber).setScale(2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber.add(goodsDecimalNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//销项税
 				BigDecimal outputTax = new BigDecimal(orderGoods.getOutputTax().toString());
 				//税额
@@ -85,6 +87,7 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 				BigDecimal totalPrice = totalNoTax.add(tax);
 
 				settlementPrice += NumberUtil.getDoubleByDecimal(totalPrice, 2);
+				masterOrderGoodsMapper.insertSelective(orderGoods);
 			}
 		}else {
 			for (MasterOrderGoods orderGoods : orderGoodsList) {
