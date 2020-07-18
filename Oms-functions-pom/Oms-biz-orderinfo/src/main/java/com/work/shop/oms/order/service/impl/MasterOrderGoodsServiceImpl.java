@@ -68,16 +68,36 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		orderPriceService.financialPrice(masterOrderInfo, orderGoodsList);
 		// 订单商品总财务价
 		double settlementPrice = 0D;
-		for (MasterOrderGoods orderGoods : orderGoodsList) {
-			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
-				* orderGoods.getGoodsNumber();
+		// 需求1272 修改含税总额计算方式，未税总额加税额
+		if ("hbis".equals(masterOrderInfo.getOrderFrom())){
+			for (MasterOrderGoods orderGoods : orderGoodsList) {
+				//未税成交价
+				BigDecimal transactionPriceNoTax = orderGoods.getTransactionPriceNoTax();
+				//数量
+				BigDecimal goodsNumber = new BigDecimal(orderGoods.getGoodsNumber());
+				//未税总额
+				BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber).setScale(2, BigDecimal.ROUND_HALF_UP);
+				//销项税
+				BigDecimal outputTax = new BigDecimal(orderGoods.getOutputTax().toString());
+				//税额
+				BigDecimal tax = totalNoTax.multiply(outputTax.divide(new BigDecimal(100))).setScale(2, BigDecimal.ROUND_HALF_UP);
+				//含税总额
+				BigDecimal totalPrice = totalNoTax.add(tax);
+
+				settlementPrice += NumberUtil.getDoubleByDecimal(totalPrice, 2);
+			}
+		}else {
+			for (MasterOrderGoods orderGoods : orderGoodsList) {
+				settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
+						* orderGoods.getGoodsNumber();
 			/*settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
 					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();*/
-			BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber();
-			if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
-				settlementPrice += NumberUtil.getDecimalValue(orderGoods.getSettlementPrice().multiply(goodsDecimalNumber), 2).doubleValue();
+				BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber();
+				if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+					settlementPrice += NumberUtil.getDecimalValue(orderGoods.getSettlementPrice().multiply(goodsDecimalNumber), 2).doubleValue();
+				}
+				masterOrderGoodsMapper.insertSelective(orderGoods);
 			}
-			masterOrderGoodsMapper.insertSelective(orderGoods);
 		}
 		// 商品结算价 = 商品结算价 + 综合税费
 		settlementPrice += masterOrder.getTax();
