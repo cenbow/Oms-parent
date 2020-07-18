@@ -241,6 +241,12 @@
       <if test="isGroup != null">
         is_group,
       </if>
+      <if test="groupId != null">
+        group_id,
+      </if>
+      <if test="groupName != null">
+        group_name,
+      </if>
       <if test="isAdvance != null">
         is_advance,
       </if>
@@ -407,6 +413,12 @@
       </if>
       <if test="isGroup != null">
         #{isGroup,jdbcType=TINYINT},
+      </if>
+      <if test="groupId != null">
+        #{groupId},
+      </if>
+      <if test="groupName != null">
+        #{groupName},
       </if>
       <if test="isAdvance != null">
         #{isAdvance,jdbcType=TINYINT},

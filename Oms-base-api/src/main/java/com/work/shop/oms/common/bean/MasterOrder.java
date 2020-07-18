@@ -324,6 +324,14 @@ public class MasterOrder implements Serializable{
      * 订单是否为团购
      */
 	private short isGroup;
+    /**
+     * 团购id
+     */
+	private Integer groupId;
+    /**
+     * 团购名称
+     */
+	private String groupName;
 
     /**
      * 是否为预售商品
@@ -550,7 +558,23 @@ public class MasterOrder implements Serializable{
         this.prepayments = prepayments;
     }
 
-    public String getUserId() {
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+
+	public String getUserId() {
 		return userId;
 	}
 
