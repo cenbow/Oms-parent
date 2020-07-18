@@ -610,6 +610,20 @@ public class MasterOrderInfo implements Serializable {
      */
     private String erpOrderNo;
 
+    /**
+     * 预付款金额
+     * @return
+     */
+    private BigDecimal prepayments;
+
+    public BigDecimal getPrepayments() {
+        return prepayments;
+    }
+
+    public void setPrepayments(BigDecimal prepayments) {
+        this.prepayments = prepayments;
+    }
+
     public String getErpOrderNo() {
         return erpOrderNo;
     }

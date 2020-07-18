@@ -647,6 +647,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setGoodsSaleType(masterOrder.getGoodsSaleType());
 		//价格变动确认
 		orderInfo.setPriceChangeStatus(masterOrder.getPriceChangeStatus());
+
+		orderInfo.setPrepayments(masterOrder.getPrepayments());
 		masterOrderInfoMapper.insertSelective(orderInfo);
 		byte payStatus = orderInfo.getPayStatus() == 2 ? orderInfo.getPayStatus() : 0;
 		// 写入订单日志

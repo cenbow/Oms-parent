@@ -1,6 +1,7 @@
 package com.work.shop.oms.common.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -61,7 +62,20 @@ public class MasterPay implements Serializable{
 	 */
 	private Double paymentRate;
 
-	public Integer getPayId() {
+    /**
+     * 团购预付款金额
+     */
+    private BigDecimal prepayments;
+
+    public BigDecimal getPrepayments() {
+        return prepayments;
+    }
+
+    public void setPrepayments(BigDecimal prepayments) {
+        this.prepayments = prepayments;
+    }
+
+    public Integer getPayId() {
 		return payId==null?0:payId;
 	}
 

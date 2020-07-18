@@ -94,6 +94,8 @@ public class MasterOrderPayServiceImpl implements MasterOrderPayService{
         mop.setPaymentPeriod(masterPay.getPaymentPeriod().shortValue());
         // 支付费率
         mop.setPaymentRate(BigDecimal.valueOf(masterPay.getPaymentRate()));
+        // 预付款金额
+        mop.setPrepayments(masterPay.getPrepayments());
 
         // 付款最后期限设置
         int secp = 0;
@@ -155,7 +157,7 @@ public class MasterOrderPayServiceImpl implements MasterOrderPayService{
                 MasterOrderPay mop = fillMasterOrderPay(masterOrderSn, masterPaySn, masterPay, payment);
 
 				try {
-					masterOrderPayMapper.insert(mop);
+					masterOrderPayMapper.insertSelective(mop);
 				} catch (Exception e) {
 					logger.error(masterOrderSn + "生成付款单失败-" + e.getMessage(), e);
 					return new ServiceReturnInfo<List<String>>("创建付款单信息" + masterOrderSn + "失败" + e.getMessage());

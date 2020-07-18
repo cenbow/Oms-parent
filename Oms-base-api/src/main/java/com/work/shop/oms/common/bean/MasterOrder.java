@@ -74,6 +74,10 @@ public class MasterOrder implements Serializable{
      * 外部交易号
      */
 	private String orderOutSn;
+    /**
+     * 团购预付款金额
+     */
+	private BigDecimal prepayments;
 
     /**
      * 订单当日流水号
@@ -538,7 +542,15 @@ public class MasterOrder implements Serializable{
 	 */
 	private Integer priceChangeStatus;
 
-	public String getUserId() {
+    public BigDecimal getPrepayments() {
+        return prepayments;
+    }
+
+    public void setPrepayments(BigDecimal prepayments) {
+        this.prepayments = prepayments;
+    }
+
+    public String getUserId() {
 		return userId;
 	}
 
