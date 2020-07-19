@@ -351,7 +351,7 @@ public class Constant {
 	public static final int OI_CHASED_OR_NOT_YES = 1; /* 已追单 */
 
 	/**
-	 * order_pay.pay_status 支付状态 0未付款、1付款中、2已付款、3已结算、4待确认
+	 * order_pay.pay_status 支付状态 0未付款、1部分付款、2已付款、3已结算、4待确认
 	 */
 	public static final int OP_PAY_STATUS_UNPAYED = 0;
 	public static final int OP_PAY_STATUS_PAYING = 1;
@@ -1088,6 +1088,11 @@ public class Constant {
      * 待签章问题单
      */
     public static final String QUESTION_CODE_SIGN = "18";
+
+	/**
+	 * 团购问题单
+	 */
+	public static final String QUESTION_CODE_TEN_THOUSAND = "10000";
 
     /**
      * 交货单号前缀
