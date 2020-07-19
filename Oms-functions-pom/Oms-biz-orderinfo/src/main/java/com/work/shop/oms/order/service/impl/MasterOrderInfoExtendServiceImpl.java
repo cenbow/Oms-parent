@@ -51,6 +51,10 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 		moie.setAgdist((byte) 0);
 		// 是否为团购订单( 0:否  1;是)
 		moie.setIsGroup((byte) masterOrder.getIsGroup());
+		// 团购订单id
+		moie.setGroupId(masterOrder.getGroupId());
+		// 团购名称
+		moie.setGroupName(masterOrder.getGroupName());
 		// 是否为预售商品(0:否 1:是)
 		moie.setIsAdvance((byte) masterOrder.getIsAdvance());
 		// 门店ID
