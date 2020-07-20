@@ -1152,6 +1152,11 @@ public class Constant {
      */
     public  static  final  int GOODS_SALE_TYPE_CHANGE_PRICE = 2;
 
+	/**
+	 * 商品销售类型  盈合商品
+	 */
+	public  static  final  int GOODS_SALE_TYPE_BO = 3;
+
     /**
      * 价格变动确认状态   0 无
      */
@@ -1205,4 +1210,9 @@ public class Constant {
 	 * 交货期天数
 	 */
 	public static final Integer deliveryDay = 30;
+
+	/**
+	 * 编辑价格问题单类型 已_结尾  120：待询价问题单 121：改价问题单 122：铁信支付改价问题单 123：盈合问题单
+	 */
+	public  static  final  String EDIT_PRICE_QUESTION_NO = "120_121_122_123_";
 }

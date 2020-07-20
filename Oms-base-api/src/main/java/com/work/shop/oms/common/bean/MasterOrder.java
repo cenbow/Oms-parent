@@ -509,6 +509,11 @@ public class MasterOrder implements Serializable{
     private String companyName;
 
 	/**
+	 * 子公司全称
+	 */
+	private String companyFullName;
+
+	/**
 	 * 公司类型 1内部公司、2外部公司
 	 */
 	private Integer companyType;
@@ -517,6 +522,11 @@ public class MasterOrder implements Serializable{
      * 销售bd
      */
     private String saleBd;
+
+	/**
+	 * 盈合id
+	 */
+	private String boId;
 
 	/**
 	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
@@ -1421,5 +1431,21 @@ public class MasterOrder implements Serializable{
 
 	public void setSignContractNum(String signContractNum) {
 		this.signContractNum = signContractNum;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }

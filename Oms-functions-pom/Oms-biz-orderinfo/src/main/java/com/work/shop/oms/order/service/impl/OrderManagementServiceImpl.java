@@ -11,6 +11,8 @@ import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.MasterOrderInfoExample;
 import com.work.shop.oms.bean.MasterOrderInfoExtend;
+import com.work.shop.oms.bean.MasterOrderQuestion;
+import com.work.shop.oms.bean.MasterOrderQuestionExample;
 import com.work.shop.oms.bean.OrderDistribute;
 import com.work.shop.oms.bean.OrderDistributeExample;
 import com.work.shop.oms.bean.OrderReturn;
@@ -130,6 +132,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
     @Resource
     private PurchaseOrderMapper purchaseOrderMapper;
+
+	@Resource
+	MasterOrderQuestionMapper masterOrderQuestionMapper;
 
 	/**
 	 * 获取操作用户
@@ -840,15 +845,21 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			orderStatus.setAdminUser(request.getActionUser());
 			orderStatus.setQuestionTypes(integers);
 			orderStatus.setMessage(request.getMessage());
+			//查询问题单列表
+			MasterOrderQuestionExample questionExample = new MasterOrderQuestionExample();
+			questionExample.or().andMasterOrderSnEqualTo(masterOrderSn);
+			List<MasterOrderQuestion> orderQuestionList = masterOrderQuestionMapper.selectByExample(questionExample);
+
 			ReturnInfo<String> info = orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
 				//判断待询价与改价问题单
 				if( ( master.getGoodsSaleType() != null && master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD )
 						|| ( master.getPriceChangeStatus() != null && master.getPriceChangeStatus() > Constant.PRICE_CHANGE_AFFIRM_1 )
-						|| ("hbis".equals(master.getOrderFrom()) && "铁信支付".equals(master.getPayName()) )){
+						|| ("hbis".equals(master.getOrderFrom()) && "铁信支付".equals(master.getPayName()))
+				       || StringUtils.isNotBlank(master.getBoId()) ){
 					//返回正常单，订单改价确认
-					logger.info("返回正常单:" + masterOrderSn + "订单改价确认 ");
-					orderConfirmService.changePriceConfirmOrder(masterOrderSn,orderStatus);
+					logger.info("返回正常单:" + masterOrderSn + "订单非正常商品确认 ");
+					orderConfirmService.changePriceConfirmOrder(masterOrderSn,orderStatus,orderQuestionList);
 				}else{
 					//返回正常单，订单推送供应链
 					logger.info("返回正常单:" + masterOrderSn + "订单推送供应链");

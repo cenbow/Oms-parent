@@ -152,6 +152,11 @@ public class PageListParam implements Serializable{
 	 */
 	private Integer priceChangeStatus;
 
+	/**
+	 * 盈合Id
+	 */
+	private String boId;
+
 	public String getUserId() {
 		return userId;
 	}

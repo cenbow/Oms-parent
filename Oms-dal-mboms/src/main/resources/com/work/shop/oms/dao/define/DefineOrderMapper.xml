@@ -53,7 +53,8 @@
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress,
-        oie.company_type companyType
+        oie.company_type companyType,
+        oie.bo_id boId
         from
         <if test="isHistory == 0">
             master_order_info
@@ -142,6 +143,10 @@
         <!-- 公司id -->
         <if test="companyId != null">
             and oie.company_code = #{companyId}
+        </if>
+        <!-- 盈合id -->
+        <if test="boId != null">
+            and oie.bo_id = #{boId}
         </if>
 
         <!--app列表只显示订单 -->
@@ -396,7 +401,9 @@
         select
         og.order_sn subOrderSn,
         og.goods_price goodsPrice,
+        og.goods_price_no_tax goodsPriceNoTax,
         og.transaction_price transactionPrice,
+        og.transaction_price_no_tax transactionPriceNoTax,
         og.settlement_price settlementPrice,
         og.goods_sn goodsSn,
         og.custom_code skuSn,
@@ -417,6 +424,8 @@
         og.expected_ship_date expectedShipDate,
         og.tax,
         og.tax_rate taxRate,
+        og.input_tax inputTax,
+        og.output_tax outputTax,
         og.base_bv_value baseBvValue,
         og.min_buy_num minBuyNum,
         og.buy_unit buyUnit,
@@ -722,6 +731,7 @@
         oie.last_pay_date lastPayDate,
         oie.company_code companyCode,
         oie.company_name companyName,
+        oie.company_full_name companyFullName,
         oi.expected_ship_date expectedShipDate,
         oi.tax tax,
         oai.user_card_no userCardNo,
@@ -746,7 +756,8 @@
         oi.goods_sale_type goodsSaleType,
         oi.price_change_status priceChangeStatus,
         oie.remark remark,
-        oie.company_type companyType
+        oie.company_type companyType,
+        oie.bo_id  boId
         from
         <if test="isHistory == 0">
             master_order_info

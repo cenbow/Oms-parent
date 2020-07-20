@@ -295,10 +295,10 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
             //获取订单商品信息
             List<UpdateGoodsItem> updateGoodsItems = applyItem.getUpdateGoodsItems();
             List<String> skuList = new ArrayList<>();
-            Map<String, BigDecimal> priceMap = new HashMap<String, BigDecimal>(updateGoodsItems.size());
+            Map<String, UpdateGoodsItem> priceMap = new HashMap<String, UpdateGoodsItem>(updateGoodsItems.size());
             for (UpdateGoodsItem item : updateGoodsItems) {
                 skuList.add(item.getSku());
-                priceMap.put(item.getSku(), item.getGoodsPrice());
+                priceMap.put(item.getSku(), item);
             }
             MasterOrderGoodsExample example = new MasterOrderGoodsExample();
             example.or().andMasterOrderSnEqualTo(masterOrderSn).andCustomCodeIn(skuList).andExtensionCodeEqualTo("common");
@@ -310,6 +310,8 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
 
             //成交价总差额
             BigDecimal totalAmount = new BigDecimal(0);
+            //重新计算的支付总金额
+            BigDecimal payTotalfee = new BigDecimal(0);
             //折扣总差额
             BigDecimal totalDiscount = new BigDecimal(0);
             //重新计算优惠价，更新成交价
@@ -323,24 +325,35 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 BigDecimal goodsPrice = masterOrderGoods.getGoodsPrice();
                 //商品成交价
                 BigDecimal transactionPrice = masterOrderGoods.getTransactionPrice();
+                //未税成交价
+                BigDecimal transactionPriceNoTax = masterOrderGoods.getTransactionPriceNoTax();
                 //商品折扣
                 BigDecimal discount = masterOrderGoods.getDiscount();
                 //商品数量
                 Integer goodsNumber = masterOrderGoods.getGoodsNumber();
+                //销项税
+                BigDecimal outputTax = masterOrderGoods.getOutputTax();
 
                 //需改成修改价格
-                BigDecimal updatePrice = priceMap.get(customCode);
+                BigDecimal updatePrice = priceMap.get(customCode).getGoodsPrice();
+                //修改的未税成交价
+                BigDecimal updatePriceNoTax = priceMap.get(customCode).getTransactionPriceNoTax();
+                //计算原来的总价
+                BigDecimal totalPriceOld = fillTotalPayPrice(transactionPriceNoTax,outputTax,goodsNumber);
+                //计算出新的总价
+                BigDecimal totalPriceNew = fillTotalPayPrice(updatePriceNoTax,outputTax,goodsNumber);
                 //累加差额
-                totalAmount = totalAmount.add(transactionPrice.subtract(updatePrice).multiply(BigDecimal.valueOf(goodsNumber)));
+                totalAmount = totalAmount.add(totalPriceOld.subtract(totalPriceNew));
 
                 //计算修改后的折扣
-                BigDecimal updateDiscount = goodsPrice.subtract(updatePrice);
+                BigDecimal updateDiscount = discount.add(transactionPrice.subtract(updatePrice));
                 //累加差折扣
-                totalDiscount = totalDiscount.add(discount.subtract(updateDiscount).multiply(BigDecimal.valueOf(goodsNumber)));
+                totalDiscount = totalDiscount.add(totalPriceOld.subtract(totalPriceNew));
 
                 //更新商品价格信息
                 updateGoods = new MasterOrderGoods();
                 updateGoods.setTransactionPrice(updatePrice);
+                updateGoods.setTransactionPriceNoTax(updatePriceNoTax);
                 updateGoods.setSettlementPrice(updatePrice);
                 updateGoods.setDiscount(updateDiscount);
                 updateGoods.setId(masterOrderGoods.getId());
@@ -348,16 +361,19 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
                 if (update > 0) {
                     messageBefore = "更新成功";
                 }
-
+                //单个商品的最终支付价
+                BigDecimal totalPay = fillTotalPayPrice(updatePriceNoTax, outputTax, goodsNumber);
+                payTotalfee = payTotalfee.add(totalPay);
                 //添加日志
-                note += customCode + "商品成交价由" + transactionPrice + "改为" + updatePrice + messageBefore + ";";
+                note += customCode + "商品成交价含税由" + transactionPrice + "改为" + updatePrice + messageBefore + ";<br>";
+                note += customCode + "商品成交价未税由" + transactionPriceNoTax + "改为" + updatePriceNoTax + messageBefore + ";<br>";
             }
 
             //更新支付单应付金额
-            updatePayPrice(masterOrderSn, totalAmount);
+            updatePayPrice(masterOrderSn, payTotalfee);
 
             //更新订单
-            boolean orderPrice = updateOrderPrice(masterOrderInfo, totalAmount, totalDiscount);
+            boolean orderPrice = updateOrderPrice(masterOrderInfo, totalAmount, totalDiscount,payTotalfee);
             String orderMessage = "失败";
             if (orderPrice) {
                 orderMessage = "成功";
@@ -377,10 +393,39 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
         return response;
     }
 
+
+    /**
+     * 计算付款总金额
+     * @param goodsNumber 商品数量
+     * @param notax 未税成交价
+     * @param tax  税率
+     * @author lcz
+     * @date 2020/7/14 14:29
+     */
+    private BigDecimal fillTotalPayPrice(BigDecimal notax,BigDecimal tax,Integer goodsNumber) {
+        //订单付款总金额
+        BigDecimal totalPayPrice = BigDecimal.ZERO;
+        if (notax == null) {
+            notax = BigDecimal.ZERO;
+        }
+        if (tax == null) {
+            tax = BigDecimal.ZERO;
+        }
+        if (goodsNumber == null) {
+            goodsNumber = 0 ;
+        }
+        //计算商品未税总金额
+        BigDecimal totalPriceNoTax = notax.multiply(new BigDecimal(goodsNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+        //计算总税率
+        BigDecimal totalTax = totalPriceNoTax.multiply(tax).divide(new BigDecimal("100")).setScale(2, BigDecimal.ROUND_HALF_UP);
+        totalPayPrice = totalPriceNoTax.add(totalTax).setScale(2,BigDecimal.ROUND_HALF_UP);
+        return totalPayPrice;
+    }
+
     /**
      * 更新支付单支付总金额
      * @param masterOrderSn 订单号
-     * @param totalAmount 成交价差额
+     * @param totalAmount 成交价差额 （0714修改成最新的含税成交价）
      */
     private void updatePayPrice(String masterOrderSn, BigDecimal totalAmount) {
         List<MasterOrderPay> masterOrderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
@@ -390,8 +435,9 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
             updatePay.setMasterPaySn(masterOrderPay.getMasterPaySn());
 
             BigDecimal payTotalfee = masterOrderPay.getPayTotalfee();
-            //原价 - 差额
-            updatePay.setPayTotalfee(payTotalfee.subtract(totalAmount));
+//            //原价 - 差额
+//            updatePay.setPayTotalfee(payTotalfee.subtract(totalAmount));
+            updatePay.setPayTotalfee(totalAmount);
             //更新支付单行记录
             masterOrderPayService.updateByPrimaryKeySelective(updatePay);
         }
@@ -403,7 +449,7 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
      * @param totalAmount 成交价差额
      * @param totalDiscount 折扣差额
      */
-    private boolean updateOrderPrice(MasterOrderInfo masterOrderInfo, BigDecimal totalAmount, BigDecimal totalDiscount) {
+    private boolean updateOrderPrice(MasterOrderInfo masterOrderInfo, BigDecimal totalAmount, BigDecimal totalDiscount,BigDecimal totalPay) {
         //支付总费用
         BigDecimal payTotalFee = masterOrderInfo.getPayTotalFee();
         //应付款总金额
@@ -418,22 +464,30 @@ public class ApplyManagementServiceImpl implements ApplyManagementService {
         //更新订单价格
         MasterOrderInfo updateOrder = new MasterOrderInfo();
         updateOrder.setMasterOrderSn(masterOrderInfo.getMasterOrderSn());
-        updateOrder.setPayTotalFee(payTotalFee.subtract(totalAmount));
-        updateOrder.setTotalFee(totalFee.subtract(totalAmount));
-        updateOrder.setDiscount(discount.subtract(totalDiscount));
+//        updateOrder.setPayTotalFee(payTotalFee.subtract(totalAmount));
+        updateOrder.setPayTotalFee(totalPay);
+        //updateOrder.setTotalFee(totalFee.subtract(totalAmount));
+        updateOrder.setTotalFee(totalPay);
+        //折扣 = 原来的折扣 + （现在的新的商品小计 - 原来的商品小计）
+        updateOrder.setDiscount(discount.add(totalDiscount));
         updateOrder.setUpdateTime(new Date());
 		updateOrder.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_1);
         //未支付，更新订单应付款金额；部分付款，若订单应付款金额 >= 差额，只更新订单应付款金额；若若订单应付款金额 < 差额,更新订单应付款金额和已付款金额；
-        //已支付，更新已付款金额
+        //已支付，更新已付款金额    `pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付总状态 0，未付款；1，部分付款；2，已付款；3，已结算）',
         Byte payStatus = masterOrderInfo.getPayStatus();
         if (payStatus == 0) {
-            updateOrder.setTotalPayable(totalPayable.subtract(totalAmount));
+            //updateOrder.setTotalPayable(totalPayable.subtract(totalAmount));  total_payable`  '应付款总金额 ',
+            updateOrder.setTotalPayable(totalPay);
         } else if (payStatus == 1) {
-            BigDecimal diffAmount = totalPayable.subtract(totalAmount);
+            //BigDecimal diffAmount = totalPayable.subtract(totalAmount);
+            // 应付总金额 - 改价后的应付总金额
+            BigDecimal diffAmount = totalPayable.subtract(totalPay);
             if (diffAmount.doubleValue() >= 0) {
+                //updateOrder.setTotalPayable(diffAmount);
                 updateOrder.setTotalPayable(diffAmount);
             } else {
-                updateOrder.setTotalPayable(BigDecimal.valueOf(0));
+                updateOrder.setTotalPayable(totalPay);
+                //已付款金额
                 updateOrder.setMoneyPaid(moneyPaid.add(diffAmount));
             }
         } else {

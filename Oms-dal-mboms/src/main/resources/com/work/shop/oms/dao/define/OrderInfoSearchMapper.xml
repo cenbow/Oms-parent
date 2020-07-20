@@ -2251,10 +2251,12 @@
             mop.pay_name as payMethod,
 			oie.company_name as companyName,
 			oie.company_code as companyCode,
+			oie.company_full_name as companyFullName,
 			oi.sign_contract_num as signContractNum,
 			oi.sign_status as signStatus,
 			oi.need_sign as needSign,
-			oi.erp_order_no as erpOrderNo
+			oi.erp_order_no as erpOrderNo,
+			oie.bo_id as boId
         FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
@@ -2319,6 +2321,7 @@
             oai.mobile,
             oai.address,
 			oie.company_name as companyName,
+			oie.company_full_name as companyFullName,
 			oie.company_code as companyId,
             mog.goods_name as goodsName,
             mog.goods_sn as goodsSn,

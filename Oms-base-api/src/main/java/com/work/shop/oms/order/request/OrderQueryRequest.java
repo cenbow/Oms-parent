@@ -151,6 +151,11 @@ public class OrderQueryRequest implements Serializable {
 	private String insteadUserId;
 
 	/**
+	 * 盈合编码
+	 */
+	private String boId;
+
+	/**
 	 * 配送编码
 	 */
 	private String tmsCode;
@@ -181,6 +186,11 @@ public class OrderQueryRequest implements Serializable {
 	 * 公司名称
 	 */
 	private String companyName;
+
+	/**
+	 * 公司全称
+	 */
+	private String companyFullName;
 
     /**
      * 公司类型 1内部公司、2外部公司
@@ -603,5 +613,21 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setNeedSign(Integer needSign) {
 		this.needSign = needSign;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }

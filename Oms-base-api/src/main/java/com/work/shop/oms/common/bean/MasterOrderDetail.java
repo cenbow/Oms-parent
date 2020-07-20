@@ -261,6 +261,11 @@ public class MasterOrderDetail implements Serializable {
      */
 	private String insteadUserId;
 
+	/**
+	 * 盈合id
+	 */
+	private String boId;
+
     /**
      * bd编码
      */
@@ -1506,5 +1511,13 @@ public class MasterOrderDetail implements Serializable {
 
 	public void setPayName(String payName) {
 		this.payName = payName;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
 	}
 }

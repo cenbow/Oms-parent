@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.shop.oms.dao.BoSupplierCooperationMapper">
+  <resultMap id="BaseResultMap" type="com.work.shop.oms.bean.BoSupplierCooperation">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="bo_id" jdbcType="VARCHAR" property="boId" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="child_company_id" jdbcType="INTEGER" property="childCompanyId" />
+    <result column="total_debt" jdbcType="DECIMAL" property="totalDebt" />
+    <result column="cooperation_status" jdbcType="TINYINT" property="cooperationStatus" />
+    <result column="cooperation_remark" jdbcType="VARCHAR" property="cooperationRemark" />
+    <result column="create_user" jdbcType="VARCHAR" property="createUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, bo_id, supplier_code, child_company_id, total_debt, cooperation_status, cooperation_remark, 
+    create_user, create_time, update_user, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from bo_supplier_cooperation
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from bo_supplier_cooperation
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.work.shop.oms.bean.BoSupplierCooperation">
+    insert into bo_supplier_cooperation (id, bo_id, supplier_code, 
+      child_company_id, total_debt, cooperation_status, 
+      cooperation_remark, create_user, create_time, 
+      update_user, update_time)
+    values (#{id,jdbcType=INTEGER}, #{boId,jdbcType=VARCHAR}, #{supplierCode,jdbcType=VARCHAR}, 
+      #{childCompanyId,jdbcType=INTEGER}, #{totalDebt,jdbcType=DECIMAL}, #{cooperationStatus,jdbcType=TINYINT}, 
+      #{cooperationRemark,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateUser,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.work.shop.oms.bean.BoSupplierCooperation">
+    insert into bo_supplier_cooperation
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="boId != null">
+        bo_id,
+      </if>
+      <if test="supplierCode != null">
+        supplier_code,
+      </if>
+      <if test="childCompanyId != null">
+        child_company_id,
+      </if>
+      <if test="totalDebt != null">
+        total_debt,
+      </if>
+      <if test="cooperationStatus != null">
+        cooperation_status,
+      </if>
+      <if test="cooperationRemark != null">
+        cooperation_remark,
+      </if>
+      <if test="createUser != null">
+        create_user,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateUser != null">
+        update_user,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="boId != null">
+        #{boId,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierCode != null">
+        #{supplierCode,jdbcType=VARCHAR},
+      </if>
+      <if test="childCompanyId != null">
+        #{childCompanyId,jdbcType=INTEGER},
+      </if>
+      <if test="totalDebt != null">
+        #{totalDebt,jdbcType=DECIMAL},
+      </if>
+      <if test="cooperationStatus != null">
+        #{cooperationStatus,jdbcType=TINYINT},
+      </if>
+      <if test="cooperationRemark != null">
+        #{cooperationRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="createUser != null">
+        #{createUser,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUser != null">
+        #{updateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.work.shop.oms.bean.BoSupplierCooperation">
+    update bo_supplier_cooperation
+    <set>
+      <if test="boId != null">
+        bo_id = #{boId,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierCode != null">
+        supplier_code = #{supplierCode,jdbcType=VARCHAR},
+      </if>
+      <if test="childCompanyId != null">
+        child_company_id = #{childCompanyId,jdbcType=INTEGER},
+      </if>
+      <if test="totalDebt != null">
+        total_debt = #{totalDebt,jdbcType=DECIMAL},
+      </if>
+      <if test="cooperationStatus != null">
+        cooperation_status = #{cooperationStatus,jdbcType=TINYINT},
+      </if>
+      <if test="cooperationRemark != null">
+        cooperation_remark = #{cooperationRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="createUser != null">
+        create_user = #{createUser,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateUser != null">
+        update_user = #{updateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.work.shop.oms.bean.BoSupplierCooperation">
+    update bo_supplier_cooperation
+    set bo_id = #{boId,jdbcType=VARCHAR},
+      supplier_code = #{supplierCode,jdbcType=VARCHAR},
+      child_company_id = #{childCompanyId,jdbcType=INTEGER},
+      total_debt = #{totalDebt,jdbcType=DECIMAL},
+      cooperation_status = #{cooperationStatus,jdbcType=TINYINT},
+      cooperation_remark = #{cooperationRemark,jdbcType=VARCHAR},
+      create_user = #{createUser,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_user = #{updateUser,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="selectByBoId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bo_supplier_cooperation
+    where  cooperation_status = 1 and bo_id = #{boId}
+  </select>
+</mapper>

@@ -1,8 +1,11 @@
 package com.work.shop.oms.orderop.service;
 
+import com.work.shop.oms.bean.MasterOrderQuestion;
 import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
+
+import java.util.List;
 
 public interface OrderConfirmService {
 
@@ -81,11 +84,15 @@ public interface OrderConfirmService {
 	 */
 	public void asynConfirmOrderByOrderSn(OrderStatus orderStatus);
 
-	/**
-	 *  订单改价确认
-	 * @param masterOrderSn 主订单号
+
+	/***
+	 * 订单改价确认
+	 * @param masterOrderSn  主订单号
 	 * @param orderStatus
-	 * @return
-	 */
-	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus);
+	 * @param orderQuestionList 问题单列表
+	 * @return com.work.shop.oms.common.bean.ReturnInfo
+	 * @author wk
+	 * @date 2020/7/13
+	 **/
+	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus, List<MasterOrderQuestion> orderQuestionList);
 }

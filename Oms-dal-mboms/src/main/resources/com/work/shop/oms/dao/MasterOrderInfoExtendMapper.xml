@@ -47,10 +47,12 @@
       <result column="last_pay_date" jdbcType="TIMESTAMP" property="lastPayDate" />
       <result column="company_code" jdbcType="VARCHAR" property="companyCode" />
       <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+      <result column="company_full_name" jdbcType="VARCHAR" property="companyFullName" />
       <result column="pay_period_status" jdbcType="TINYINT" property="payPeriodStatus" />
       <result column="inv_phone" jdbcType="VARCHAR" property="invPhone" />
       <result column="push_supply_chain" jdbcType="TINYINT" property="pushSupplyChain" />
       <result column="sale_bd" jdbcType="VARCHAR" property="saleBd" />
+      <result column="bo_id" jdbcType="VARCHAR" property="boId" />
       <result column="settlement_account" property="settlementAccount" />
       <result column="company_type" property="companyType" />
       <result column="pay_period_pay_status" property="payPeriodPayStatus" />
@@ -133,8 +135,8 @@
     settle_queue, bill_no, is_review, use_level, channel_user_level, is_order_print, 
     inv_payee, inv_content, inv_type, tax, invoice_status, delivery_station_id, free_post_type, 
     free_post_card, free_post_fee, inv_taxer, order_index, tax_rate, inv_bank, is_del, rider_time,
-    customer_contract_num, order_type, last_pay_date, company_code, company_name, pay_period_status,
-      inv_phone, push_supply_chain, sale_bd, settlement_account, company_type, pay_period_pay_status,
+    customer_contract_num, order_type, last_pay_date, company_code, company_name, company_full_name, pay_period_status,
+      inv_phone, push_supply_chain, sale_bd,bo_id, settlement_account, company_type, pay_period_pay_status,
       inv_company_address,inv_bank_no
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.MasterOrderInfoExtendExample" resultMap="BaseResultMap">
@@ -208,7 +210,7 @@
       tax, invoice_status, delivery_station_id, 
       free_post_type, free_post_card, free_post_fee, inv_taxer, order_index,
       tax_rate, inv_bank, is_del, rider_time, customer_contract_num, order_type,
-      last_pay_date, company_code, company_name, pay_period_status, sale_bd, settlement_account, company_type, pay_period_pay_status
+      last_pay_date, company_code, company_name,company_full_name, pay_period_status, sale_bd,bo_id, settlement_account, company_type, pay_period_pay_status
       )
     values (#{masterOrderSn,jdbcType=VARCHAR}, #{agdist,jdbcType=TINYINT}, #{isGroup,jdbcType=TINYINT}, 
       #{isAdvance,jdbcType=TINYINT}, #{isShop,jdbcType=INTEGER}, #{shopId,jdbcType=VARCHAR}, 
@@ -222,8 +224,8 @@
       #{freePostType,jdbcType=INTEGER}, #{freePostCard,jdbcType=VARCHAR}, #{freePostFee,jdbcType=DECIMAL},
       #{invTaxer}, #{orderIndex},
       #{taxRate,jdbcType=VARCHAR}, #{invBank,jdbcType=VARCHAR}, #{isDel,jdbcType=INTEGER}, #{riderTime,jdbcType=VARCHAR},
-      #{customerContractNum}, #{orderType}, #{lastPayDate}, #{companyCode}, #{companyName}, #{payPeriodStatus},
-      #{saleBd}, #{settlementAccount}, #{companyType}, #{payPeriodPayStatus}
+      #{customerContractNum}, #{orderType}, #{lastPayDate}, #{companyCode}, #{companyName}, #{companyFullName} , #{payPeriodStatus},
+      #{saleBd},#{boId} , #{settlementAccount}, #{companyType}, #{payPeriodPayStatus}
       )
   </insert>
 
@@ -371,6 +373,9 @@
         <if test="companyName != null">
             company_name,
         </if>
+        <if test="companyFullName != null">
+          company_full_name,
+        </if>
         <if test="payPeriodStatus != null">
             pay_period_status,
         </if>
@@ -379,6 +384,9 @@
         </if>
         <if test="saleBd != null">
             sale_bd,
+        </if>
+        <if test="boId != null ">
+          bo_id,
         </if>
         <if test="settlementAccount != null">
             settlement_account,
@@ -532,6 +540,9 @@
         <if test="companyName != null">
             #{companyName},
         </if>
+        <if test="companyFullName != null">
+          #{companyFullName},
+        </if>
         <if test="payPeriodStatus != null">
             #{payPeriodStatus},
         </if>
@@ -540,6 +551,9 @@
         </if>
         <if test="saleBd != null">
             #{saleBd},
+        </if>
+        <if test="boId != null ">
+          #{boId},
         </if>
         <if test="settlementAccount != null">
             #{settlementAccount},
@@ -692,6 +706,9 @@
         <if test="record.companyName != null">
             company_name = #{record.companyName},
         </if>
+        <if test="record.companyFullName != null">
+          company_full_name = #{record.companyFullName},
+        </if>
         <if test="record.payPeriodStatus != null">
             pay_period_status = #{record.payPeriodStatus},
         </if>
@@ -700,6 +717,9 @@
         </if>
         <if test="record.saleBd != null">
             sale_bd = #{record.saleBd},
+        </if>
+        <if test="record.boId != null">
+          bo_id = #{record.boId},
         </if>
         <if test="record.settlementAccount != null">
             settlement_account = #{record.settlementAccount},
@@ -763,9 +783,11 @@
       last_pay_date = #{record.lastPayDate},
       company_code = #{record.companyCode},
       company_name = #{record.companyName},
+      company_full_name = #{record.companyFullName},
       pay_period_status = #{record.payPeriodStatus},
       push_supply_chain = #{record.pushSupplyChain},
-      sale_bd = #{record.saleBd},
+      sale_bd = #{record.},
+      bo_id = #{record.boid},
       settlement_account = #{record.settlementAccount},
       company_type = #{record.companyType},
       pay_period_pay_status = #{record.payPeriodPayStatus},
@@ -895,6 +917,9 @@
         <if test="companyName != null">
             company_name = #{companyName},
         </if>
+        <if test="companyFullName != null">
+          company_full_name = #{companyFullName},
+        </if>
         <if test="payPeriodStatus != null">
             pay_period_status = #{payPeriodStatus},
         </if>
@@ -903,6 +928,9 @@
         </if>
         <if test="saleBd != null">
             sale_bd = #{saleBd},
+        </if>
+        <if test="boId != null ">
+          bo_id = #{boId},
         </if>
         <if test="settlementAccount != null">
             settlement_account = #{settlementAccount},
@@ -976,9 +1004,11 @@
       last_pay_date = #{lastPayDate},
       company_code = #{companyCode},
       company_name = #{companyName},
+      company_full_name = #{companyFullName},
       pay_period_status = #{payPeriodStatus},
       push_supply_chain = #{pushSupplyChain},
       sale_bd = #{saleBd},
+      bo_id = #{boId},
       settlement_account = #{settlementAccount},
       company_type = #{companyType},
       pay_period_pay_status = #{payPeriodPayStatus},

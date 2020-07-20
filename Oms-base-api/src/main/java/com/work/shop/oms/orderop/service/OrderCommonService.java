@@ -3,6 +3,7 @@ package com.work.shop.oms.orderop.service;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.ship.request.DistOrderShipRequest;
 import com.work.shop.oms.ship.response.DistOrderShipResponse;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -242,4 +243,16 @@ public interface OrderCommonService {
      * @return
      */
     ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo);
+
+
+	/***
+	 * 主订单编辑创业团队id和盈合商品id
+	 * @param masterOrderDetail 订单信息
+	 * @param actionUser  修改人
+	 * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+	 * @author wk
+	 * @date 2020/6/23
+	 **/
+	ReturnInfo<String> editBindTeam(String actionUser, MasterOrderDetail masterOrderDetail);
+
 }

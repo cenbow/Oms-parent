@@ -206,7 +206,7 @@
     <result column="tax_rate" jdbcType="DECIMAL" property="taxRate" />
     <result column="base_bv_value" jdbcType="INTEGER" property="baseBvValue" />
   </resultMap>
-  <select id="getXOMSMasterOrderGoods" parameterType="String" resultMap="MasterOrderGoodsBaseResultMap">
+  <select id="getXOMSMasterOrderGoods" parameterType="string" resultMap="MasterOrderGoodsBaseResultMap">
 	SELECT
 		id,
 		depot_code,
@@ -328,7 +328,7 @@
     <result column="promotion_id" jdbcType="VARCHAR" property="promotionId" />
   </resultMap>
   
-  <select id="getXOMSOrderReturnGoods" parameterType="String" resultMap="OrderReturnGoodsBaseResultMap">
+  <select id="getXOMSOrderReturnGoods" parameterType="string" resultMap="OrderReturnGoodsBaseResultMap">
 	<!-- SELECT
 		id,
 		relating_return_sn,
@@ -467,6 +467,7 @@
   <resultMap id="OrderItemGoodsDetailMap" type="com.work.shop.oms.common.bean.OrderItemGoodsDetail">
     <id column="goods_id" jdbcType="BIGINT" property="goodsId" />
     <result column="depot_code" jdbcType="VARCHAR" property="depotCode" />
+    <result column="seller_code" jdbcType="VARCHAR" property="sellerCode" />
     <result column="master_order_sn" jdbcType="VARCHAR" property="masterOrderSn" />
     <result column="order_sn" jdbcType="VARCHAR" property="orderSn" />
     <result column="goods_name" jdbcType="VARCHAR" property="goodsName" />
@@ -476,8 +477,10 @@
     <result column="goods_number" jdbcType="INTEGER" property="goodsNumber" />
     <result column="goods_decimal_number" jdbcType="DECIMAL" property="goodsDecimalNumber" />
     <result column="goods_price" jdbcType="DECIMAL" property="goodsPrice" />
+    <result column="goods_price_no_tax" jdbcType="DECIMAL" property="goodsPriceNoTax" />
     <result column="market_price" jdbcType="DECIMAL" property="marketPrice" />
     <result column="transaction_price" jdbcType="DECIMAL" property="transactionPrice" />
+    <result column="transaction_price_no_tax" jdbcType="DECIMAL" property="transactionPriceNoTax" />
     <result column="settlement_price" jdbcType="DECIMAL" property="settlementPrice" />
     <result column="discount" jdbcType="REAL" property="discount" />
     <result column="integral_money" jdbcType="DECIMAL" property="integralMoney" />
@@ -545,12 +548,14 @@
     <result column="input_tax" property="inputTax" />
     <result column="output_tax" property="outputTax" />
     <result column="cost_price" property="costPrice" />
+    <result column="order_from" property="sellerCode" />
   </resultMap>
   
   <select id="getOrderGoodsDetail" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
         SELECT 
             t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code, 
-            t.extension_id, SUM(t.goods_number) AS goods_number,SUM(t.goods_decimal_number) AS goodsDecimalNumber, t.market_price, t.goods_price, t.transaction_price, t.settlement_price, t.discount AS discount,
+            t.extension_id, SUM(t.goods_number) AS goods_number,SUM(t.goods_decimal_number) AS goodsDecimalNumber, t.market_price,
+            t.goods_price,t.goods_price_no_tax, t.transaction_price_no_tax, t.transaction_price, t.settlement_price, t.discount AS discount,
             t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb, 
             SUM(t.send_number) AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points, 
             t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId, 
@@ -563,9 +568,11 @@
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.customer_material_name customerMaterialName,
             t.buyer_no buyerNo, t.buyer_line_no buyerLineNo, t.input_tax inputTax, t.output_tax outputTax, t.cost_price costPrice,
             t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number, t.purchases_without_stock_flag
-            ,t.without_stock_delivery_cycle,t.without_stock_depot_no,t.data_sources,t.goods_payment_period_id
+            ,t.without_stock_delivery_cycle,t.without_stock_depot_no,t.data_sources,t.goods_payment_period_id,i.order_from sellerCode
         FROM 
             master_order_goods t
+        left join master_order_info i
+        on i.master_order_sn =  t.master_order_sn
         LEFT JOIN
             order_depot_ship b 
         ON b.order_sn = t.order_sn 
@@ -589,7 +596,7 @@
     <select id="getOrderGoodsDetailByOrder" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
         SELECT
             t.id AS goods_id, t.depot_code, t.master_order_sn, t.order_sn, t.goods_name, t.custom_code, t.extension_code,
-            t.extension_id, t.goods_number AS goods_number,t.goods_decimal_number AS goodsDecimalNumber, t.goods_price, t.market_price, t.transaction_price, t.settlement_price, t.discount AS discount,
+            t.extension_id, t.goods_number AS goods_number,t.goods_decimal_number AS goodsDecimalNumber, t.goods_price,t.goods_price_no_tax, t.market_price, t.transaction_price,t.transaction_price_no_tax, t.settlement_price, t.discount AS discount,
             t.integral_money, t.integral, t.group_name, t.goods_size_name, t.goods_color_name, t.goods_thumb,
             t.send_number AS send_number, t.parent_sn, t.merge_from, t.exchange_from, t.promotion_desc, t.rank_points, t.pay_points,
             t.use_card, t.share_bonus, t.share_surplus, t.made_flag, t.charge_back_count, t.containerId,
@@ -597,9 +604,10 @@
             t.goods_sn, t.sap, t.bv_value,t.expected_ship_date,t.tax,t.tax_rate,t.base_bv_value,
             t.box_gauge, t.min_buy_num minBuyNum, t.customer_material_code customerMaterialCode, t.buy_unit buyUnit,
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.invoice_no invoiceNo,
-            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number
+            t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number,i.order_from sellerCode,t.input_tax,t.output_tax
         FROM
             master_order_goods t
+        left join master_order_info i on t.master_order_sn = i.master_order_sn
         where
             t.is_del = 0
             and t.order_sn in
