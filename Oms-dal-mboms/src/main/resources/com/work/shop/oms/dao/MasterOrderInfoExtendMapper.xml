@@ -588,6 +588,12 @@
       <include refid="Example_Where_Clause" />
     </if>
   </select>
+  <select id="selectOrderSnByGroupId" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
+    select moie.master_order_sn
+    from master_order_info_extend moie inner join master_order_info moi on moie.master_order_sn=moi.master_order_sn
+    where moi.order_status != 2
+
+  </select>
   <update id="updateByExampleSelective" parameterType="map">
     <!--
       WARNING - @mbggenerated

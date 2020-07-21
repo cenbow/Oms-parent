@@ -155,6 +155,11 @@ public class ProductGroupBuyBean {
      */
     private String masterOrderSn;
 
+    /**
+     * 参与团购方式（1：下单参与，2：付预付款参与）
+     */
+    private Integer participateGroupType;
+
 
 
 }
