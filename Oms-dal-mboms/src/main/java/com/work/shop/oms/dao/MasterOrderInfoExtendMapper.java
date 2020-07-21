@@ -106,4 +106,6 @@ public interface MasterOrderInfoExtendMapper {
      */
     @Writer
     int updateByPrimaryKey(MasterOrderInfoExtend record);
+
+    List<MasterOrderInfoExtend> selectOrderSnByGroupId(Integer groupId);
 }

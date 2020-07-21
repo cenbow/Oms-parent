@@ -1191,6 +1191,9 @@
       <if test="sourceCode != null">
         source_code = #{sourceCode,jdbcType=VARCHAR},
       </if>
+      <if test="balanceAmount != null">
+        balance_amount = #{balanceAmount,jdbcType=DECIMAL},
+      </if>
       <if test="shippingTotalFee != null">
         shipping_total_fee = #{shippingTotalFee,jdbcType=DECIMAL},
       </if>
