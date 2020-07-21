@@ -58,6 +58,9 @@ public class TaskServiceCall implements ITaskServiceCall{
 	@Resource
 	private OrderShipReceiveTask orderShipReceiveTask;
 
+	@Resource
+	private OrderGroupBuyTask orderGroupBuyTask;
+
     /**
      * 处理订单任务
      * @param para
@@ -101,6 +104,9 @@ public class TaskServiceCall implements ITaskServiceCall{
 			} else if (ConstantTask.TASK_JOB_TYPE_ORDER_SHIP_RECEIVE_TASK.equals(type)) {
 				// 订单发货超时签收
 				taskManagerFactory.processTask(orderShipReceiveTask);
+			} else if (ConstantTask.TASK_JOB_TYPE_ORDER_GROUP_BUY_TASK.equals(type)) {
+				// 团购订单未按时支付尾款，取消订单
+				taskManagerFactory.processTask(orderGroupBuyTask);
 			} else{
 				throw new RuntimeException(type + "无法解析任务类型");
 			}

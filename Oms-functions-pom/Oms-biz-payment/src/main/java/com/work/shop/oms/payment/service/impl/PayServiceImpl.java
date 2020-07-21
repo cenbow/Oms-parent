@@ -270,11 +270,11 @@ public class PayServiceImpl implements PayService {
 	@Resource
 	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
-	@Resource
-	private OrderQuestionService orderQuestionService;
+//	@Resource
+//	private OrderQuestionService orderQuestionService;
 
-	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
-	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
+//	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
+//	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
 
 	/**
 	 * 订单支付成功
@@ -315,11 +315,11 @@ public class PayServiceImpl implements PayService {
 					//设置团购问题单
 					orderStatus = new OrderStatus();
 					orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
-					orderQuestionService.questionOrderByMasterSn(masterOrderInfo.getMasterOrderSn(), orderStatus);
+				//	orderQuestionService.questionOrderByMasterSn(masterOrderInfo.getMasterOrderSn(), orderStatus);
 
-					String addRewardPointChangeLogMQ = JSONObject.toJSONString();
-					logger.info("添加积分变更记录下发:" + addRewardPointChangeLogMQ);
-					groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ)););
+//					String addRewardPointChangeLogMQ = JSONObject.toJSONString();
+//					logger.info("团购信息:" + addRewardPointChangeLogMQ);
+//					groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(addRewardPointChangeLogMQ)););
 					//下发团购mq
 					return new ReturnInfo(Constant.OS_YES);
 				}else if(masterOrderInfoExtend.getIsOperationConfirmPay() == 0){
