@@ -95,6 +95,9 @@ public class OrderItemDetail implements Serializable {
 	private Integer invoiceStatus;//发票状态
 	private Integer deliveryStationId;//发票ID
     private String invPhone;//发票注册电话
+	private Integer isConfirmPay;
+	private Integer isOperationConfirmPay;
+
 	//主单地址信息表字段
 	private String consignee;//收货人的姓名
 	private String country;//收货人的国家
@@ -1564,5 +1567,21 @@ public class OrderItemDetail implements Serializable {
 
 	public void setBoId(String boId) {
 		this.boId = boId;
+	}
+
+	public Integer getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Integer isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Integer getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Integer isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
 	}
 }

@@ -294,6 +294,13 @@ public class OrderQueryServiceImpl implements OrderQueryService {
             criteria.andPayIdEqualTo(payId);
         }
 
+        //是否为团购订单
+        Integer isGroup=request.getIsGroup();
+        if (isGroup != null) {
+            condition = false;
+            criteria.andIsGroupEqualTo(isGroup);
+        }
+
         //公司id
         String companyId = request.getCompanyId();
         if (StringUtils.isNotBlank(companyId)) {
