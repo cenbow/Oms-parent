@@ -166,6 +166,6 @@
     select
     <include refid="Base_Column_List" />
     from bo_supplier_cooperation
-    where bo_id = #{boId}
+    where  cooperation_status = 1 and bo_id = #{boId}
   </select>
 </mapper>

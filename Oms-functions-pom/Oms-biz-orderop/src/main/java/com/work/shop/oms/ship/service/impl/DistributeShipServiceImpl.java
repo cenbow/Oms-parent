@@ -1670,7 +1670,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     map.put("masterOrderSn",masterOrderInfo.getMasterOrderSn());
                     map.put("orderSn",orderDistribute.getOrderSn());
                     map.put("userId",masterOrderInfo.getUserId());
-                    logger.info("下发销售结算单MQ信息异常:" + JSON.toJSONString(map));
+                    logger.info("下发销售结算单MQ信息:" + JSON.toJSONString(map));
                     uploadSaleSettlementJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(map)));
                 }
             }
