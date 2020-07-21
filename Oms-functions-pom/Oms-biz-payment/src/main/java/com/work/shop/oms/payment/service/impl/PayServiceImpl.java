@@ -2,14 +2,14 @@ package com.work.shop.oms.payment.service.impl;
 
 import java.math.BigDecimal;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
+import com.work.shop.oms.dao.*;
+import com.work.shop.oms.orderop.service.OrderQuestionService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -18,24 +18,11 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayBack;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.MergeOrderPay;
-import com.work.shop.oms.bean.OrderPeriodDetail;
-import com.work.shop.oms.bean.SystemPayment;
-import com.work.shop.oms.bean.SystemPaymentExample;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.MasterPay;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.config.service.OrderPeriodDetailService;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayBackMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.MergeOrderPayMapper;
-import com.work.shop.oms.dao.SystemPaymentMapper;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.feign.OrderManagementService;
 import com.work.shop.oms.order.request.OrderManagementRequest;
@@ -63,6 +50,8 @@ public class PayServiceImpl implements PayService {
 	MergeOrderPayMapper mergeOrderPayMapper;
 	@Resource
 	MasterOrderInfoMapper masterOrderInfoMapper;
+	@Resource
+	MasterOrderGoodsMapper masterOrderGoodsMapper;
 	//@Resource
 //	OrderConfirmService orderConfirmService;
 	@Resource
@@ -277,6 +266,15 @@ public class PayServiceImpl implements PayService {
 		}
 	}
 
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+	@Resource
+	private OrderQuestionService orderQuestionService;
+
+	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
+	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
+
 	/**
 	 * 订单支付成功
 	 * @param orderStatus
@@ -299,6 +297,59 @@ public class PayServiceImpl implements PayService {
 			if (null == masterOrderInfo) {
 				throw new Exception("没有找到订单：" + masterOrderSn);
 			}
+			//判断是否为团购单
+			MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
+			example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+			List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
+			if(masterOrderInfoExtend.getGroupId() != null){
+				//判断是预付款还是尾款 -1为未确认，0为预付款，1为尾款 ，前端只显示一个按钮，必须先确认预付款才有尾款
+				if(masterOrderInfoExtend.getIsOperationConfirmPay() == -1) {
+					//设置支付单为部分付款，并填充付款金额
+					MasterOrderPay record = new MasterOrderPay();
+					record.setMasterPaySn(paySn);
+					record.setPayStatus(Byte.valueOf("1"));
+					masterOrderPayMapper.updateByPrimaryKeySelective(record);
+
+					//设置团购问题单
+					orderStatus = new OrderStatus();
+					orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
+					orderQuestionService.questionOrderByMasterSn(masterOrderInfo.getMasterOrderSn(), orderStatus);
+
+					//查询订单商品
+					HashMap<String, Integer> goodsMap = new HashMap<>();
+					MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
+					goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+					List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
+					int number=0;
+					for (MasterOrderGoods orderGood : orderGoods) {
+						number += orderGood.getGoodsNumber();
+					}
+					ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
+					productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
+					productGroupBuyBean.setMasterOrderSn(masterOrderSn);
+					productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
+					productGroupBuyBean.setOrderMoney(masterOrderInfo.getGoodsAmount());
+					String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
+					logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
+					groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
+					//下发团购mq
+					return new ReturnInfo(Constant.OS_YES);
+				}else if(masterOrderInfoExtend.getIsOperationConfirmPay() == 0){
+					//尾款，团购订单成功，单子设置为正常单，填充对应金额
+					MasterOrderPay record = new MasterOrderPay();
+					record.setMasterPaySn(paySn);
+					record.setPayStatus(Byte.valueOf("2"));
+					masterOrderPayMapper.updateByPrimaryKeySelective(record);
+
+					//订单改为正常单
+					MasterOrderInfo masterOrderInfoParam = new MasterOrderInfo();
+					masterOrderInfoParam.setMasterOrderSn(masterOrderInfo.getMasterOrderSn());
+					masterOrderInfoParam.setQuestionStatus(0);
+					masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoParam);
+				}
+			}
+
 			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
 				throw new Exception("支付单：" + paySn + "已支付，不能进行支付操作！");
 			}

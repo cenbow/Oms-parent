@@ -213,6 +213,9 @@
       <if test="paymentRate != null">
         payment_rate,
       </if>
+      <if test="prepayments != null">
+      prepayments,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="masterPaySn != null">
@@ -256,6 +259,9 @@
       </if>
       <if test="paymentRate != null">
         #{paymentRate,jdbcType=DECIMAL},
+      </if>
+      <if test="prepayments != null">
+        #{prepayments,jdbcType=DECIMAL},
       </if>
     </trim>
   </insert>

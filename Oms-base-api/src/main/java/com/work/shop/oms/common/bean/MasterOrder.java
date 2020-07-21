@@ -74,6 +74,10 @@ public class MasterOrder implements Serializable{
      * 外部交易号
      */
 	private String orderOutSn;
+    /**
+     * 团购预付款金额
+     */
+	private BigDecimal prepayments;
 
     /**
      * 订单当日流水号
@@ -320,6 +324,14 @@ public class MasterOrder implements Serializable{
      * 订单是否为团购
      */
 	private short isGroup;
+    /**
+     * 团购id
+     */
+	private Integer groupId;
+    /**
+     * 团购名称
+     */
+	private String groupName;
 
     /**
      * 是否为预售商品
@@ -537,6 +549,30 @@ public class MasterOrder implements Serializable{
 	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
 	 */
 	private Integer priceChangeStatus;
+
+    public BigDecimal getPrepayments() {
+        return prepayments;
+    }
+
+    public void setPrepayments(BigDecimal prepayments) {
+        this.prepayments = prepayments;
+    }
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
 
 	public String getUserId() {
 		return userId;

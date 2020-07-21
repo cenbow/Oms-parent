@@ -513,6 +513,9 @@
         <if test="priceChangeStatus != null" >
           price_change_status,
         </if>
+        <if test="prepayments != null" >
+          prepayments,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="masterOrderSn != null">
@@ -745,6 +748,9 @@
         </if>
         <if test="priceChangeStatus != null" >
           #{priceChangeStatus,jdbcType=INTEGER},
+        </if>
+        <if test="prepayments != null" >
+          #{prepayments,jdbcType=DECIMAL},
         </if>
     </trim>
   </insert>
@@ -1184,6 +1190,9 @@
       </if>
       <if test="sourceCode != null">
         source_code = #{sourceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="balanceAmount != null">
+        balance_amount = #{balanceAmount,jdbcType=DECIMAL},
       </if>
       <if test="shippingTotalFee != null">
         shipping_total_fee = #{shippingTotalFee,jdbcType=DECIMAL},

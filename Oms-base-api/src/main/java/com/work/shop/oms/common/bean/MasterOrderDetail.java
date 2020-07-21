@@ -127,6 +127,8 @@ public class MasterOrderDetail implements Serializable {
 	private Integer deliveryStationId;// 发票ID
     private String invPhone;
     private Byte pushSupplyChain; //订单推送供应链，0未推送，1已推送
+	private Integer isConfirmPay;
+	private Integer isOperationConfirmPay;
 
     /**
      * 是否需要审核 0不需要、1需要
@@ -1519,5 +1521,22 @@ public class MasterOrderDetail implements Serializable {
 
 	public void setBoId(String boId) {
 		this.boId = boId;
+	}
+
+
+	public Integer getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Integer isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Integer getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Integer isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
 	}
 }
