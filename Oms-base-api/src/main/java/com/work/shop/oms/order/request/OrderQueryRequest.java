@@ -247,6 +247,12 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private String erpOrderNo;
 
+
+	/**
+	 * 是否为 团购订单    0  不是， 1 团购订单
+	 */
+	private Integer isGroup;
+
 	public String getErpOrderNo() {
 		return erpOrderNo;
 	}
@@ -629,5 +635,13 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setCompanyFullName(String companyFullName) {
 		this.companyFullName = companyFullName;
+	}
+
+	public Integer getIsGroup() {
+		return isGroup;
+	}
+
+	public void setIsGroup(Integer isGroup) {
+		this.isGroup = isGroup;
 	}
 }
