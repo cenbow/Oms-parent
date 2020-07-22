@@ -936,7 +936,7 @@ public class OrderItemGoodsDetail implements Serializable {
                 noTaxDate = new Date(time);
             }catch (Exception e) {}
             //只有是自营的订单商品 且订单创建时间比未税上线时间晚
-            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode) && null != noTaxDate && addTime.compareTo(noTaxDate) > 0) {
+            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode) && null != noTaxDate && null != addTime && addTime.compareTo(noTaxDate) > 0) {
                 if (null == transactionPriceNoTax) {
                     transactionPriceNoTax = BigDecimal.ZERO;
                 }
