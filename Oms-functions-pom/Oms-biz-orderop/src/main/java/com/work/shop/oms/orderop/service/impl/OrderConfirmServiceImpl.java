@@ -2,36 +2,14 @@ package com.work.shop.oms.orderop.service.impl;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.MasterOrderAction;
-import com.work.shop.oms.bean.MasterOrderAddressInfo;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.MasterOrderQuestion;
-import com.work.shop.oms.bean.MasterOrderQuestionExample;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.OrderReturn;
-import com.work.shop.oms.bean.OrderReturnExample;
-import com.work.shop.oms.bean.OrderReturnShip;
-import com.work.shop.oms.bean.SystemPayment;
+import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bimonitor.service.BIMonitorService;
 import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.dao.MasterOrderAddressInfoMapper;
-import com.work.shop.oms.dao.MasterOrderInfoExtendMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.MasterOrderQuestionMapper;
-import com.work.shop.oms.dao.OrderCustomDefineMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.OrderReturnMapper;
-import com.work.shop.oms.dao.OrderReturnShipMapper;
-import com.work.shop.oms.dao.SystemPaymentMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.distribute.service.DistributeSupplierService;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.erp.service.ErpInterfaceProxy;
@@ -42,6 +20,7 @@ import com.work.shop.oms.order.service.MasterOrderPayService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
 import com.work.shop.oms.orderop.service.OrderDistributeEditService;
 import com.work.shop.oms.orderop.service.OrderDistributeOpService;
+import com.work.shop.oms.orderop.service.OrderQuestionService;
 import com.work.shop.oms.payment.feign.PayService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
@@ -53,8 +32,10 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -622,6 +603,16 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		return info;
 	}
 
+
+	@Resource
+	private OrderQuestionService orderQuestionService;
+
+	@Resource
+	private MasterOrderGoodsMapper masterOrderGoodsMapper;
+
+	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
+	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
+
 	/**
 	 * 主订单确认(共用方法)
 	 * 
@@ -646,6 +637,39 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			updateMaster.setConfirmTime(new Date());
 			updateMaster.setMasterOrderSn(masterOrderSn);
 			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+
+			//查询订单扩展，判断是否为团购订单
+			MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
+			example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+			List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
+			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
+			if(masterOrderInfoExtend.getGroupId() != null){
+				//代表是团购订单，判断是否是预付款，预付款判断为订单状态是否为部分付款
+				if(master.getPayStatus() == 1){
+					//记录团购问题单
+					orderStatus = new OrderStatus();
+					orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
+					orderQuestionService.questionOrderByMasterSn(masterOrderSn, orderStatus);
+
+					HashMap<String, Integer> goodsMap = new HashMap<>();
+					MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
+					goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+					List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
+					int number=0;
+					for (MasterOrderGoods orderGood : orderGoods) {
+						number += orderGood.getGoodsNumber();
+					}
+					ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
+					productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
+					productGroupBuyBean.setMasterOrderSn(masterOrderSn);
+					productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
+					productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
+					String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
+					logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
+					groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
+				}
+			}
 			//订单操作记录
 			// 库存占用
 			if(!OrderAttributeUtil.isPosOrder(master.getSource())) {
