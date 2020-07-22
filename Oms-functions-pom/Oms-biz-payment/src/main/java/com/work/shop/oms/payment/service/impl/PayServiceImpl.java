@@ -269,11 +269,11 @@ public class PayServiceImpl implements PayService {
 	@Resource
 	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
-	@Resource
-	private OrderQuestionService orderQuestionService;
+	/*@Resource
+	private OrderQuestionService orderQuestionService;*/
 
-	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
-	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
+	/*@Resource(name = "groupBuyMessageSummaryJmsTemplate")
+	private JmsTemplate groupBuyMessageSummaryJmsTemplate;*/
 
 	/**
 	 * 订单支付成功
@@ -314,7 +314,7 @@ public class PayServiceImpl implements PayService {
 					//设置团购问题单
 					orderStatus = new OrderStatus();
 					orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
-					orderQuestionService.questionOrderByMasterSn(masterOrderInfo.getMasterOrderSn(), orderStatus);
+					//orderQuestionService.questionOrderByMasterSn(masterOrderInfo.getMasterOrderSn(), orderStatus);
 
 					//查询订单商品
 					HashMap<String, Integer> goodsMap = new HashMap<>();
@@ -332,7 +332,7 @@ public class PayServiceImpl implements PayService {
 					productGroupBuyBean.setOrderMoney(masterOrderInfo.getGoodsAmount());
 					String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
 					logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
-					groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
+					//groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
 					//下发团购mq
 					return new ReturnInfo(Constant.OS_YES);
 				}else if(masterOrderInfoExtend.getIsOperationConfirmPay() == 0){

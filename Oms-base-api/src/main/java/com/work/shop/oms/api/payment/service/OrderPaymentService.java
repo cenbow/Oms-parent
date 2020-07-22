@@ -69,4 +69,5 @@ public interface OrderPaymentService {
 	 */
 	ApiReturnData<List<MasterOrderPay>> getOrderPaySnByMergePaySn(String paySn);
 
+    ApiReturnData<MasterOrderPay> getGroupBuyOrderPay(String masterOrderSn);
 }
