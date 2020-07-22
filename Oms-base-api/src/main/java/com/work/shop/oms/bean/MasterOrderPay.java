@@ -126,6 +126,32 @@ public class MasterOrderPay implements Serializable{
      */
     private BigDecimal prepayments;
 
+    /**
+     *尾款金额
+     */
+    private BigDecimal balanceAmount;
+
+    /**
+     * 客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效
+     */
+    private Byte isConfirmPay;
+
+    public Byte getIsConfirmPay() {
+        return isConfirmPay;
+    }
+
+    public void setIsConfirmPay(Byte isConfirmPay) {
+        this.isConfirmPay = isConfirmPay;
+    }
+
+    public BigDecimal getBalanceAmount() {
+        return balanceAmount;
+    }
+
+    public void setBalanceAmount(BigDecimal balanceAmount) {
+        this.balanceAmount = balanceAmount;
+    }
+
     public BigDecimal getPrepayments() {
         return prepayments;
     }

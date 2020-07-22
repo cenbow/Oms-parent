@@ -283,6 +283,44 @@ public class OrderPageInfo implements Serializable{
 	 * 盈合id
 	 */
 	private String boId;
+	/**
+	 * 团购id
+	 */
+	private Integer groupId;
+
+	/**
+	 *团购开始时间
+	 */
+	private Date groupBuyBeginTime;
+
+	/**
+	 *团购结束时间
+	 */
+	private Date groupBuyEndTime;
+
+	public Date getGroupBuyBeginTime() {
+		return groupBuyBeginTime;
+	}
+
+	public void setGroupBuyBeginTime(Date groupBuyBeginTime) {
+		this.groupBuyBeginTime = groupBuyBeginTime;
+	}
+
+	public Date getGroupBuyEndTime() {
+		return groupBuyEndTime;
+	}
+
+	public void setGroupBuyEndTime(Date groupBuyEndTime) {
+		this.groupBuyEndTime = groupBuyEndTime;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
 
 	public String getChannelCode() {
 		return channelCode;

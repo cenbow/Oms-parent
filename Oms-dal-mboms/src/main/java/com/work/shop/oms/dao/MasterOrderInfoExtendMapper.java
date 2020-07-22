@@ -108,4 +108,6 @@ public interface MasterOrderInfoExtendMapper {
     int updateByPrimaryKey(MasterOrderInfoExtend record);
 
     List<MasterOrderInfoExtend> selectOrderSnByGroupId(Integer groupId);
+
+    List<MasterOrderInfoExtend> selectGroupIdByOrderSnList(List<String> orderSns);
 }
