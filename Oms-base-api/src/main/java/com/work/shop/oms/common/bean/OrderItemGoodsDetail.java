@@ -63,6 +63,10 @@ public class OrderItemGoodsDetail implements Serializable {
 	private Date deliveryTime;
 
 	private Date pickupDate;
+    /**
+     * 订单创建时间
+     */
+	private Date addTime;
 
 	private String shippingStatusName;
 
@@ -410,7 +414,15 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.masterOrderSn = masterOrderSn == null ? null : masterOrderSn.trim();
 	}
 
-	public String getOrderSn() {
+    public Date getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(Date addTime) {
+        this.addTime = addTime;
+    }
+
+    public String getOrderSn() {
 		return orderSn;
 	}
 
@@ -916,7 +928,15 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public BigDecimal getSubTotal() {
         if (null == subTotal || subTotal.doubleValue() == 0) {
-            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode)) {
+            //未税上线时间戳 2020-07-21 00:00:00
+            long time = 1595260800000L;
+            Date noTaxDate = null;
+            try{
+                //转换城时间格式
+                noTaxDate = new Date(time);
+            }catch (Exception e) {}
+            //只有是自营的订单商品 且订单创建时间比未税上线时间晚
+            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode) && null != noTaxDate && addTime.compareTo(noTaxDate) > 0) {
                 if (null == transactionPriceNoTax) {
                     transactionPriceNoTax = BigDecimal.ZERO;
                 }
