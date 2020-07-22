@@ -549,7 +549,6 @@
     <result column="output_tax" property="outputTax" />
     <result column="cost_price" property="costPrice" />
     <result column="order_from" property="sellerCode" />
-    <result column="add_time" property="addTime" />
   </resultMap>
   
   <select id="getOrderGoodsDetail" parameterType="java.lang.String" resultMap="OrderItemGoodsDetailMap">
@@ -569,7 +568,7 @@
             t.delivery_cycle deliveryCycle, t.goods_prop goodsProp, t.supplier_name supplierName, t.customer_material_name customerMaterialName,
             t.buyer_no buyerNo, t.buyer_line_no buyerLineNo, t.input_tax inputTax, t.output_tax outputTax, t.cost_price costPrice,
             t.goods_add_price goodsAddPrice, t.with_stock_number ,t.without_stock_number, t.purchases_without_stock_flag
-            ,t.without_stock_delivery_cycle,t.without_stock_depot_no,t.data_sources,t.goods_payment_period_id,i.order_from sellerCode,i.add_time addTime
+            ,t.without_stock_delivery_cycle,t.without_stock_depot_no,t.data_sources,t.goods_payment_period_id,i.order_from sellerCode
         FROM 
             master_order_goods t
         left join master_order_info i
