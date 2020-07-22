@@ -649,6 +649,25 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         return data;
     }
 
+	@Override
+	public ApiReturnData<MasterOrderPay> getGroupBuyOrderPay(String masterOrderSn) {
+		ApiReturnData<MasterOrderPay> returnData = new ApiReturnData<>();
+		returnData.setIsOk("0");
+		MasterOrderInfoExtend infoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+		if (infoExtend == null || infoExtend.getIsConfirmPay() == 0) {
+			returnData.setMessage("订单查询有误");
+			return returnData;
+		}
+		MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSn);
+		if (masterOrderPay != null) {
+			masterOrderPay.setIsConfirmPay(infoExtend.getIsConfirmPay());
+			returnData.setData(masterOrderPay);
+			returnData.setIsOk("1");
+			return returnData;
+		}
+		return returnData;
+	}
+
 	/**
 	 * 根据支付单号获取对应的订单号
 	 * @param paySn 支付单号

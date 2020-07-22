@@ -269,7 +269,14 @@ public class PayServiceImpl implements PayService {
 		}
 	}
 
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
+	@Resource
+	private OrderQuestionService orderQuestionService;
+
+	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
+	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
 
 	/**
 	 * 订单支付成功
@@ -307,6 +314,28 @@ public class PayServiceImpl implements PayService {
 					record.setPayStatus(Byte.valueOf("1"));
 					masterOrderPayMapper.updateByPrimaryKeySelective(record);
 
+					//设置团购问题单
+					orderStatus = new OrderStatus();
+					orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
+					//orderQuestionService.questionOrderByMasterSn(masterOrderInfo.getMasterOrderSn(), orderStatus);
+
+					//查询订单商品
+					HashMap<String, Integer> goodsMap = new HashMap<>();
+					MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
+					goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+					List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
+					int number=0;
+					for (MasterOrderGoods orderGood : orderGoods) {
+						number += orderGood.getGoodsNumber();
+					}
+					ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
+					productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
+					productGroupBuyBean.setMasterOrderSn(masterOrderSn);
+					productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
+					productGroupBuyBean.setOrderMoney(masterOrderInfo.getGoodsAmount());
+					String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
+					logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
+					//groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
 					//下发团购mq
 					return new ReturnInfo(Constant.OS_YES);
 				}else if(masterOrderInfoExtend.getIsOperationConfirmPay() == 0){

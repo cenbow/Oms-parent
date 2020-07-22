@@ -598,6 +598,14 @@
     where moi.order_status != 2
 
   </select>
+  <select id="selectGroupIdByOrderSnList" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
+        select group_id groupId,master_order_sn masterOrderSn
+        from master_order_info_extend
+        where master_order_sn in
+        <foreach collection="list" open="(" close=")" separator="," item="item">
+          #{item}
+        </foreach>
+  </select>
   <update id="updateByExampleSelective" parameterType="map">
     <!--
       WARNING - @mbggenerated

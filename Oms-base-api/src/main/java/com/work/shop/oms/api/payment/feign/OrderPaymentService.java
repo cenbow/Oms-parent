@@ -80,4 +80,12 @@ public interface OrderPaymentService {
      */
     @PostMapping("/order/getOrderPaySnByMergePaySn")
     ApiReturnData<List<MasterOrderPay>> getOrderPaySnByMergePaySn(@RequestParam(name="paySn") String paySn);
+
+    /**
+     * 根据订单号获取团购的支付信息(预付款,尾款)
+     * @param masterOrderSn 订单号
+     * @return ApiReturnData<List<String>>
+     */
+    @PostMapping("/order/getGroupBuyOrderPay")
+    ApiReturnData<MasterOrderPay> getGroupBuyOrderPay(@RequestParam(name="masterOrderSn") String masterOrderSn);
 }

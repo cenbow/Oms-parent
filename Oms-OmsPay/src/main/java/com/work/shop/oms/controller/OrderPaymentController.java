@@ -8,6 +8,7 @@ import com.work.shop.oms.api.payment.service.OrderPaymentService;
 import com.work.shop.oms.bean.MasterOrderPay;
 import com.work.shop.oms.common.bean.ApiReturnData;
 import com.work.shop.oms.utils.Constant;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
 
@@ -168,5 +169,21 @@ public class OrderPaymentController {
         }
 
         return returnBean;
+    }
+
+    /**
+     * 根据订单号获取团购的支付信息(预付款,尾款)
+     * @param masterOrderSn 订单号
+     * @return ApiReturnData<List<String>>
+     */
+    @PostMapping("/getGroupBuyOrderPay")
+    ApiReturnData<MasterOrderPay> getGroupBuyOrderPay(@RequestParam(name="masterOrderSn") String masterOrderSn) {
+        ApiReturnData<MasterOrderPay> returnData = new ApiReturnData<MasterOrderPay>();
+        returnData.setIsOk("0");
+        if (StringUtils.isBlank(masterOrderSn)) {
+            returnData.setMessage("订单号为空");
+            return returnData;
+        }
+        return orderPaymentService.getGroupBuyOrderPay(masterOrderSn);
     }
 }
