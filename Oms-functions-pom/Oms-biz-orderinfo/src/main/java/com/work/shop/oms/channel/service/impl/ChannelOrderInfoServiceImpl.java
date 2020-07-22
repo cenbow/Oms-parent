@@ -1,12 +1,7 @@
 package com.work.shop.oms.channel.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -20,6 +15,9 @@ import com.work.shop.oms.order.service.GoodsReturnChangeService;
 import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.utils.DateTimeUtils;
 import com.work.shop.oms.utils.StringUtil;
+import com.work.shop.pca.common.ResultData;
+import com.work.shop.pca.feign.BgProductService;
+import com.work.shop.pca.model.BgGroupBuyInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -101,6 +99,9 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
     @Resource
     private SystemPaymentService systemPaymentService;
+
+    @Resource
+    private BgProductService bgProductService;
     /**
      * 判断查询订单列表参数
      *
@@ -316,6 +317,10 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                         orderPageInfo.setSpecialType(Constant.SPECIAL_TYPE_INTERNAL_COMPANY_BUY_STORE_TIEXIN);
                 }
             }
+
+            //查询订单团购信息
+            getOrderGroupBuyInfo(pageList);
+
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             paging.setRoot(pageList);
             apiReturnData.setData(paging);
@@ -326,6 +331,48 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             apiReturnData.setIsOk(Constant.OS_STR_NO);
         }
         return apiReturnData;
+    }
+
+    /**
+     * 处理订单团购信息
+     * @param pageList
+     */
+    private void getOrderGroupBuyInfo(List<OrderPageInfo> pageList) {
+        if (CollectionUtils.isEmpty(pageList)) {
+            return;
+        }
+        Map<String, Integer> groupIdMap = new HashMap<>();
+        Set groupIdSet = new HashSet();
+        List<String> orderSns = pageList.stream().map(x -> x.getOrderSn()).collect(Collectors.toList());
+        List<MasterOrderInfoExtend> extendList=masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(orderSns);
+        for (MasterOrderInfoExtend extend : extendList) {
+            groupIdMap.put(extend.getMasterOrderSn(), extend.getGroupId());
+            if (extend.getGroupId() != null) {
+                groupIdSet.add(extend.getGroupId());
+            }
+        }
+        ResultData<List<BgGroupBuyInfo>> groupBuyInfoList=null;
+        if (CollectionUtils.isNotEmpty(groupIdSet)) {
+            groupBuyInfoList = bgProductService.getGroupBuyInfoBuGroupIds(new ArrayList<>(groupIdSet));
+        }
+        for (OrderPageInfo order : pageList) {
+            Integer groupId = groupIdMap.get(order.getOrderSn());
+            if (groupId == null) {
+                continue;
+            }
+            order.setGroupId(groupId);
+            if (groupBuyInfoList != null || groupBuyInfoList.getIsOk() == 1 || CollectionUtils.isNotEmpty(groupBuyInfoList.getData())) {
+
+                List<BgGroupBuyInfo> data = groupBuyInfoList.getData();
+                for (BgGroupBuyInfo buyInfo : data) {
+                    if (groupId.compareTo(buyInfo.getId()) == 0) {
+                        order.setGroupBuyBeginTime(buyInfo.getBeginTime());
+                        order.setGroupBuyEndTime(buyInfo.getEndTime());
+                    }
+                }
+
+            }
+        }
     }
 
     /**
