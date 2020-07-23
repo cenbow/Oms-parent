@@ -134,14 +134,14 @@ public class MasterOrderPay implements Serializable{
     /**
      * 客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效
      */
-    private Byte isConfirmPay;
+    private Byte isOperationConfirmPay;
 
-    public Byte getIsConfirmPay() {
-        return isConfirmPay;
+    public Byte getIsOperationConfirmPay() {
+        return isOperationConfirmPay;
     }
 
-    public void setIsConfirmPay(Byte isConfirmPay) {
-        this.isConfirmPay = isConfirmPay;
+    public void setIsOperationConfirmPay(Byte isOperationConfirmPay) {
+        this.isOperationConfirmPay = isOperationConfirmPay;
     }
 
     public BigDecimal getBalanceAmount() {

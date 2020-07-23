@@ -483,6 +483,30 @@ public class OrderDetailInfo  implements Serializable{
 	 * 团购ID
 	 */
 	private Integer groupId;
+	/**
+	 * 运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
+	 */
+	private Integer isOperationConfirmPay;
+	/**
+	 * 客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效
+	 */
+	private Integer isConfirmPay;
+
+	public Integer getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Integer isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
+	}
+
+	public Integer getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Integer isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
 
 	public Integer getGroupId() {
 		return groupId;

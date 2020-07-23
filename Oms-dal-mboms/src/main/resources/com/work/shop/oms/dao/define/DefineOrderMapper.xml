@@ -711,6 +711,8 @@
         oie.user_bank_no userBankNo,
         oie.group_id groupId,
         oie.user_pay_apply userPayApply,
+        oie.is_operation_confirm_pay isOperationConfirmPay,
+        oie.is_confirm_pay isConfirmPay,
         DATE_FORMAT(op.pay_time,'%Y-%m-%d %T') orderPayTime,
         oi.money_paid moneyPaid,
         op.pay_name paymentMethod,
