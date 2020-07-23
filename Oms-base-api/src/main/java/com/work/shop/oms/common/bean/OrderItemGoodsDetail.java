@@ -1,5 +1,7 @@
 package com.work.shop.oms.common.bean;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,6 +37,11 @@ public class OrderItemGoodsDetail implements Serializable {
 	 * 可用数量
 	 */
 	private String availableNumber;
+
+	/**
+	 *
+	 */
+	private Date addTime;
 
 	// 发货仓字段
 	private Byte shippingId;
@@ -380,6 +387,14 @@ public class OrderItemGoodsDetail implements Serializable {
 
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
+    }
+
+    public Date getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(Date addTime) {
+        this.addTime = addTime;
     }
 
     public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
@@ -916,8 +931,13 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public BigDecimal getSubTotal() {
         if (null == subTotal || subTotal.doubleValue() == 0) {
+            if (StringUtils.isNotEmpty(subTotalStr)) {
+                return new BigDecimal(subTotalStr);
+            }
+            long time = 1595260800000L;
+            Date noTaxDate = new Date(time);
             //只有是自营的订单商品 且订单创建时间比未税上线时间晚
-            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode)) {
+            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode) && null != addTime && addTime.compareTo(noTaxDate) > 0) {
                 if (null == transactionPriceNoTax) {
                     transactionPriceNoTax = BigDecimal.ZERO;
                 }
@@ -1159,9 +1179,10 @@ public class OrderItemGoodsDetail implements Serializable {
     }
 
     public String getSubTotalStr() {
-        BigDecimal subTotal = getSubTotal();
-        subTotalStr = "";
-        if (subTotal != null) {
+        if (StringUtils.isEmpty(subTotalStr)) {
+            if (subTotal == null) {
+                subTotal = getSubTotal();
+            }
             subTotalStr = subTotal.toString();
         }
         return subTotalStr;

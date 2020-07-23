@@ -288,7 +288,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				}
 				//给配送状态名称赋值
 				bean.setShippingStatusName(getDepotShipStatusName(bean.getShippingStatus()));
-
+				//商品小计
+                BigDecimal subTotal = bean.getSubTotal();
+                bean.setSubTotalStr(subTotal+"");
             }
 			response.setGoodsDetails(itemList);
 
