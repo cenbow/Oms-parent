@@ -654,7 +654,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		ApiReturnData<MasterOrderPay> returnData = new ApiReturnData<>();
 		returnData.setIsOk("0");
 		MasterOrderInfoExtend infoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
-		if (infoExtend == null || infoExtend.getIsConfirmPay() == 0) {
+		if (infoExtend == null) {
 			returnData.setMessage("订单查询有误");
 			return returnData;
 		}
