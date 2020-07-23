@@ -709,6 +709,7 @@
         oie.shop_code storeCode,
         oie.shop_name storeName,
         oie.user_bank_no userBankNo,
+        oie.group_id groupId,
         oie.user_pay_apply userPayApply,
         DATE_FORMAT(op.pay_time,'%Y-%m-%d %T') orderPayTime,
         oi.money_paid moneyPaid,
