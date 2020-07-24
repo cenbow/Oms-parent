@@ -6,6 +6,7 @@ import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public interface PayService {
      * @return
      */
     @PostMapping("/pay/createMergePay")
-    ReturnInfo<MergeOrderPay> createMergePay(@RequestParam(name="masterOrderSnList") List<String> masterOrderSnList);
+    ReturnInfo<MergeOrderPay> createMergePay(@RequestBody List<String> masterOrderSnList);
 
     /**
      * 主订单支付单支付
