@@ -492,6 +492,44 @@ public class OrderDetailInfo  implements Serializable{
 	 */
 	private Integer isConfirmPay;
 
+	/**
+	 * 尾款金额
+	 */
+	private BigDecimal balanceAmount;
+	/**
+	 * 预付款金额
+	 */
+	private BigDecimal prepayments;
+
+	/**
+	 *   团购状态（1团购中、2团购成功、3团购失败）
+	 */
+	private Integer groupBuyStatus;
+
+	public Integer getGroupBuyStatus() {
+		return groupBuyStatus;
+	}
+
+	public void setGroupBuyStatus(Integer groupBuyStatus) {
+		this.groupBuyStatus = groupBuyStatus;
+	}
+
+	public BigDecimal getBalanceAmount() {
+		return balanceAmount;
+	}
+
+	public void setBalanceAmount(BigDecimal balanceAmount) {
+		this.balanceAmount = balanceAmount;
+	}
+
+	public BigDecimal getPrepayments() {
+		return prepayments;
+	}
+
+	public void setPrepayments(BigDecimal prepayments) {
+		this.prepayments = prepayments;
+	}
+
 	public Integer getIsOperationConfirmPay() {
 		return isOperationConfirmPay;
 	}
