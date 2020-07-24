@@ -263,6 +263,13 @@ public class PayServiceImpl implements PayService {
 			// 付款最后期限
 			mergeOrderPay.setPayLasttime(payLastTimeList.size() == 1 ? payLastTimeList.get(0) : getMaxDate(payLastTimeList));
 			mergeOrderPayMapper.insertSelective(mergeOrderPay);
+
+			//维护支付单合并支付单号
+			if (StringUtils.isNotBlank(mergeOrderPay.getMergePaySn())) {
+				for (String orderSn : masterOrderSnList) {
+					masterOrderPayMapper.updateMergePaySnByOrderSn(orderSn,mergeOrderPay.getMergePaySn());
+				}
+			}
 			logger.info("创建合并支付单："+mergePaySn);
 			returnInfo.setIsOk(Constant.OS_YES);
 			returnInfo.setData(mergeOrderPay);
