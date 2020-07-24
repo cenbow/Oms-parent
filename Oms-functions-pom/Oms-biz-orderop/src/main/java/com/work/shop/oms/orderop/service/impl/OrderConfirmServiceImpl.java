@@ -646,13 +646,46 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
 			if(masterOrderInfoExtend.getGroupId() != null){
 				//代表是团购订单，判断是否是预付款，预付款判断为订单状态是否为部分付款
-				if(master.getPayStatus() == 1){
-					//记录团购问题单
-					orderStatus = new OrderStatus();
-					orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
-					orderQuestionService.questionOrderByMasterSn(masterOrderSn, orderStatus);
+				if(masterOrderInfoExtend.getIsConfirmPay() == 0){
 
-					HashMap<String, Integer> goodsMap = new HashMap<>();
+					//设置支付单为部分付款
+					MasterOrderPay record = new MasterOrderPay();
+					record.setPayStatus(Byte.valueOf("1"));
+					record.setPayNote("预付款");
+					MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+					masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+					masterOrderPayMapper.updateByExampleSelective(record,masterOrderPayExample);
+
+					masterOrderPayExample = new MasterOrderPayExample();
+					masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+					List<MasterOrderPay> masterOrderPays = masterOrderPayMapper.selectByExample(masterOrderPayExample);
+					MasterOrderPay masterOrderPay = masterOrderPays.get(0);
+					//易信支付，线下支付
+					if(masterOrderPay.getPayId() == 65 || masterOrderPay.getPayId() == 36){
+						//运营确认状态改为已确认预付款
+						MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+						masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+						masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("0"));
+						masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+					}else{
+						//记录团购问题单
+						orderStatus = new OrderStatus();
+						orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
+						orderStatus.setMessage("团购问题单");
+						orderQuestionService.questionOrderByMasterSn(masterOrderSn, orderStatus);
+					}
+
+					MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
+					masterOrderInfoExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+					List<MasterOrderInfo> masterOrderInfos = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
+					MasterOrderInfo masterOrderInfo = masterOrderInfos.get(0);
+
+					MasterOrderInfo masterOrderInfoNew = new MasterOrderInfo();
+					masterOrderInfoNew.setMasterOrderSn(masterOrderSn);
+					masterOrderInfoNew.setMoneyPaid(masterOrderInfo.getPrepayments());
+					masterOrderInfoNew.setPayStatus(Byte.valueOf("1"));
+					masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoNew);
+
 					MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
 					goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
 					List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);

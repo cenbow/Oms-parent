@@ -999,6 +999,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
             logger.info("订单已付款 payNote:" + message);
             orderStatus.setMessage(message);
             orderStatus.setUserId(Integer.valueOf(request.getActionUserId()));
+
+			logger.info("订单已付款 payNote:" + JSON.toJSONString(orderStatus));
 			ReturnInfo<String> info = payService.payStCh(orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
 				response.setSuccess(true);
