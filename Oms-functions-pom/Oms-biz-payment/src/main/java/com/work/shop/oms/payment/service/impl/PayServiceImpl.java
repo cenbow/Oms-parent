@@ -295,28 +295,6 @@ public class PayServiceImpl implements PayService {
 			if (null == masterOrderInfo) {
 				throw new Exception("没有找到订单：" + masterOrderSn);
 			}
-			//判断是否为团购单
-			MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
-			example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-			List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
-			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
-			if(masterOrderInfoExtend.getGroupId() != null){
-				//判断是预付款还是尾款 -1为未确认，0为预付款，1为尾款 ，前端只显示一个按钮，必须先确认预付款才有尾款
-				if(masterOrderInfoExtend.getIsOperationConfirmPay() == -1) {
-					//设置支付单为部分付款，并填充付款金额
-					MasterOrderPay record = new MasterOrderPay();
-					record.setMasterPaySn(paySn);
-					record.setPayStatus(Byte.valueOf("1"));
-					masterOrderPayMapper.updateByPrimaryKeySelective(record);
-					return new ReturnInfo(Constant.OS_YES);
-				}else if(masterOrderInfoExtend.getIsOperationConfirmPay() == 0){
-					//尾款，团购订单成功，单子设置为正常单，填充对应金额
-					MasterOrderPay record = new MasterOrderPay();
-					record.setMasterPaySn(paySn);
-					record.setPayStatus(Byte.valueOf("2"));
-					masterOrderPayMapper.updateByPrimaryKeySelective(record);
-				}
-			}
 
 			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
 				throw new Exception("支付单：" + paySn + "已支付，不能进行支付操作！");
@@ -351,14 +329,13 @@ public class PayServiceImpl implements PayService {
                 }
                 logger.error("订单支付 支付信息：" + JSONObject.toJSONString(systemPayments));
             }
-            
 			masterOrderPay.setPayNote(orderStatus.getMessage());
 			masterOrderPay.setPayStatus((byte)Constant.OP_PAY_STATUS_PAYED);
 			masterOrderPay.setPayTime(new Date());
 			masterOrderPay.setUpdateTime(new Date());
 			masterOrderPay.setMergePaySn(orderStatus.getMergePaySn());
 			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
-			
+
 			MasterOrderInfo masterOrderInfoUpdate = new MasterOrderInfo();
 			masterOrderInfoUpdate.setMasterOrderSn(masterOrderSn);
 			if (orderStatus.getPayFee() > 0) {
@@ -366,7 +343,7 @@ public class PayServiceImpl implements PayService {
 				masterOrderInfoUpdate.setMoneyPaid(masterOrderInfo.getMoneyPaid().add(new BigDecimal(orderStatus.getPayFee())));
 			} else {
 				masterOrderInfoUpdate.setTotalPayable(masterOrderInfo.getTotalPayable().subtract(masterOrderPay.getPayTotalfee()));
-				masterOrderInfoUpdate.setMoneyPaid(masterOrderInfo.getMoneyPaid().add(masterOrderPay.getPayTotalfee()));	
+				masterOrderInfoUpdate.setMoneyPaid(masterOrderInfo.getMoneyPaid().add(masterOrderPay.getPayTotalfee()));
 			}
 			masterOrderInfoUpdate.setUpdateTime(new Date());
 			masterOrderInfoUpdate.setPayStatus(changeOrderInfoPay(masterOrderSn));
@@ -641,13 +618,14 @@ public class PayServiceImpl implements PayService {
 		boolean payFlag = false;
 		for (MasterOrderPay masterOrderPay : masterOrderPayList) {
 			// 未付款、待确认
-			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED || masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_COMFIRM) {
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED || masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_COMFIRM ) {
 				unpayFlag = true;
 			}
 			// 已付款
-			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED ) {
 				payFlag = true;
 			}
+
 		}
 		// 已支付
 		if (payFlag && !unpayFlag) {

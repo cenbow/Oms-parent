@@ -412,6 +412,11 @@ public class MasterOrderInfoExtendExample {
             return (Criteria) this;
         }
 
+        public Criteria andIsOperationConfirmPayEqualTo(Integer value) {
+            addCriterion("is_operation_confirm_pay =", value, "isOperationConfirmPay");
+            return (Criteria) this;
+        }
+
         public Criteria andIsGroupIsNull() {
             addCriterion("is_group is null");
             return (Criteria) this;
