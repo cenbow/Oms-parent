@@ -440,6 +440,9 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 	 * @param integer 问题单
 	 */
 	public void asynProcessOrder(String masterOrderSn, ValidateOrder validateOrder, OcpbStatus ocpbStatus, Integer integer) {
+        if (integer == null) {
+            integer=Integer.valueOf(0);
+        }
 		AsynProcessOrderBean bean = new AsynProcessOrderBean(masterOrderSn, ocpbStatus, validateOrder, integer);
 		String json = JSON.toJSONString(bean);
 		logger.debug("订单[" + masterOrderSn + "]下单成功后异步处理:" + json);
