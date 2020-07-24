@@ -682,6 +682,10 @@
         oai.street street,
         oai.address address,
         oai.user_shop_name userShopName,
+        <if test="isHistory == 0">
+            oi.prepayments prepayments,
+            oi.balance_amount balanceAmount,
+        </if>
         oi.shipping_total_fee postage,
         oi.referer referer,
         oi.bonus bonus,
