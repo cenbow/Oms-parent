@@ -236,7 +236,11 @@ public class PayServiceImpl implements PayService {
 					throw new Exception("订单" + masterOrderSn + "的支付单数据异常！");
 				}
 				MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
-                totalFee = totalFee.add(masterOrderPay.getPayTotalfee());
+				if (masterOrderPay.getPrepayments() != null) {
+					totalFee = totalFee.add(masterOrderPay.getPrepayments());
+				} else {
+					totalFee = totalFee.add(masterOrderPay.getPayTotalfee());
+				}
 				masterOrderPaySnStr += masterOrderPay.getMasterPaySn() + ",";
 				payLastTimeList.add(masterOrderPay.getPayLasttime());
 				payId = masterOrderPay.getPayId();
