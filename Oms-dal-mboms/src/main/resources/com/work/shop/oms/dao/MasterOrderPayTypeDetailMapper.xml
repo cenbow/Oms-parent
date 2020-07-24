@@ -61,7 +61,9 @@
         <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
         <result column="pay_status_name" jdbcType="VARCHAR" property="payStatusName" />
         <result column="pay_totalfee" jdbcType="DECIMAL" property="payTotalfee" />
-        <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+		<result column="prepayments" jdbcType="DECIMAL" property="prepayments" />
+		<result column="balance_amount" jdbcType="DECIMAL" property="balanceAmount" />
+		<result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
         <result column="pay_lasttime" jdbcType="TIMESTAMP" property="payLasttime" />
@@ -96,7 +98,9 @@
           t.pay_note,
           t.merge_pay_sn,
 	      t.payment_period,
-	      t.payment_rate
+	      t.payment_rate,
+	      t.prepayments,
+	  	  t.balance_amount
         FROM
           master_order_pay t 
         <where>
