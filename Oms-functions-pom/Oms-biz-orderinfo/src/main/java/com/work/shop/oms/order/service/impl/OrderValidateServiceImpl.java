@@ -566,6 +566,15 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			}
 		}
 
+		//团购问题单，判断是否团购，是否预付款
+		if(masterOrderInfoExtend.getIsGroup() != null && masterOrderInfoExtend.getIsGroup() == 1){
+			if(orderInfo.getPayStatus() == 1){
+				confirm = false;
+				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "团购问题单", "10000"));
+				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+			}
+		}
+		
 		// 订单是正常单且订单符合确认条件
 		if (confirm && orderInfo.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
 			info.setIsOk(Constant.OS_YES);
