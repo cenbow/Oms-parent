@@ -653,17 +653,38 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 	public ApiReturnData<MasterOrderPay> getGroupBuyOrderPay(String masterOrderSn) {
 		ApiReturnData<MasterOrderPay> returnData = new ApiReturnData<>();
 		returnData.setIsOk("0");
-		MasterOrderInfoExtend infoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
-		if (infoExtend == null) {
-			returnData.setMessage("订单查询有误");
-			return returnData;
-		}
-		MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSn);
-		if (masterOrderPay != null) {
-			masterOrderPay.setIsOperationConfirmPay(infoExtend.getIsOperationConfirmPay());
+		if (masterOrderSn.indexOf(",") > 0) {
+			String[] masterOrderSns = masterOrderSn.split(",");
+			MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSns[0]);
+			if (masterOrderPay == null || masterOrderPay.getMergePaySn() == null) {
+				returnData.setMessage("合并支付单为空");
+				return returnData;
+			}
+			MergeOrderPay mergeOrderPay = mergeOrderPayMapper.selectByPrimaryKey(masterOrderPay.getMergePaySn());
+			if (masterOrderPay == null) {
+				returnData.setMessage("合并支付单为空");
+				return returnData;
+			}
+			masterOrderPay.setPrepayments(mergeOrderPay.getMergePayFee());
+			masterOrderPay.setIsOperationConfirmPay((byte)-1);
+
 			returnData.setData(masterOrderPay);
 			returnData.setIsOk("1");
 			return returnData;
+		} else {
+
+			MasterOrderInfoExtend infoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+			if (infoExtend == null) {
+				returnData.setMessage("订单查询有误");
+				return returnData;
+			}
+			MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSn);
+			if (masterOrderPay != null) {
+				masterOrderPay.setIsOperationConfirmPay(infoExtend.getIsOperationConfirmPay());
+				returnData.setData(masterOrderPay);
+				returnData.setIsOk("1");
+				return returnData;
+			}
 		}
 		return returnData;
 	}
