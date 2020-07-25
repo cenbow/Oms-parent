@@ -306,9 +306,16 @@ public class PayServiceImpl implements PayService {
 			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
 				throw new Exception("支付单：" + paySn + "已支付，不能进行支付操作！");
 			}
-			// 判断是否是问题单
-			if (Constant.OD_QUESTION_STATUS_YES.equals(masterOrderInfo.getQuestionStatus())) {
-				throw new Exception("订单：" + masterOrderSn + "要处于正常单状态！");
+
+			int orderFlag = 0;
+
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED) {
+				// 判断是否是问题单
+				if (Constant.OD_QUESTION_STATUS_YES.equals(masterOrderInfo.getQuestionStatus())) {
+					throw new Exception("订单：" + masterOrderSn + "要处于正常单状态！");
+				}
+			} else {
+				orderFlag = 1;
 			}
 			// 判断是否被非admin的当前人锁定
 			if (orderStatus.getAdminUser() != null && !orderStatus.getAdminUser().trim().equals("admin") 
@@ -355,15 +362,17 @@ public class PayServiceImpl implements PayService {
 			masterOrderInfoUpdate.setUpdateTime(new Date());
 			masterOrderInfoUpdate.setPayStatus(changeOrderInfoPay(masterOrderSn));
 			masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoUpdate);
-			
-			try {
-				// 支付释放占用量
-				OrderStatus orderStatusStock= new OrderStatus();
-				orderStatusStock.setMasterOrderSn(masterOrderSn);
-				orderStatusStock.setType("1");
-				orderStockJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(orderStatusStock)));
-			} catch (Exception e) {
-				logger.info("支付支付单库存占用异常：",e);
+
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED) {
+				try {
+					// 支付释放占用量
+					OrderStatus orderStatusStock = new OrderStatus();
+					orderStatusStock.setMasterOrderSn(masterOrderSn);
+					orderStatusStock.setType("1");
+					orderStockJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(orderStatusStock)));
+				} catch (Exception e) {
+					logger.info("支付支付单库存占用异常：", e);
+				}
 			}
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, "支付单已支付：" + paySn, orderStatus.getAdminUser());
 			//pos不确认
@@ -373,6 +382,7 @@ public class PayServiceImpl implements PayService {
 				request.setMasterOrderSn(masterOrderSn);
 				request.setActionUser(orderStatus.getAdminUser());
 				request.setMessage(orderStatus.getSource() + "支付确认！");
+				request.setFlag(orderFlag);
 				OrderManagementResponse response = orderManagementService.orderConfirm(request);
 				if (response == null || !response.getSuccess()) {
 					throw new Exception("已支付时订单确认失败：" + response ==null ? "返回结果为空" : response.getMessage());

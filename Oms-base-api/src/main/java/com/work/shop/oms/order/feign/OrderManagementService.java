@@ -224,4 +224,12 @@ public interface OrderManagementService {
      */
     @PostMapping("/order/setSignByOrder")
     OrderManagementResponse setSignByOrder(OrderManagementRequest request);
+
+    /**
+     * 团购成功订单处理
+     * @param request 请求参数
+     * @return OrderManagementResponse
+     */
+    @PostMapping("/order/groupBuySuccess")
+    OrderManagementResponse groupBuySuccess(OrderManagementRequest request);
 }

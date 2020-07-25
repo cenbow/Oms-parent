@@ -2,25 +2,7 @@ package com.work.shop.oms.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.bean.AdminUser;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.DistributeActionExample;
-import com.work.shop.oms.bean.MasterOrderAction;
-import com.work.shop.oms.bean.MasterOrderActionExample;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExample;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderQuestion;
-import com.work.shop.oms.bean.MasterOrderQuestionExample;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.OrderReturn;
-import com.work.shop.oms.bean.OrderReturnExample;
-import com.work.shop.oms.bean.OrderReturnGoods;
-import com.work.shop.oms.bean.PurchaseOrder;
-import com.work.shop.oms.bean.SystemShipping;
-import com.work.shop.oms.bean.SystemShippingExample;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.channel.bean.OfflineStoreInfo;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.DistributeShippingBean;
@@ -1038,6 +1020,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			orderStatus.setMasterOrderSn(masterOrderSn);
 			orderStatus.setAdminUser(request.getActionUser());
 			orderStatus.setMessage(request.getMessage());
+			orderStatus.setOrderFlag(request.getFlag());
 			ReturnInfo<String> info = orderConfirmService.confirmOrderByMasterSn(masterOrderSn, orderStatus);
 			if (info != null && Constant.OS_YES == info.getIsOk()) {
 				response.setSuccess(true);
@@ -1209,6 +1192,158 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			logger.error(masterOrderSn + "合同签章完成失败：" + e.getMessage(), e);
 			response.setMessage("合同签章完成失败：" + e.getMessage());
 		}
+		return response;
+	}
+
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+	@Resource
+	private MasterOrderGoodsMapper masterOrderGoodsMapper;
+
+	@Resource
+	private MasterOrderPayMapper masterOrderPayMapper;
+
+
+	/**
+	 * 团购订单成功处理
+	 *
+	 * @param request 订单信息
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 23:01
+	 */
+	@Override
+	public OrderManagementResponse groupBuySuccess(OrderManagementRequest request) {
+		OrderManagementResponse response = new OrderManagementResponse();
+		response.setSuccess(false);
+		response.setMessage("团购成功操作处理失败");
+
+		//订单号
+		String masterOrderSn = request.getMasterOrderSn();
+		//现订单折扣
+		BigDecimal discount = request.getDiscount();
+
+		MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
+		example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
+		//查询订单商品
+		MasterOrderGoodsExample masterOrderGoodsExample = new MasterOrderGoodsExample();
+		masterOrderGoodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		List<MasterOrderGoods> masterOrderGoods = masterOrderGoodsMapper.selectByExample(masterOrderGoodsExample);
+
+		if (masterOrderInfoExtends == null || masterOrderInfoExtends.size() == 0 || masterOrderInfoExtends.get(0) == null) {
+			return response;
+		}
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
+
+		//原订单折扣
+		BigDecimal groupBuydiscount = masterOrderInfoExtend.getGroupBuyDiscount();
+
+		//订单总金额
+		BigDecimal totalFee = new BigDecimal(0);
+
+		//代表已经支付过预付款，需要补交尾款
+		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
+			for (MasterOrderGoods masterOrderGood : masterOrderGoods) {
+				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
+				masterOrderGoodsParam.setId(masterOrderGood.getId());
+
+				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
+				BigDecimal goodsAddPrice = masterOrderGood.getGoodsAddPrice().divide(discount,8,BigDecimal.ROUND_HALF_UP).multiply(groupBuydiscount).setScale(2,BigDecimal.ROUND_HALF_UP);
+				masterOrderGoodsParam.setGoodsAddPrice(goodsAddPrice);
+
+				//当前商品的未税金额，  当前商品的未税金额/订单折扣 * 当前折扣 = 最新商品未税金额
+				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().divide(discount, 8, BigDecimal.ROUND_HALF_UP).multiply(groupBuydiscount).setScale(2, BigDecimal.ROUND_HALF_UP);
+				masterOrderGoodsParam.setGoodsPriceNoTax(goodsPriceNoTax);
+
+				///商品成交价 = 商品的未税金额 * （100+销项税） /100 （2位） + 加价金额
+				BigDecimal add = masterOrderGood.getOutputTax().add(new BigDecimal(100));
+				BigDecimal transactionPrice = goodsPriceNoTax.multiply(add).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP).add(goodsAddPrice);
+				masterOrderGoodsParam.setTransactionPrice(transactionPrice);
+
+				//结算价 = 商品成交价
+				masterOrderGoodsParam.setSettlementPrice(transactionPrice);
+
+				BigDecimal multiply = transactionPrice.multiply(new BigDecimal(String.valueOf(masterOrderGood.getGoodsNumber())));
+				totalFee = totalFee.add(multiply);
+
+				//未税结算价 = （商品的未税金额 + 加价金额 - 加价金额 * 销项税 /100 （2位） ）
+				BigDecimal divide = goodsAddPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal subtract = goodsPriceNoTax.add(goodsAddPrice).subtract(divide);
+				masterOrderGoodsParam.setTransactionPriceNoTax(subtract);
+
+				masterOrderGoodsParam.setGoodsPrice(transactionPrice);
+
+				masterOrderGoodsMapper.updateByPrimaryKeySelective(masterOrderGoodsParam);
+			}
+			MasterOrderInfo masterOrderInfoNew = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+
+			//计算订单价格
+			MasterOrderInfo record = new MasterOrderInfo();
+			//多商品累加（商品结算价 * 数量）= 商品总金额
+			record.setMasterOrderSn(masterOrderSn);
+			record.setGoodsAmount(totalFee);
+			//多商品累加（商品结算价 * 数量） + 运费  = 订单总金额
+			totalFee = totalFee.add(masterOrderInfoNew.getShippingTotalFee());
+			record.setTotalFee(totalFee);
+			record.setPayTotalFee(totalFee);
+			record.setTotalPayable(totalFee);
+			//尾款，应付总金额
+			BigDecimal subtract = totalFee.subtract(masterOrderInfoNew.getPrepayments());
+			record.setBalanceAmount(subtract);
+
+
+			//查询支付单信息
+			MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+			masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+			List<MasterOrderPay> masterOrderPays = masterOrderPayMapper.selectByExample(masterOrderPayExample);
+			MasterOrderPay masterOrderPayNew = masterOrderPays.get(0);
+
+			//更改支付单金额
+			MasterOrderPay masterOrderPay = new MasterOrderPay();
+			masterOrderPay.setMasterPaySn(masterOrderPayNew.getMasterPaySn());
+			masterOrderPay.setPayTotalfee(totalFee);
+			masterOrderPay.setBalanceAmount(subtract);
+			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
+
+			String message = "";
+			//判断内行，还是外部
+			//内行，订单状态改为已付款，已确认，填充付款金额，返回正常单
+			if(masterOrderPayNew.getPayId() == 50 || masterOrderPayNew.getPayId() == 35 ){
+				record.setOrderStatus(Byte.valueOf("1"));
+				record.setPayStatus(Byte.valueOf("2"));
+				record.setMoneyPaid(totalFee);
+
+				message = "团购成功补交尾款成功";
+			}else{
+				message = "团购成功需要补交尾款";
+			}
+			masterOrderInfoMapper.updateByPrimaryKeySelective(record);
+
+			//公共计算
+				//重新计算价格 -goods
+				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
+				//当前商品的未税金额，  当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
+				//商品成交价 = 商品的未税金额 * （100+销项税） /100 （2位） + 加价金额
+				//结算价 =
+				//未税结算价 = （商品的未税金额 + 加价金额 - 加价金额 * 销项税 /100 （2位） ）
+				//财务价格 = 结算价
+
+				//多商品累加（商品结算价 * 数量） + 运费  = 订单总金额
+				//多商品累加（商品结算价 * 数量）= 商品总金额
+				//尾款，应付总金额
+
+			//判断内行，还是外部
+				//内行，订单状态改为已付款，已确认，填充付款金额，返回正常单
+
+
+			//添加订单日志
+			masterOrderActionService.insertOrderActionBySn(masterOrderSn, message, Constant.OS_STRING_SYSTEM);
+		}
+
+		response.setSuccess(true);
+		response.setMessage("团购成功操作处理成功");
 		return response;
 	}
 

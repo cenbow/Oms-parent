@@ -62,6 +62,7 @@
       <result column="pay_period_pay_status" property="payPeriodPayStatus" />
       <result column="inv_company_address" property="invCompanyAddress" />
       <result column="inv_bank_no" property="invBankNo" />
+      <result column="group_buy_discount" jdbcType="DECIMAL" property="groupBuyDiscount" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <!--
@@ -141,7 +142,7 @@
     free_post_card, free_post_fee, inv_taxer, order_index, tax_rate, inv_bank, is_del, rider_time,
     customer_contract_num, order_type, last_pay_date, company_code, company_name, company_full_name, pay_period_status,
       inv_phone, push_supply_chain, sale_bd,bo_id, settlement_account, company_type, pay_period_pay_status,
-      inv_company_address,inv_bank_no,group_id,group_name,is_confirm_pay,is_operation_confirm_pay
+      inv_company_address,inv_bank_no,group_id,group_name,is_confirm_pay,is_operation_confirm_pay,group_buy_discount
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.MasterOrderInfoExtendExample" resultMap="BaseResultMap">
     <!--

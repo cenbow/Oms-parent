@@ -98,6 +98,19 @@ public class OrderStatus implements Serializable {
      */
     private Integer returnType;
 
+	/**
+	 * 1为尾款单
+	 */
+	private int orderFlag;
+
+	public int getOrderFlag() {
+		return orderFlag;
+	}
+
+	public void setOrderFlag(int orderFlag) {
+		this.orderFlag = orderFlag;
+	}
+
 	public OrderStatus() {
 		super();
 	}
