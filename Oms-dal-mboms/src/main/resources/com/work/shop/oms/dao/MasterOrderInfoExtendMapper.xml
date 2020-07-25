@@ -408,6 +408,9 @@
         <if test="payPeriodPayStatus != null">
             pay_period_pay_status,
         </if>
+        <if test="groupBuyDiscount != null">
+          group_buy_discount,
+        </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="masterOrderSn != null">
@@ -580,6 +583,9 @@
         </if>
         <if test="payPeriodPayStatus != null">
             #{payPeriodPayStatus},
+        </if>
+        <if test="groupBuyDiscount != null">
+            #{groupBuyDiscount},
         </if>
     </trim>
   </insert>
