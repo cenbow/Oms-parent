@@ -295,11 +295,18 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         }
 
         //是否为团购订单
-        Integer isGroup=request.getIsGroup();
+        Integer isGroup = request.getIsGroup();
         if (isGroup != null) {
             condition = false;
             criteria.andIsGroupEqualTo(isGroup);
         }
+
+		//团购ID
+		Integer groupId = request.getGroupId();
+		if (groupId != null) {
+			condition = false;
+			criteria.andGroupIdEqualTo(groupId);
+		}
 
         //公司id
         String companyId = request.getCompanyId();
