@@ -550,7 +550,20 @@ public class MasterOrder implements Serializable{
 	 */
 	private Integer priceChangeStatus;
 
-    public BigDecimal getPrepayments() {
+	/**
+	 * 团购下单时折扣
+	 */
+    private BigDecimal groupBuyDiscount;
+
+	public BigDecimal getGroupBuyDiscount() {
+		return groupBuyDiscount;
+	}
+
+	public void setGroupBuyDiscount(BigDecimal groupBuyDiscount) {
+		this.groupBuyDiscount = groupBuyDiscount;
+	}
+
+	public BigDecimal getPrepayments() {
         return prepayments;
     }
 
