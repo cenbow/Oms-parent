@@ -310,7 +310,12 @@ public class OrderItemQueryExample {
             addCriterion("oie.is_group =", value, "isGroup");
             return (Criteria) this;
         }
-        
+
+        public Criteria andGroupIdEqualTo(Integer value) {
+            addCriterion("oie.group_id =", value, "groupId");
+            return (Criteria) this;
+        }
+
         public Criteria andIsAdvanceEqualTo(Integer value) {
             addCriterion("oie.is_advance =", value, "isAdvance");
             return (Criteria) this;
