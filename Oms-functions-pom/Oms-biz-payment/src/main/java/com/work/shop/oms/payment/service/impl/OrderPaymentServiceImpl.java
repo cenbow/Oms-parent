@@ -510,7 +510,8 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 		if (StringUtil.isNotEmpty(payId) && !payId.equals(op.getPayId() + "")) {
 			payService.changeOrderPayMethod(masterPaySn, Integer.valueOf(payId), Constant.OS_STRING_SYSTEM);
 		}
-		if (op.getPayTotalfee().doubleValue() - amountToPay > 0) {
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+		if (op.getPayTotalfee().doubleValue() - amountToPay > 0 && masterOrderInfoExtend.getGroupId() == null) {
 			logger.info("payStChClient.processPayClient.未付款.实际金额小于应付款金额.start.orderSn:" + masterOrderSn + ".panSn:" + masterPaySn + ",amountToPay:" + amountToPay + ",payTotalfee:" + op.getPayTotalfee());
 			// 补款金额
 			double fillingMoney = op.getPayTotalfee().doubleValue() - amountToPay;
