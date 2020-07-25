@@ -253,6 +253,12 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private Integer isGroup;
 
+	/**
+	 * 团购ID
+	 */
+	private Integer groupId;
+
+
 	public String getErpOrderNo() {
 		return erpOrderNo;
 	}
@@ -643,5 +649,13 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setIsGroup(Integer isGroup) {
 		this.isGroup = isGroup;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
 	}
 }

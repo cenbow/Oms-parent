@@ -2,13 +2,16 @@ package com.work.shop.oms.bean;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Map;
 
 @Data
-public class ProductGroupBuyBean {
+public class ProductGroupBuyBean implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      *id

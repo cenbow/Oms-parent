@@ -17,15 +17,15 @@ import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderPayService;
-import com.work.shop.oms.orderop.service.OrderConfirmService;
-import com.work.shop.oms.orderop.service.OrderDistributeEditService;
-import com.work.shop.oms.orderop.service.OrderDistributeOpService;
-import com.work.shop.oms.orderop.service.OrderQuestionService;
+import com.work.shop.oms.orderop.service.*;
 import com.work.shop.oms.payment.feign.PayService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.webservice.ErpWebserviceResultBean;
+import com.work.shop.pca.common.ResultData;
+import com.work.shop.pca.feign.BgProductService;
+import com.work.shop.pca.model.BgGroupBuyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -47,6 +47,8 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Resource
+    BgProductService bgProductService;
 	@Resource
 	OrderDistributeMapper orderDistributeMapper;
 	@Resource
@@ -451,7 +453,6 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	private ReturnInfo judgeMasterOrderStatus(String masterOrderSn, MasterOrderInfo master, byte orderStatus, String type) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		if (Constant.order_type_distribute.equals(type)) {
-			// TODO
 			OrderDistributeExample distributeExample = new OrderDistributeExample();
 			OrderDistributeExample.Criteria criteria = distributeExample.or();
 			criteria.andMasterOrderSnEqualTo(masterOrderSn);
@@ -630,6 +631,20 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		}
 		logger.debug("订单确认 masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
 		try {
+
+			//查询订单扩展，判断是否为团购订单
+			MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
+			example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+			List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
+
+			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
+			boolean back = processGroupBuy(masterOrderInfoExtend, master);
+			if (!back) {
+				info.setMessage("团购问题单处理");
+				return info;
+			}
+
 			MasterOrderInfo updateMaster = new MasterOrderInfo();
 			// 确认
 			updateMaster.setOrderStatus((byte)Constant.OI_ORDER_STATUS_CONFIRMED);
@@ -638,71 +653,6 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			updateMaster.setMasterOrderSn(masterOrderSn);
 			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
 
-			//查询订单扩展，判断是否为团购订单
-			MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
-			example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-			List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
-			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
-			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
-			if(masterOrderInfoExtend.getGroupId() != null){
-				//代表是团购订单，判断是否是预付款，预付款判断为订单状态是否为部分付款
-				if(masterOrderInfoExtend.getIsConfirmPay() == 0){
-
-					//设置支付单为部分付款
-					MasterOrderPay record = new MasterOrderPay();
-					record.setPayStatus(Byte.valueOf("1"));
-					record.setPayNote("预付款");
-					MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
-					masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-					masterOrderPayMapper.updateByExampleSelective(record,masterOrderPayExample);
-
-					masterOrderPayExample = new MasterOrderPayExample();
-					masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-					List<MasterOrderPay> masterOrderPays = masterOrderPayMapper.selectByExample(masterOrderPayExample);
-					MasterOrderPay masterOrderPay = masterOrderPays.get(0);
-					//易信支付，线下支付
-					if(masterOrderPay.getPayId() == 65 || masterOrderPay.getPayId() == 36){
-						//运营确认状态改为已确认预付款
-						MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
-						masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
-						masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("0"));
-						masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
-					}else{
-						//记录团购问题单
-						orderStatus = new OrderStatus();
-						orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
-						orderStatus.setMessage("团购问题单");
-						orderQuestionService.questionOrderByMasterSn(masterOrderSn, orderStatus);
-					}
-
-					MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
-					masterOrderInfoExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-					List<MasterOrderInfo> masterOrderInfos = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
-					MasterOrderInfo masterOrderInfo = masterOrderInfos.get(0);
-
-					MasterOrderInfo masterOrderInfoNew = new MasterOrderInfo();
-					masterOrderInfoNew.setMasterOrderSn(masterOrderSn);
-					masterOrderInfoNew.setMoneyPaid(masterOrderInfo.getPrepayments());
-					masterOrderInfoNew.setPayStatus(Byte.valueOf("1"));
-					masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoNew);
-
-					MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
-					goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-					List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
-					int number=0;
-					for (MasterOrderGoods orderGood : orderGoods) {
-						number += orderGood.getGoodsNumber();
-					}
-					ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
-					productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
-					productGroupBuyBean.setMasterOrderSn(masterOrderSn);
-					productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
-					productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
-					String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
-					logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
-					groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
-				}
-			}
 			//订单操作记录
 			// 库存占用
 			if(!OrderAttributeUtil.isPosOrder(master.getSource())) {
@@ -731,6 +681,158 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		info.setMessage("[" + masterOrderSn + "]订单确认成功");
 		logger.debug("[" + masterOrderSn + "]订单确认成功");
 		return info;
+	}
+
+	/**
+	 * 处理团购订单预付款
+	 *
+	 * @param masterOrderInfoExtend 订单扩展信息
+	 * @param master 订单信息
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 21:00
+	 */
+	private boolean processGroupBuy(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		boolean back = true;
+		if (masterOrderInfoExtend.getGroupId() == null) {
+			return back;
+		}
+		if (masterOrderInfoExtend.getIsConfirmPay() == -1) {
+			return back;
+		}
+		//预付款
+		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
+			boolean prepayments = processGroupPrepayments(masterOrderInfoExtend, master);
+			if(prepayments){
+				return back;
+			}
+			return false;
+		}
+		//处理尾款
+		if (masterOrderInfoExtend.getIsConfirmPay() == 1) {
+			boolean balanceAmount = processGroupBalanceAmount(masterOrderInfoExtend, master);
+			if(balanceAmount){
+				return back;
+			}
+			return false;
+		}
+		return false;
+	}
+
+	@Resource
+	private OrderNormalService orderNormalService;
+
+	/**
+	 * 团购订单处理尾款
+	 * @param masterOrderInfoExtend 订单扩展信息
+	 * @param master 订单信息
+	 * @param null
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 22:48
+	 */
+	private boolean processGroupBalanceAmount(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		boolean back = true;
+		String masterOrderSn = master.getMasterOrderSn();
+		MasterOrderPay record = new MasterOrderPay();
+		record.setPayStatus(Constant.OI_PAY_STATUS_PAYED);
+		record.setPayNote("团购尾款已支付");
+		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+		masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		masterOrderPayMapper.updateByExampleSelective(record,masterOrderPayExample);
+
+		//运营确认状态改为已确认尾款
+		MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+		masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoExtendNew.setIsOperationConfirmPay(Constant.OD_ORDER_STATUS_CONFIRMED);
+		masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+
+		MasterOrderInfo masterOrderInfoNew = new MasterOrderInfo();
+		masterOrderInfoNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoNew.setPayStatus(Constant.OI_PAY_STATUS_PAYED);
+		masterOrderInfoNew.setOrderStatus(Constant.OD_ORDER_STATUS_CONFIRMED);
+		masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoNew);
+
+		//调用问题单改为正常单接口
+		List<Integer> integers = new ArrayList<>();
+		// 问题单类型、待审核问题单
+		integers.add(0);
+		OrderStatus orderStatus = new OrderStatus();
+		orderStatus.setMasterOrderSn(masterOrderSn);
+		orderStatus.setAdminUser(Constant.OS_STRING_SYSTEM);
+		orderStatus.setAdminUserId(Constant.OS_STRING_SYSTEM);
+		orderStatus.setQuestionTypes(integers);
+		orderStatus.setMessage("团购尾款问题单返回正常单");
+		orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
+
+		return false;
+	}
+
+	/**
+	 * 处理预付款
+	 * @param masterOrderInfoExtend 订单扩展信息
+	 * @param master 订单信息
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 22:45
+	 */
+	private boolean processGroupPrepayments(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		boolean back = true;
+		String masterOrderSn = master.getMasterOrderSn();
+		BigDecimal prepayments = master.getPrepayments();
+
+		//设置支付单为部分付款
+		MasterOrderPay record = new MasterOrderPay();
+		record.setPayStatus(Byte.valueOf("1"));
+		record.setPayNote("预付款");
+		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+		masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		masterOrderPayMapper.updateByExampleSelective(record, masterOrderPayExample);
+
+		//运营确认状态改为已确认预付款
+		MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+		masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("0"));
+		masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+
+		//记录团购问题单
+		OrderStatus orderStatus = new OrderStatus();
+		orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
+		orderStatus.setMessage("团购问题单");
+		orderQuestionService.questionOrderByMasterSn(masterOrderSn, orderStatus);
+
+		MasterOrderInfo masterOrderInfoNew = new MasterOrderInfo();
+		masterOrderInfoNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoNew.setMoneyPaid(prepayments);
+		masterOrderInfoNew.setTotalPayable(master.getPayTotalFee().subtract(prepayments));
+		masterOrderInfoNew.setPayStatus(Byte.valueOf("1"));
+		masterOrderInfoNew.setOrderStatus(Byte.valueOf("0"));
+		masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoNew);
+
+		MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
+		goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
+
+		//查询参与团购方式（1：下单参与，2：付预付款参与）
+		List<Integer> list = new ArrayList<>();
+		list.add(masterOrderInfoExtend.getGroupId());
+		ResultData<List<BgGroupBuyInfo>> groupBuyInfos = bgProductService.getGroupBuyInfoBuGroupIds(list);
+		Integer type = groupBuyInfos.getData().get(0).getParticipateGroupType();
+		if (type == 2) {
+			int number = 0;
+			for (MasterOrderGoods orderGood : orderGoods) {
+				number += orderGood.getGoodsNumber();
+			}
+			ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
+			productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
+			productGroupBuyBean.setMasterOrderSn(masterOrderSn);
+			productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
+			productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
+			String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
+			logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
+			groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
+		}
+		return false;
 	}
 
 	/**
@@ -1069,9 +1171,11 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			info.setMessage(" 订单[" + orderSn + "]要处于未确定状态");
 			return info;
 		}
-		if (master.getQuestionStatus() != Constant.OI_QUESTION_STATUS_NORMAL) {
-			info.setMessage(" 订单[" + orderSn + "]要处于正常单状态");
-			return info;
+		if(orderStatus.getOrderFlag() == 0){
+			if (master.getQuestionStatus() != Constant.OI_QUESTION_STATUS_NORMAL) {
+				info.setMessage(" 订单[" + orderSn + "]要处于正常单状态");
+				return info;
+			}
 		}
 		if (master.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
 			info.setMessage(" 订单" + orderSn + "已经取消,订单状态变化刷新重新操作！");

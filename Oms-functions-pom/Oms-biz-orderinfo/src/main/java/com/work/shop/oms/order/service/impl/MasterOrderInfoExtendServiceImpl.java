@@ -117,6 +117,8 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 		moie.setUserBankNo(masterOrder.getUserBankNo());
 		// 是否已支付状态
         moie.setUserPayApply(masterOrder.getUserPayApply());
+        // 团购订单下单时的折扣
+        moie.setGroupBuyDiscount(masterOrder.getGroupBuyDiscount());
 
         //创建订单类型，0为一般订单，1为联采订单
         Integer createOrderType = masterOrder.getCreateOrderType();

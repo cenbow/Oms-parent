@@ -548,4 +548,24 @@ public class OrderManagementController {
 
         return returnBean;
     }
+
+    /**
+     * 团购成功订单处理
+     * @param request
+     * @return
+     */
+    @PostMapping("/groupBuySuccess")
+    public OrderManagementResponse groupBuySuccess(@RequestBody OrderManagementRequest request) {
+        OrderManagementResponse returnBean = new OrderManagementResponse();
+        returnBean.setSuccess(false);
+
+        try {
+            returnBean = orderManagementService.groupBuySuccess(request);
+        } catch (Exception e) {
+            logger.error("团购成功订单处理异常:" + JSONObject.toJSONString(request), e);
+            returnBean.setMessage("团购成功订单处理异常");
+        }
+
+        return returnBean;
+    }
 }

@@ -83,6 +83,8 @@
     <result column="goods_sale_type" jdbcType="INTEGER" property="goodsSaleType" />
     <result column="price_change_status" jdbcType="INTEGER" property="priceChangeStatus" />
     <result column="erp_order_no" jdbcType="VARCHAR" property="erpOrderNo" />
+    <result column="prepayments" jdbcType="DECIMAL" property="prepayments" />
+    <result column="balance_amount" jdbcType="DECIMAL" property="balanceAmount" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <!--
@@ -165,7 +167,8 @@
     integral_money, integral, postscript, to_buyer, cancel_code, cancel_reason, order_category, 
     invoices_organization, isNow, source, pree_occupy, channel_code, shop_name, register_mobile, 
     ship_cancel_status, points, bv_value, expected_ship_date, tax, base_bv_value, instead_user_id, 
-    need_audit, audit_status, need_sign, sign_status, sign_complete_time, sign_contract_num, goods_sale_type, price_change_status,erp_order_no
+    need_audit, audit_status, need_sign, sign_status, sign_complete_time, sign_contract_num, goods_sale_type, price_change_status,erp_order_no,
+    prepayments,balance_amount
   </sql>
   <select id="selectByExample" parameterType="com.work.shop.oms.bean.MasterOrderInfoExample" resultMap="BaseResultMap">
     <!--
