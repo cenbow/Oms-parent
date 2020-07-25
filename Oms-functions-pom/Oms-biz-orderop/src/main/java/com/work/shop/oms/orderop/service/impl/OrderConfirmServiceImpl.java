@@ -90,6 +90,9 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	private OrderDistributeEditService orderDistributeEditService;
 
 	@Resource
+	private OrderNormalService orderNormalService;
+
+	@Resource
 	private PayService payService;
 
 	@Resource
@@ -718,9 +721,6 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		}
 		return false;
 	}
-
-	@Resource
-	private OrderNormalService orderNormalService;
 
 	/**
 	 * 团购订单处理尾款
