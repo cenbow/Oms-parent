@@ -23,6 +23,9 @@ import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.webservice.ErpWebserviceResultBean;
+import com.work.shop.pca.common.ResultData;
+import com.work.shop.pca.feign.BgProductService;
+import com.work.shop.pca.model.BgGroupBuyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -44,6 +47,8 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Resource
+    BgProductService bgProductService;
 	@Resource
 	OrderDistributeMapper orderDistributeMapper;
 	@Resource
@@ -782,7 +787,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		record.setPayNote("预付款");
 		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
 		masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-		masterOrderPayMapper.updateByExampleSelective(record,masterOrderPayExample);
+		masterOrderPayMapper.updateByExampleSelective(record, masterOrderPayExample);
 
 		//运营确认状态改为已确认预付款
 		MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
@@ -807,18 +812,26 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
 		goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
 		List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
-		int number = 0;
-		for (MasterOrderGoods orderGood : orderGoods) {
-			number += orderGood.getGoodsNumber();
+
+		//查询参与团购方式（1：下单参与，2：付预付款参与）
+		List<Integer> list = new ArrayList<>();
+		list.add(masterOrderInfoExtend.getGroupId());
+		ResultData<List<BgGroupBuyInfo>> groupBuyInfos = bgProductService.getGroupBuyInfoBuGroupIds(list);
+		Integer type = groupBuyInfos.getData().get(0).getParticipateGroupType();
+		if (type == 2) {
+			int number = 0;
+			for (MasterOrderGoods orderGood : orderGoods) {
+				number += orderGood.getGoodsNumber();
+			}
+			ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
+			productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
+			productGroupBuyBean.setMasterOrderSn(masterOrderSn);
+			productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
+			productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
+			String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
+			logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
+			groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
 		}
-		ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
-		productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
-		productGroupBuyBean.setMasterOrderSn(masterOrderSn);
-		productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
-		productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
-		String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
-		logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
-		groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
 		return false;
 	}
 
