@@ -644,6 +644,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
 			boolean back = processGroupBuy(masterOrderInfoExtend, master);
 			if (!back) {
+				info.setIsOk(Constant.OS_YES);
 				info.setMessage("团购问题单处理");
 				return info;
 			}

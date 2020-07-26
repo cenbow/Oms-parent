@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
@@ -22,6 +23,7 @@ public class GroupBuyResutlListener implements MessageListener {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Resource
     private GroupBuyOrderService groupBuyOrderService;
 
     @Override
