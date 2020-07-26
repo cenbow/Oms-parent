@@ -150,6 +150,9 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		if (Constant.order_type_master.equals(orderStatus.getType())) {
 			info = confirmOrderByMaster(master.getMasterOrderSn(), master, orderStatus);
 		}
+		if(info.getIsOk() == Constant.OS_YES && "1".equals(info.getData())){
+			return info;
+		}
 		if (info.getIsOk() == Constant.OS_YES) {
 			judgeMasterOrderStatus(masterOrderSn, null, (byte)Constant.OI_ORDER_STATUS_CONFIRMED, orderStatus.getType());
 		}
@@ -642,8 +645,9 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
 
 			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
-			boolean back = processGroupBuy(masterOrderInfoExtend, master);
-			if (!back) {
+			ReturnInfo returnInfo = processGroupBuy(masterOrderInfoExtend, master);
+			if (returnInfo.getIsOk() == Constant.OS_NO) {
+				info.setData(returnInfo.getData());
 				info.setIsOk(Constant.OS_YES);
 				info.setMessage("团购问题单处理");
 				return info;
@@ -696,31 +700,39 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	 * @author yaokan
 	 * @date 2020-07-24 21:00
 	 */
-	private boolean processGroupBuy(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
-		boolean back = true;
+	private ReturnInfo processGroupBuy(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		ReturnInfo returnInfo = new ReturnInfo();
+		returnInfo.setIsOk(Constant.OS_YES);
 		if (masterOrderInfoExtend.getGroupId() == null) {
-			return back;
+			return returnInfo;
 		}
 		if (masterOrderInfoExtend.getIsConfirmPay() == -1) {
-			return back;
+			return returnInfo;
 		}
 		//预付款
 		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
 			boolean prepayments = processGroupPrepayments(masterOrderInfoExtend, master);
 			if(prepayments){
-				return back;
+				returnInfo.setData("1");
+				return returnInfo;
 			}
-			return false;
+			returnInfo.setData("1");
+			returnInfo.setIsOk(Constant.OS_NO);
+			return returnInfo;
 		}
 		//处理尾款
 		if (masterOrderInfoExtend.getIsConfirmPay() == 1) {
 			boolean balanceAmount = processGroupBalanceAmount(masterOrderInfoExtend, master);
 			if(balanceAmount){
-				return back;
+				returnInfo.setData("2");
+				return returnInfo;
 			}
-			return false;
+			returnInfo.setData("2");
+			returnInfo.setIsOk(Constant.OS_NO);
+			return returnInfo;
 		}
-		return false;
+		returnInfo.setIsOk(Constant.OS_NO);
+		return returnInfo;
 	}
 
 	/**
