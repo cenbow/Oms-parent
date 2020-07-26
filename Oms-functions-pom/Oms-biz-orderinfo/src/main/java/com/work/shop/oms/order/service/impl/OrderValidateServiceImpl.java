@@ -21,12 +21,7 @@ import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.common.utils.NumberUtil;
 import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.config.service.SystemShippingService;
-import com.work.shop.oms.dao.BoSupplierContractMapper;
-import com.work.shop.oms.dao.BoSupplierCooperationMapper;
-import com.work.shop.oms.dao.BoSupplierOrderMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.SystemConfigMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
 import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
@@ -105,6 +100,10 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	private BoSupplierOrderMapper boSupplierOrderMapper;
 	@Resource
 	private BoSupplierCooperationMapper boSupplierCooperationMapper;
+
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
 	// 没有问题
 	public static Integer QUESTION_TYPE_NONE = 0;
 	// 订单部分商品低于保底价或者限定折扣价
@@ -572,6 +571,12 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				confirm = false;
 				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "团购问题单", "10000"));
 				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+
+				//设置已确认预付款
+				MasterOrderInfoExtend record = new MasterOrderInfoExtend();
+				record.setMasterOrderSn(masterOrderSn);
+				record.setIsConfirmPay(Byte.valueOf("0"));
+				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(record);
 			}
 		}
 		

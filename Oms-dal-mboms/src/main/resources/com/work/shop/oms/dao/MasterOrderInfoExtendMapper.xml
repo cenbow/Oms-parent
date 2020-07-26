@@ -599,11 +599,10 @@
       <include refid="Example_Where_Clause" />
     </if>
   </select>
-  <select id="selectOrderSnByGroupId" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
+  <select id="selectOrderSnByGroupId" parameterType="com.work.shop.oms.bean.MasterOrderInfoExtend" resultMap="BaseResultMap">
     select moie.master_order_sn
     from master_order_info_extend moie inner join master_order_info moi on moie.master_order_sn=moi.master_order_sn
-    where moi.order_status != 2
-
+    where moi.order_status in (0,1) AND moie.group_id = #{groupId}
   </select>
   <select id="selectGroupIdByOrderSnList" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
         select group_id groupId,master_order_sn masterOrderSn

@@ -46,8 +46,9 @@ public class GroupBuyOrderServiceImpl implements GroupBuyOrderService {
     public void processGroupByResult(ProductGroupBuyBean groupBuyBean) {
         //团购id
         Integer groupId = groupBuyBean.getId();
-
-        List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectOrderSnByGroupId(groupId);
+        MasterOrderInfoExtend record = new MasterOrderInfoExtend();
+        record.setGroupId(groupId);
+        List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectOrderSnByGroupId(record);
         if (CollectionUtils.isEmpty(extendList)) {
             log.error("未查询到该团购下的非取消订单,团购id:{}",groupId);
             return;
@@ -62,15 +63,23 @@ public class GroupBuyOrderServiceImpl implements GroupBuyOrderService {
         }
         //获取最低规则折扣
         List<Map> maps = JSON.parseArray(priceRuleStr, Map.class);
-        BigDecimal minDiscount = BigDecimal.valueOf(1);//最小折扣
+        BigDecimal minDiscount = null;//最小折扣
         for (Map map : maps) {
             Set<String> keySet = map.keySet();
             String next = keySet.iterator().next();
-            if (groupBuyBean.getOrderMoney().compareTo(new BigDecimal(next)) > 0) {
-                if (minDiscount.compareTo(new BigDecimal(map.get(next).toString())) > 0) {
+            if (groupBuyBean.getOrderMoney().compareTo(new BigDecimal(next)) > -1) {
+                if(minDiscount == null){
                     minDiscount = new BigDecimal(map.get(next).toString());
+                }else{
+                    if (minDiscount.compareTo(new BigDecimal(map.get(next).toString())) > -1) {
+                        minDiscount = new BigDecimal(map.get(next).toString());
+                    }
                 }
             }
+        }
+
+        if(minDiscount == null){
+            minDiscount = new BigDecimal(10);
         }
 
         if ("3".equals(groupBuyBean.getGroupBuyStatus().toString())) {
@@ -98,7 +107,7 @@ public class GroupBuyOrderServiceImpl implements GroupBuyOrderService {
                     if (masterOrderInfo.getPayStatus() != 1) {
                         OrderStatus orderStatus = new OrderStatus();
                         orderStatus.setAdminUser(Constant.OS_STRING_SYSTEM);
-                        orderStatus.setType(ConstantValues.CREATE_RETURN.YES);
+                        orderStatus.setType(ConstantValues.CREATE_RETURN.NO);
                         orderStatus.setCode("10002");
                         orderCancelService.cancelOrderByMasterSn(orderSn, orderStatus);
                         continue;

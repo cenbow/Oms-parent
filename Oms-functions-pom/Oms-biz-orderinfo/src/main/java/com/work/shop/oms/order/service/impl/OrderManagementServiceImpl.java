@@ -1222,7 +1222,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		//订单号
 		String masterOrderSn = request.getMasterOrderSn();
 		//现订单折扣
+
 		BigDecimal discount = request.getDiscount();
+		if(discount == null){
+			discount = new BigDecimal(1);
+		}else{
+			discount = discount.divide(new BigDecimal(10),2,BigDecimal.ROUND_HALF_UP);
+		}
 
 		MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
 		example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
@@ -1238,7 +1244,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
 
 		//原订单折扣
-		BigDecimal groupBuydiscount = masterOrderInfoExtend.getGroupBuyDiscount();
+		BigDecimal groupBuydiscount = masterOrderInfoExtend.getGroupBuyDiscount().divide(new BigDecimal(10),2,BigDecimal.ROUND_HALF_UP);
+		if(groupBuydiscount.compareTo(BigDecimal.ZERO) == 0){
+			groupBuydiscount = new BigDecimal(1);
+		}
 
 		//订单总金额
 		BigDecimal totalFee = new BigDecimal(0);
@@ -1250,11 +1259,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				masterOrderGoodsParam.setId(masterOrderGood.getId());
 
 				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
-				BigDecimal goodsAddPrice = masterOrderGood.getGoodsAddPrice().divide(discount,8,BigDecimal.ROUND_HALF_UP).multiply(groupBuydiscount).setScale(2,BigDecimal.ROUND_HALF_UP);
+				BigDecimal goodsAddPrice = masterOrderGood.getGoodsAddPrice().divide(groupBuydiscount,8,BigDecimal.ROUND_HALF_UP).multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
 				masterOrderGoodsParam.setGoodsAddPrice(goodsAddPrice);
 
 				//当前商品的未税金额，  当前商品的未税金额/订单折扣 * 当前折扣 = 最新商品未税金额
-				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().divide(discount, 8, BigDecimal.ROUND_HALF_UP).multiply(groupBuydiscount).setScale(2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().divide(groupBuydiscount, 8, BigDecimal.ROUND_HALF_UP).multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				masterOrderGoodsParam.setGoodsPriceNoTax(goodsPriceNoTax);
 
 				///商品成交价 = 商品的未税金额 * （100+销项税） /100 （2位） + 加价金额
