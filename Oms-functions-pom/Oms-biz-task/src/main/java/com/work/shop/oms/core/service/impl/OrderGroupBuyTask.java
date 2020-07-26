@@ -83,7 +83,7 @@ public class OrderGroupBuyTask extends ATaskServiceProcess{
 			masterOrderSnList.add(masterOrderInfoExtend.getMasterOrderSn());
 		}
 		MasterOrderInfoExample masterOrderInfoExample = new MasterOrderInfoExample();
-		masterOrderInfoExample.createCriteria().andMasterOrderSnIn(masterOrderSnList).andOrderStatusNotEqualTo(Byte.valueOf("2"));
+		masterOrderInfoExample.createCriteria().andMasterOrderSnIn(masterOrderSnList).andPayStatusEqualTo(Byte.valueOf("1")).andOrderStatusNotEqualTo(Byte.valueOf("2"));
 		List<MasterOrderInfo> masterOrderInfosList = masterOrderInfoMapper.selectByExample(masterOrderInfoExample);
 		if(masterOrderInfosList == null || masterOrderInfosList.size() == 0){
 			return taskDatas;
