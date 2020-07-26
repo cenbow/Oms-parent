@@ -845,6 +845,9 @@
       <if test="isGroup != null">
         is_group = #{isGroup,jdbcType=TINYINT},
       </if>
+      <if test="isConfirmPay != null">
+        is_confirm_pay = #{isConfirmPay,jdbcType=TINYINT},
+      </if>
       <if test="isOperationConfirmPay != null">
         is_operation_confirm_pay = #{isOperationConfirmPay,jdbcType=TINYINT},
       </if>
