@@ -466,7 +466,14 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 					logger.info("payStChClient.checkParam.orderSn:"+orderSn+",paySn:"+paySn+",payReturn:"+JSON.toJSONString(payReturn));
 					if (payReturn.getIsOk() == Constant.YESORNO_YES) {
 						MasterOrderPayExample masterOrderUnPayExample = new MasterOrderPayExample();
-						masterOrderUnPayExample.or().andMasterOrderSnEqualTo(orderSn).andPayStatusEqualTo((byte)Constant.OP_PAY_STATUS_UNPAYED);
+
+						MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(orderSn);
+						//如果是团购订单，则已经是部分付款了
+						if (masterOrderInfoExtend.getGroupId() != null && oInfo.getPayStatus() == Constant.OP_PAY_STATUS_PAYING) {
+							masterOrderUnPayExample.or().andMasterOrderSnEqualTo(orderSn).andPayStatusEqualTo((byte)Constant.OP_PAY_STATUS_PAYING);
+						}else{
+							masterOrderUnPayExample.or().andMasterOrderSnEqualTo(orderSn).andPayStatusEqualTo((byte)Constant.OP_PAY_STATUS_UNPAYED);
+						}
 						List<MasterOrderPay> unPayMasterOrderPayList = masterOrderPayMapper.selectByExample(masterOrderUnPayExample);
 						MasterOrderPay unPayMasterOrderPay = unPayMasterOrderPayList.get(0);
 						double payFee = 0.00;
