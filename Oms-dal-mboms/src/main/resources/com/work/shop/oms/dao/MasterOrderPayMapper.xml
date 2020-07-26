@@ -401,6 +401,12 @@
       <if test="paymentRate != null">
         payment_rate = #{paymentRate,jdbcType=DECIMAL},
       </if>
+      <if test="prepayments != null">
+        prepayments = #{prepayments,jdbcType=DECIMAL},
+      </if>
+      <if test="balanceAmount != null">
+        balance_amount = #{balanceAmount,jdbcType=DECIMAL},
+      </if>
     </set>
     where master_pay_sn = #{masterPaySn,jdbcType=VARCHAR}
   </update>
