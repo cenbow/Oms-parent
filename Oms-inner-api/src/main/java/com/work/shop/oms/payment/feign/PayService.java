@@ -39,7 +39,7 @@ public interface PayService {
     @PostMapping("/pay/createMergePay")
     ReturnInfo<MergeOrderPay> createMergePay(@RequestBody List<String> masterOrderSnList);
 
-    /**
+    /**order_account_settlement
      * 主订单支付单支付
      * @param orderStatus
      * masterOrderSn

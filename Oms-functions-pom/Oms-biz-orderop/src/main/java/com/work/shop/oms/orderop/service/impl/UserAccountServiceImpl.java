@@ -156,6 +156,12 @@ public class UserAccountServiceImpl implements UserAccountService {
                 return returnInfo;
             }
 
+            Byte isGroup = masterOrderInfoExtend.getIsGroup();
+            if (isGroup != null && isGroup == 1) {
+                returnInfo.setMessage("订单号:" + orderNo + "团购订单,已支付");
+                return returnInfo;
+            }
+
             String userId = masterOrderInfo.getUserId();
             String companyId = masterOrderInfoExtend.getCompanyCode();
             accountSettlementOrderBean.setCompanyId(companyId);
