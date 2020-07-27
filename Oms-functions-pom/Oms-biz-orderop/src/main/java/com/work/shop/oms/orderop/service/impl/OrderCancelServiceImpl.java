@@ -662,12 +662,14 @@ public class OrderCancelServiceImpl implements OrderCancelService {
 		// 全部取消订单之后，生成退货单
 		// 判断主单订单是否全部取消 ，全部取消生成退货单
 		MasterOrderInfo master = this.masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
 		// 符合生成退单条件
 		List<String> useCards = new ArrayList<String>();
 		if (!OrderAttributeUtil.isPosOrder(master.getSource())) {
 		    // 需要创建退单
 			if (ConstantValues.CREATE_RETURN.YES.equals(orderStatus.getType())) {
-			    if (master.getPayStatus() == Constant.OI_PAY_STATUS_PAYED && (master.getMoneyPaid().doubleValue() >= 0 || master.getSurplus().doubleValue() > 0)) {
+			    if ((master.getPayStatus() == Constant.OI_PAY_STATUS_PAYED && (master.getMoneyPaid().doubleValue() >= 0 || master.getSurplus().doubleValue() > 0))
+						|| (masterOrderInfoExtend.getGroupId() != null && (master.getPayStatus() == Constant.OI_PAY_STATUS_PARTPAYED))) {
 			    	// 已付款订单
                     List<CreateOrderReturnGoods> returnGoodsList = processOrderReturnGoods(master, useCards);
                     ReturnInfo<List<OrderReturn>> orderReturnInfo = orderReturnService.getEffectiveReturns(masterOrderSn);
@@ -684,7 +686,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                             returnMsg = "发货时创建退单:";
                         }
                         // 创建退单支付单
-                        ReturnInfo ri = orderReturnService.createOrderReturnPay(returnVO);
+                        ReturnInfo ri = orderReturnService.createOrderReturnPay(returnVO,masterOrderInfoExtend.getGroupId());
                         if (ri == null || ri.getIsOk() == Constant.OS_NO) {
                             String msg = (ri == null ? masterOrderSn + "创建退单返回结果为空!" : masterOrderSn + "创建退单返回结果:" + ri.getMessage());
                             masterOrderActionService.insertOrderActionBySn(masterOrderSn,
