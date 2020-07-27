@@ -728,7 +728,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 	 * @return ReturnInfo<String>
 	 */
 	@Override
-	public ReturnInfo<String> createOrderReturnPay(CreateReturnVO createReturnVO) {
+	public ReturnInfo<String> createOrderReturnPay(CreateReturnVO createReturnVO,Integer groupId) {
 		logger.info("createOrderReturnPay..orderSn:" + createReturnVO.getMasterOrderSn() + ",createReturnVO:" + JSON.toJSONString(createReturnVO));
 		ReturnInfo<String> orderReturnMessage = new ReturnInfo<String>();
 		orderReturnMessage.setOrderSn(createReturnVO.getMasterOrderSn());
@@ -813,7 +813,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 			orderReturnBean.setCreateOrderReturn(createOrderReturn);
 			
 			//退款 - 付款金额默认
-			List<CreateOrderRefund> returnPayList = processReturnPayList(createReturnVO.getMasterOrderSn(), orderInfo.getTransType().intValue(), createReturnVO.getReturnMoney());
+			List<CreateOrderRefund> returnPayList = processReturnPayList(createReturnVO.getMasterOrderSn(), orderInfo.getTransType().intValue(), createReturnVO.getReturnMoney(),groupId);
 			orderReturnBean.setCreateOrderRefundList(returnPayList);
 		
 			// 公共方法调用
@@ -886,13 +886,17 @@ public class OrderReturnServiceImpl implements OrderReturnService {
      * @param transType
 	 * @param totalReturnMoney //退款总金额
 	 */
-	private List<CreateOrderRefund> processReturnPayList(String masterOrderSn, Integer transType, Double totalReturnMoney){
+	private List<CreateOrderRefund> processReturnPayList(String masterOrderSn, Integer transType, Double totalReturnMoney,Integer groupId){
 		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
 		if(Constant.OI_TRANS_TYPE_PRESHIP == transType.intValue()){
 			//货到付款
 			masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 		}else{
-			masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
+			if (groupId != null) {
+				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYING.byteValue());
+			} else {
+				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
+			}
 		}
 		List<MasterOrderPay> orderPayList = masterOrderPayMapper.selectByExample(masterOrderPayExample);
 		List<CreateOrderRefund> createOrderRefundList = new ArrayList<CreateOrderRefund>();
