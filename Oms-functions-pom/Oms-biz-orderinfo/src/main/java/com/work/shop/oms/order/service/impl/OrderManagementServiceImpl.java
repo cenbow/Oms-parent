@@ -1328,6 +1328,19 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				masterOrderInfoExtendNew.setIsConfirmPay(Byte.valueOf("1"));
 				masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("1"));
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+
+				//调用问题单改为正常单接口
+				List<Integer> integers = new ArrayList<>();
+				// 问题单类型、待审核问题单
+				integers.add(0);
+				OrderStatus orderStatus = new OrderStatus();
+				orderStatus.setMasterOrderSn(masterOrderSn);
+				orderStatus.setAdminUser(Constant.OS_STRING_SYSTEM);
+				orderStatus.setAdminUserId(Constant.OS_STRING_SYSTEM);
+				orderStatus.setQuestionTypes(integers);
+				orderStatus.setMessage("团购尾款问题单返回正常单");
+				orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
+				
 			}else{
 				message = "团购成功需要补交尾款";
 			}
