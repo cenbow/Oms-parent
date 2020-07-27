@@ -39,6 +39,7 @@ import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.StringUtil;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -1350,6 +1351,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			masterOrderPay.setMasterPaySn(masterOrderPayNew.getMasterPaySn());
 			masterOrderPay.setPayTotalfee(totalFee);
 			masterOrderPay.setBalanceAmount(subtract);
+
+			Date date = new Date();//取时间
+			Calendar  calendar = new GregorianCalendar();
+			calendar.setTime(date);
+			calendar.add(calendar.DATE,2); //把日期往后增加一天,整数  往后推,负数往前移动
+			date=calendar.getTime(); //这个时间就是日期往后推一天的结果
+			masterOrderPay.setPayLasttime(date);
 			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
 
 			//公共计算
