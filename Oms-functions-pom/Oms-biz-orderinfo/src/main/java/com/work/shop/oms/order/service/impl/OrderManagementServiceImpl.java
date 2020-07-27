@@ -1309,26 +1309,35 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			List<MasterOrderPay> masterOrderPays = masterOrderPayMapper.selectByExample(masterOrderPayExample);
 			MasterOrderPay masterOrderPayNew = masterOrderPays.get(0);
 
-			//更改支付单金额
 			MasterOrderPay masterOrderPay = new MasterOrderPay();
-			masterOrderPay.setMasterPaySn(masterOrderPayNew.getMasterPaySn());
-			masterOrderPay.setPayTotalfee(totalFee);
-			masterOrderPay.setBalanceAmount(subtract);
-			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
 
 			String message = "";
 			//判断内行，还是外部
 			//内行，订单状态改为已付款，已确认，填充付款金额，返回正常单
 			if(masterOrderPayNew.getPayId() == 50 || masterOrderPayNew.getPayId() == 35 ){
+				masterOrderPay.setPayStatus(Byte.valueOf("2"));
+
 				record.setOrderStatus(Byte.valueOf("1"));
 				record.setPayStatus(Byte.valueOf("2"));
 				record.setMoneyPaid(totalFee);
 
 				message = "团购成功补交尾款成功";
+
+				MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+				masterOrderInfoExtendNew.setIsConfirmPay(Byte.valueOf("1"));
+				masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("1"));
+				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 			}else{
 				message = "团购成功需要补交尾款";
 			}
 			masterOrderInfoMapper.updateByPrimaryKeySelective(record);
+
+			//更改支付单金额
+			masterOrderPay.setMasterPaySn(masterOrderPayNew.getMasterPaySn());
+			masterOrderPay.setPayTotalfee(totalFee);
+			masterOrderPay.setBalanceAmount(subtract);
+			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
 
 			//公共计算
 				//重新计算价格 -goods
