@@ -1319,6 +1319,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				record.setPayStatus(Byte.valueOf("2"));
 				record.setMoneyPaid(totalFee);
 
+				masterOrderInfoMapper.updateByPrimaryKeySelective(record);
+
 				message = "团购成功补交尾款成功";
 
 				MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
@@ -1341,8 +1343,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				
 			}else{
 				message = "团购成功需要补交尾款";
+				masterOrderInfoMapper.updateByPrimaryKeySelective(record);
 			}
-			masterOrderInfoMapper.updateByPrimaryKeySelective(record);
 
 			//更改支付单金额
 			masterOrderPay.setMasterPaySn(masterOrderPayNew.getMasterPaySn());
