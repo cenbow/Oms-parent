@@ -1220,4 +1220,17 @@ public class Constant {
 	 * 编辑价格问题单类型 已_结尾  120：待询价问题单 121：改价问题单 122：铁信支付改价问题单 123：盈合问题单
 	 */
 	public  static  final  String EDIT_PRICE_QUESTION_NO = "120_121_122_123_";
+	public static final Byte PAY_ID_XINYONG =39 ;
+	public static final Byte PAY_ID_BAOHAN = 47;
+	/**
+	 * 信用额度
+	 */
+	public static final String PAY_XINYONG = "xinyong";
+
+
+	/**
+	 * 银行保函
+	 */
+	public static final String PAY_BAOHAN = "yinhangbaohan";
+
 }

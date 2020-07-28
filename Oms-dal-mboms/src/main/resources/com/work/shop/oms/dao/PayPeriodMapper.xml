@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.work.shop.oms.dao.PayPeriodMapper">
+
+	<resultMap id="BaseResultMap" type="com.work.shop.oms.bean.PayPeriod" >
+		<result column="period_code" property="periodCode"/>
+		<result column="period_name" property="periodName"/>
+		<result column="pay_code" property="payCode"/>
+		<result column="period_rate" property="periodRate"/>
+		<result column="max_payfor_rate" property="maxPayforRate"/>
+		<result column="premium_rate" property="premiumRate"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		period_code, period_name, pay_code, period_rate, max_payfor_rate, premium_rate
+	</sql>
+	
+	<sql id="commonSql">
+		where status = 1
+		<if test="payCode != null">
+			and pay_code = #{payCode}
+		</if>
+		<if test="periodCode != null">
+			and period_code = #{periodCode}
+		</if>
+	</sql>
+
+
+	<select id="getPayPeriodInfo"  resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from pay_period
+		<include refid="commonSql" />
+	</select>
+
+</mapper>
