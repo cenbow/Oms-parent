@@ -211,9 +211,6 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 			List<MasterOrderQuestion> reviewItems = new ArrayList<>();
 			// 签章问题单
 			List<MasterOrderQuestion> signItems = new ArrayList<>();
-			// 团购问题单
-
-
 
             QuestionOrderTypeBean questionOrderTypeBean = getQuestionOrderTypeBean(questionTypeMap, allQuestions, normalItems, lackItems, reviewItems, signItems);
 
