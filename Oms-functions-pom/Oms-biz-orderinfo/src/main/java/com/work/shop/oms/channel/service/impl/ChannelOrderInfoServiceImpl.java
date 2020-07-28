@@ -341,12 +341,12 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         if (CollectionUtils.isEmpty(pageList)) {
             return;
         }
-        Map<String, Integer> groupIdMap = new HashMap<>();
+        Map<String, MasterOrderInfoExtend> groupIdMap = new HashMap<>();
         Set groupIdSet = new HashSet();
         List<String> orderSns = pageList.stream().map(x -> x.getOrderSn()).collect(Collectors.toList());
         List<MasterOrderInfoExtend> extendList=masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(orderSns);
         for (MasterOrderInfoExtend extend : extendList) {
-            groupIdMap.put(extend.getMasterOrderSn(), extend.getGroupId());
+            groupIdMap.put(extend.getMasterOrderSn(), extend);
             if (extend.getGroupId() != null) {
                 groupIdSet.add(extend.getGroupId());
             }
@@ -356,18 +356,22 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             groupBuyInfoList = bgProductService.getGroupBuyInfoBuGroupIds(new ArrayList<>(groupIdSet));
         }
         for (OrderPageInfo order : pageList) {
-            Integer groupId = groupIdMap.get(order.getOrderSn());
-            if (groupId == null) {
+            MasterOrderInfoExtend infoExtend = groupIdMap.get(order.getOrderSn());
+            if (infoExtend == null || infoExtend.getGroupId() == null) {
                 continue;
             }
-            order.setGroupId(groupId);
+            order.setGroupId(infoExtend.getGroupId());
+            order.setIsConfirmPay(infoExtend.getIsConfirmPay());
+            order.setIsOperationConfirmPay(infoExtend.getIsOperationConfirmPay());
+
             if (groupBuyInfoList != null || groupBuyInfoList.getIsOk() == 1 || CollectionUtils.isNotEmpty(groupBuyInfoList.getData())) {
 
                 List<BgGroupBuyInfo> data = groupBuyInfoList.getData();
                 for (BgGroupBuyInfo buyInfo : data) {
-                    if (groupId.compareTo(buyInfo.getId()) == 0) {
+                    if (infoExtend.getGroupId().compareTo(buyInfo.getId()) == 0) {
                         order.setGroupBuyBeginTime(buyInfo.getBeginTime());
                         order.setGroupBuyEndTime(buyInfo.getEndTime());
+                        order.setGroupBuyStatus(buyInfo.getGroupBuyStatus());
                     }
                 }
 

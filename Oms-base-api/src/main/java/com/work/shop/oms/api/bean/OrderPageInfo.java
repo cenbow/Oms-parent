@@ -298,6 +298,45 @@ public class OrderPageInfo implements Serializable{
 	 */
 	private Date groupBuyEndTime;
 
+	/**
+	 * 状态（1团购中、2团购成功、3团购失败）
+	 */
+	private Short groupBuyStatus;
+
+	/**
+	 * 客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效
+	 */
+	private Byte isConfirmPay;
+
+	/**
+	 * 运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
+	 */
+	private Byte isOperationConfirmPay;
+
+	public Byte getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Byte isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Byte getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Byte isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
+	}
+
+	public Short getGroupBuyStatus() {
+		return groupBuyStatus;
+	}
+
+	public void setGroupBuyStatus(Short groupBuyStatus) {
+		this.groupBuyStatus = groupBuyStatus;
+	}
+
 	public Date getGroupBuyBeginTime() {
 		return groupBuyBeginTime;
 	}

@@ -605,7 +605,7 @@
     where moi.order_status in (0,1) AND moie.group_id = #{groupId}
   </select>
   <select id="selectGroupIdByOrderSnList" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
-        select group_id groupId,master_order_sn masterOrderSn
+        select group_id groupId,master_order_sn masterOrderSn,is_confirm_pay isConfirmPay,is_operation_confirm_pay isOperationConfirmPay
         from master_order_info_extend
         where master_order_sn in
         <foreach collection="list" open="(" close=")" separator="," item="item">
