@@ -515,7 +515,7 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
 	
 	private OrderDepotResult occupyStock(MasterOrderInfo master, String masterOrderSn,
 			String shipSn, double moneyPaid, List<MasterOrderPay> orderPays, String depotCode) {
-		OrderDepotResult depotResult = new OrderDepotResult(-1, "初始默认错误");
+		OrderDepotResult depotResult = new OrderDepotResult(-1, "初始默认分仓");
 		try {
 			MasterOrderInfoExtend extend = this.masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
 			MasterOrderAddressInfo address = this.masterOrderAddressInfoMapper.selectByPrimaryKey(masterOrderSn);
@@ -1282,6 +1282,8 @@ public class OrderDistributeServiceImpl implements OrderDistributeService {
         distribute.setDepotStatus((byte)Constant.OI_DEPOT_STATUS_UNDEPOTED);
         // 0正常单
         distribute.setQuestionStatus(Constant.OI_QUESTION_STATUS_NORMAL);
+		// 1问题单
+//        distribute.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
         distribute.setOrderFrom(master.getOrderFrom());
         distribute.setAddTime(master.getAddTime());
         distribute.setReferer(master.getReferer());
