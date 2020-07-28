@@ -34,7 +34,13 @@ logging:
     classpath: log4j.xml
 
 ribbon:
+  eureka:
+    enabled: false
   ReadTimeout: 10000
   ConnectTimeout: 10000
   eager-load:
     enabled: true
+    clients: oms-service
+PRODUCT-SERVICE:
+  ribbon:
+    listOfServers: http://127.0.0.1:7712
