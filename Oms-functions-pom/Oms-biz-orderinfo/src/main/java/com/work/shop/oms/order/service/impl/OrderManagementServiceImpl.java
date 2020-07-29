@@ -1263,7 +1263,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		//代表已经支付过预付款，需要补交尾款
 		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
 			//订单总金额
-			BigDecimal totalFee = new BigDecimal(0);
+			BigDecimal totalFee = BigDecimal.ZERO;
 
 			for (MasterOrderGoods masterOrderGood : masterOrderGoods) {
 				//账期和信用加价金额
@@ -1314,12 +1314,18 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 					}
 				}
 
+				//商品的未税成交价(TransactionPriceNoTax) = 商品未税金额  + 加价金额(含税)  - （加价金额(含税) * 销项税 / 100）
+				BigDecimal subtractGoodsPriceNoTax =goodPrice;
+				masterOrderGood.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
+
+				//商品含税成交价(TransactionPrice) =（商品的未税成交价 * （100+销项税） / 100）
+				BigDecimal transactionPrice = subtractGoodsPriceNoTax.multiply(new BigDecimal(100).add(masterOrderGood.getOutputTax())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
+				masterOrderGood.setTransactionPrice(transactionPrice);
+
+
 				//计算数量
 				goodPrice = goodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
 
-				//商品未税金额 = 商品原有未税销售价 * 团购最新折扣
-				BigDecimal godsPriceNoTax = goodPrice.multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
-				masterOrderGood.setGoodsPriceNoTax(godsPriceNoTax);
 
 				//计算税率
 				BigDecimal addTax = goodPrice.multiply(masterOrderGood.getOutputTax()).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -1334,15 +1340,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				addPrice = addPrice.add(divide);
 				BigDecimal multiply = addPrice.multiply(discount);
 
+				//商品未税金额 = 商品原有未税销售价 * 团购最新折扣
+				BigDecimal godsPriceNoTax = goodsPriceNoTax.multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
+				masterOrderGood.setGoodsPriceNoTax(godsPriceNoTax);
 
-				//商品的未税成交价(TransactionPriceNoTax) = 商品未税金额  + 加价金额(含税)  - （加价金额(含税) * 销项税 / 100）
-				BigDecimal divideTransactionPriceNoTax = multiply.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-				BigDecimal subtractGoodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().add(addPrice).subtract(divideTransactionPriceNoTax);
-				masterOrderGood.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
 
-				//商品含税成交价(TransactionPrice) =（商品的未税成交价 * （100+销项税） / 100）
-				BigDecimal transactionPrice = subtractGoodsPriceNoTax.multiply(new BigDecimal(100).add(masterOrderGood.getOutputTax())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-				masterOrderGood.setTransactionPrice(transactionPrice);
+
+
 
 				//商品的结算价格(settlementPrice) = 商品含税成交价
 				masterOrderGood.setSettlementPrice(transactionPrice);
@@ -1354,6 +1358,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 //				totalFee = totalFee.add(totalPrice);
 
 
+				//乘上折扣
+				goodPrice = goodPrice.multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//计入订单总金额
 				totalFee = totalFee.add(goodPrice);
 
