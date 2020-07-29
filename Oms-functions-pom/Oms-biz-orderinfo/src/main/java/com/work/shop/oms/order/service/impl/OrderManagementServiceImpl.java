@@ -1230,6 +1230,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 		//订单号
 		String masterOrderSn = request.getMasterOrderSn();
+		if("2007290953050129".equals(masterOrderSn)){
+			System.out.println("1");
+		}
 
 		//现订单折扣
 		BigDecimal discount = request.getDiscount();
@@ -1270,7 +1273,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				BigDecimal addPrice=BigDecimal.ZERO;
 
 				//获取商品未税成交价
-				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax();
+				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().multiply(discount);
 				BigDecimal goodPrice = goodsPriceNoTax;
 
 				//查询支付单账期加价
@@ -1313,43 +1316,37 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 					}
 				}
+				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
+				masterOrderGoodsParam.setId(masterOrderGood.getId());
+
 
 				//商品的未税成交价(TransactionPriceNoTax) = 商品未税金额  + 加价金额(含税)  - （加价金额(含税) * 销项税 / 100）
 				BigDecimal subtractGoodsPriceNoTax =goodPrice;
-				masterOrderGood.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
+				masterOrderGoodsParam.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
 
 				//商品含税成交价(TransactionPrice) =（商品的未税成交价 * （100+销项税） / 100）
 				BigDecimal transactionPrice = subtractGoodsPriceNoTax.multiply(new BigDecimal(100).add(masterOrderGood.getOutputTax())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-				masterOrderGood.setTransactionPrice(transactionPrice);
-
+				masterOrderGoodsParam.setTransactionPrice(transactionPrice);
 
 				//计算数量
 				goodPrice = goodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
 
-
 				//计算税率
-				BigDecimal addTax = goodPrice.multiply(masterOrderGood.getOutputTax()).setScale(2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal addTax = goodPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
 				goodPrice = goodPrice.add(addTax);
-
-				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
-				masterOrderGoodsParam.setId(masterOrderGood.getId());
 
 
 				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
 				BigDecimal divide = addPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 				addPrice = addPrice.add(divide);
-				BigDecimal multiply = addPrice.multiply(discount);
+				masterOrderGoodsParam.setGoodsAddPrice(addPrice);
 
 				//商品未税金额 = 商品原有未税销售价 * 团购最新折扣
-				BigDecimal godsPriceNoTax = goodsPriceNoTax.multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
-				masterOrderGood.setGoodsPriceNoTax(godsPriceNoTax);
-
-
-
-
+//				BigDecimal godsPriceNoTax = goodsPriceNoTax.multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
+//				masterOrderGoodsParam.setGoodsPriceNoTax(godsPriceNoTax);
 
 				//商品的结算价格(settlementPrice) = 商品含税成交价
-				masterOrderGood.setSettlementPrice(transactionPrice);
+				masterOrderGoodsParam.setSettlementPrice(transactionPrice);
 
 				masterOrderGoodsMapper.updateByPrimaryKeySelective(masterOrderGoodsParam);
 
@@ -1357,9 +1354,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 //				BigDecimal totalPrice = noTaxTotalPrice.add(noTaxTotalPrice.multiply(masterOrderGood.getOutputTax()).divide(BigDecimal.valueOf(100),8, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP));
 //				totalFee = totalFee.add(totalPrice);
 
-
 				//乘上折扣
-				goodPrice = goodPrice.multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
+				//goodPrice = goodPrice.multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//计入订单总金额
 				totalFee = totalFee.add(goodPrice);
 
