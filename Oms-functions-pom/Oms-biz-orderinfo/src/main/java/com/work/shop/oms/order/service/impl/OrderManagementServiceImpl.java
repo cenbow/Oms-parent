@@ -1230,10 +1230,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 		//订单号
 		String masterOrderSn = request.getMasterOrderSn();
-		if("2007290953050129".equals(masterOrderSn)){
-			System.out.println("1");
-		}
-
 		//现订单折扣
 		BigDecimal discount = request.getDiscount();
 		if(discount == null){
