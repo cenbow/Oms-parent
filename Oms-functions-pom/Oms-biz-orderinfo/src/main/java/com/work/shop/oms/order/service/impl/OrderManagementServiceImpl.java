@@ -1269,7 +1269,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				BigDecimal addPrice=BigDecimal.ZERO;
 
 				//获取商品未税成交价
-				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().multiply(discount);
+				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				BigDecimal goodPrice = goodsPriceNoTax;
 
 				//查询支付单账期加价
