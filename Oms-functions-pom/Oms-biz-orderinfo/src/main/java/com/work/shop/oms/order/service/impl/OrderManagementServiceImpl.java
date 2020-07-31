@@ -1454,8 +1454,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			Date date = new Date();//取时间
 			Calendar  calendar = new GregorianCalendar();
 			calendar.setTime(date);
-			calendar.add(calendar.DATE,2); //把日期往后增加一天,整数  往后推,负数往前移动
-			date=calendar.getTime(); //这个时间就是日期往后推一天的结果
+			calendar.add(calendar.DATE,2); //把日期往后增加二天,整数  往后推,负数往前移动
+			date=calendar.getTime(); //这个时间就是日期往后推二天的结果
 			masterOrderPay.setPayLasttime(date);
 			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
 

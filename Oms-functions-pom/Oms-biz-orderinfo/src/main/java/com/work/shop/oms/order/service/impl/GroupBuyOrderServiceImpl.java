@@ -110,7 +110,7 @@ public class GroupBuyOrderServiceImpl implements GroupBuyOrderService {
                         orderStatus.setAdminUser(Constant.OS_STRING_SYSTEM);
                         orderStatus.setType(ConstantValues.CREATE_RETURN.NO);
                         orderStatus.setMessage("团购成功取消未付预付款订单");
-                        orderStatus.setCode("10002");
+                        orderStatus.setCode("10003");
                         orderCancelService.cancelOrderByMasterSn(orderSn, orderStatus);
                         continue;
                     }
