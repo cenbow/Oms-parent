@@ -40,7 +40,7 @@ public class OrderReturnBean implements Serializable {
     private int type;
 
     /**
-     * 是否已结算 0未结算、1已结算
+     * 是否已结算 0未结算、1已结算、2团购订单
      */
     private int settlement;
 

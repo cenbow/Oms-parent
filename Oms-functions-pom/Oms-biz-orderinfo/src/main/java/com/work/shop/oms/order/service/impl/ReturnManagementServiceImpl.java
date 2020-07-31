@@ -1407,7 +1407,12 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
         }
 
         orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
-        orderReturnBean.setSettlement(masterOrderInfoExtend.getSettlementAccount());
+		Byte isGroup = masterOrderInfoExtend.getIsGroup();
+		if (isGroup != null && isGroup == 1) {
+			orderReturnBean.setSettlement(2);
+		} else {
+			orderReturnBean.setSettlement(masterOrderInfoExtend.getSettlementAccount());
+		}
 
         List<MasterOrderPay> orderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
         if (orderPayList == null || orderPayList.size() == 0) {
