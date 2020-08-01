@@ -52,6 +52,11 @@ public class MasterOrderInfoExtend {
     private String groupName;
 
     /**
+     * 参加团购前原价
+     */
+    private BigDecimal groupBuyMoney;
+
+    /**
      * 客户团购确认支付类型（0为预付款 1为尾款），此字段在参与团购时有效
      */
     private Byte isConfirmPay;
@@ -429,6 +434,14 @@ public class MasterOrderInfoExtend {
 
     public BigDecimal getGroupBuyDiscount() {
         return groupBuyDiscount;
+    }
+
+    public BigDecimal getGroupBuyMoney() {
+        return groupBuyMoney;
+    }
+
+    public void setGroupBuyMoney(BigDecimal groupBuyMoney) {
+        this.groupBuyMoney = groupBuyMoney;
     }
 
     public void setGroupBuyDiscount(BigDecimal groupBuyDiscount) {
