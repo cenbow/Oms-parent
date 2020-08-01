@@ -1378,6 +1378,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
 				masterOrderInfoExtendNew.setIsConfirmPay(Byte.valueOf("1"));
 				masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("1"));
+				masterOrderInfoExtendNew.setGroupBuyMoney(totalFee.divide(discount,2,BigDecimal.ROUND_HALF_UP));
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 
 				//调用问题单改为正常单接口
@@ -1401,6 +1402,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				}
 				message = "团购成功需要补交尾款";
 				masterOrderInfoMapper.updateByPrimaryKeySelective(record);
+
+				MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+				masterOrderInfoExtendNew.setGroupBuyMoney(totalFee.divide(discount,2,BigDecimal.ROUND_HALF_UP));
+				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 			}
 
 			//更改支付单金额
