@@ -1251,14 +1251,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		}
 		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
 
-		//原订单折扣
-//		BigDecimal groupBuydiscount = masterOrderInfoExtend.getGroupBuyDiscount().divide(new BigDecimal(10),2,BigDecimal.ROUND_HALF_UP);
-//		if(groupBuydiscount.compareTo(BigDecimal.ZERO) == 0){
-//			groupBuydiscount = new BigDecimal(1);
-//		}
-
-
-
 		//代表已经支付过预付款，需要补交尾款
 		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
 			//订单总金额
@@ -1309,7 +1301,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 							goodPrice=BigDecimal.valueOf(ratePriceNoTax);
 						}
-
 					}
 				}
 				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
@@ -1337,54 +1328,14 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				addPrice = addPrice.add(divide);
 				masterOrderGoodsParam.setGoodsAddPrice(addPrice);
 
-				//商品未税金额 = 商品原有未税销售价 * 团购最新折扣
-//				BigDecimal godsPriceNoTax = goodsPriceNoTax.multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
-//				masterOrderGoodsParam.setGoodsPriceNoTax(godsPriceNoTax);
-
 				//商品的结算价格(settlementPrice) = 商品含税成交价
 				masterOrderGoodsParam.setSettlementPrice(transactionPrice);
 
 				masterOrderGoodsMapper.updateByPrimaryKeySelective(masterOrderGoodsParam);
 
-//				BigDecimal noTaxTotalPrice = godsPriceNoTax.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
-//				BigDecimal totalPrice = noTaxTotalPrice.add(noTaxTotalPrice.multiply(masterOrderGood.getOutputTax()).divide(BigDecimal.valueOf(100),8, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP));
-//				totalFee = totalFee.add(totalPrice);
-
-				//乘上折扣
-				//goodPrice = goodPrice.multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				//计入订单总金额
 				totalFee = totalFee.add(goodPrice);
 
-				/*
-
-				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
-				masterOrderGoodsParam.setId(masterOrderGood.getId());
-
-				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
-				BigDecimal goodsAddPrice = masterOrderGood.getGoodsAddPrice().divide(groupBuydiscount,8,BigDecimal.ROUND_HALF_UP).multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
-				masterOrderGoodsParam.setGoodsAddPrice(goodsAddPrice);
-
-				//商品未税金额 = 商品原有未税销售价 * 团购最新折扣
-				BigDecimal godsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().multiply(discount).setScale(2,BigDecimal.ROUND_HALF_UP);
-				masterOrderGood.setGoodsPriceNoTax(godsPriceNoTax);
-
-				//商品的未税成交价(TransactionPriceNoTax) = 商品未税金额  + 加价金额(含税)  - （加价金额(含税) * 销项税 / 100）
-				BigDecimal divideTransactionPriceNoTax = goodsAddPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-				BigDecimal subtractGoodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().add(goodsAddPrice).subtract(divideTransactionPriceNoTax);
-				masterOrderGood.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
-
-				//商品含税成交价(TransactionPrice) =（商品的未税成交价 * （100+销项税） / 100）
-				BigDecimal transactionPrice = subtractGoodsPriceNoTax.multiply(new BigDecimal(100).add(masterOrderGood.getOutputTax())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-				masterOrderGood.setTransactionPrice(transactionPrice);
-
-				//商品的结算价格(settlementPrice) = 商品含税成交价
-				masterOrderGood.setSettlementPrice(transactionPrice);
-
-				masterOrderGoodsMapper.updateByPrimaryKeySelective(masterOrderGoodsParam);
-
-				BigDecimal noTaxTotalPrice = godsPriceNoTax.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
-				BigDecimal totalPrice = noTaxTotalPrice.add(noTaxTotalPrice.multiply(masterOrderGood.getOutputTax()).divide(BigDecimal.valueOf(100),8, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP));
-				totalFee = totalFee.add(totalPrice);*/
 			}
 			MasterOrderInfo masterOrderInfoNew = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
 
@@ -1440,8 +1391,14 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				orderStatus.setQuestionTypes(integers);
 				orderStatus.setMessage("团购尾款问题单返回正常单");
 				orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
-				
-			}else{
+
+			} else {
+				if (masterOrderPayNew.getPayId() == 65) {
+					MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+					masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+					masterOrderInfoExtendNew.setIsConfirmPay(Byte.valueOf("1"));
+					masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+				}
 				message = "团购成功需要补交尾款";
 				masterOrderInfoMapper.updateByPrimaryKeySelective(record);
 			}
