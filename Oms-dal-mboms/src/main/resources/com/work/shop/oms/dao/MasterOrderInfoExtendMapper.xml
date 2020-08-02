@@ -999,6 +999,9 @@
         <if test="invBankNo != null">
             inv_bank_no = #{invBankNo},
         </if>
+        <if test="groupBuyMoney != null">
+          group_buy_money = #{groupBuyMoney},
+        </if>
     </set>
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>

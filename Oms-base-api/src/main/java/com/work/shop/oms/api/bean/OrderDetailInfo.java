@@ -519,6 +519,19 @@ public class OrderDetailInfo  implements Serializable{
 		this.currentTime = currentTime;
 	}
 
+	/**
+	 * 团购订单原价
+	 */
+	private BigDecimal groupBuyMoney;
+
+	public BigDecimal getGroupBuyMoney() {
+		return groupBuyMoney;
+	}
+
+	public void setGroupBuyMoney(BigDecimal groupBuyMoney) {
+		this.groupBuyMoney = groupBuyMoney;
+	}
+
 	public Integer getGroupBuyStatus() {
 		return groupBuyStatus;
 	}
