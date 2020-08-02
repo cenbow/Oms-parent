@@ -363,7 +363,9 @@ public class PayServiceImpl implements PayService {
 			masterOrderInfoUpdate.setPayStatus(changeOrderInfoPay(masterOrderSn));
 			masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoUpdate);
 
-			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED) {
+			//查询订单扩展表，判断是团购单还是正常单
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+			if ((masterOrderInfoExtend.getGroupId() == null && orderFlag == 0) || orderFlag == 1) {
 				try {
 					// 支付释放占用量
 					OrderStatus orderStatusStock = new OrderStatus();
@@ -374,6 +376,7 @@ public class PayServiceImpl implements PayService {
 					logger.info("支付支付单库存占用异常：", e);
 				}
 			}
+
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, "支付单已支付：" + paySn, orderStatus.getAdminUser());
 			//pos不确认
 			if (!orderStatus.getSource().equals(ConstantValues.METHOD_SOURCE_TYPE.POS) && masterOrderInfoUpdate.getPayStatus() == Constant.OI_PAY_STATUS_PAYED) {
