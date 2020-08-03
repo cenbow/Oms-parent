@@ -676,7 +676,7 @@ public class OrderCancelServiceImpl implements OrderCancelService {
                     if (orderReturnInfo != null && orderReturnInfo.getIsOk() == Constant.OS_YES
                             && StringUtil.isListNull(orderReturnInfo.getData())) {
 
-                        CreateReturnVO returnVO = createOrderReturnVo(master, orderStatus, returnGoodsList, createType);
+                        CreateReturnVO returnVO = createOrderReturnVo(master, orderStatus, returnGoodsList, createType, masterOrderInfoExtend);
                         String returnMsg = null;
                         if (createType == 0) {
                             // 整单取消
@@ -789,9 +789,10 @@ public class OrderCancelServiceImpl implements OrderCancelService {
      * @param orderStatus
      * @param returnGoodsList
      * @param createType 0整单取消、1部分退单
+	 * @param masterOrderInfoExtend 订单扩展信息
      * @return CreateReturnVO
      */
-	private CreateReturnVO createOrderReturnVo(MasterOrderInfo master, OrderStatus orderStatus, List<CreateOrderReturnGoods> returnGoodsList, int createType) {
+	private CreateReturnVO createOrderReturnVo(MasterOrderInfo master, OrderStatus orderStatus, List<CreateOrderReturnGoods> returnGoodsList, int createType, MasterOrderInfoExtend masterOrderInfoExtend) {
 
 	    String masterOrderSn = master.getMasterOrderSn();
 
@@ -814,6 +815,12 @@ public class OrderCancelServiceImpl implements OrderCancelService {
             returnVO.setReturnSource(ConstantValues.ORDERRETURN_REFUND_SOURCE.ORDER_ALLSHIP);
             returnMoney = Math.abs(master.getTotalPayable().doubleValue());
         }
+
+        //如果是已经付了尾款的团购订单，则退尾款
+        if (master.getPayStatus().toString().equals(ConstantValues.ORDER_PAY_STATUS.PAYED.toString()) && masterOrderInfoExtend.getGroupId() != null) {
+			returnMoney = master.getBalanceAmount().doubleValue();
+		}
+
         returnVO.setReturnMoney(returnMoney);
         returnVO.setOrderReturnGoodsList(returnGoodsList);
 
