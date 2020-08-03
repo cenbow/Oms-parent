@@ -45,6 +45,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -1267,6 +1268,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				//查询支付单账期加价
 				MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderGood.getMasterOrderSn());
 				BigDecimal paymentRate = masterOrderPay.getPaymentRate();
+
+				//计算账期加价
 				if (paymentRate != null && paymentRate.compareTo(BigDecimal.ZERO) > 0) {
 					//有账期加价
 					//未税成交价 - 加价后 保留两位
@@ -1303,9 +1306,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 						}
 					}
 				}
+
+				//处理赋值字段
 				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
 				masterOrderGoodsParam.setId(masterOrderGood.getId());
-
 
 				//商品的未税成交价(TransactionPriceNoTax) = 商品未税金额  + 加价金额(含税)  - （加价金额(含税) * 销项税 / 100）
 				BigDecimal subtractGoodsPriceNoTax =goodPrice;
@@ -1314,6 +1318,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				//商品含税成交价(TransactionPrice) =（商品的未税成交价 * （100+销项税） / 100）
 				BigDecimal transactionPrice = subtractGoodsPriceNoTax.multiply(new BigDecimal(100).add(masterOrderGood.getOutputTax())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 				masterOrderGoodsParam.setTransactionPrice(transactionPrice);
+
+
 
 				//计算数量
 				goodPrice = goodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
@@ -1324,9 +1330,13 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 
 				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
+				//原有的含税销售价(goods_price字段)-原有的加价金额+最新加价金额=最新的含税销售价
 				BigDecimal divide = addPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 				addPrice = addPrice.add(divide);
 				masterOrderGoodsParam.setGoodsAddPrice(addPrice);
+				masterOrderGoodsParam.setGoodsPrice(masterOrderGood.getGoodsPrice().subtract(masterOrderGood.getGoodsAddPrice()).add(addPrice));
+
+
 
 				//商品的结算价格(settlementPrice) = 商品含税成交价
 				masterOrderGoodsParam.setSettlementPrice(transactionPrice);
