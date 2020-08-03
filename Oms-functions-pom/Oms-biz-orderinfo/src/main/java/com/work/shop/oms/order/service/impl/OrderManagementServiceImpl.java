@@ -1258,6 +1258,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
 			//订单总金额
 			BigDecimal totalFee = BigDecimal.ZERO;
+			//优惠金额
+			BigDecimal totalDiscountPrice=BigDecimal.ZERO;
 
 			for (MasterOrderGoods masterOrderGood : masterOrderGoods) {
 				//账期和信用加价金额
@@ -1313,6 +1315,14 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				BigDecimal subtractGoodsPriceNoTax =goodPrice;
 				masterOrderGoodsParam.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
 
+				//计算优惠金额
+				//单个商品优惠金额 未税
+				BigDecimal goodsDiscount = masterOrderGood.getGoodsPriceNoTax().subtract(masterOrderGoodsParam.getTransactionPriceNoTax()).setScale(2, BigDecimal.ROUND_HALF_UP);
+				//商品优惠金额 含税 单个商品优惠金额 * 数量 * （1+销项税）
+				BigDecimal goodsTotalDiscountPrice = goodsDiscount.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber())).multiply(BigDecimal.ONE.add(masterOrderGood.getOutputTax().divide(new BigDecimal(100))));
+				totalDiscountPrice = totalDiscountPrice.add(goodsTotalDiscountPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+
+
 				//商品含税成交价(TransactionPrice) =（商品的未税成交价 * （100+销项税） / 100）
 				BigDecimal transactionPrice = subtractGoodsPriceNoTax.multiply(new BigDecimal(100).add(masterOrderGood.getOutputTax())).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 				masterOrderGoodsParam.setTransactionPrice(transactionPrice);
@@ -1355,6 +1365,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			//尾款，应付总金额
 			BigDecimal subtract = totalFee.subtract(masterOrderInfoNew.getPrepayments());
 			record.setBalanceAmount(subtract);
+			record.setDiscount(totalDiscountPrice);
 
 
 
