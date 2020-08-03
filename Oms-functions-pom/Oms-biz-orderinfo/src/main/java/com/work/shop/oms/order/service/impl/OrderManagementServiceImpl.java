@@ -1324,9 +1324,12 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 
 				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
+				//原有的含税销售价(goods_price字段)-原有的加价金额+最新加价金额=最新的含税销售价
 				BigDecimal divide = addPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
 				addPrice = addPrice.add(divide);
 				masterOrderGoodsParam.setGoodsAddPrice(addPrice);
+				masterOrderGoodsParam.setGoodsPrice(masterOrderGood.getGoodsPrice().subtract(masterOrderGood.getGoodsAddPrice()).add(addPrice));
+
 
 				//商品的结算价格(settlementPrice) = 商品含税成交价
 				masterOrderGoodsParam.setSettlementPrice(transactionPrice);
