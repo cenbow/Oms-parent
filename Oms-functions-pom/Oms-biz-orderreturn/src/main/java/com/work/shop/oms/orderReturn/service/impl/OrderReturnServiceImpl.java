@@ -893,7 +893,10 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 			masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 		}else{
 			if (groupId != null) {
-				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYING.byteValue());
+				List<Byte> payStatusList = new ArrayList<>();
+				payStatusList.add(ConstantValues.OP_ORDER_PAY_STATUS.PAYING.byteValue());
+				payStatusList.add(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
+				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusIn(payStatusList);
 			} else {
 				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
 			}
