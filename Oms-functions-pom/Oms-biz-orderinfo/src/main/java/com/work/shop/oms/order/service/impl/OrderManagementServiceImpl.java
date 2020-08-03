@@ -1239,6 +1239,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			discount = discount.divide(new BigDecimal(10),2,BigDecimal.ROUND_HALF_UP);
 		}
 
+		MasterOrderPay masterOrderPayNew = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSn);
+
 		MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
 		example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
 		List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
@@ -1256,8 +1258,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
 			//订单总金额
 			BigDecimal totalFee = BigDecimal.ZERO;
-			//订单原价总金额
-			BigDecimal baseTotalFee = BigDecimal.ZERO;
 
 			for (MasterOrderGoods masterOrderGood : masterOrderGoods) {
 				//账期和信用加价金额
@@ -1267,13 +1267,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				BigDecimal goodPrice = goodsPriceNoTax;
 
-				//原价未税成交价
-				BigDecimal baseGoodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().setScale(2, BigDecimal.ROUND_HALF_UP);
-				BigDecimal baseGoodPrice = baseGoodsPriceNoTax;
-
 				//查询支付单账期加价
-				MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderGood.getMasterOrderSn());
-				BigDecimal paymentRate = masterOrderPay.getPaymentRate();
+				BigDecimal paymentRate = masterOrderPayNew.getPaymentRate();
 				if (paymentRate != null && paymentRate.compareTo(BigDecimal.ZERO) > 0) {
 					//有账期加价
 					//未税成交价 - 加价后 保留两位
@@ -1281,14 +1276,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 					//加价金额 - 未税
 					addPrice = BigDecimal.valueOf(ratePriceNoTax).subtract(goodsPriceNoTax);
 					goodPrice=BigDecimal.valueOf(ratePriceNoTax);
-
-					//原价账期加价
-					baseGoodPrice = BigDecimal.valueOf(PayMethodUtil.getPayRateMoney(baseGoodsPriceNoTax, paymentRate));
 				}
 
-				/*//计算信用加价
-				if (masterOrderPay != null && masterOrderPay.getPayId() > 0 && (masterOrderPay.getPayId() == Constant.PAY_ID_XINYONG || masterOrderPay.getPayId() == Constant.PAY_ID_BAOHAN)) {
-					SystemPaymentWithBLOBs systemPaymentWithBLOBs = systemPaymentMapper.selectByPrimaryKey(masterOrderPay.getPayId());
+				//计算信用加价
+				if (masterOrderPayNew != null && masterOrderPayNew.getPayId() > 0 && (masterOrderPayNew.getPayId() == Constant.PAY_ID_XINYONG || masterOrderPayNew.getPayId() == Constant.PAY_ID_BAOHAN)) {
+					SystemPaymentWithBLOBs systemPaymentWithBLOBs = systemPaymentMapper.selectByPrimaryKey(masterOrderPayNew.getPayId());
 					if (systemPaymentWithBLOBs != null && systemPaymentWithBLOBs.getPayCode() != null) {
 						String payCode = systemPaymentWithBLOBs.getPayCode();
 						PayPeriod payPeriodQuery = new PayPeriod();
@@ -1312,7 +1304,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 							goodPrice=BigDecimal.valueOf(ratePriceNoTax);
 						}
 					}
-				}*/
+				}
 				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
 				masterOrderGoodsParam.setId(masterOrderGood.getId());
 
@@ -1327,15 +1319,10 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 				//计算数量
 				goodPrice = goodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
-				//原价计算数量
-				baseGoodPrice = baseGoodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
 
 				//计算税率
 				BigDecimal addTax = goodPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
 				goodPrice = goodPrice.add(addTax);
-				//原价计算税率
-				BigDecimal baseAddTax = baseGoodPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
-				baseGoodPrice = baseGoodPrice.add(baseAddTax);
 
 
 				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
@@ -1352,9 +1339,6 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 				//计入订单总金额
 				totalFee = totalFee.add(goodPrice);
-				//原价计入总金额
-				baseTotalFee = baseTotalFee.add(baseGoodPrice);
-
 
 			}
 			MasterOrderInfo masterOrderInfoNew = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
@@ -1372,11 +1356,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			BigDecimal subtract = totalFee.subtract(masterOrderInfoNew.getPrepayments());
 			record.setBalanceAmount(subtract);
 
-			//查询支付单信息
-			MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
-			masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
-			List<MasterOrderPay> masterOrderPays = masterOrderPayMapper.selectByExample(masterOrderPayExample);
-			MasterOrderPay masterOrderPayNew = masterOrderPays.get(0);
+
 
 			MasterOrderPay masterOrderPay = new MasterOrderPay();
 
@@ -1398,7 +1378,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
 				masterOrderInfoExtendNew.setIsConfirmPay(Byte.valueOf("1"));
 				masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("1"));
-				masterOrderInfoExtendNew.setGroupBuyMoney(baseTotalFee);
+				masterOrderInfoExtendNew.setGroupBuyMoney(masterOrderPayNew.getPayTotalfee().subtract(totalFee));
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 
 				//调用问题单改为正常单接口
@@ -1425,7 +1405,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 				MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
 				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
-				masterOrderInfoExtendNew.setGroupBuyMoney(baseTotalFee);
+				masterOrderInfoExtendNew.setGroupBuyMoney(masterOrderPayNew.getPayTotalfee().subtract(totalFee));
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 			}
 
