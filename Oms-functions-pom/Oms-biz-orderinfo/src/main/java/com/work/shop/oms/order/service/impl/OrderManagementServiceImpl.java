@@ -1344,6 +1344,9 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 				//商品的结算价格(settlementPrice) = 商品含税成交价
 				masterOrderGoodsParam.setSettlementPrice(transactionPrice);
+				//商品优惠
+				masterOrderGoodsParam.setDiscount(masterOrderGoodsParam.getGoodsPrice().subtract(masterOrderGoodsParam.getTransactionPrice()));
+
 
 				masterOrderGoodsMapper.updateByPrimaryKeySelective(masterOrderGoodsParam);
 
