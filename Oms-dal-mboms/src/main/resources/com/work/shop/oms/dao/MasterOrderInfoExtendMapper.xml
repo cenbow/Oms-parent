@@ -1060,4 +1060,14 @@
       pay_source_id = #{paySourceId}
     where master_order_sn = #{masterOrderSn,jdbcType=VARCHAR}
   </update>
+
+  <select id="selectGroupId" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
+    select group_id groupId,master_order_sn masterOrderSn
+    from master_order_info_extend
+    where master_order_sn in
+    <foreach collection="list" open="(" close=")" separator="," item="item">
+      #{item}
+    </foreach>
+  </select>
+
 </mapper>
