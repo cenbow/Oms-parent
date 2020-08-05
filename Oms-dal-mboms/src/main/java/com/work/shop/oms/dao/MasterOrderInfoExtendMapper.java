@@ -110,4 +110,6 @@ public interface MasterOrderInfoExtendMapper {
     List<MasterOrderInfoExtend> selectOrderSnByGroupId(MasterOrderInfoExtend record);
 
     List<MasterOrderInfoExtend> selectGroupIdByOrderSnList(List<String> orderSns);
+
+    List<MasterOrderInfoExtend> selectGroupId(List<String> orderSns);
 }

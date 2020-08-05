@@ -468,7 +468,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 params.put("returnProcessStatus", returnProcessStatus);
             }
 
-
+            List<String> masterOrderSnList = new ArrayList<>();
             List<OrderReturnPageInfo> pageList = defineOrderMapper.selectUserOrderReturnInfo(params);
             Paging<OrderReturnPageInfo> paging = new Paging<OrderReturnPageInfo>();
             paging.setTotalProperty(defineOrderMapper.selectUserOrderReturnInfoCount(params));
@@ -478,7 +478,31 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 List<OrderReturnGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderReturnGoodsInfo(goodsParams);
                 setReturnGoodsInfo(orderGoodsList);
                 orderReturnPageInfo.setOrderGoodsInfo(orderGoodsList);
+
+                //返回团购信息
+                masterOrderSnList.add(orderReturnPageInfo.getOrderSn());
             }
+
+            Map<String,MasterOrderInfoExtend> masterOrderInfoExtendMap = new HashMap<>();
+            //返回团购信息,只查询团购id
+            if (masterOrderSnList != null && masterOrderSnList.size() >0) {
+                List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectGroupId(masterOrderSnList);
+                if (masterOrderInfoExtends != null && masterOrderInfoExtends.size() >0) {
+                    for (MasterOrderInfoExtend masterOrderInfoExtend : masterOrderInfoExtends) {
+                        masterOrderInfoExtendMap.put(masterOrderInfoExtend.getMasterOrderSn(),masterOrderInfoExtend);
+                    }
+                }
+            }
+
+            if (masterOrderInfoExtendMap != null && masterOrderInfoExtendMap.size() >0) {
+                for (OrderReturnPageInfo orderReturnPageInfo : pageList) {
+                    MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMap.get(orderReturnPageInfo.getOrderSn());
+                    if (masterOrderInfoExtend != null && masterOrderInfoExtend.getGroupId() != null) {
+                        orderReturnPageInfo.setGroupId(masterOrderInfoExtend.getGroupId());
+                    }
+                }
+            }
+
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             paging.setRoot(pageList);
             apiReturnData.setData(paging);

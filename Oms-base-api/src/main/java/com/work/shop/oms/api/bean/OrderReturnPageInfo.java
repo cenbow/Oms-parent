@@ -93,8 +93,21 @@ public class OrderReturnPageInfo implements Serializable{
      * 店铺名称
      */
     private String shopName;
-	
-	public String getOrderSn() {
+
+    /**
+     * 团购id
+     */
+    private Integer groupId;
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getOrderSn() {
 		return orderSn;
 	}
 	
