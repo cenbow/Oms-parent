@@ -816,6 +816,7 @@
         orn.return_bonus_money bonus,
         orn.return_shipping returnPostage,
         orn.return_goods_money returnGoodsMoney,
+        orn.relating_order_sn orderSn,
         DATE_FORMAT(orn.clear_time,'%Y-%m-%d %T') clearingTime,
         orn.return_sn orderReturnSn,
         orn.user_id userId,
