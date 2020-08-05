@@ -1371,7 +1371,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			record.setDiscount(totalDiscountPrice);
 			//填充商品总金额
 			record.setGoodsAmount(totalFee);
-			
+
 
 
 			MasterOrderPay masterOrderPay = new MasterOrderPay();
