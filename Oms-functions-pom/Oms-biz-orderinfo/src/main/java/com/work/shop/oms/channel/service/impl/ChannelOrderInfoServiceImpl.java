@@ -563,6 +563,14 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             fillShow(returnActions);
             orderReturnDetailInfo.setActions(returnActions);
 
+            //查询团购信息
+            List<String> arrayList = new ArrayList<>();
+            arrayList.add(orderReturnDetailInfo.getOrderSn());
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(arrayList);
+            if (CollectionUtils.isNotEmpty(extendList)) {
+                orderReturnDetailInfo.setGroupId(extendList.get(0).getGroupId());
+            }
+
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             apiReturnData.setData(orderReturnDetailInfo);
         } catch (Exception e) {
