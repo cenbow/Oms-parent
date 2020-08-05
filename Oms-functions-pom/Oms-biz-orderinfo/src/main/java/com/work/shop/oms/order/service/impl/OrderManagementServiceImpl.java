@@ -1311,7 +1311,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				masterOrderGoodsParam.setId(masterOrderGood.getId());
 
 
-				//商品的未税成交价(TransactionPriceNoTax) = 商品未税金额  + 加价金额(含税)  - （加价金额(含税) * 销项税 / 100）
+				//商品的未税成交价
 				BigDecimal subtractGoodsPriceNoTax =goodPrice;
 				masterOrderGoodsParam.setTransactionPriceNoTax(subtractGoodsPriceNoTax);
 
