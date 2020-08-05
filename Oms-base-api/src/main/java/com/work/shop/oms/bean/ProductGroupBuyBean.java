@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -162,6 +163,9 @@ public class ProductGroupBuyBean implements Serializable {
      * 参与团购方式（1：下单参与，2：付预付款参与）
      */
     private Integer participateGroupType;
+
+
+    private Map<String,Integer> saleMap;
 
 
 

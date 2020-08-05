@@ -33,10 +33,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * 订单确认服务
@@ -833,14 +830,17 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		Integer type = groupBuyInfos.getData().get(0).getParticipateGroupType();
 		if (type == 2) {
 			int number = 0;
+			Map<String, Integer> map = new HashMap<>();
 			for (MasterOrderGoods orderGood : orderGoods) {
 				number += orderGood.getGoodsNumber();
+				map.put(orderGood.getGoodsSn(), orderGood.getGoodsNumber());
 			}
 			ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
 			productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
 			productGroupBuyBean.setMasterOrderSn(masterOrderSn);
 			productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
 			productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
+			productGroupBuyBean.setSaleMap(map);
 			String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
 			logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
 			groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
