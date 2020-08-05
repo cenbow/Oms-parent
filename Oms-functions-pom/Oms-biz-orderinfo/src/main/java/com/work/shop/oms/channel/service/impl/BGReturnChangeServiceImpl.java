@@ -36,6 +36,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static javafx.scene.input.KeyCode.R;
 
@@ -372,9 +373,24 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 return apiReturnData;
             }
 
+            //判断是否团购
+            List<String> orderSns = rList.stream().map(x -> x.getOrderSn()).collect(Collectors.toList());
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectGroupId(orderSns);
+            Map<String, Integer> map = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(extendList)) {
+                for (MasterOrderInfoExtend masterOrderInfoExtend : extendList) {
+                    if (masterOrderInfoExtend.getGroupId() != null) {
+                        map.put(masterOrderInfoExtend.getMasterOrderSn(), masterOrderInfoExtend.getGroupId());
+                    }
+                }
+            }
+
             List<String> changeSnList = new ArrayList<String>();
             for (GoodsReturnPageInfo info : rList) {
                 changeSnList.add(info.getGoodsReturnChangeSn());
+                if (map.containsKey(info.getOrderSn())) {
+                    info.setGroupId(map.get(info.getOrderSn()));
+                }
             }
 
             //填充申请商品信息
@@ -1502,6 +1518,15 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             actionExample.or().andReturnchangeSnEqualTo(returnChangeSn);
             List<GoodsReturnChangeAction> returnChangeActions = goodsReturnChangeActionMapper.selectByExampleWithBLOBs(actionExample);
             returnChangeDetailInfo.setActions(returnChangeActions);
+
+            //查询团购信息
+            List<String> arrayList = new ArrayList<>();
+            arrayList.add(returnChangeDetailInfo.getOrderSn());
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(arrayList);
+            if (CollectionUtils.isNotEmpty(extendList)) {
+                returnChangeDetailInfo.setGroupId(extendList.get(0).getGroupId());
+            }
+
 
             apiReturnData.setMessage("查询成功");
             apiReturnData.setData(returnChangeDetailInfo);
