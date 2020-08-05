@@ -98,6 +98,20 @@ public class ReturnChangeDetailInfo implements Serializable {
      */
     private List<GoodsReturnChangeAction> actions;
 
+    /**
+     * 团购id
+     * @return
+     */
+    private Integer groupId;
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
+    }
+
     public String getReturnchangen() {
         return returnchangen;
     }
