@@ -534,7 +534,7 @@
         AND
         orn.site_code = #{siteCode,jdbcType=VARCHAR}
         and
-        orn.return_type = 1
+        orn.return_type in (1,3)
         and
         orn.process_type = 1
         and
@@ -612,7 +612,7 @@
         AND
         orn.site_code = #{siteCode,jdbcType=VARCHAR}
         and
-        orn.return_type = 1
+        orn.return_type in (1,3)
         and
         orn.process_type = 1
         and
@@ -816,6 +816,7 @@
         orn.return_bonus_money bonus,
         orn.return_shipping returnPostage,
         orn.return_goods_money returnGoodsMoney,
+        orn.relating_order_sn orderSn,
         DATE_FORMAT(orn.clear_time,'%Y-%m-%d %T') clearingTime,
         orn.return_sn orderReturnSn,
         orn.user_id userId,
