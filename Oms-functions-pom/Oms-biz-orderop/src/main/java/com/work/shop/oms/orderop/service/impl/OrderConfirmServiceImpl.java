@@ -830,16 +830,22 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		Integer type = groupBuyInfos.getData().get(0).getParticipateGroupType();
 		if (type == 2) {
 			int number = 0;
+			BigDecimal goodspriceAll = BigDecimal.ZERO;
 			Map<String, Integer> map = new HashMap<>();
 			for (MasterOrderGoods orderGood : orderGoods) {
 				number += orderGood.getGoodsNumber();
 				map.put(orderGood.getGoodsSn(), orderGood.getGoodsNumber());
+				//商品原售价
+				BigDecimal priceSubtract = orderGood.getGoodsPrice().subtract(orderGood.getGoodsAddPrice());
+				//汇总的商品原售价
+				BigDecimal goodspriceMultiply= priceSubtract.multiply(BigDecimal.valueOf(orderGood.getGoodsNumber()));
+				goodspriceAll = goodspriceAll.add(goodspriceMultiply);
 			}
 			ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
 			productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
 			productGroupBuyBean.setMasterOrderSn(masterOrderSn);
 			productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
-			productGroupBuyBean.setOrderMoney(master.getGoodsAmount());
+			productGroupBuyBean.setOrderMoney(goodspriceAll);
 			productGroupBuyBean.setSaleMap(map);
 			String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
 			logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
