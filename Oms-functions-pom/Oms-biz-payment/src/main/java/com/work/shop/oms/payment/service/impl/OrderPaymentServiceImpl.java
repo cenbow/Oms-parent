@@ -688,6 +688,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 			}
 			MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSn);
 			if (masterOrderPay != null) {
+				masterOrderPay.setMergePaySn(null);
 				masterOrderPay.setIsOperationConfirmPay(infoExtend.getIsOperationConfirmPay());
 				returnData.setData(masterOrderPay);
 				returnData.setIsOk("1");
