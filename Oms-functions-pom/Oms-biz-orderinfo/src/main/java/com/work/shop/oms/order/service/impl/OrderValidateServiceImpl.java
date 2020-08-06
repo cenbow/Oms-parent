@@ -567,12 +567,13 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 
 		//团购问题单，判断是否团购，是否预付款
 		if(masterOrderInfoExtend.getIsGroup() != null && masterOrderInfoExtend.getIsGroup() == 1){
-			if(orderInfo.getPayStatus() == 1){
-				confirm = false;
-				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "团购问题单", "10000"));
-				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
-
-				//设置已确认预付款
+//			if(orderInfo.getPayStatus() == 1){
+//				confirm = false;
+//				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "团购问题单", "10000"));
+//				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+//			}
+			//若是内行应承或者内行现金
+			if(masterOrderPay.getPayId() == 50 || masterOrderPay.getPayId() == 35) {
 				MasterOrderInfoExtend record = new MasterOrderInfoExtend();
 				record.setMasterOrderSn(masterOrderSn);
 				record.setIsConfirmPay(Byte.valueOf("0"));
