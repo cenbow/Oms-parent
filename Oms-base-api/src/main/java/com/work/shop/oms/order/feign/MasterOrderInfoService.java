@@ -89,6 +89,6 @@ public interface MasterOrderInfoService {
     /**
      * 团购开始删除商品订单处理
      */
-    @PostMapping("/delGroupBuyProduct")
+    @PostMapping("/order/delGroupBuyProduct")
     public OmsBaseResponse<String> delGroupBuyProduct(@RequestBody ProductGroupBuyBean productGroupBuyBean);
 }
