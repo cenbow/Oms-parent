@@ -313,6 +313,19 @@ public class OrderPageInfo implements Serializable{
 	 */
 	private Byte isOperationConfirmPay;
 
+	/**
+	 *订单团购商品1失效,0正常
+	 */
+	private Integer isGroupDel;
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
+	}
+
 	public Byte getIsConfirmPay() {
 		return isConfirmPay;
 	}
