@@ -167,6 +167,6 @@ public class ProductGroupBuyBean implements Serializable {
 
     private Map<String,Integer> saleMap;
 
-
+    private List<String> spuList;
 
 }

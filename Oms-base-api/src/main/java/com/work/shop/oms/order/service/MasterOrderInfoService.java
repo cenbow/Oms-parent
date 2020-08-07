@@ -5,7 +5,9 @@ import java.util.List;
 import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.OrderAccountPeriod;
+import com.work.shop.oms.bean.ProductGroupBuyBean;
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.order.response.OmsBaseResponse;
 
 /**
  * 主订单服务
@@ -106,4 +108,6 @@ public interface MasterOrderInfoService {
 	 * @date 2020/6/23
 	 **/
 	ReturnInfo<String> editBindTeamInfoByMasterSn(String actionUser,MasterOrderDetail masterOrderDetail);
+
+    OmsBaseResponse<String> delGroupBuyProduct(ProductGroupBuyBean productGroupBuyBean);
 }
