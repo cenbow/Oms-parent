@@ -169,4 +169,6 @@ public class ProductGroupBuyBean implements Serializable {
 
     private List<String> spuList;
 
+    private List<String> orderSnList;
+
 }

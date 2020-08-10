@@ -1069,13 +1069,12 @@
       #{item}
     </foreach>
   </select>
-  <select id="selectDelGroupBuyProductByGroupId" resultType="com.work.shop.oms.bean.MasterOrderInfoExtend">
+  <select id="selectDelGroupBuyProduct" resultType="java.lang.String">
     select moie.master_order_sn
     from master_order_info_extend moie inner join master_order_info moi on moie.master_order_sn=moi.master_order_sn
-    where moi.order_status in (0,1)
+    where moi.order_status in (0,1,3)
     and moi.pay_status in (1,2,3)
-    AND moie.group_id = #{groupId}
-    limit 1
+    AND moie.group_id = #{id}
   </select>
 
 </mapper>

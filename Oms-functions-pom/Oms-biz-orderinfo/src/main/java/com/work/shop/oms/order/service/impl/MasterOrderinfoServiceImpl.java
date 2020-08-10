@@ -73,6 +73,9 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
 	@Resource
+	private MasterOrderGoodsMapper masterOrderGoodsMapper;
+
+	@Resource
 	private MasterOrderGoodsService masterOrderGoodsService;
 
 	@Resource
@@ -1182,11 +1185,17 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		OmsBaseResponse<String> response = new OmsBaseResponse<>();
 
 		//拦截有已付款订单下的删除操作
-		MasterOrderInfoExtend extend = masterOrderInfoExtendMapper.selectDelGroupBuyProductByGroupId(productGroupBuyBean.getId());
-		if (extend != null) {
-			response.setSuccess(false);
-			response.setMessage("已存在已支付的订单,无法删除");
-			return response;
+		//查询团购下的非取消,有付款订单
+		List<String> orderSnList = masterOrderInfoExtendMapper.selectDelGroupBuyProduct(productGroupBuyBean);
+		if (CollectionUtils.isNotEmpty(orderSnList)) {
+			logger.info("删除团购商品,团购订单列表:"+JSON.toJSONString(orderSnList)+",删除商品列表:"+JSON.toJSONString(productGroupBuyBean.getSpuList()));
+			productGroupBuyBean.setOrderSnList(orderSnList);
+			MasterOrderGoods goods=masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+			if (goods != null) {
+				response.setSuccess(false);
+				response.setMessage("已存在已支付的订单,无法删除");
+				return response;
+			}
 		}
 
 		MasterOrderInfoExtend extendQuery = new MasterOrderInfoExtend();
