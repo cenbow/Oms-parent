@@ -53,6 +53,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 主订单服务
@@ -1190,8 +1191,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		if (CollectionUtils.isNotEmpty(orderSnList)) {
 			logger.info("删除团购商品,团购订单列表:"+JSON.toJSONString(orderSnList)+",删除商品列表:"+JSON.toJSONString(productGroupBuyBean.getSpuList()));
 			productGroupBuyBean.setOrderSnList(orderSnList);
-			MasterOrderGoods goods=masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
-			if (goods != null) {
+			List<MasterOrderGoods> goods=masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+			if (CollectionUtils.isNotEmpty(goods)) {
 				response.setSuccess(false);
 				response.setMessage("已存在已支付的订单,无法删除");
 				return response;
@@ -1200,11 +1201,16 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 		MasterOrderInfoExtend extendQuery = new MasterOrderInfoExtend();
 		extendQuery.setGroupId(productGroupBuyBean.getId());
+		//查询团购下订单
 		List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectOrderSnByGroupId(extendQuery);
 		if (CollectionUtils.isNotEmpty(extendList)) {
-			for (MasterOrderInfoExtend infoExtend : extendList) {
+		    //查询团购下有删除商品的订单
+            List<String> collect = extendList.stream().map(x -> x.getMasterOrderSn()).collect(Collectors.toList());
+            productGroupBuyBean.setOrderSnList(collect);
+            List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+            for (MasterOrderGoods goods : goodsList) {
 				MasterOrderInfoExtend masterOrderInfoExtend = new MasterOrderInfoExtend();
-				masterOrderInfoExtend.setMasterOrderSn(infoExtend.getMasterOrderSn());
+				masterOrderInfoExtend.setMasterOrderSn(goods.getMasterOrderSn());
 				masterOrderInfoExtend.setIsGroupDel(1);
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtend);
 			}

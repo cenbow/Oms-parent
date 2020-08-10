@@ -941,6 +941,9 @@
         <if test="isDel != null">
             is_del = #{isDel,jdbcType=INTEGER},
         </if>
+        <if test="isGroupDel != null">
+            is_group_del = #{isGroupDel,jdbcType=INTEGER},
+        </if>
         <if test="riderTime != null">
             rider_time = #{riderTime,jdbcType=VARCHAR},
         </if>

@@ -135,5 +135,5 @@ public interface MasterOrderGoodsMapper {
     @Writer
     int updateByPrimaryKey(MasterOrderGoods record);
 
-    MasterOrderGoods selectByOrderSnList(@Param("bean") ProductGroupBuyBean productGroupBuyBean);
+    List<MasterOrderGoods> selectByOrderSnList(@Param("bean") ProductGroupBuyBean productGroupBuyBean);
 }
