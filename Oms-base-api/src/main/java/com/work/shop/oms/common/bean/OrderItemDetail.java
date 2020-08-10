@@ -98,6 +98,7 @@ public class OrderItemDetail implements Serializable {
 	private Integer isConfirmPay;//客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效',
 	private Integer isOperationConfirmPay;//运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
 	private Integer groupId; //团购ID
+	private Integer isGroupDel;//订单团购商品1失效,0正常
 
 	//主单地址信息表字段
 	private String consignee;//收货人的姓名
@@ -1592,5 +1593,13 @@ public class OrderItemDetail implements Serializable {
 
 	public void setGroupId(Integer groupId) {
 		this.groupId = groupId;
+	}
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
 	}
 }

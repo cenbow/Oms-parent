@@ -281,6 +281,7 @@
           a.sale_bd saleBd,
 	  	  a.bo_id boId,
 	  	  a.group_id groupId,
+	  	  a.is_group_del isGroupDel,
 	  	  a.is_confirm_pay isConfirmPay,
 	  	  a.is_operation_confirm_pay isOperationConfirmPay,
           b.inv_consignee invConsignee,

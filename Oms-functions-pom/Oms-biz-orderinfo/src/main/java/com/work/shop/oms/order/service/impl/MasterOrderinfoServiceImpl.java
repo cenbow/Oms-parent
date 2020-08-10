@@ -5,16 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.work.shop.cardAPI.api.CardCartSearchServiceApi;
 import com.work.shop.cardAPI.bean.APIBackMsgBean;
 import com.work.shop.cardAPI.bean.ParaUserCardStatus;
-import com.work.shop.oms.bean.BoSupplierContract;
-import com.work.shop.oms.bean.BoSupplierCooperation;
-import com.work.shop.oms.bean.BoSupplierOrder;
-import com.work.shop.oms.bean.MasterOrderGoods;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExample;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MergeOrderPay;
-import com.work.shop.oms.bean.OrderAccountPeriod;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
 import com.work.shop.oms.common.bean.AsynProcessOrderBean;
@@ -31,13 +22,9 @@ import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.common.bean.ServiceReturnInfo;
 import com.work.shop.oms.common.bean.ValidateOrder;
-import com.work.shop.oms.dao.BoSupplierContractMapper;
-import com.work.shop.oms.dao.BoSupplierCooperationMapper;
-import com.work.shop.oms.dao.BoSupplierOrderMapper;
-import com.work.shop.oms.dao.ChannelShopMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
+import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
 import com.work.shop.oms.order.service.MasterOrderGoodsService;
@@ -54,6 +41,7 @@ import com.work.shop.oms.stock.service.ChannelStockService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.NumberUtil;
 import com.work.shop.oms.utils.StringUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +53,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 主订单服务
@@ -80,6 +69,12 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 	@Resource
 	private MasterOrderAddressInfoService addressInfoService;
+
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+	@Resource
+	private MasterOrderGoodsMapper masterOrderGoodsMapper;
 
 	@Resource
 	private MasterOrderGoodsService masterOrderGoodsService;
@@ -1184,6 +1179,46 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		}
 
 		return returnInfo;
+	}
+
+	@Override
+	public OmsBaseResponse<String> delGroupBuyProduct(ProductGroupBuyBean productGroupBuyBean) {
+		OmsBaseResponse<String> response = new OmsBaseResponse<>();
+
+		//拦截有已付款订单下的删除操作
+		//查询团购下的非取消,有付款订单
+		List<String> orderSnList = masterOrderInfoExtendMapper.selectDelGroupBuyProduct(productGroupBuyBean);
+		if (CollectionUtils.isNotEmpty(orderSnList)) {
+			logger.info("删除团购商品,团购订单列表:"+JSON.toJSONString(orderSnList)+",删除商品列表:"+JSON.toJSONString(productGroupBuyBean.getSpuList()));
+			productGroupBuyBean.setOrderSnList(orderSnList);
+			List<MasterOrderGoods> goods=masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+			if (CollectionUtils.isNotEmpty(goods)) {
+				response.setSuccess(false);
+				response.setMessage("已存在已支付的订单,无法删除");
+				return response;
+			}
+		}
+
+		MasterOrderInfoExtend extendQuery = new MasterOrderInfoExtend();
+		extendQuery.setGroupId(productGroupBuyBean.getId());
+		//查询团购下订单
+		List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectOrderSnByGroupId(extendQuery);
+		if (CollectionUtils.isNotEmpty(extendList)) {
+		    //查询团购下有删除商品的订单
+            List<String> collect = extendList.stream().map(x -> x.getMasterOrderSn()).collect(Collectors.toList());
+            productGroupBuyBean.setOrderSnList(collect);
+            List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+            for (MasterOrderGoods goods : goodsList) {
+				MasterOrderInfoExtend masterOrderInfoExtend = new MasterOrderInfoExtend();
+				masterOrderInfoExtend.setMasterOrderSn(goods.getMasterOrderSn());
+				masterOrderInfoExtend.setIsGroupDel(1);
+				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtend);
+			}
+		}
+
+		response.setSuccess(true);
+		response.setMessage("删除成功");
+		return response;
 	}
 
 	/**

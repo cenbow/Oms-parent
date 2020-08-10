@@ -1260,6 +1260,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			BigDecimal totalFee = BigDecimal.ZERO;
 			//优惠金额
 			BigDecimal totalDiscountPrice=BigDecimal.ZERO;
+			//订单原价总金额
+			BigDecimal baseTotalFee = BigDecimal.ZERO;
 
 			for (MasterOrderGoods masterOrderGood : masterOrderGoods) {
 				//账期和信用加价金额
@@ -1268,6 +1270,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				//获取商品未税成交价
 				BigDecimal goodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().multiply(discount).setScale(2, BigDecimal.ROUND_HALF_UP);
 				BigDecimal goodPrice = goodsPriceNoTax;
+
+				//原价未税成交价
+				BigDecimal baseGoodsPriceNoTax = masterOrderGood.getGoodsPriceNoTax().setScale(2, BigDecimal.ROUND_HALF_UP);
+				BigDecimal baseGoodPrice = baseGoodsPriceNoTax;
+
 
 				//查询支付单账期加价
 				BigDecimal paymentRate = masterOrderPayNew.getPaymentRate();
@@ -1278,9 +1285,12 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 					//加价金额 - 未税
 					addPrice = BigDecimal.valueOf(ratePriceNoTax).subtract(goodsPriceNoTax);
 					goodPrice=BigDecimal.valueOf(ratePriceNoTax);
+
+					//原价账期加价
+					baseGoodPrice = BigDecimal.valueOf(PayMethodUtil.getPayRateMoney(baseGoodsPriceNoTax, paymentRate));
 				}
 
-				//计算信用加价
+				/*//计算信用加价
 				if (masterOrderPayNew != null && masterOrderPayNew.getPayId() > 0 && (masterOrderPayNew.getPayId() == Constant.PAY_ID_XINYONG || masterOrderPayNew.getPayId() == Constant.PAY_ID_BAOHAN)) {
 					SystemPaymentWithBLOBs systemPaymentWithBLOBs = systemPaymentMapper.selectByPrimaryKey(masterOrderPayNew.getPayId());
 					if (systemPaymentWithBLOBs != null && systemPaymentWithBLOBs.getPayCode() != null) {
@@ -1306,7 +1316,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 							goodPrice=BigDecimal.valueOf(ratePriceNoTax);
 						}
 					}
-				}
+				}*/
 				MasterOrderGoods masterOrderGoodsParam = new MasterOrderGoods();
 				masterOrderGoodsParam.setId(masterOrderGood.getId());
 
@@ -1330,9 +1340,15 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				//计算数量
 				goodPrice = goodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
 
+				//原价计算数量
+				baseGoodPrice = baseGoodPrice.multiply(BigDecimal.valueOf(masterOrderGood.getGoodsNumber()));
+
 				//计算税率
 				BigDecimal addTax = goodPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
 				goodPrice = goodPrice.add(addTax);
+				//原价计算税率
+				BigDecimal baseAddTax = baseGoodPrice.multiply(masterOrderGood.getOutputTax()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
+				baseGoodPrice = baseGoodPrice.add(baseAddTax);
 
 
 				//加价金额(含税)， 当前加价金额/订单折扣 * 当前折扣 = 最新的加价金额
@@ -1352,6 +1368,8 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 				//计入订单总金额
 				totalFee = totalFee.add(goodPrice);
+				//原价计入总金额
+				baseTotalFee = baseTotalFee.add(baseGoodPrice);
 
 			}
 			MasterOrderInfo masterOrderInfoNew = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
@@ -1362,6 +1380,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			record.setMasterOrderSn(masterOrderSn);
 			//多商品累加（商品结算价 * 数量） + 运费  = 订单总金额
 			totalFee = totalFee.add(masterOrderInfoNew.getShippingTotalFee());
+			baseTotalFee = baseTotalFee.add(masterOrderInfoNew.getShippingTotalFee());
 			record.setTotalFee(totalFee);
 			record.setPayTotalFee(totalFee);
 			record.setTotalPayable(totalFee);
@@ -1394,7 +1413,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
 				masterOrderInfoExtendNew.setIsConfirmPay(Byte.valueOf("1"));
 				masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("1"));
-				masterOrderInfoExtendNew.setGroupBuyMoney(masterOrderPayNew.getPayTotalfee().subtract(totalFee));
+				masterOrderInfoExtendNew.setGroupBuyMoney(baseTotalFee);
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 
 				//调用问题单改为正常单接口
@@ -1421,7 +1440,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 
 				MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
 				masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
-				masterOrderInfoExtendNew.setGroupBuyMoney(masterOrderPayNew.getPayTotalfee().subtract(totalFee));
+				masterOrderInfoExtendNew.setGroupBuyMoney(baseTotalFee);
 				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
 			}
 
@@ -1433,7 +1452,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
 			Date date = new Date();//取时间
 			Calendar  calendar = new GregorianCalendar();
 			calendar.setTime(date);
-			calendar.add(calendar.DATE,5); //把日期往后增加五天,整数  往后推,负数往前移动
+			calendar.add(Calendar.DATE,5); //把日期往后增加五天,整数  往后推,负数往前移动
 			date=calendar.getTime(); //这个时间就是日期往后推五天的结果
 			masterOrderPay.setPayLasttime(date);
 			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);

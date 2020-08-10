@@ -510,6 +510,23 @@ public class OrderDetailInfo  implements Serializable{
 	 * 当前时间
 	 */
 	private Long currentTime;
+	/**
+	 * 团购订单原价
+	 */
+	private BigDecimal groupBuyMoney;
+
+	/**
+	 *订单团购商品1失效,0正常
+	 */
+	private Integer isGroupDel;
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
+	}
 
 	public Long getCurrentTime() {
 		return currentTime;
@@ -519,10 +536,7 @@ public class OrderDetailInfo  implements Serializable{
 		this.currentTime = currentTime;
 	}
 
-	/**
-	 * 团购订单原价
-	 */
-	private BigDecimal groupBuyMoney;
+
 
 	public BigDecimal getGroupBuyMoney() {
 		return groupBuyMoney;

@@ -25,21 +25,6 @@ public class MasterOrderInfoExtend {
      */
     private Byte agdist;
 
-    public Integer getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(Integer groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
 
     /**
      *团购id
@@ -431,6 +416,36 @@ public class MasterOrderInfoExtend {
      * 折扣
      */
     private BigDecimal groupBuyDiscount;
+
+    /**
+     * 订单团购商品1失效,0正常
+     */
+    private Integer isGroupDel;
+
+    public Integer getIsGroupDel() {
+        return isGroupDel;
+    }
+
+    public void setIsGroupDel(Integer isGroupDel) {
+        this.isGroupDel = isGroupDel;
+    }
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
 
     public BigDecimal getGroupBuyDiscount() {
         return groupBuyDiscount;

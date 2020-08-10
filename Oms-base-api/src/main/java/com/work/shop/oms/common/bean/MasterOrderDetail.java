@@ -130,6 +130,7 @@ public class MasterOrderDetail implements Serializable {
 	private Integer isConfirmPay;//客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效',
 	private Integer isOperationConfirmPay;//运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
 	private Integer groupId; //团购ID
+	private Integer isGroupDel;//订单团购商品1失效,0正常
 
     /**
      * 是否需要审核 0不需要、1需要
@@ -1547,5 +1548,13 @@ public class MasterOrderDetail implements Serializable {
 
 	public void setGroupId(Integer groupId) {
 		this.groupId = groupId;
+	}
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
 	}
 }

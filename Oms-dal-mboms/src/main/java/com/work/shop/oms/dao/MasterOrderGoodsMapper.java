@@ -5,6 +5,8 @@ import com.work.shop.invocation.Writer;
 import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderGoodsExample;
 import java.util.List;
+
+import com.work.shop.oms.bean.ProductGroupBuyBean;
 import org.apache.ibatis.annotations.Param;
 
 public interface MasterOrderGoodsMapper {
@@ -132,4 +134,6 @@ public interface MasterOrderGoodsMapper {
      */
     @Writer
     int updateByPrimaryKey(MasterOrderGoods record);
+
+    List<MasterOrderGoods> selectByOrderSnList(@Param("bean") ProductGroupBuyBean productGroupBuyBean);
 }
