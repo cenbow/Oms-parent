@@ -6,6 +6,8 @@ import com.work.shop.oms.bean.MasterOrderInfoExtend;
 import com.work.shop.oms.bean.MasterOrderInfoExtendExample;
 
 import java.util.List;
+
+import com.work.shop.oms.bean.ProductGroupBuyBean;
 import org.apache.ibatis.annotations.Param;
 
 public interface MasterOrderInfoExtendMapper {
@@ -113,5 +115,6 @@ public interface MasterOrderInfoExtendMapper {
 
     List<MasterOrderInfoExtend> selectGroupId(List<String> orderSns);
 
-    MasterOrderInfoExtend selectDelGroupBuyProductByGroupId(Integer id);
+
+    List<String> selectDelGroupBuyProduct(ProductGroupBuyBean productGroupBuyBean);
 }

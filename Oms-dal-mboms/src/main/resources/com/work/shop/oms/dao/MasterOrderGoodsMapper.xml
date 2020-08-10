@@ -1535,4 +1535,17 @@
 		and depot_code = #{depotCode}
 		group by custom_code
 	</select>
+  <select id="selectByOrderSnList" resultType="com.work.shop.oms.bean.MasterOrderGoods">
+    select id
+    from master_order_goods
+    where master_order_sn in
+    <foreach collection="bean.orderSnList" item="item" separator="," close=")" open="(">
+      #{item}
+    </foreach>
+    and goods_sn in
+    <foreach collection="bean.spuList" open="(" close=")" separator="," item="item">
+      #{item}
+    </foreach>
+    limit 1
+  </select>
 </mapper>
