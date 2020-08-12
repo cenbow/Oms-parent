@@ -221,6 +221,8 @@ public class OrderNormalServiceImpl implements OrderNormalService {
                     && questionOrderTypeBean.isReviewFlg() && questionOrderTypeBean.isSignFlag()) {
 				processMasterOrderQuestion(masterOrderSn);
 				msg = "返回正常单成功";
+				logger.info("-ERP获取订单号-"+ JSON.toJSONString(master));
+				//返回正常单后续操作（包含创建采购单）
                 processMasterOrderNormalFollow(master, orderStatus);
 			} else {
 				msg = "<font style=color:red;>返回正常单失败：存在其他类型问题单</font>";
@@ -688,6 +690,7 @@ public class OrderNormalServiceImpl implements OrderNormalService {
 				request.setMessage("返回正常单-创建采购单");
 				request.setActionUser(orderStatus.getAdminUser());
 				request.setActionUserId(orderStatus.getAdminUserId());
+				request.setErpOrderNo(master.getErpOrderNo());
 				purchaseOrderService.purchaseOrderCreateByMaster(request);
 			}
         }

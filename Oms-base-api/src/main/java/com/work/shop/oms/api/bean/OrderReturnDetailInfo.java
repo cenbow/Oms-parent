@@ -97,7 +97,20 @@ public class OrderReturnDetailInfo implements Serializable {
      */
     private String shopName;
 
-	public String getOrderReturnSn() {
+    /**
+     * 团购id
+     */
+    private Integer groupId;
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getOrderReturnSn() {
 		return orderReturnSn;
 	}
 	public void setOrderReturnSn(String orderReturnSn) {

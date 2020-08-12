@@ -4,14 +4,17 @@ import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.MasterOrderInfoFinishBean;
+import com.work.shop.oms.bean.ProductGroupBuyBean;
 import com.work.shop.oms.common.bean.MasterOrder;
 import com.work.shop.oms.common.bean.OrderCreateReturnInfo;
 import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.order.request.OmsRequest;
+import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.pca.common.ResultData;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
 
@@ -163,6 +166,25 @@ public class MasterOrderInfoController {
             return masterOrderInfoService.selectGoodsByMasterOrderSn(masterOrderSn);
         } catch (Exception e) {
             logger.error(masterOrderSn + "通过订单编码获取订单商品列表:" + "异常", e);
+        }
+        return null;
+    }
+
+    /**
+     * 团购开始删除商品订单处理
+     */
+    @PostMapping("/delGroupBuyProduct")
+    public OmsBaseResponse<String> delGroupBuyProduct(@RequestBody ProductGroupBuyBean productGroupBuyBean) {
+        OmsBaseResponse<String> response = new OmsBaseResponse<>();
+        try {
+            if (productGroupBuyBean == null || productGroupBuyBean.getId() == null || productGroupBuyBean.getSpuList() == null) {
+                response.setSuccess(false);
+                response.setMessage("参数为空");
+                return response;
+            }
+            return masterOrderInfoService.delGroupBuyProduct(productGroupBuyBean);
+        } catch (Exception e) {
+            logger.error("团购开始删除商品订单处理异常,参数:"+JSONObject.toJSONString(productGroupBuyBean) + "异常:" + e);
         }
         return null;
     }

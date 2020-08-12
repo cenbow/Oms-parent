@@ -1,60 +1,39 @@
 package com.work.shop.oms.orderop.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.DistributeAction;
-import com.work.shop.oms.bean.MasterOrderAction;
-import com.work.shop.oms.bean.MasterOrderAddressInfo;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderInfoExtend;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.OrderDistribute;
-import com.work.shop.oms.bean.OrderDistributeExample;
-import com.work.shop.oms.bean.OrderReturn;
-import com.work.shop.oms.bean.OrderReturnExample;
-import com.work.shop.oms.bean.OrderReturnShip;
-import com.work.shop.oms.bean.SystemPayment;
+import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bimonitor.service.BIMonitorService;
 import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
-import com.work.shop.oms.dao.MasterOrderAddressInfoMapper;
-import com.work.shop.oms.dao.MasterOrderInfoExtendMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.MasterOrderQuestionMapper;
-import com.work.shop.oms.dao.OrderCustomDefineMapper;
-import com.work.shop.oms.dao.OrderDistributeMapper;
-import com.work.shop.oms.dao.OrderReturnMapper;
-import com.work.shop.oms.dao.OrderReturnShipMapper;
-import com.work.shop.oms.dao.SystemPaymentMapper;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.distribute.service.DistributeSupplierService;
 import com.work.shop.oms.distribute.service.OrderDistributeService;
 import com.work.shop.oms.erp.service.ErpInterfaceProxy;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
-import com.work.shop.oms.orderop.service.OrderConfirmService;
-import com.work.shop.oms.orderop.service.OrderDistributeEditService;
-import com.work.shop.oms.orderop.service.OrderDistributeOpService;
+import com.work.shop.oms.order.service.MasterOrderPayService;
+import com.work.shop.oms.orderop.service.*;
 import com.work.shop.oms.payment.feign.PayService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
 import com.work.shop.oms.webservice.ErpWebserviceResultBean;
+import com.work.shop.pca.common.ResultData;
+import com.work.shop.pca.feign.BgProductService;
+import com.work.shop.pca.model.BgGroupBuyInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 订单确认服务
@@ -65,6 +44,8 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Resource
+    BgProductService bgProductService;
 	@Resource
 	OrderDistributeMapper orderDistributeMapper;
 	@Resource
@@ -106,10 +87,16 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	private OrderDistributeEditService orderDistributeEditService;
 
 	@Resource
+	private OrderNormalService orderNormalService;
+
+	@Resource
 	private PayService payService;
 
 	@Resource
 	private SystemPaymentMapper systemPaymentMapper;
+
+	@Resource
+	private MasterOrderPayService masterOrderPayService;
 
     /**
      * 订单确认
@@ -159,6 +146,9 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		// 主订单确认
 		if (Constant.order_type_master.equals(orderStatus.getType())) {
 			info = confirmOrderByMaster(master.getMasterOrderSn(), master, orderStatus);
+		}
+		if(info.getIsOk() == Constant.OS_YES && "1".equals(info.getData())){
+			return info;
 		}
 		if (info.getIsOk() == Constant.OS_YES) {
 			judgeMasterOrderStatus(masterOrderSn, null, (byte)Constant.OI_ORDER_STATUS_CONFIRMED, orderStatus.getType());
@@ -466,7 +456,6 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 	private ReturnInfo judgeMasterOrderStatus(String masterOrderSn, MasterOrderInfo master, byte orderStatus, String type) {
 		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
 		if (Constant.order_type_distribute.equals(type)) {
-			// TODO
 			OrderDistributeExample distributeExample = new OrderDistributeExample();
 			OrderDistributeExample.Criteria criteria = distributeExample.or();
 			criteria.andMasterOrderSnEqualTo(masterOrderSn);
@@ -618,6 +607,16 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		return info;
 	}
 
+
+	@Resource
+	private OrderQuestionService orderQuestionService;
+
+	@Resource
+	private MasterOrderGoodsMapper masterOrderGoodsMapper;
+
+	@Resource(name = "groupBuyMessageSummaryJmsTemplate")
+	private JmsTemplate groupBuyMessageSummaryJmsTemplate;
+
 	/**
 	 * 主订单确认(共用方法)
 	 * 
@@ -635,6 +634,22 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		}
 		logger.debug("订单确认 masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
 		try {
+
+			//查询订单扩展，判断是否为团购订单
+			MasterOrderInfoExtendExample example = new MasterOrderInfoExtendExample();
+			example.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+			List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectByExample(example);
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtends.get(0);
+
+			//预付款支付，挂团购问题单，尾款支付，挂尾款问题单
+			ReturnInfo returnInfo = processGroupBuy(masterOrderInfoExtend, master);
+			if (returnInfo.getIsOk() == Constant.OS_NO && "1".equals(returnInfo.getData().toString())) {
+				info.setData(returnInfo.getData());
+				info.setIsOk(Constant.OS_YES);
+				info.setMessage("团购问题单处理");
+				return info;
+			}
+
 			MasterOrderInfo updateMaster = new MasterOrderInfo();
 			// 确认
 			updateMaster.setOrderStatus((byte)Constant.OI_ORDER_STATUS_CONFIRMED);
@@ -642,6 +657,7 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			updateMaster.setConfirmTime(new Date());
 			updateMaster.setMasterOrderSn(masterOrderSn);
 			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+
 			//订单操作记录
 			// 库存占用
 			if(!OrderAttributeUtil.isPosOrder(master.getSource())) {
@@ -670,6 +686,172 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		info.setMessage("[" + masterOrderSn + "]订单确认成功");
 		logger.debug("[" + masterOrderSn + "]订单确认成功");
 		return info;
+	}
+
+	/**
+	 * 处理团购订单预付款
+	 *
+	 * @param masterOrderInfoExtend 订单扩展信息
+	 * @param master 订单信息
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 21:00
+	 */
+	private ReturnInfo processGroupBuy(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		ReturnInfo returnInfo = new ReturnInfo();
+		returnInfo.setIsOk(Constant.OS_YES);
+		if (masterOrderInfoExtend.getGroupId() == null) {
+			return returnInfo;
+		}
+		if (masterOrderInfoExtend.getIsConfirmPay() == -1) {
+			return returnInfo;
+		}
+		//预付款
+		if (masterOrderInfoExtend.getIsConfirmPay() == 0) {
+			boolean prepayments = processGroupPrepayments(masterOrderInfoExtend, master);
+			if(prepayments){
+				returnInfo.setData("1");
+				return returnInfo;
+			}
+			returnInfo.setData("1");
+			returnInfo.setIsOk(Constant.OS_NO);
+			return returnInfo;
+		}
+		//处理尾款
+		if (masterOrderInfoExtend.getIsConfirmPay() == 1) {
+			boolean balanceAmount = processGroupBalanceAmount(masterOrderInfoExtend, master);
+			if(balanceAmount){
+				returnInfo.setData("2");
+				return returnInfo;
+			}
+			returnInfo.setData("2");
+			returnInfo.setIsOk(Constant.OS_NO);
+			return returnInfo;
+		}
+		returnInfo.setIsOk(Constant.OS_NO);
+		return returnInfo;
+	}
+
+	/**
+	 * 团购订单处理尾款
+	 * @param masterOrderInfoExtend 订单扩展信息
+	 * @param master 订单信息
+	 * @param null
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 22:48
+	 */
+	private boolean processGroupBalanceAmount(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		boolean back = true;
+		String masterOrderSn = master.getMasterOrderSn();
+		MasterOrderPay record = new MasterOrderPay();
+		record.setPayStatus(Constant.OI_PAY_STATUS_PAYED);
+		record.setPayNote("团购尾款已支付");
+		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+		masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		masterOrderPayMapper.updateByExampleSelective(record,masterOrderPayExample);
+
+		//运营确认状态改为已确认尾款
+		MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+		masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoExtendNew.setIsOperationConfirmPay(Constant.OD_ORDER_STATUS_CONFIRMED);
+		masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+
+		MasterOrderInfo masterOrderInfoNew = new MasterOrderInfo();
+		masterOrderInfoNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoNew.setPayStatus(Constant.OI_PAY_STATUS_PAYED);
+		masterOrderInfoNew.setOrderStatus(Constant.OD_ORDER_STATUS_CONFIRMED);
+		masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoNew);
+
+		//调用问题单改为正常单接口
+		List<Integer> integers = new ArrayList<>();
+		// 问题单类型、待审核问题单
+		integers.add(0);
+		OrderStatus orderStatus = new OrderStatus();
+		orderStatus.setMasterOrderSn(masterOrderSn);
+		orderStatus.setAdminUser(Constant.OS_STRING_SYSTEM);
+		orderStatus.setAdminUserId(Constant.OS_STRING_SYSTEM);
+		orderStatus.setQuestionTypes(integers);
+		orderStatus.setMessage("团购尾款问题单返回正常单");
+		orderNormalService.normalOrderByMasterSn(masterOrderSn, orderStatus);
+
+		return false;
+	}
+
+	/**
+	 * 处理预付款
+	 * @param masterOrderInfoExtend 订单扩展信息
+	 * @param master 订单信息
+	 * @return
+	 * @author yaokan
+	 * @date 2020-07-24 22:45
+	 */
+	private boolean processGroupPrepayments(MasterOrderInfoExtend masterOrderInfoExtend, MasterOrderInfo master) {
+		boolean back = true;
+		String masterOrderSn = master.getMasterOrderSn();
+		BigDecimal prepayments = master.getPrepayments();
+
+		//设置支付单为部分付款
+		MasterOrderPay record = new MasterOrderPay();
+		record.setPayStatus(Byte.valueOf("1"));
+		record.setPayNote("预付款");
+		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
+		masterOrderPayExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		masterOrderPayMapper.updateByExampleSelective(record, masterOrderPayExample);
+
+		//运营确认状态改为已确认预付款
+		MasterOrderInfoExtend masterOrderInfoExtendNew = new MasterOrderInfoExtend();
+		masterOrderInfoExtendNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoExtendNew.setIsOperationConfirmPay(Byte.valueOf("0"));
+		masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtendNew);
+
+		//记录团购问题单
+		OrderStatus orderStatus = new OrderStatus();
+		orderStatus.setCode(Constant.QUESTION_CODE_TEN_THOUSAND);
+		orderStatus.setMessage("团购问题单");
+		orderQuestionService.questionOrderByMasterSn(masterOrderSn, orderStatus);
+
+		MasterOrderInfo masterOrderInfoNew = new MasterOrderInfo();
+		masterOrderInfoNew.setMasterOrderSn(masterOrderSn);
+		masterOrderInfoNew.setMoneyPaid(prepayments);
+		masterOrderInfoNew.setTotalPayable(master.getPayTotalFee().subtract(prepayments));
+		masterOrderInfoNew.setPayStatus(Byte.valueOf("1"));
+		masterOrderInfoNew.setOrderStatus(Byte.valueOf("0"));
+		masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoNew);
+
+		MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
+		goodsExample.createCriteria().andMasterOrderSnEqualTo(masterOrderSn);
+		List<MasterOrderGoods> orderGoods = masterOrderGoodsMapper.selectByExample(goodsExample);
+
+		//查询参与团购方式（1：下单参与，2：付预付款参与）
+		List<Integer> list = new ArrayList<>();
+		list.add(masterOrderInfoExtend.getGroupId());
+		ResultData<List<BgGroupBuyInfo>> groupBuyInfos = bgProductService.getGroupBuyInfoBuGroupIds(list);
+		Integer type = groupBuyInfos.getData().get(0).getParticipateGroupType();
+		if (type == 2) {
+			int number = 0;
+			BigDecimal goodspriceAll = BigDecimal.ZERO;
+			Map<String, Integer> map = new HashMap<>();
+			for (MasterOrderGoods orderGood : orderGoods) {
+				number += orderGood.getGoodsNumber();
+				map.put(orderGood.getGoodsSn(), orderGood.getGoodsNumber());
+				//商品原售价
+				BigDecimal priceSubtract = orderGood.getGoodsPrice().subtract(orderGood.getGoodsAddPrice());
+				//汇总的商品原售价
+				BigDecimal goodspriceMultiply= priceSubtract.multiply(BigDecimal.valueOf(orderGood.getGoodsNumber()));
+				goodspriceAll = goodspriceAll.add(goodspriceMultiply);
+			}
+			ProductGroupBuyBean productGroupBuyBean = new ProductGroupBuyBean();
+			productGroupBuyBean.setId(masterOrderInfoExtend.getGroupId());
+			productGroupBuyBean.setMasterOrderSn(masterOrderSn);
+			productGroupBuyBean.setOrderAmount(BigDecimal.valueOf(number));
+			productGroupBuyBean.setOrderMoney(goodspriceAll);
+			productGroupBuyBean.setSaleMap(map);
+			String groupBuyOrderMQ = JSONObject.toJSONString(productGroupBuyBean);
+			logger.info("团购订单汇总mq下发:" + groupBuyOrderMQ);
+			groupBuyMessageSummaryJmsTemplate.send(new TextMessageCreator(groupBuyOrderMQ));
+		}
+		return false;
 	}
 
 	/**
@@ -1008,9 +1190,11 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 			info.setMessage(" 订单[" + orderSn + "]要处于未确定状态");
 			return info;
 		}
-		if (master.getQuestionStatus() != Constant.OI_QUESTION_STATUS_NORMAL) {
-			info.setMessage(" 订单[" + orderSn + "]要处于正常单状态");
-			return info;
+		if(orderStatus.getOrderFlag() == 0){
+			if (master.getQuestionStatus() != Constant.OI_QUESTION_STATUS_NORMAL) {
+				info.setMessage(" 订单[" + orderSn + "]要处于正常单状态");
+				return info;
+			}
 		}
 		if (master.getOrderStatus() == Constant.OI_ORDER_STATUS_CANCLED) {
 			info.setMessage(" 订单" + orderSn + "已经取消,订单状态变化刷新重新操作！");
@@ -1230,6 +1414,109 @@ public class OrderConfirmServiceImpl implements OrderConfirmService {
 		}
 		info.setData(updateDistributes);
 		info.setIsOk(Constant.OS_YES);
+		return info;
+	}
+
+	/**
+	 *  订单改价确认
+	 * @param masterOrderSn 主订单号
+	 * @param orderStatus
+	 */
+	@Override
+	public ReturnInfo changePriceConfirmOrder(String masterOrderSn, OrderStatus orderStatus,List<MasterOrderQuestion> orderQuestionList) {
+		ReturnInfo info = new ReturnInfo(Constant.OS_NO);
+		if (StringUtil.isTrimEmpty(masterOrderSn)) {
+			logger.error("[masterOrderSn]不能都为空！");
+			info.setMessage("[masterOrderSn]不能都为空！");
+			return info;
+		}
+		if (orderStatus == null) {
+			logger.error("[orderStatus]传入参数为空，不能进行订单改价确认！");
+			info.setMessage("[orderStatus]传入参数为空，不能进行订单改价确认！");
+			return info;
+		}
+		logger.info("订单改价确认：masterOrderSn=" + masterOrderSn + ";orderStatus=" + orderStatus);
+
+		//2020-07-14 发版逻辑
+		MasterOrderInfo master = null;
+
+		//可改价的问题单
+		boolean priceEideFlag = false;
+		if (StringUtil.isNotEmpty(masterOrderSn)) {
+			master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+			if(orderQuestionList != null && orderQuestionList.size() >0){
+				for(MasterOrderQuestion orderQuestion:orderQuestionList){
+					if(Constant.EDIT_PRICE_QUESTION_NO.indexOf(orderQuestion.getQuestionCode()+"_") != -1){
+						priceEideFlag = true;
+					}
+				};
+			}
+		}
+
+		//检查订单改价情况
+		if( master != null && priceEideFlag && master.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2){
+			//未确认
+			//各单据价格验证
+
+			// 订单支付状态检查
+			if (!OrderAttributeUtil.isUpdateModifyFlag((int)master.getTransType(), (int)master.getPayStatus())) {
+				//未付款订单设置付款单最后支付期限
+				masterOrderPayService.updateBymasterOrderSnLastTime(master.getMasterOrderSn());
+			}
+
+			//设置平台确认
+			MasterOrderInfo updateMaster = new MasterOrderInfo();
+			// 确认
+			updateMaster.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_2);
+			updateMaster.setMasterOrderSn(masterOrderSn);
+			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+			// 主订单操作日志表
+			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
+			orderAction.setActionUser(orderStatus.getAdminUser());
+			orderAction.setActionNote("价格变动确认！ "+orderStatus.getMessage() != null ? orderStatus.getMessage():"");
+			masterOrderActionService.insertOrderActionByObj(orderAction);
+			//订单确认
+			confirmOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "自动确认", null));
+		}else{
+			logger.info("订单:" + masterOrderSn + " 不符合改价确认条件 ! ");
+		}
+
+		//2020-07-14 发版之前的逻辑  由于之前只有特殊商品会进行改价   在改变逻辑之后 正常商品的盈合问题单也是可以改价的
+		/*MasterOrderInfo master = null;
+		if (StringUtil.isNotEmpty(masterOrderSn)) {
+			master = masterOrderInfoMapper.selectByPrimaryKey(masterOrderSn);
+		}
+
+		//检查订单改价情况
+		if(master.getGoodsSaleType() != null && master.getPriceChangeStatus() != null
+				&& master.getGoodsSaleType() != Constant.GOODS_SALE_TYPE_STANDARD && master.getPriceChangeStatus() < Constant.PRICE_CHANGE_AFFIRM_2){
+			//未确认
+			//各单据价格验证
+
+			// 订单支付状态检查
+			if (!OrderAttributeUtil.isUpdateModifyFlag((int)master.getTransType(), (int)master.getPayStatus())) {
+				//未付款订单设置付款单最后支付期限
+				masterOrderPayService.updateBymasterOrderSnLastTime(master.getMasterOrderSn());
+			}
+
+			//设置平台确认
+			MasterOrderInfo updateMaster = new MasterOrderInfo();
+			// 确认
+			updateMaster.setPriceChangeStatus(Constant.PRICE_CHANGE_AFFIRM_2);
+			updateMaster.setMasterOrderSn(masterOrderSn);
+			masterOrderInfoMapper.updateByPrimaryKeySelective(updateMaster);
+			// 主订单操作日志表
+			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(master);
+			orderAction.setActionUser(orderStatus.getAdminUser());
+			orderAction.setActionNote("价格变动确认！ "+orderStatus.getMessage() != null ? orderStatus.getMessage():"");
+			masterOrderActionService.insertOrderActionByObj(orderAction);
+			//订单确认
+			confirmOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "自动确认", null));
+		}else{
+			logger.info("订单:" + masterOrderSn + " 不符合改价确认条件 ! ");
+		}*/
+		info.setIsOk(Constant.OS_YES);
+		info.setMessage("[" + masterOrderSn + "]订单改价确认成功");
 		return info;
 	}
 }

@@ -197,4 +197,11 @@ public interface OrderManagementService {
      * @return
      */
     OrderManagementResponse setSignByOrder(OrderManagementRequest request);
+
+	/**
+	 * 团购订单成功处理
+	 * @param request
+	 * @return
+	 */
+	OrderManagementResponse groupBuySuccess(OrderManagementRequest request);
 }

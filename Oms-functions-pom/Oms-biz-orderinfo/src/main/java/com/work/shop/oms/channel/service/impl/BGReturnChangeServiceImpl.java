@@ -36,6 +36,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static javafx.scene.input.KeyCode.R;
 
@@ -372,9 +373,24 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 return apiReturnData;
             }
 
+            //判断是否团购
+            List<String> orderSns = rList.stream().map(x -> x.getOrderSn()).collect(Collectors.toList());
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectGroupId(orderSns);
+            Map<String, Integer> map = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(extendList)) {
+                for (MasterOrderInfoExtend masterOrderInfoExtend : extendList) {
+                    if (masterOrderInfoExtend.getGroupId() != null) {
+                        map.put(masterOrderInfoExtend.getMasterOrderSn(), masterOrderInfoExtend.getGroupId());
+                    }
+                }
+            }
+
             List<String> changeSnList = new ArrayList<String>();
             for (GoodsReturnPageInfo info : rList) {
                 changeSnList.add(info.getGoodsReturnChangeSn());
+                if (map.containsKey(info.getOrderSn())) {
+                    info.setGroupId(map.get(info.getOrderSn()));
+                }
             }
 
             //填充申请商品信息
@@ -461,7 +477,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                         bGGoodsReturnGoods.setGoodsSn(masterOrderGoods.getGoodsSn());
                     } else {
                         if (masterOrderGoods.getCustomCode() != null && masterOrderGoods.getCustomCode().length() > 6) {
-                            bGGoodsReturnGoods.setGoodsSn(masterOrderGoods.getCustomCode().substring(0, 6));
+                            bGGoodsReturnGoods.setGoodsSn(masterOrderGoods.getCustomCode());
                         }
                     }
                     // 商品财务价
@@ -1085,7 +1101,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 orderMobile.setOrderPrice(orderInfo.getMoneyPaid().doubleValue());
 
                 for (GoodsMobile goodsMobile : orderMobile.getGoodsMobileList()) {
-                    goodsMobile.setGoodsSn(goodsMobile.getCustomCode().substring(0, 6));
+                    goodsMobile.setGoodsSn(goodsMobile.getCustomCode());
                 }
             }
             Paging<OrderMobile> paging = new Paging<OrderMobile>(countList.size(), orderMobileList);
@@ -1275,7 +1291,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
 //                if (detailInfo.getReturnSum() > goodsNum) {
 //                    return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + "商品编码：" + detailInfo.getCustomCode() + "退换商品数量大于购买数量！退换单申请明细创建失败！");
 //                }
-                boolean checkGoodsNum = checkGoodsNum(detailInfo.getReturnSum(), goods, orderReturnGoodsMap);
+                boolean checkGoodsNum = checkGoodsNum(detailInfo.getReturnSum(), goods, orderReturnGoodsMap,goodsNum);
                 if (!checkGoodsNum) {
                     return new ReturnInfo<Boolean>(Constant.OS_NO, "订单号：" + orderSn + ",sku编码：" + detailInfo.getCustomCode() + "退换商品数量大于可退换数量！退换单申请明细创建失败！");
                 }
@@ -1285,7 +1301,7 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
                 CommonUtils.copyPropertiesNew(detailInfo, goodsReturnChangeDetail);
                 goodsReturnChangeDetail.setOrderSn(orderSn);
                 goodsReturnChangeDetail.setGoodsName(goods.getGoodsName());
-                goodsReturnChangeDetail.setGoodsNumber((short) goodsNum);
+                goodsReturnChangeDetail.setGoodsNumber(goodsNum);
                 goodsReturnChangeDetail.setGoodsPrice(goods.getGoodsPrice());
                 goodsReturnChangeDetail.setTransactionPrice(goods.getTransactionPrice());
                 goodsReturnChangeDetail.setSettlementPrice(goods.getSettlementPrice());
@@ -1323,16 +1339,17 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
     /**
      * 校验商品数量
      * @param applyNum 申请退换商品数量
+     * @param goodsNum 商品购买总数量
      */
-    private boolean checkGoodsNum(int applyNum, MasterOrderGoods goods, Map<String, OrderReturnGoods> map) {
+    private boolean checkGoodsNum(int applyNum, MasterOrderGoods goods, Map<String, OrderReturnGoods> map, int goodsNum) {
         String key = goods.getCustomCode() + "_" + goods.getExtensionCode();
         OrderReturnGoods returnGoods = map.get(key);
         //可申请退换货数量
         int canChangeNum = 0;
         if (returnGoods == null) {
-            canChangeNum = goods.getGoodsNumber();
+            canChangeNum = goodsNum;
         } else {
-            canChangeNum = goods.getGoodsNumber() - returnGoods.getGoodsReturnNumber();
+            canChangeNum = goodsNum - returnGoods.getGoodsReturnNumber();
         }
 
         if (applyNum > canChangeNum) {
@@ -1501,6 +1518,15 @@ public class BGReturnChangeServiceImpl implements BGReturnChangeService {
             actionExample.or().andReturnchangeSnEqualTo(returnChangeSn);
             List<GoodsReturnChangeAction> returnChangeActions = goodsReturnChangeActionMapper.selectByExampleWithBLOBs(actionExample);
             returnChangeDetailInfo.setActions(returnChangeActions);
+
+            //查询团购信息
+            List<String> arrayList = new ArrayList<>();
+            arrayList.add(returnChangeDetailInfo.getOrderSn());
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(arrayList);
+            if (CollectionUtils.isNotEmpty(extendList)) {
+                returnChangeDetailInfo.setGroupId(extendList.get(0).getGroupId());
+            }
+
 
             apiReturnData.setMessage("查询成功");
             apiReturnData.setData(returnChangeDetailInfo);

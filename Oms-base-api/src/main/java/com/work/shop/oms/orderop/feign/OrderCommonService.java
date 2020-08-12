@@ -2,6 +2,8 @@ package com.work.shop.oms.orderop.feign;
 
 import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
 import com.work.shop.oms.common.bean.DistributeShippingBean;
+import com.work.shop.oms.common.bean.MasterOrder;
+import com.work.shop.oms.common.bean.MasterOrderDetail;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.orderop.feign.bean.OrderStockQuestion;
@@ -166,4 +168,13 @@ public interface OrderCommonService {
      */
     @PostMapping("/order/editInvAddressInfoByMasterSn")
     ReturnInfo editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo);
+
+    /**
+     * 主订单编辑绑定团队信息
+     *
+     * @param masterOrderDetail 订单信息
+     * @return
+     */
+    @PostMapping("/order/editBindTeam")
+    ReturnInfo editBindTeam(@RequestParam(name = "actionUser")  String actionUser,MasterOrderDetail masterOrderDetail);
 }

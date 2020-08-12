@@ -51,6 +51,10 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 		moie.setAgdist((byte) 0);
 		// 是否为团购订单( 0:否  1;是)
 		moie.setIsGroup((byte) masterOrder.getIsGroup());
+		// 团购订单id
+		moie.setGroupId(masterOrder.getGroupId());
+		// 团购名称
+		moie.setGroupName(masterOrder.getGroupName());
 		// 是否为预售商品(0:否 1:是)
 		moie.setIsAdvance((byte) masterOrder.getIsAdvance());
 		// 门店ID
@@ -113,6 +117,8 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
 		moie.setUserBankNo(masterOrder.getUserBankNo());
 		// 是否已支付状态
         moie.setUserPayApply(masterOrder.getUserPayApply());
+        // 团购订单下单时的折扣
+        moie.setGroupBuyDiscount(masterOrder.getGroupBuyDiscount());
 
         //创建订单类型，0为一般订单，1为联采订单
         Integer createOrderType = masterOrder.getCreateOrderType();
@@ -132,10 +138,16 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
         if (StringUtils.isNotBlank(masterOrder.getCompanyName())) {
             moie.setCompanyName(masterOrder.getCompanyName());
         }
+        //公司全称
+        if (StringUtils.isNotBlank(masterOrder.getCompanyFullName())) {
+            moie.setCompanyFullName(masterOrder.getCompanyFullName());
+        }
 
         moie.setInvPhone(masterOrder.getInvPhone());
 
         moie.setSaleBd(masterOrder.getSaleBd());
+
+        moie.setBoId(masterOrder.getBoId());
 
         moie.setCompanyType(masterOrder.getCompanyType());
 
@@ -191,15 +203,23 @@ public class MasterOrderInfoExtendServiceImpl implements MasterOrderInfoExtendSe
      * @return boolean
      */
     @Override
-    public boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId) {
+    public boolean updateMasterPayPeriod(String masterOrderSn, String paySourceId, boolean payStatus) {
         boolean bl = false;
         try {
             MasterOrderInfoExtendExample extendExample = new MasterOrderInfoExtendExample();
             extendExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 
             MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
-            extend.setPayPeriodStatus(1);
-            extend.setPaySourceId(paySourceId);
+            if (payStatus) {
+                // 账期是否扣款(0未扣、1已扣)
+                extend.setPayPeriodStatus(1);
+                // 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+                extend.setPayPeriodPayStatus((byte) 1);
+                extend.setPaySourceId(paySourceId);
+            } else {
+                // 内行扣款成功状态 （0未扣、1扣款成功、2扣款失败）
+                extend.setPayPeriodPayStatus((byte) 2);
+            }
             int result = masterOrderInfoExtendMapper.updateByExampleSelective(extend, extendExample);
 
             bl = result > 0;

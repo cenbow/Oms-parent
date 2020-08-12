@@ -38,6 +38,11 @@ public class OrderQueryExportResult implements Serializable {
     private Integer goodsNum;
 
     /**
+     * 商品数量小数部分
+     */
+    private BigDecimal goodsDecimalNum;
+
+    /**
      * 订单总金额
      */
     private BigDecimal orderTotalAmount;
@@ -56,6 +61,16 @@ public class OrderQueryExportResult implements Serializable {
      * 下单公司名称
      */
     private String companyName;
+
+    /**
+     * 下单公司全称
+     */
+    private String companyFullName;
+
+    /**
+     * 下单公司ID
+     */
+    private String companyCode;
 
     /**
      * 下单时间
@@ -153,5 +168,29 @@ public class OrderQueryExportResult implements Serializable {
 
     public void setConsignee(String consignee) {
         this.consignee = consignee;
+    }
+
+    public BigDecimal getGoodsDecimalNum() {
+        return goodsDecimalNum;
+    }
+
+    public void setGoodsDecimalNum(BigDecimal goodsDecimalNum) {
+        this.goodsDecimalNum = goodsDecimalNum;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public String getCompanyFullName() {
+        return companyFullName;
+    }
+
+    public void setCompanyFullName(String companyFullName) {
+        this.companyFullName = companyFullName;
     }
 }

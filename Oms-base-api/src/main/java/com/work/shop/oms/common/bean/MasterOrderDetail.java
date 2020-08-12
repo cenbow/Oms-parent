@@ -1,7 +1,5 @@
 package com.work.shop.oms.common.bean;
 
-import com.work.shop.oms.bean.MasterOrderQuestionBean;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -88,6 +86,18 @@ public class MasterOrderDetail implements Serializable {
      */
     private String signContractNum;
 
+
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
+
 	// 主单扩展表字段
 	private Byte agdist;// 订单二次分配总数
 	private Byte isGroup;// 是否为团购订单
@@ -117,6 +127,10 @@ public class MasterOrderDetail implements Serializable {
 	private Integer deliveryStationId;// 发票ID
     private String invPhone;
     private Byte pushSupplyChain; //订单推送供应链，0未推送，1已推送
+	private Integer isConfirmPay;//客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效',
+	private Integer isOperationConfirmPay;//运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
+	private Integer groupId; //团购ID
+	private Integer isGroupDel;//订单团购商品1失效,0正常
 
     /**
      * 是否需要审核 0不需要、1需要
@@ -251,6 +265,11 @@ public class MasterOrderDetail implements Serializable {
      */
 	private String insteadUserId;
 
+	/**
+	 * 盈合id
+	 */
+	private String boId;
+
     /**
      * bd编码
      */
@@ -260,6 +279,11 @@ public class MasterOrderDetail implements Serializable {
      * 交货单信息
      */
     private List<OrderItemDepotDetail> depotDetails;
+
+	/**
+	 * 支付方式名称
+	 */
+	private String payName;
 
     public String getSaleBd() {
         return saleBd;
@@ -1468,4 +1492,69 @@ public class MasterOrderDetail implements Serializable {
     public void setSignContractNum(String signContractNum) {
         this.signContractNum = signContractNum;
     }
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getPayName() {
+		return payName;
+	}
+
+	public void setPayName(String payName) {
+		this.payName = payName;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+
+	public Integer getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Integer isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Integer getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Integer isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
+	}
 }

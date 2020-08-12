@@ -54,4 +54,9 @@ public class ConstantTask {
 	 * 订单发货单自动签收
 	 */
 	public static String TASK_JOB_TYPE_ORDER_SHIP_RECEIVE_TASK = "orderShipReceiveTask";
+
+	/**
+	 * 团购订单未支付尾款，直接取消
+	 */
+	public static String TASK_JOB_TYPE_ORDER_GROUP_BUY_TASK = "orderGroupBuyTask";
 }

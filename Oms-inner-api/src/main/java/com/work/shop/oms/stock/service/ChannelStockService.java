@@ -70,4 +70,15 @@ public interface ChannelStockService {
 	 */
 	public ReturnInfo<Integer> queryStockBySku(String sku, String shopCode, String siteCode, String depotCode);
 
+	/**
+	 * 订单取消后，如果是无库存下单补加过库存，减掉补加的库存
+	 * 包括场景：订单支付后如果被审核驳回、订单下单后未支付用户取消、订单下单后超期未支付自动取消
+	 *
+	 * @param masterOrderSn
+	 * @param MasterOrderGoodsList
+	 * @return void
+	 * @author matianqi
+	 * @date 2020-02-59 12:16
+	 */
+	void checkAndDeductWithoutStockInventory(String masterOrderSn, List<MasterOrderGoods> MasterOrderGoodsList);
 }

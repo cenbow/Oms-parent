@@ -143,7 +143,7 @@
 		WHERE 1=1
 			<![CDATA[
 			AND oi.order_type = 0
-			AND (oie.is_group IS NULL OR (oie.is_group IS NOT NULL AND oie.is_group <> '1')) 
+			/*AND (oie.is_group IS NULL OR (oie.is_group IS NOT NULL AND oie.is_group <> '1')) */
 			AND oi.trans_type <> 2 
 			AND oi.question_status = 0
 			AND oi.order_status = 0

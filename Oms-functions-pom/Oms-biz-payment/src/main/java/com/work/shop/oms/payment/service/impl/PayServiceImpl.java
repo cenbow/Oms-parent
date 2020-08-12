@@ -2,14 +2,14 @@ package com.work.shop.oms.payment.service.impl;
 
 import java.math.BigDecimal;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
+import com.work.shop.oms.dao.*;
+import com.work.shop.oms.orderop.service.OrderQuestionService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -18,24 +18,11 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.work.shop.oms.bean.MasterOrderInfo;
-import com.work.shop.oms.bean.MasterOrderPay;
-import com.work.shop.oms.bean.MasterOrderPayBack;
-import com.work.shop.oms.bean.MasterOrderPayExample;
-import com.work.shop.oms.bean.MergeOrderPay;
-import com.work.shop.oms.bean.OrderPeriodDetail;
-import com.work.shop.oms.bean.SystemPayment;
-import com.work.shop.oms.bean.SystemPaymentExample;
 import com.work.shop.oms.common.bean.ConstantValues;
 import com.work.shop.oms.common.bean.MasterPay;
 import com.work.shop.oms.common.bean.OrderStatus;
 import com.work.shop.oms.common.bean.ReturnInfo;
 import com.work.shop.oms.config.service.OrderPeriodDetailService;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayBackMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.MergeOrderPayMapper;
-import com.work.shop.oms.dao.SystemPaymentMapper;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
 import com.work.shop.oms.order.feign.OrderManagementService;
 import com.work.shop.oms.order.request.OrderManagementRequest;
@@ -63,6 +50,8 @@ public class PayServiceImpl implements PayService {
 	MergeOrderPayMapper mergeOrderPayMapper;
 	@Resource
 	MasterOrderInfoMapper masterOrderInfoMapper;
+	@Resource
+	MasterOrderGoodsMapper masterOrderGoodsMapper;
 	//@Resource
 //	OrderConfirmService orderConfirmService;
 	@Resource
@@ -77,6 +66,9 @@ public class PayServiceImpl implements PayService {
 	private JmsTemplate orderStockJmsTemplate;
 	@Resource
 	OrderManagementService orderManagementService;
+
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
 	public PayServiceImpl() {
 		System.out.println("PayServiceImpl init....");
@@ -244,7 +236,11 @@ public class PayServiceImpl implements PayService {
 					throw new Exception("订单" + masterOrderSn + "的支付单数据异常！");
 				}
 				MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
-                totalFee = totalFee.add(masterOrderPay.getPayTotalfee());
+				if (masterOrderPay.getPrepayments() != null) {
+					totalFee = totalFee.add(masterOrderPay.getPrepayments());
+				} else {
+					totalFee = totalFee.add(masterOrderPay.getPayTotalfee());
+				}
 				masterOrderPaySnStr += masterOrderPay.getMasterPaySn() + ",";
 				payLastTimeList.add(masterOrderPay.getPayLasttime());
 				payId = masterOrderPay.getPayId();
@@ -267,6 +263,13 @@ public class PayServiceImpl implements PayService {
 			// 付款最后期限
 			mergeOrderPay.setPayLasttime(payLastTimeList.size() == 1 ? payLastTimeList.get(0) : getMaxDate(payLastTimeList));
 			mergeOrderPayMapper.insertSelective(mergeOrderPay);
+
+			//维护支付单合并支付单号
+			if (StringUtils.isNotBlank(mergeOrderPay.getMergePaySn())) {
+				for (String orderSn : masterOrderSnList) {
+					masterOrderPayMapper.updateMergePaySnByOrderSn(orderSn,mergeOrderPay.getMergePaySn());
+				}
+			}
 			logger.info("创建合并支付单："+mergePaySn);
 			returnInfo.setIsOk(Constant.OS_YES);
 			returnInfo.setData(mergeOrderPay);
@@ -299,12 +302,28 @@ public class PayServiceImpl implements PayService {
 			if (null == masterOrderInfo) {
 				throw new Exception("没有找到订单：" + masterOrderSn);
 			}
+
 			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
 				throw new Exception("支付单：" + paySn + "已支付，不能进行支付操作！");
+			}
+
+			int orderFlag = 0;
+
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED) {
+				// 判断是否是问题单
+				if (Constant.OD_QUESTION_STATUS_YES.equals(masterOrderInfo.getQuestionStatus())) {
+					throw new Exception("订单：" + masterOrderSn + "要处于正常单状态！");
+				}
+			} else {
+				orderFlag = 1;
 			}
 			// 判断是否被非admin的当前人锁定
 			if (orderStatus.getAdminUser() != null && !orderStatus.getAdminUser().trim().equals("admin") 
 					&& !StringUtils.equalsIgnoreCase(ConstantValues.ACTION_USER_SYSTEM, orderStatus.getAdminUser())) {
+				if (Constant.OI_LOCK_STATUS_UNLOCKED == masterOrderInfo.getLockStatus()) {
+					//未锁定报错
+					throw new Exception("请锁定后，再进行支付操作！");
+				}
 				if (!orderStatus.getUserId().equals(masterOrderInfo.getLockStatus())) {
 					throw new Exception("订单非本人锁定，不能进行支付操作！");
 				}
@@ -324,14 +343,13 @@ public class PayServiceImpl implements PayService {
                 }
                 logger.error("订单支付 支付信息：" + JSONObject.toJSONString(systemPayments));
             }
-            
 			masterOrderPay.setPayNote(orderStatus.getMessage());
 			masterOrderPay.setPayStatus((byte)Constant.OP_PAY_STATUS_PAYED);
 			masterOrderPay.setPayTime(new Date());
 			masterOrderPay.setUpdateTime(new Date());
 			masterOrderPay.setMergePaySn(orderStatus.getMergePaySn());
 			masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
-			
+
 			MasterOrderInfo masterOrderInfoUpdate = new MasterOrderInfo();
 			masterOrderInfoUpdate.setMasterOrderSn(masterOrderSn);
 			if (orderStatus.getPayFee() > 0) {
@@ -339,21 +357,26 @@ public class PayServiceImpl implements PayService {
 				masterOrderInfoUpdate.setMoneyPaid(masterOrderInfo.getMoneyPaid().add(new BigDecimal(orderStatus.getPayFee())));
 			} else {
 				masterOrderInfoUpdate.setTotalPayable(masterOrderInfo.getTotalPayable().subtract(masterOrderPay.getPayTotalfee()));
-				masterOrderInfoUpdate.setMoneyPaid(masterOrderInfo.getMoneyPaid().add(masterOrderPay.getPayTotalfee()));	
+				masterOrderInfoUpdate.setMoneyPaid(masterOrderInfo.getMoneyPaid().add(masterOrderPay.getPayTotalfee()));
 			}
 			masterOrderInfoUpdate.setUpdateTime(new Date());
 			masterOrderInfoUpdate.setPayStatus(changeOrderInfoPay(masterOrderSn));
 			masterOrderInfoMapper.updateByPrimaryKeySelective(masterOrderInfoUpdate);
-			
-			try {
-				// 支付释放占用量
-				OrderStatus orderStatusStock= new OrderStatus();
-				orderStatusStock.setMasterOrderSn(masterOrderSn);
-				orderStatusStock.setType("1");
-				orderStockJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(orderStatusStock)));
-			} catch (Exception e) {
-				logger.info("支付支付单库存占用异常：",e);
+
+			//查询订单扩展表，判断是团购单还是正常单
+			MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMapper.selectByPrimaryKey(masterOrderSn);
+			if ((masterOrderInfoExtend.getGroupId() == null && orderFlag == 0) || orderFlag == 1) {
+				try {
+					// 支付释放占用量
+					OrderStatus orderStatusStock = new OrderStatus();
+					orderStatusStock.setMasterOrderSn(masterOrderSn);
+					orderStatusStock.setType("1");
+					orderStockJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(orderStatusStock)));
+				} catch (Exception e) {
+					logger.info("支付支付单库存占用异常：", e);
+				}
 			}
+
 			masterOrderActionService.insertOrderActionBySn(masterOrderSn, "支付单已支付：" + paySn, orderStatus.getAdminUser());
 			//pos不确认
 			if (!orderStatus.getSource().equals(ConstantValues.METHOD_SOURCE_TYPE.POS) && masterOrderInfoUpdate.getPayStatus() == Constant.OI_PAY_STATUS_PAYED) {
@@ -362,6 +385,7 @@ public class PayServiceImpl implements PayService {
 				request.setMasterOrderSn(masterOrderSn);
 				request.setActionUser(orderStatus.getAdminUser());
 				request.setMessage(orderStatus.getSource() + "支付确认！");
+				request.setFlag(orderFlag);
 				OrderManagementResponse response = orderManagementService.orderConfirm(request);
 				if (response == null || !response.getSuccess()) {
 					throw new Exception("已支付时订单确认失败：" + response ==null ? "返回结果为空" : response.getMessage());
@@ -614,13 +638,14 @@ public class PayServiceImpl implements PayService {
 		boolean payFlag = false;
 		for (MasterOrderPay masterOrderPay : masterOrderPayList) {
 			// 未付款、待确认
-			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED || masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_COMFIRM) {
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_UNPAYED || masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_COMFIRM ) {
 				unpayFlag = true;
 			}
 			// 已付款
-			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED) {
+			if (masterOrderPay.getPayStatus() == Constant.OP_PAY_STATUS_PAYED ) {
 				payFlag = true;
 			}
+
 		}
 		// 已支付
 		if (payFlag && !unpayFlag) {

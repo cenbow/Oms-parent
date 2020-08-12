@@ -1,27 +1,8 @@
 package com.work.shop.oms.order.service.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.user.account.UserAccountService;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.GoodsCardInfo;
 import com.work.shop.oms.common.bean.MasterGoods;
 import com.work.shop.oms.common.bean.MasterOrder;
@@ -40,22 +21,37 @@ import com.work.shop.oms.common.bean.ValidateOrder;
 import com.work.shop.oms.common.utils.NumberUtil;
 import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.config.service.SystemShippingService;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.dao.MasterOrderPayMapper;
-import com.work.shop.oms.dao.SystemConfigMapper;
-import com.work.shop.oms.mq.bean.TextMessageCreator;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
+import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
 import com.work.shop.oms.order.service.OrderValidateService;
 import com.work.shop.oms.orderop.service.OrderQuestionService;
-import com.work.shop.oms.orderop.service.ShopUserService;
 import com.work.shop.oms.orderop.service.UserPointsService;
 import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.shoppay.service.ShopPayService;
 import com.work.shop.oms.stock.service.ChannelStockService;
+import com.work.shop.oms.user.account.UserAccountService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.OrderAttributeUtil;
 import com.work.shop.oms.utils.StringUtil;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 订单校验服务
@@ -65,7 +61,7 @@ import com.work.shop.oms.utils.StringUtil;
 public class OrderValidateServiceImpl implements OrderValidateService{
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
 	@Resource(name = "redisClient")
 	private RedisClient redisClient;
 
@@ -98,6 +94,15 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 
 	@Resource
 	private UserAccountService userAccountService;
+	@Resource
+	private MasterOrderInfoExtendService orderInfoExtendService;
+	@Resource
+	private BoSupplierOrderMapper boSupplierOrderMapper;
+	@Resource
+	private BoSupplierCooperationMapper boSupplierCooperationMapper;
+
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
 
 	// 没有问题
 	public static Integer QUESTION_TYPE_NONE = 0;
@@ -105,7 +110,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	public static Integer QUESTION_TYPE_DIYUZKJ = 1;
 	// 已付款订单商品成交价与已付款有差异
 	public static Integer QUESTION_TYPE_PAYCY = 2;
-	
+
 	public static String filterProvinceIds = "710000|810000|820000|990000";
 
 	/**
@@ -158,7 +163,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		if (ship == null || ship.isEmpty()) {
 			return new ServiceReturnInfo<MasterOrder>("没有配送信息");
 		}
-		
+
 		/** 检查发货单参数是否为空 */
 		for (MasterShip masterShip : ship) {
 			valiIdateInfo = checkShip(masterShip, masterOrder);
@@ -207,7 +212,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 		return new ServiceReturnInfo<MasterOrder>(masterOrder);
 	}
-	
+
 	@Override
 	public ServiceReturnInfo<List<MasterOrder>> orderListFormat(String orderInfoStr) {
 		ServiceReturnInfo<List<MasterOrder>> validateinfo = null;
@@ -234,7 +239,12 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			info.setMessage("订单[" + masterOrderSn + "]不存在");
 			return info;
 		}
-		
+		List<MasterOrderInfoExtend> masterOrderInfoExtendByOrder = orderInfoExtendService.getMasterOrderInfoExtendByOrder(masterOrderSn);
+		if (CollectionUtils.isEmpty(masterOrderInfoExtendByOrder)) {
+			info.setMessage("订单[" + masterOrderSn + "]的扩展信息不存在");
+			return info;
+		}
+		MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendByOrder.get(0);
 		// 余额锁定判断
 		if (!ocpbStatus.equals(OcpbStatus.lock)) {
 			// 使用余额支付
@@ -256,7 +266,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					String payMsg = apiBack.getMsg();
 					if (payMsg.contains("lock")) {
 						logger.error(masterOrderSn + "余额账户：" + orderInfo.getUserId() + "账户锁定");
-						ocpbStatus = OcpbStatus.lock; 
+						ocpbStatus = OcpbStatus.lock;
 					}
 				} else {
 					MasterOrderAction orderAction = masterOrderActionService.createOrderAction(orderInfo);
@@ -279,7 +289,81 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					+ "余额账户锁定问题单", "9974"));
 			orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
 		}
-		
+		//外部公司购买自营商品如果使用的铁信支付的话要转成问题单去改价
+		//这里并没有判断商品是否是自营的，靠的是前端等限制
+		MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderSn);
+		if (masterOrderPay == null) {
+			info.setMessage("订单[" + masterOrderSn + "]的支付单不存在");
+			return info;
+		}
+		//盈合问题单
+		if(StringUtils.isNotBlank(masterOrderInfoExtend.getBoId())) {
+			//设置盈合问题单
+			orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+			orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+			//设置营销合伙人系统的子项目
+			BoSupplierOrder  boSupplierOrder = new BoSupplierOrder();
+			boSupplierOrder.setMasterOrderSn(masterOrderSn);
+			boSupplierOrder.setBoId(masterOrderInfoExtend.getBoId());
+			boSupplierOrder.setCompanyCode(masterOrderInfoExtend.getCompanyCode());
+			boSupplierOrder.setCompanyName(masterOrderInfoExtend.getCompanyFullName());
+			boSupplierOrder.setCompanyType(masterOrderInfoExtend.getCompanyType());
+			boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
+			boSupplierOrder.setPayName(masterOrderPay.getPayName());
+			boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
+			boSupplierOrder.setCreateTime(new Date());
+			boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
+			boSupplierOrder.setUpdateTime(new Date());
+			//查询商业合伙人供应商合同  如果只有一个默认写入对应子公司id
+			List<BoSupplierCooperation> boSupplierCooperation = boSupplierCooperationMapper.selectByBoId(masterOrderInfoExtend.getBoId());
+			if(boSupplierCooperation != null && boSupplierCooperation.size()==1){
+				Byte cooperationStatus = boSupplierCooperation.get(0).getCooperationStatus();
+				//子公司与供应商合作状态有效
+				if (1 == (int) cooperationStatus){
+					boSupplierOrder.setChildCompanyId(boSupplierCooperation.get(0).getChildCompanyId());
+				}
+				boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
+			}else if(boSupplierCooperation != null && boSupplierCooperation.size() > 0){
+				boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
+			}
+			boSupplierOrderMapper.insertSelective(boSupplierOrder);
+		}
+		//获取铁信支付的payId
+		SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
+		if (masterOrderPay.getPayId().equals(systemPayment.getPayId())) {
+			//是铁信支付，获取订单扩展信息判断是否外部公司
+			if (Constant.OUTSIDE_COMPANY.equals(masterOrderInfoExtendByOrder.get(0).getCompanyType())) {
+				//是外部买家创建问题单
+				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "铁信支付改价问题单", "122"));
+				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+			}
+		}
+		//盈合支付的问题单判断  暂时只处理设置了盈合id的
+		//,,
+		//待询价 或者改价问题单 或者 是盈合商品
+		if(orderInfo.getGoodsSaleType() != null && orderInfo.getGoodsSaleType() != 0){
+			switch (orderInfo.getGoodsSaleType()){
+				case Constant.GOODS_SALE_TYPE_CUSTOMIZATION :
+					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "待询价问题单", "120"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					break;
+				case Constant.GOODS_SALE_TYPE_CHANGE_PRICE :
+					orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "改价问题单", "121"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					break;
+				case Constant.GOODS_SALE_TYPE_BO :
+					//暂时只处理设置了盈合id的
+					/*orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "盈合问题单", "123"));
+					orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+					//盈合商品需要处理 盈合子项目
+					if(StringUtils.isBlank(masterOrderInfoExtendByOrder.get(0).getBoId())) {
+						info.setMessage("订单[" + masterOrderSn + "]的盈合ID不存在");
+						return info;
+					}*/
+					break;
+			}
+		}
+
 		// 订单创建成功后积分扣减
 		if (orderInfo.getIntegral().intValue() > 0) {
 			Integer integral = orderInfo.getIntegral();
@@ -357,7 +441,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 				pointsNote = "订单创建-点数(" + points + ")失败！错误信息:" + e.getMessage();
 			}
 		}
-		
+
 		// 拆单后占用库存标志
 		boolean confirm = false;
 		// 团购订单下单占用库存
@@ -384,7 +468,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			// 已支付订单通知支付预占
 			channelStockService.payOccupy(masterOrderSn);
 			if (Math.abs(this.subPrice(validateOrder.getOrderSettlementPrice(), validateOrder.getPaySettlementPrice())) > 0.01
-					|| Math.abs(this.subPrice(validateOrder.getOrderSettlementPrice(), 
+					|| Math.abs(this.subPrice(validateOrder.getOrderSettlementPrice(),
 							(validateOrder.getGoodsSettlementPrice() + orderInfo.getShippingTotalFee().doubleValue()))) > 0.01) {
 
 				logger.info("差异超过一分钱:" + JSONObject.toJSONString(validateOrder));
@@ -481,6 +565,22 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			}
 		}
 
+		//团购问题单，判断是否团购，是否预付款
+		if(masterOrderInfoExtend.getIsGroup() != null && masterOrderInfoExtend.getIsGroup() == 1){
+//			if(orderInfo.getPayStatus() == 1){
+//				confirm = false;
+//				orderQuestionService.questionOrderByMasterSn(masterOrderSn, new OrderStatus(masterOrderSn, "团购问题单", "10000"));
+//				orderInfo.setQuestionStatus(Constant.OI_QUESTION_STATUS_QUESTION);
+//			}
+			//若是内行应承或者内行现金
+			if(masterOrderPay.getPayId() == 50 || masterOrderPay.getPayId() == 35) {
+				MasterOrderInfoExtend record = new MasterOrderInfoExtend();
+				record.setMasterOrderSn(masterOrderSn);
+				record.setIsConfirmPay(Byte.valueOf("0"));
+				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(record);
+			}
+		}
+		
 		// 订单是正常单且订单符合确认条件
 		if (confirm && orderInfo.getQuestionStatus() == Constant.OI_QUESTION_STATUS_NORMAL) {
 			info.setIsOk(Constant.OS_YES);
@@ -500,7 +600,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		logger.debug("将多件一行商品拆分到一件一行 start");
 		int index = 1;
 		String useCards = "";
-		
+
 		for (MasterShip masterShip : masterOrder.getShipList()) {
 			List<MasterGoods> goodsList = new ArrayList<MasterGoods>();
 			Map<String, List<GoodsCardInfo>> cardInfoMap = null;
@@ -515,7 +615,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					cardInfoMap.put(cardInfo.getCustomCode(), tempCardInfos);
 				}
 			}
-			
+
 			// 红包金额
 			Double bonus = masterOrder.getBonus();
 			int bonusGoodsNum = 0;
@@ -527,7 +627,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					}
 				}
 			}
-			
+
 			for (MasterGoods goods : masterShip.getGoodsList()) {
 				int goodsNumber = goods.getGoodsNumber();
 				if (goodsNumber > 1) {
@@ -562,7 +662,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 						}
 						newGoods.setGoodsNumber(1);
 						newGoods.setExtensionId(index + "");
-						
+
 						// 折扣处理,一分钱问题
 						if (totalDisCount != null && totalDisCount > 0) {
 							if (i + 1 == goodsNumber) {
@@ -577,17 +677,17 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 									double transactionPrice = NumberUtil.getDoubleByValue(newGoods.getGoodsPrice() - newDiscount, 6);
 									newGoods.setTransactionPrice(transactionPrice);
 								}
-								
+
 								//logger.info("newGoods:" + JSONObject.toJSONString(newGoods));
 							} else {
 								double newDiscount = NumberUtil.getDoubleByValue(newGoods.getGoodsPrice() - newGoods.getTransactionPrice(), 6);
 								newGoods.setDisCount(newDiscount);
 								goodsDisCount += newDiscount;
-								
+
 								//logger.info("newGoods:" + JSONObject.toJSONString(newGoods));
 							}
 						}
-						
+
 						// 红包平摊,一分钱问题
 						Double shareBonus = newGoods.getShareBonus();
 						if (shareBonus != null && shareBonus > 0) {
@@ -621,7 +721,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 					goods.setExtensionId(index + "");
 					goodsList.add(goods);
 					index++;
-					
+
 					// 红包平摊,一分钱问题
 					Double shareBonus = goods.getShareBonus();
 					if (shareBonus != null && shareBonus > 0) {
@@ -656,7 +756,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 
 	/**
 	 * 获取系统配置变量
-	 * 
+	 *
 	 * @param code
 	 *            代码
 	 * @return
@@ -674,7 +774,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 		return null;
 	}
-	
+
 	private boolean getPriceSwitch(SystemConfig systemConfig) {
 		if (systemConfig == null)
 			return false;
@@ -685,7 +785,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 		return false;
 	}
-	
+
 	@Override
 	public String errorMessage(SystemInfo systemInfo, ServiceReturnInfo<?> serviceReturnInfo) {
 		OrderCreateReturnInfo returninfo = new OrderCreateReturnInfo();
@@ -703,7 +803,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 		return "";
 	}
-	
+
 	@Override
 	public String successMessage(SystemInfo systemInfo, ServiceReturnInfo<?> serviceReturnInfo) {
 		String s = JSON.toJSONString(serviceReturnInfo.getResult());
@@ -732,7 +832,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 反序列化Order Json字符串
 	 * @param orderParam 订单JSON字符串
@@ -758,10 +858,10 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 			return null;
 		return list.get(0);
 	}
-	
+
 	/**
 	 * 验证发货单参数是否正确，包括发货单中商品信息
-	 * 
+	 *
 	 * @param masterShip
 	 * @param masterOrder
 	 * @return
@@ -797,7 +897,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 
 	/**
 	 * 校验商品传入参数，验证商品价格是否低于保护价
-	 * 
+	 *
 	 * @param p
 	 * @param order
 	 * @return
@@ -829,7 +929,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 
 	/**
 	 * 判断shippingCode是否存在
-	 * 
+	 *
 	 * @param shippingCode
 	 * @return
 	 */
@@ -858,10 +958,10 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 验证支付方式参数是否正确
-	 * 
+	 *
 	 * @param masterPays 支付单传入参数
 	 * @param masterOrder 订单传入参数
 	 * @return
@@ -884,7 +984,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 		// 订单支付财务价
 		masterOrder.setPaySettlementPrice(payTotalFee);
 		List<MasterShip> shipLists = masterOrder.getShipList();
-		double goodsTranPrice = getGoodsPrice(shipLists);
+		double goodsTranPrice = getGoodsPrice(shipLists,masterOrder.getOrderFrom());
 		if (masterOrder.getPayStatus() == Constant.OI_PAY_STATUS_PAYED) {
 			// 付款单为已付款
 			// 订单财务价 = 商品成交价*数量 + 邮费  -红包 - 积分
@@ -900,7 +1000,7 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 
 	/**
 	 * 判断支付方式ID 是否存在
-	 * 
+	 *
 	 * @param payCode
 	 *            支付方式code
 	 * @return
@@ -928,16 +1028,43 @@ public class OrderValidateServiceImpl implements OrderValidateService{
 	 * @param shipLists 商品配送列表
 	 * @return double
 	 */
-	private double getGoodsPrice(List<MasterShip> shipLists) {
+	private double getGoodsPrice(List<MasterShip> shipLists, String orderFrom) {
 		double goodsTranPrice = 0;
 		for (int i = 0; i < shipLists.size(); i++) {
 			MasterShip shipList = shipLists.get(i);
-			for (MasterGoods masterGoods : shipList.getGoodsList()) {
-				// sum商品成交价
-				BigDecimal tr = new BigDecimal(masterGoods.getTransactionPrice().toString());
-				// 商品数量
-				BigDecimal num = new BigDecimal(masterGoods.getGoodsNumber());
-				goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+			// 需求1272 修改含税总额计算方式，未税总额加税额
+			if ("hbis".equals(orderFrom)){
+				for (MasterGoods masterGoods : shipList.getGoodsList()) {
+					//未税成交价
+					BigDecimal transactionPriceNoTax = masterGoods.getTransactionPriceNoTax();
+					//数量
+					BigDecimal goodsNumber = new BigDecimal(masterGoods.getGoodsNumber());
+					//小数数量
+					BigDecimal goodsDecimals = masterGoods.getGoodsDecimals() != null ? masterGoods.getGoodsDecimals() : BigDecimal.ZERO;
+					//未税总额
+					BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber.add(goodsDecimals)).setScale(2, BigDecimal.ROUND_HALF_UP);
+					//销项税
+					BigDecimal outputTax = new BigDecimal(masterGoods.getOutputTax().toString());
+					//税额
+					BigDecimal tax = totalNoTax.multiply(outputTax.divide(new BigDecimal(100))).setScale(2, BigDecimal.ROUND_HALF_UP);
+					//含税总额
+					BigDecimal totalPrice = totalNoTax.add(tax);
+
+					goodsTranPrice += NumberUtil.getDoubleByDecimal(totalPrice, 2);
+				}
+			}else {
+				for (MasterGoods masterGoods : shipList.getGoodsList()) {
+					// sum商品成交价
+					BigDecimal tr = new BigDecimal(masterGoods.getTransactionPrice().toString());
+					// 商品数量
+					BigDecimal num = new BigDecimal(masterGoods.getGoodsNumber());
+					goodsTranPrice = addPrice(goodsTranPrice, tr.multiply(num).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+					// 小数数量
+					BigDecimal goodsDecimalNumber = masterGoods.getGoodsDecimals();
+					if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+						goodsTranPrice += NumberUtil.getDoubleByDecimal(goodsDecimalNumber.multiply(tr), 2);
+					}
+				}
 			}
 		}
 		return goodsTranPrice;

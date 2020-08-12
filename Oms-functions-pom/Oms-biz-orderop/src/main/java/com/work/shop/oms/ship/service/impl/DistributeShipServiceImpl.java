@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.work.shop.oms.api.express.feign.OrderExpressService;
-import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
@@ -18,11 +17,12 @@ import com.work.shop.oms.mq.ws.DataUtil;
 import com.work.shop.oms.mq.ws.OrderUtil;
 import com.work.shop.oms.order.service.DistributeActionService;
 import com.work.shop.oms.order.service.MasterOrderActionService;
-import com.work.shop.oms.order.service.MasterOrderInfoExtendService;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
+import com.work.shop.oms.order.service.MasterOrderPayService;
 import com.work.shop.oms.orderop.service.JmsSendQueueService;
 import com.work.shop.oms.orderop.service.OrderCancelService;
 import com.work.shop.oms.orderop.service.OrderConfirmService;
+import com.work.shop.oms.redis.RedisClient;
 import com.work.shop.oms.service.RewardPointRatioService;
 import com.work.shop.oms.ship.bean.DistConfirmOwner;
 import com.work.shop.oms.ship.bean.DistOrderPackageItems;
@@ -107,11 +107,15 @@ public class DistributeShipServiceImpl implements DistributeShipService {
     @Resource
     private MasterOrderInfoMapper masterOrderInfoMapper;
 
+    @Resource
+    private MasterOrderPayService masterOrderPayService;
+
     @Resource(name = "orderCancelService")
     private OrderCancelService orderCancelService;
 
     @Resource
     private OrderConfirmService orderConfirmService;
+
     @Resource
     private MasterOrderActionService masterOrderActionService;
 
@@ -127,17 +131,20 @@ public class DistributeShipServiceImpl implements DistributeShipService {
     @Resource
     private MasterOrderInfoService masterOrderInfoService;
 
-    @Resource
-    private MasterOrderInfoExtendService masterOrderInfoExtendService;
-
     @Autowired
     private RewardPointRatioService rewardPointRatioService;
+
+    @Resource
+    private RedisClient redisClient;
 
     @Resource(name = "changeUserAndCompanyPointJmsTemplate")
     private JmsTemplate changeUserAndCompanyPointJmsTemplate;
 
     @Resource(name = "addRewardPointChangeLogJmsTemplate")
     private JmsTemplate addRewardPointChangeLogJmsTemplate;
+
+    @Resource(name = "uploadSaleSettlementJmsTemplate")
+    private JmsTemplate uploadSaleSettlementJmsTemplate;
 
     private ThreadLocal<Boolean> isSend = new ThreadLocal<Boolean>();
 
@@ -1045,8 +1052,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     /**
      * 订单发货状态处理
-     *
-     * @param masterOrderSn
+     * @param masterOrderSn 订单编号
      * @return ReturnInfo<String>
      */
     @SuppressWarnings("rawtypes")
@@ -1293,7 +1299,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                     updateDepotShip.setInvoiceNo(depotShip.getInvoiceNo());
                     updateDepotShip.setOrderSn(depotShip.getOrderSn());
                     updateDepotShip.setDeliveryConfirmTime(new Date());
-                    updateDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+                    updateDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
                     orderDepotShipMapper.updateByPrimaryKeySelective(updateDepotShip);
                 }
             }
@@ -1569,7 +1575,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             masterOrderActionService.insertOrderActionBySn(masterOrderSn, message, actionUser);
             ri.setIsOk(Constant.OS_YES);
             ri.setMessage("收货确认更新完成！");
-            processMasterShipResult(masterOrderSn);
+            processMasterShipResult(masterOrderSn, 1);
         } catch (Exception e) {
             logger.error(masterOrderSn + "收货确认更新失败:" + e.getMessage(), e);
             ri.setMessage("收货确认更新失败:" + e.toString());
@@ -1579,24 +1585,26 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     /**
      * 处理订单确认收货结果
-     *
-     * @param masterOrderSn
+     * @param masterOrderSn 订单编号
+     * @param type 类型 0整单签收、1发货单签收
      */
     @Override
-    public void processMasterShipResult(String masterOrderSn) {
+    public void processMasterShipResult(String masterOrderSn, int type) {
 
         MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
         if (masterOrderInfo == null) {
             return;
         }
 
-        // 订单确认收货, 设置账期支付时间
-        masterOrderInfoService.processOrderPayPeriod(masterOrderInfo);
-
         int shipStatus = masterOrderInfo.getShipStatus();
         int orderStatus = masterOrderInfo.getOrderStatus();
         logger.info("processMasterShipResult:--shipStatus:" + shipStatus + ",orderStatus:" + orderStatus);
         if (orderStatus != Constant.OD_ORDER_STATUS_CANCLED && shipStatus == Constant.OI_SHIP_STATUS_ALLRECEIVED) {
+
+            if (type == 0) {
+                // 订单确认收货, 设置账期支付时间
+                masterOrderInfoService.processOrderPayPeriod(masterOrderInfo);
+            }
             // 下发MQ
             AccountSettlementOrderBean accountSettlementOrderBean = new AccountSettlementOrderBean();
             accountSettlementOrderBean.setOrderNo(masterOrderSn);
@@ -1604,15 +1612,17 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             logger.info("processMasterShipResult:--order_sn_account_settlement:" + JSONObject.toJSONString(accountSettlementOrderBean));
             jmsSendQueueService.sendQueueMessage(MqConfig.order_sn_account_settlement, JSON.toJSONString(accountSettlementOrderBean));
 
-
-            if (("hbis").equals(masterOrderInfo.getOrderFrom())) {
+            if (Constant.DEFAULT_SHOP.equals(masterOrderInfo.getOrderFrom())) {
                 //查询订单来源
                 String orderSN = masterOrderInfo.getMasterOrderSn();
                 String buyerSN = masterOrderInfo.getUserId();
                 int totalPrice = masterOrderInfo.getMoneyPaid().intValue();
                 int ratio = rewardPointRatioService.getRewardPointRatio();
-                int point = totalPrice / ratio;
-
+                int point = 0;
+                // ratio 为零时不计积分
+                if (ratio != 0){
+                    point = totalPrice / ratio;
+                }
                 if (point >= 1) {
                     //查询积分比例
                     //下发"add_reward_point_change_log"信道，添加积分变更记录
@@ -1647,13 +1657,32 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 }
             }
         }
+        //查询当前订单的所有交货单将已收货的交货单生成销售结算单推送供应链-财智云
+
+        //确认收货后将销售结算单数据推送供应链-财智云
+        try {
+            OrderDistributeExample distributeExample = new OrderDistributeExample();
+            distributeExample.or().andMasterOrderSnEqualTo(masterOrderInfo.getMasterOrderSn()).andOrderStatusNotEqualTo((byte) Constant.OI_ORDER_STATUS_CANCLED);
+            List<OrderDistribute> distributes = orderDistributeMapper.selectByExample(distributeExample);
+            for(OrderDistribute orderDistribute:distributes){
+                if(orderDistribute.getShipStatus()==Constant.OI_SHIP_STATUS_ALLRECEIVED){
+                    Map map=new HashMap();
+                    map.put("masterOrderSn",masterOrderInfo.getMasterOrderSn());
+                    map.put("orderSn",orderDistribute.getOrderSn());
+                    map.put("userId",masterOrderInfo.getUserId());
+                    logger.info("下发销售结算单MQ信息:" + JSON.toJSONString(map));
+                    uploadSaleSettlementJmsTemplate.send(new TextMessageCreator(JSON.toJSONString(map)));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("下发销售结算单MQ信息异常:" + e.getMessage());
+        }
     }
 
     /**
      * 处理订单交货单配送信息
-     *
-     * @param distributes
-     * @param bean
+     * @param distributes 交货单列表
+     * @param bean 签收信息
      */
     private void processOrderDistributeShip(List<OrderDistribute> distributes, DistributeShippingBean bean) {
 
@@ -1663,6 +1692,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         int periodTime = bean.getPeriodTime();
         for (OrderDistribute orderDistribute : distributes) {
 
+            // 交货单号
             String orderSn = orderDistribute.getOrderSn();
             // 查询订单下所有已发货配货仓数据
             OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
@@ -1671,6 +1701,8 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             if (StringUtil.isListNull(depotShips)) {
                 continue;
             }
+            // 订单号
+            String masterOrderSn = orderDistribute.getMasterOrderSn();
             // 处理交货单下的发货单
             List<String> invoiceNoList = new ArrayList<String>();
             for (OrderDepotShip depotShip : depotShips) {
@@ -1712,20 +1744,38 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 message.setActionUser(actionUser);
                 message.setInvoiceNoList(invoiceNoList);
                 jmsSendQueueService.sendQueueMessage(MqConfig.supplier_order_receive_task, JSON.toJSONString(message));
+
+                // 通知发货单签收计算扣费信息
+                DistributeShippingBean orderReceiveBean = new DistributeShippingBean();
+                orderReceiveBean.setOrderSn(masterOrderSn);
+                orderReceiveBean.setShipSn(orderSn);
+                orderReceiveBean.setInvoiceNoList(invoiceNoList);
+                sendOrderReceiveSettlementInfo(orderReceiveBean);
             }
         }
     }
 
     /**
+     * 发货单签收
+     * @param message 订单发货单信息
+     */
+    @Override
+    public void sendOrderReceiveSettlementInfo(DistributeShippingBean message) {
+        jmsSendQueueService.sendQueueMessage(MqConfig.order_receive_settlement, JSON.toJSONString(message));
+    }
+
+    /**
      * 处理订单仓库配送信息
-     *
-     * @param depotShips
-     * @param bean
+     * @param depotShips 发货单列表
+     * @param bean 签收数据
      */
     private void processOrderDepotShip(List<OrderDepotShip> depotShips, DistributeShippingBean bean) {
 
+        // 快递单号
         String invoiceNo = bean.getInvoiceNo();
         String actionUser = bean.getActionUser();
+        // 订单号
+        String masterOrderSn = bean.getOrderSn();
         for (OrderDepotShip depotShip : depotShips) {
 
             // 已经签收
@@ -1739,14 +1789,16 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 continue;
             }
 
+            // 交货单号
             String orderSn = depotShip.getOrderSn();
+            Date date = new Date();
             OrderDepotShip updateDepotShip = new OrderDepotShip();
             updateDepotShip.setDepotCode(depotShip.getDepotCode());
             updateDepotShip.setInvoiceNo(depotShip.getInvoiceNo());
             updateDepotShip.setOrderSn(depotShip.getOrderSn());
-            updateDepotShip.setDeliveryConfirmTime(new Date());
             updateDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
-            updateDepotShip.setUpdateTime(new Date());
+            updateDepotShip.setDeliveryConfirmTime(date);
+            updateDepotShip.setUpdateTime(date);
             orderDepotShipMapper.updateByPrimaryKeySelective(updateDepotShip);
             distributeActionService.addOrderAction(depotShip.getOrderSn(), "包裹[" + depotShip.getInvoiceNo() + "]收货确认", actionUser);
             // 签收后通知供应商签收
@@ -1755,13 +1807,269 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             message.setInvoiceNo(depotShip.getInvoiceNo());
             message.setActionUser(actionUser);
             jmsSendQueueService.sendQueueMessage(MqConfig.supplier_order_receive, JSON.toJSONString(message));
+
+            // 通知发货单签收计算扣费信息
+            DistributeShippingBean orderReceiveBean = new DistributeShippingBean();
+            orderReceiveBean.setOrderSn(masterOrderSn);
+            orderReceiveBean.setShipSn(orderSn);
+            List<String> invoiceNoList = new ArrayList<>();
+            invoiceNoList.add(depotShip.getInvoiceNo());
+            orderReceiveBean.setInvoiceNoList(invoiceNoList);
+            sendOrderReceiveSettlementInfo(orderReceiveBean);
         }
     }
 
     /**
+     * 处理订单发货单金额信息
+     * @param distributeShippingBean 发货单信息
+     * @return ReturnInfo<String>
+     */
+    @Override
+    public ReturnInfo<Boolean> processOrderDepotShip(DistributeShippingBean distributeShippingBean) {
+        ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>(Constant.OS_NO);
+
+        // 订单编号
+        String masterOrderSn = distributeShippingBean.getOrderSn();
+        if (StringUtils.isBlank(masterOrderSn)) {
+            returnInfo.setMessage("订单编号为空");
+            return returnInfo;
+        }
+        // 交货单号
+        String orderSn = distributeShippingBean.getShipSn();
+        if (StringUtils.isBlank(orderSn)) {
+            returnInfo.setMessage("交货单号为空");
+            return returnInfo;
+        }
+        // 快递单号
+        List<String> invoiceNoList = distributeShippingBean.getInvoiceNoList();
+        if (invoiceNoList == null || invoiceNoList.size() == 0) {
+            returnInfo.setMessage("发货单为空");
+            return returnInfo;
+        }
+
+        MasterOrderInfo masterOrderInfo = masterOrderInfoService.getOrderInfoBySn(masterOrderSn);
+        if (masterOrderInfo == null) {
+            returnInfo.setMessage("订单不存在");
+            return returnInfo;
+        }
+
+        // 处理订单支付信息
+        ReturnInfo<MasterOrderPay> masterOrderPayReturnInfo = checkOrderPayPeriod(masterOrderInfo);
+        if (masterOrderPayReturnInfo.getIsOk() != Constant.OS_YES) {
+            returnInfo.setMessage(masterOrderPayReturnInfo.getMessage());
+            return returnInfo;
+        }
+
+        MasterOrderPay masterOrderPay = masterOrderPayReturnInfo.getData();
+        if (masterOrderPay == null) {
+            returnInfo.setMessage("订单支付信息为空");
+            return returnInfo;
+        }
+
+        returnInfo = processOrderDepotShipMoney(distributeShippingBean, masterOrderPay);
+        return returnInfo;
+    }
+
+    /**
+     * 设置账期支付支付时间和扣款
+     * @param masterOrderInfo 订单信息
+     * @return ReturnInfo<MasterOrderPay>
+     */
+    private ReturnInfo<MasterOrderPay> checkOrderPayPeriod(MasterOrderInfo masterOrderInfo) {
+        ReturnInfo<MasterOrderPay> returnInfo = new ReturnInfo<MasterOrderPay>();
+        returnInfo.setIsOk(Constant.OS_NO);
+
+        try {
+            String masterOrderSn = masterOrderInfo.getMasterOrderSn();
+            List<MasterOrderPay> masterOrderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
+            if (masterOrderPayList == null || masterOrderPayList.size() == 0) {
+                returnInfo.setMessage("订单:" + masterOrderSn + "支付单信息不存在");
+                return returnInfo;
+            }
+
+            MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
+            int payId = masterOrderPay.getPayId();
+            if (Constant.PAYMENT_ZHANGQI_ID  != payId && Constant.PAYMENT_YINCHENG != payId) {
+                returnInfo.setMessage("订单:" + masterOrderSn + "不是内行现金和内行银承支付");
+                return returnInfo;
+            }
+
+            returnInfo.setIsOk(Constant.OS_YES);
+            returnInfo.setMessage("成功");
+            returnInfo.setData(masterOrderPay);
+
+        } catch (Exception e) {
+            logger.error("处理订单账期支付异常", e);
+            returnInfo.setMessage("订单支付信息异常");
+            returnInfo.setIsOk(Constant.OS_NO);
+        }
+
+        return returnInfo;
+    }
+
+    /**
+     * 处理订单仓库发货单金额信息
+     * @param distributeShippingBean 发货单信息
+     * @param masterOrderPay 订单支付信息
+     * @return ReturnInfo<Boolean>
+     */
+    private ReturnInfo<Boolean> processOrderDepotShipMoney(DistributeShippingBean distributeShippingBean, MasterOrderPay masterOrderPay) {
+        ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>(Constant.OS_NO);
+
+        // 交货单号
+        String orderSn = distributeShippingBean.getShipSn();
+        List<String> invoiceNoList = distributeShippingBean.getInvoiceNoList();
+
+        List<Byte> shippingStatusList = new ArrayList<>();
+        shippingStatusList.add((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
+        shippingStatusList.add((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+        // 查询交货单下所有已签收的发货单数据
+        OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
+        depotShipExample.or().andOrderSnEqualTo(orderSn).andInvoiceNoIn(invoiceNoList).andPayPeriodStatusNotEqualTo(1)
+                .andShippingStatusIn(shippingStatusList).andIsDelEqualTo(0);
+        List<OrderDepotShip> depotShips = orderDepotShipMapper.selectByExample(depotShipExample);
+
+        if (depotShips == null || depotShips.size() == 0) {
+            returnInfo.setMessage("交货单下无签收发货单");
+            return returnInfo;
+        }
+
+        // 订单编号
+        String masterOrderSn = distributeShippingBean.getOrderSn();
+        List<String> orderSnList = getOrderSnList(masterOrderSn);
+        if (orderSnList == null || orderSnList.size() == 0) {
+            returnInfo.setMessage("订单无交货单信息");
+            return returnInfo;
+        }
+
+        String redisKey = "OrderDepotShip-" + masterOrderSn;
+        try {
+            // redis锁防止多发货单同时签收
+            while (lockRedisKey(redisKey, masterOrderSn) != 1) {
+                Thread.sleep(1000);
+            }
+
+            // 获取交货单下的发货单列表
+            OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
+            orderDepotShipExample.or().andOrderSnIn(orderSnList).andIsDelEqualTo(0);
+            List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
+
+            // 发货单序号
+            int maxOrderNumber = 0;
+            // 是否全部已签收
+            boolean last = true;
+            for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+                Integer orderNumber = orderDepotShip.getOrderNumber();
+                if (orderNumber != null && orderNumber > maxOrderNumber) {
+                    maxOrderNumber = orderNumber;
+                }
+                if (orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_RECEIVED && orderDepotShip.getShippingStatus() != Constant.OS_SHIPPING_STATUS_CONFIRM) {
+                    last = false;
+                    continue;
+                }
+            }
+
+            OrderDepotShip lastOrderDepotShip = null;
+            if (last) {
+                lastOrderDepotShip = getLastOrderDepotShip(orderDepotShipList, masterOrderPay);
+            }
+            processOrderDepotShipMoney(distributeShippingBean, masterOrderPay, depotShips, maxOrderNumber, lastOrderDepotShip);
+        } catch (Exception e) {
+            logger.error("发货单签收处理异常:" + JSONObject.toJSONString(distributeShippingBean), e);
+        } finally {
+            redisClient.del(redisKey);
+        }
+
+        return returnInfo;
+    }
+
+    /**
+     * 获取最后一笔发货单数据和金额
+     * @param orderDepotShipList 发货单列表
+     * @param masterOrderPay 订单支付单
+     * @return OrderDepotShip
+     */
+    private OrderDepotShip getLastOrderDepotShip(List<OrderDepotShip> orderDepotShipList, MasterOrderPay masterOrderPay) {
+
+        OrderDepotShip lastOrderDepotShip = null;
+        // 订单费用
+        BigDecimal payTotalFee = masterOrderPay.getPayTotalfee();
+        // 发货单总金额
+        BigDecimal payTotalMoney = BigDecimal.valueOf(0);
+
+        for (OrderDepotShip orderDepotShip : orderDepotShipList) {
+            payTotalMoney = payTotalMoney.add(orderDepotShip.getPayMoney());
+            // 是否已扣款
+            Integer payPeriodStatus = orderDepotShip.getPayPeriodStatus();
+            if (payPeriodStatus != null && payPeriodStatus != 0) {
+                continue;
+            }
+            lastOrderDepotShip = orderDepotShip;
+        }
+
+        // 订单支付金额与发货单金额差异
+        BigDecimal resultMoney = payTotalFee.subtract(payTotalMoney);
+        if (lastOrderDepotShip != null) {
+            // 差异放到最后一个发货单上
+            BigDecimal payMoney = lastOrderDepotShip.getPayMoney();
+            payMoney = payMoney.add(resultMoney);
+
+            lastOrderDepotShip.setPayMoney(payMoney);
+        }
+
+        return lastOrderDepotShip;
+    }
+
+    /**
+     * 处理订单仓库发货单金额信息
+     * @param distributeShippingBean 发货单信息
+     * @param masterOrderPay 订单支付信息
+     * @param maxOrderNumber 最大序号
+     * @param lastOrderDepotShip 最后的发货单
+     * @return ReturnInfo<Boolean>
+     */
+    private void processOrderDepotShipMoney(DistributeShippingBean distributeShippingBean, MasterOrderPay masterOrderPay, List<OrderDepotShip> depotShips, int maxOrderNumber, OrderDepotShip lastOrderDepotShip) {
+        // 支付期数
+        Short paymentPeriod = masterOrderPay.getPaymentPeriod();
+        Date nowDate = new Date();
+        Date lastPayDate = nowDate;
+        if (paymentPeriod > 0) {
+            lastPayDate = com.work.shop.oms.common.bean.TimeUtil.getBeforeMonth(nowDate, paymentPeriod.intValue());
+        }
+
+        int size = depotShips.size();
+        for (int i = 0; i < size; i++) {
+            OrderDepotShip orderDepotShip = depotShips.get(i);
+            OrderDepotShip updateOrderDepotShip = new OrderDepotShip();
+            updateOrderDepotShip.setOrderSn(orderDepotShip.getOrderSn());
+            updateOrderDepotShip.setDepotCode(orderDepotShip.getDepotCode());
+            updateOrderDepotShip.setInvoiceNo(orderDepotShip.getInvoiceNo());
+            updateOrderDepotShip.setPayPeriodStatus(0);
+            updateOrderDepotShip.setLastPayDate(lastPayDate);
+            maxOrderNumber += 1;
+            // 序号
+            updateOrderDepotShip.setOrderNumber(maxOrderNumber);
+            if (lastOrderDepotShip != null) {
+                if (lastOrderDepotShip.getOrderSn().equals(orderDepotShip.getOrderSn())
+                        && lastOrderDepotShip.getDepotCode().equalsIgnoreCase(orderDepotShip.getDepotCode())
+                        && lastOrderDepotShip.getInvoiceNo().equalsIgnoreCase(orderDepotShip.getInvoiceNo())) {
+                    updateOrderDepotShip.setPayMoney(lastOrderDepotShip.getPayMoney());
+                }
+            }
+            // 金额
+            orderDepotShipMapper.updateByPrimaryKeySelective(updateOrderDepotShip);
+        }
+    }
+
+    private long lockRedisKey(String redisKey, String value) {
+        // redis锁防止多发货单同时签收
+        long result = redisClient.setnx(redisKey, value);
+        return result;
+    }
+
+    /**
      * 处理仓库发货商品
-     *
-     * @param goodsList        商品列表
+     * @param goodsList 商品列表
      * @param deliveryDepotMap
      */
     private void processDepotShipGoodsMap(List<MasterOrderGoods> goodsList, Map<String, Map<String, List<MasterOrderGoods>>> deliveryDepotMap) {
@@ -1796,14 +2104,36 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         for (String ownerCode : confirmOwnerMap.keySet()) {
             DistConfirmOwner owner = confirmOwnerMap.get(ownerCode);
 
-            //验证配货仓发货单 依据订单号、快递单号、发货仓
-            OrderDepotShipKey verifyKey = new OrderDepotShipKey();
-            verifyKey.setOrderSn(owner.getOrderSn());
-            verifyKey.setInvoiceNo(owner.getInvoiceNo());
-            verifyKey.setDepotCode(owner.getOwnerCode());
-            OrderDepotShip orderDepotShip = orderDepotShipMapper.selectByPrimaryKey(verifyKey);
-            if (orderDepotShip != null) {
-                throw new RuntimeException("该订单的此快递单已进行发货，不能重复添加");
+            // 无需物流则不校验
+//            if (!"无需物流".equals(owner.getShippingName())){
+                //验证配货仓发货单 依据订单号、快递单号、发货仓
+                OrderDepotShipKey verifyKey = new OrderDepotShipKey();
+                verifyKey.setOrderSn(owner.getOrderSn());
+                verifyKey.setInvoiceNo(owner.getInvoiceNo());
+                verifyKey.setDepotCode(owner.getOwnerCode());
+                OrderDepotShip orderDepotShip = orderDepotShipMapper.selectByPrimaryKey(verifyKey);
+                if (orderDepotShip != null) {
+                    throw new RuntimeException("该订单的此快递单已进行发货，不能重复添加");
+                }
+//            }
+
+            // 更新商品所属包裹信息
+            List<MasterOrderGoods> goodsItems = owner.getGoodsItems();
+            if (StringUtil.isListNull(goodsItems)) {
+                continue;
+            }
+
+            BigDecimal payMoney = BigDecimal.valueOf(0);
+            for (MasterOrderGoods item : goodsItems) {
+                MasterOrderGoods updateItem = new MasterOrderGoods();
+                updateItem.setId(item.getId());
+                updateItem.setInvoiceNo(owner.getInvoiceNo());
+                Integer goodsNumber = item.getGoodsNumber();
+                updateItem.setGoodsNumber(goodsNumber);
+
+                BigDecimal currentGoodsMoney = MathOperation.mul(item.getSettlementPrice(), BigDecimal.valueOf(goodsNumber), 2);
+                payMoney = payMoney.add(currentGoodsMoney);
+                masterOrderGoodsMapper.updateByPrimaryKeySelective(updateItem);
             }
 
             // 更新发货仓包裹信息
@@ -1827,22 +2157,31 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             updateShip.setPdwarhCode(owner.getPdwarhCode());
             updateShip.setPdwarhName(owner.getPdwarhName());
             updateShip.setIsDel(Constant.IS_DEL_NO);
+            updateShip.setPayMoney(payMoney);
             OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
             depotShipExample.or().andOrderSnEqualTo(orderSn).andDepotCodeEqualTo(owner.getOwnerCode()).andInvoiceNoEqualTo("").andIsDelEqualTo(0);
             orderDepotShipMapper.updateByExampleSelective(updateShip, depotShipExample);
-            // 更新商品所属包裹信息
-            List<MasterOrderGoods> goodsItems = owner.getGoodsItems();
-            if (StringUtil.isListNull(goodsItems)) {
-                continue;
-            }
-            for (MasterOrderGoods item : goodsItems) {
-                MasterOrderGoods updateItem = new MasterOrderGoods();
-                updateItem.setId(item.getId());
-                updateItem.setInvoiceNo(owner.getInvoiceNo());
-                updateItem.setGoodsNumber(item.getGoodsNumber());
-                masterOrderGoodsMapper.updateByPrimaryKeySelective(updateItem);
-            }
         }
+    }
+
+    /**
+     * 获取交货单列表
+     * @param masterOrderSn 订单编号
+     * @return List<String>
+     */
+    private List<String> getOrderSnList(String masterOrderSn) {
+        // 获取交货单
+        List<OrderDistribute> orderDistributeList = selectEffectiveDistributes(masterOrderSn);
+        if (orderDistributeList == null || orderDistributeList.size() == 0) {
+            return null;
+        }
+
+        List<String> orderSnList = new ArrayList<>();
+        for (OrderDistribute orderDistribute : orderDistributeList) {
+            orderSnList.add(orderDistribute.getOrderSn());
+        }
+
+        return orderSnList;
     }
 
     /**
@@ -1892,7 +2231,6 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     /**
      * 处理部分发货明细
-     *
      * @param orderSn
      * @param list
      */
@@ -1911,31 +2249,234 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     }
 
+    /**
+     * 获取未发货的交货单发货单仓库映射
+     * @param orderSn 交货单
+     * @return Map<String, OrderDepotShip>
+     */
+    private Map<String, OrderDepotShip> getOrderDepotShipByNotDelivered(String orderSn) {
+        OrderDepotShipExample example = new OrderDepotShipExample();
+        example.or().andOrderSnEqualTo(orderSn).andShippingStatusEqualTo((byte) Constant.OS_SHIPPING_STATUS_UNSHIPPED).andIsDelEqualTo(0);
+        List<OrderDepotShip> depotShips = this.orderDepotShipMapper.selectByExample(example);
+
+        // 交货单仓库与发货单
+        Map<String, OrderDepotShip> depotMap = new HashMap<String, OrderDepotShip>(Constant.DEFAULT_MAP_SIZE);
+        if (StringUtil.isListNotNull(depotShips)) {
+            for (OrderDepotShip ship : depotShips) {
+                depotMap.put(ship.getDepotCode(), ship);
+            }
+        }
+
+        return depotMap;
+    }
+
+    /**
+     * 处理供应商发货数据
+     * @param orderSn 交货单号
+     * @param orderPackages 供应商发货信息
+     * @param deliveryDepotMap 仓库对应的订单商品信息
+     * @param depotMap 仓库对应的发货单信息
+     * @param confirmOwnerMap
+     * @return ReturnInfo<List<MasterOrderGoods>>
+     */
+    private ReturnInfo<List<MasterOrderGoods>> processOrderDepotShipSendGoods(String orderSn, List<DistOrderPackages> orderPackages, Map<String, Map<String, List<MasterOrderGoods>>> deliveryDepotMap, Map<String, OrderDepotShip> depotMap, Map<String, DistConfirmOwner> confirmOwnerMap) {
+
+        ReturnInfo<List<MasterOrderGoods>> response = new ReturnInfo<List<MasterOrderGoods>>();
+        response.setIsOk(Constant.OS_NO);
+        response.setMessage("供应商发货失败");
+
+        // 拆分后新增商品列表
+        List<MasterOrderGoods> insertItems = new ArrayList<>();
+        // 校验发货数据校验发货量
+        for (DistOrderPackages orderPackage : orderPackages) {
+            // 物流公司编码
+            String logisticsCode = orderPackage.getLogisticsCode();
+            if (StringUtil.isTrimEmpty(logisticsCode)) {
+                response.setMessage("参数[request.packages.logisticsCode] 不能为空");
+                return response;
+            }
+            // 运单号
+            String expressCode = orderPackage.getExpressCode();
+            // 不是无需物流时 单号必填
+            //if (!"NOEX".equals(logisticsCode) && StringUtil.isTrimEmpty(expressCode)) {
+            if (StringUtil.isTrimEmpty(expressCode)) {
+                response.setMessage("参数[request.packages.expressCode] 不能为空");
+                return response;
+            }
+            // 发货时间
+            Date deliveryTime = orderPackage.getDeliveryTime();
+            if (deliveryTime == null) {
+                response.setMessage("参数[request.packages.deliveryTime] 不能为空");
+                return response;
+            }
+            // 发货明细
+            List<DistOrderPackageItems> packageItems = orderPackage.getItems();
+            if (StringUtil.isListNull(packageItems)) {
+                response.setMessage("参数[request.packages.items] 不能为空");
+                return response;
+            }
+            Map<String, String> ownerCodeMap = new HashMap<String, String>(Constant.DEFAULT_MAP_SIZE);
+            for (DistOrderPackageItems item : packageItems) {
+                // 商品编码
+                String itemCode = item.getItemCode();
+                if (StringUtil.isTrimEmpty(itemCode)) {
+                    response.setMessage("参数[request.packages.items.itemCode] 不能为空");
+                    return response;
+                }
+                // 仓库编码
+                String ownerCode = item.getOwnerCode();
+                if (StringUtil.isTrimEmpty(ownerCode)) {
+                    response.setMessage("参数[request.packages.items.ownerCode] 不能为空");
+                    return response;
+                }
+                ownerCodeMap.put(ownerCode, ownerCode);
+                // 发货数量
+                Integer quantity = item.getQuantity();
+                if (null == quantity) {
+                    response.setMessage("参数[request.packages.items.quantity] 不能为空");
+                    return response;
+                }
+                // 根据仓库编码，获取对应的商品货号对应的列表
+                Map<String, List<MasterOrderGoods>> deliveryItemsMap = deliveryDepotMap.get(ownerCode);
+                if (deliveryItemsMap == null) {
+                    response.setMessage("仓[" + ownerCode + "] 不存在");
+                    return response;
+                }
+                // 根据商品货号，获取对应的商品列表
+                List<MasterOrderGoods> deliveryItems = deliveryItemsMap.get(itemCode);
+                if (StringUtil.isListNull(deliveryItems)) {
+                    response.setMessage("仓[" + ownerCode + "] 商品为空，商品不一致");
+                    return response;
+                }
+
+                // 仓库编码+运单号
+                String ownerExpressKey = ownerCode + orderPackage.getExpressCode();
+                DistConfirmOwner owner = confirmOwnerMap.get(ownerExpressKey);
+                if (null == owner) {
+                    OrderDepotShip depotShip = depotMap.get(ownerCode);
+                    owner = new DistConfirmOwner();
+                    owner.setDeliveryTime(orderPackage.getDeliveryTime());
+                    owner.setInvoiceNo(orderPackage.getExpressCode());
+                    owner.setOrderSn(orderSn);
+                    owner.setOwnerCode(ownerCode);
+                    Byte shippingId = (byte) -1;
+                    String shippingName = "未知";
+                    SystemShipping shipping = getSystemShipByShipCode(orderPackage.getLogisticsCode());
+                    if (shipping != null) {
+                        shippingId = shipping.getShippingId();
+                        shippingName = shipping.getShippingName();
+                        orderPackage.setLogisticsName(shippingName);
+                    } else {
+                        response.setMessage("承运商编码[" + orderPackage.getLogisticsCode() + "] 不存在");
+                        return response;
+                    }
+                    if (depotShip != null) {
+                        owner.setDepotTime(depotShip.getDepotTime());
+                        owner.setOverTransCycle(depotShip.getOverTransCycle());
+                        owner.setToUser(depotShip.getToUser());
+                        owner.setToUserPhone(depotShip.getToUserPhone());
+                        owner.setProvincecity(depotShip.getProvincecity());
+                        owner.setPdwarhCode(depotShip.getPdwarhCode());
+                        owner.setPdwarhName(depotShip.getPdwarhName());
+                    }
+                    owner.setShippingId(shippingId);
+                    owner.setShippingName(shippingName);
+                    owner.setDeliveryType(0);
+                    owner.setPreInvoiceNo("");
+                }
+                List<MasterOrderGoods> deliveryGoodsItems = owner.getGoodsItems();
+                if (StringUtil.isListNull(deliveryGoodsItems)) {
+                    deliveryGoodsItems = new ArrayList<MasterOrderGoods>();
+                }
+
+                // oms商品数量
+                // 一个sku是多件时，遍历商品
+                int totalItemNum = 0;
+                Iterator<MasterOrderGoods> it = deliveryItems.iterator();
+                while (it.hasNext()) {
+                    if (quantity == 0) {
+                        break;
+                    }
+                    MasterOrderGoods goodsItem = it.next();
+                    MasterOrderGoods shipItem = new MasterOrderGoods();
+                    CachedBeanCopier.copy(goodsItem, shipItem);
+
+                    int num = goodsItem.getGoodsNumber();
+                    totalItemNum += num;
+                    if (num <= quantity) {
+                        it.remove();
+                        quantity -= num;
+                    } else {
+                        int newGoodsNumber = num - quantity;
+                        MasterOrderGoods insertItem = new MasterOrderGoods();
+                        CachedBeanCopier.copy(goodsItem, insertItem);
+                        insertItem.setGoodsNumber(newGoodsNumber);
+                        insertItems.add(insertItem);
+
+                        shipItem.setGoodsNumber(quantity);
+                        quantity = 0;
+                    }
+
+                    deliveryGoodsItems.add(shipItem);
+                }
+                int totalQuantity = item.getQuantity();
+                // 发货商品量不能大于订单商品量
+                if (totalItemNum < totalQuantity) {
+                    response.setMessage("仓[" + ownerCode + "] 实发货数" + totalQuantity + "大于应发数" + totalItemNum);
+                    return response;
+                }
+
+                owner.setGoodsItems(deliveryGoodsItems);
+                // 置空发货单号MAP
+                deliveryItemsMap.put(itemCode, deliveryItems);
+                // 该货主仓有未发商品为部分发货新增配货单
+                if (StringUtil.isListNull(deliveryItems)) {
+                    deliveryItemsMap.remove(itemCode);
+                }
+                if (deliveryItemsMap == null || deliveryItemsMap.isEmpty()) {
+                    deliveryDepotMap.remove(ownerCode);
+                } else {
+                    deliveryDepotMap.put(ownerCode, deliveryItemsMap);
+                }
+                confirmOwnerMap.put(ownerExpressKey, owner);
+            }
+            orderPackage.setOwnerCodeMap(ownerCodeMap);
+        }
+
+        response.setData(insertItems);
+        response.setIsOk(Constant.OS_YES);
+        return response;
+    }
 
     /**
      * 供应商发货
-     *
-     * @param request
+     * @param request 发货数据
      * @return DistOrderShipResponse
      */
     @Override
     public DistOrderShipResponse distOrderShip(DistOrderShipRequest request) {
-        logger.info("供应商发货 request ： " + JSON.toJSONString(request));
+        logger.info("供应商发货request:" + JSON.toJSONString(request));
         DistOrderShipResponse response = new DistOrderShipResponse();
         response.setSuccess(false);
         response.setMessage("供应商发货失败");
         String orderSn = null;
         try {
             if (request == null) {
-                response.setMessage("参数[request] 不能为空");
+                response.setMessage("参数不能为空");
                 return response;
             }
             orderSn = request.getOrderSn();
-
             if (StringUtil.isTrimEmpty(orderSn)) {
-                response.setMessage("参数[request.orderSn] 不能为空");
+                response.setMessage("交货单不能为空");
                 return response;
             }
+
+            List<DistOrderPackages> orderPackages = request.getPackages();
+            if (StringUtil.isListNull(orderPackages)) {
+                response.setMessage("参数[request.packages] 不能为空");
+                return response;
+            }
+
             OrderDistribute distribute = orderDistributeMapper.selectByPrimaryKey(orderSn);
             if (null == distribute) {
                 response.setMessage("交货单[" + orderSn + "] 不存在");
@@ -1955,22 +2496,9 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 response.setMessage("订单[" + masterOrderSn + "] 状态不符合发货条件");
                 return response;
             }
-            List<DistOrderPackages> orderPackages = request.getPackages();
-            if (StringUtil.isListNull(orderPackages)) {
-                response.setMessage("参数[request.packages] 不能为空");
-                return response;
-            }
-            OrderDepotShipExample example = new OrderDepotShipExample();
-            example.or().andOrderSnEqualTo(orderSn).andShippingStatusEqualTo((byte) Constant.OS_SHIPPING_STATUS_UNSHIPPED).andIsDelEqualTo(0);
-            List<OrderDepotShip> depotShips = this.orderDepotShipMapper.selectByExample(example);
 
             // 交货单仓库与发货单
-            Map<String, OrderDepotShip> depotMap = new HashMap<String, OrderDepotShip>(Constant.DEFAULT_MAP_SIZE);
-            if (StringUtil.isListNotNull(depotShips)) {
-                for (OrderDepotShip ship : depotShips) {
-                    depotMap.put(ship.getDepotCode(), ship);
-                }
-            }
+            Map<String, OrderDepotShip> depotMap = getOrderDepotShipByNotDelivered(orderSn);
 
             MasterOrderGoodsExample goodsExample = new MasterOrderGoodsExample();
             goodsExample.or().andOrderSnEqualTo(orderSn).andIsDelEqualTo(Constant.IS_DEL_NO).andInvoiceNoEqualTo("");
@@ -1979,6 +2507,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
                 response.setMessage("交货单[" + orderSn + "] 没有关联商品");
                 return response;
             }
+
             /**
              * 1.查询未发货商品明细
              * 2.已发货明细关联oms商品
@@ -1992,151 +2521,11 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
             // 仓库-快递单号
             Map<String, DistConfirmOwner> confirmOwnerMap = new HashMap<String, DistConfirmOwner>(Constant.DEFAULT_MAP_SIZE);
-            // 拆分后新增商品列表
-            List<MasterOrderGoods> insertItems = new ArrayList<>();
-            // 校验发货数据校验发货量
-            for (DistOrderPackages orderPackage : orderPackages) {
-                String logisticsCode = orderPackage.getLogisticsCode();
-                if (StringUtil.isTrimEmpty(logisticsCode)) {
-                    response.setMessage("参数[request.packages.logisticsCode] 不能为空");
-                    return response;
-                }
-                String expressCode = orderPackage.getExpressCode();
-                if (StringUtil.isTrimEmpty(expressCode)) {
-                    response.setMessage("参数[request.packages.expressCode] 不能为空");
-                    return response;
-                }
-                Date deliveryTime = orderPackage.getDeliveryTime();
-                if (deliveryTime == null) {
-                    response.setMessage("参数[request.packages.deliveryTime] 不能为空");
-                    return response;
-                }
-                List<DistOrderPackageItems> packageItems = orderPackage.getItems();
-                if (StringUtil.isListNull(packageItems)) {
-                    response.setMessage("参数[request.packages.items] 不能为空");
-                    return response;
-                }
-                Map<String, String> ownerCodeMap = new HashMap<String, String>(Constant.DEFAULT_MAP_SIZE);
-                for (DistOrderPackageItems item : packageItems) {
-                    String itemCode = item.getItemCode();
-                    if (StringUtil.isTrimEmpty(itemCode)) {
-                        response.setMessage("参数[request.packages.items.itemCode] 不能为空");
-                        return response;
-                    }
-                    String ownerCode = item.getOwnerCode();
-                    if (StringUtil.isTrimEmpty(ownerCode)) {
-                        response.setMessage("参数[request.packages.items.ownerCode] 不能为空");
-                        return response;
-                    }
-                    ownerCodeMap.put(ownerCode, ownerCode);
-                    String ownerExpressKey = ownerCode + orderPackage.getExpressCode();
-                    String itemKey = ownerCode + itemCode;
 
-                    // 发货数量
-                    Integer quantity = item.getQuantity();
-                    if (null == quantity) {
-                        response.setMessage("参数[request.packages.items.quantity] 不能为空");
-                        return response;
-                    }
-                    Map<String, List<MasterOrderGoods>> deliveryItemsMap = deliveryDepotMap.get(ownerCode);
-                    if (deliveryItemsMap == null) {
-                        response.setMessage("仓[" + ownerCode + "] 不存在");
-                        return response;
-                    }
-                    List<MasterOrderGoods> deliveryItems = deliveryItemsMap.get(itemCode);
-                    if (StringUtil.isListNull(deliveryItems)) {
-                        response.setMessage("仓[" + ownerCode + "] 商品为空，商品不一致");
-                        return response;
-                    }
-                    DistConfirmOwner owner = confirmOwnerMap.get(ownerExpressKey);
-                    if (null == owner) {
-                        OrderDepotShip depotShip = depotMap.get(ownerCode);
-                        owner = new DistConfirmOwner();
-                        owner.setDeliveryTime(orderPackage.getDeliveryTime());
-                        owner.setInvoiceNo(orderPackage.getExpressCode());
-                        owner.setOrderSn(orderSn);
-                        owner.setOwnerCode(ownerCode);
-                        Byte shippingId = (byte) -1;
-                        String shippingName = "未知";
-                        SystemShipping shipping = getSystemShipByShipCode(orderPackage.getLogisticsCode());
-                        if (shipping != null) {
-                            shippingId = shipping.getShippingId();
-                            shippingName = shipping.getShippingName();
-                            orderPackage.setLogisticsName(shippingName);
-                        } else {
-                            response.setMessage("承运商编码[" + orderPackage.getLogisticsCode() + "] 不存在");
-                            return response;
-                        }
-                        if (depotShip != null) {
-                            owner.setDepotTime(depotShip.getDepotTime());
-                            owner.setOverTransCycle(depotShip.getOverTransCycle());
-                            owner.setToUser(depotShip.getToUser());
-                            owner.setToUserPhone(depotShip.getToUserPhone());
-                            owner.setProvincecity(depotShip.getProvincecity());
-                            owner.setPdwarhCode(depotShip.getPdwarhCode());
-                            owner.setPdwarhName(depotShip.getPdwarhName());
-                        }
-                        owner.setShippingId(shippingId);
-                        owner.setShippingName(shippingName);
-                        owner.setDeliveryType(0);
-                        owner.setPreInvoiceNo("");
-                    }
-                    List<MasterOrderGoods> deliveryGoodsItems = owner.getGoodsItems();
-                    if (StringUtil.isListNull(deliveryGoodsItems)) {
-                        deliveryGoodsItems = new ArrayList<MasterOrderGoods>();
-                    }
-
-                    // oms商品数量
-                    // 一个sku是多件时，遍历商品
-                    int totalItemNum = 0;
-                    Iterator<MasterOrderGoods> it = deliveryItems.iterator();
-                    while (it.hasNext()) {
-                        if (quantity == 0) {
-                            break;
-                        }
-                        MasterOrderGoods goodsItem = it.next();
-                        MasterOrderGoods shipItem = new MasterOrderGoods();
-                        CachedBeanCopier.copy(goodsItem, shipItem);
-
-                        int num = goodsItem.getGoodsNumber();
-                        totalItemNum += num;
-                        if (num <= quantity) {
-                            it.remove();
-                            quantity -= num;
-                        } else {
-                            int newGoodsNumber = num - quantity;
-                            MasterOrderGoods insertItem = new MasterOrderGoods();
-                            CachedBeanCopier.copy(goodsItem, insertItem);
-                            insertItem.setGoodsNumber(newGoodsNumber);
-                            insertItems.add(insertItem);
-
-                            shipItem.setGoodsNumber(quantity);
-                            quantity = 0;
-                        }
-                        deliveryGoodsItems.add(shipItem);
-                    }
-                    int totalQuantity = item.getQuantity();
-                    // 发货商品量不能大于订单商品量
-                    if (totalItemNum < totalQuantity) {
-                        response.setMessage("仓[" + ownerCode + "] 实发货数" + totalQuantity + "大于应发数" + totalItemNum);
-                        return response;
-                    }
-
-                    owner.setGoodsItems(deliveryGoodsItems);
-                    // 置空发货单号MAP
-                    deliveryItemsMap.put(itemCode, deliveryItems);
-                    // 该货主仓有未发商品为部分发货新增配货单
-                    if (StringUtil.isListNull(deliveryItems)) {
-                        deliveryItemsMap.remove(itemCode);
-                    }
-                    if (deliveryItemsMap == null || deliveryItemsMap.isEmpty()) {
-                        deliveryDepotMap.remove(ownerCode);
-                    } else {
-                        deliveryDepotMap.put(ownerCode, deliveryItemsMap);
-                    }
-                    confirmOwnerMap.put(ownerExpressKey, owner);
-                }
-                orderPackage.setOwnerCodeMap(ownerCodeMap);
+            ReturnInfo<List<MasterOrderGoods>> orderDepotShipData = processOrderDepotShipSendGoods(orderSn, orderPackages, deliveryDepotMap, depotMap, confirmOwnerMap);
+            if (orderDepotShipData.getIsOk() != Constant.OS_YES) {
+                response.setMessage(orderDepotShipData.getMessage());
+                return response;
             }
 
             // 已发货信息保存
@@ -2146,6 +2535,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             processDefaultOrderShip(orderSn, deliveryDepotMap, depotMap);
 
             // 剩余部分发货明细重新创建一个新明细记录
+            List<MasterOrderGoods> insertItems = orderDepotShipData.getData();
             processOrderItem(orderSn, insertItems);
 
             // 已发货发货单推送至物流监控
@@ -2387,6 +2777,11 @@ public class DistributeShipServiceImpl implements DistributeShipService {
         }
     }
 
+    /**
+     * 更新发货单数据
+     * @param depotShip
+     * @return int
+     */
     public int updateByPrimaryKeySelective(OrderDepotShip depotShip) {
         OrderDepotShipExample depotShipExample = new OrderDepotShipExample();
         depotShipExample.or().andOrderSnEqualTo(depotShip.getOrderSn())
@@ -2399,13 +2794,14 @@ public class DistributeShipServiceImpl implements DistributeShipService {
      *
      * @param shipProviderList
      * @param invoiceNo
-     * @return
+     * @return DistributeShipBean
      */
     private DistributeShipBean getInvoiceNoShippedProviderBean(List<DistributeShipBean> shipProviderList, String invoiceNo) {
         for (int i = 0; i < shipProviderList.size(); i++) {
             DistributeShipBean bean = shipProviderList.get(i);
-            if (bean == null)
+            if (bean == null) {
                 continue;
+            }
             if (StringUtil.equals(bean.getCsbNum(), invoiceNo)) {
                 return bean;
             }
@@ -2745,8 +3141,7 @@ public class DistributeShipServiceImpl implements DistributeShipService {
 
     /**
      * 判断订单状态时候可以进行进行发货
-     *
-     * @param distribute
+     * @param distribute 交货单信息
      * @return 订单处于取消状态或者订单处于无效状态的时候不需要再进行分仓处理
      */
     private boolean checkOrderStatus(OrderDistribute distribute) {
@@ -2775,5 +3170,74 @@ public class DistributeShipServiceImpl implements DistributeShipService {
             }
         }
         return null;
+    }
+
+    /**
+     * 更新发货单内行扣款
+     * @param orderSn 交货单号
+     * @param invoiceNo 快递单号
+     * @param paySourceId 内行扣款业务id
+     * @param payStatus 状态
+     * @return boolean
+     */
+    @Override
+    public boolean updateOrderDepotShipPayPeriod(String orderSn, String invoiceNo, String paySourceId, boolean payStatus) {
+        boolean bl = false;
+        try {
+            OrderDepotShipExample extendExample = new OrderDepotShipExample();
+            extendExample.or().andOrderSnEqualTo(orderSn).andInvoiceNoEqualTo(invoiceNo);
+
+            OrderDepotShip orderDepotShip = new OrderDepotShip();
+            orderDepotShip.setOrderSn(orderSn);
+            orderDepotShip.setInvoiceNo(invoiceNo);
+            if (payStatus) {
+                orderDepotShip.setPaySourceId(paySourceId);
+                orderDepotShip.setPayPeriodStatus(1);
+            } else {
+                orderDepotShip.setPayPeriodStatus(2);
+            }
+
+            int result = orderDepotShipMapper.updateByExampleSelective(orderDepotShip, extendExample);
+            bl = result > 0;
+        } catch (Exception e) {
+            logger.error("设置账期支付已扣款状态异常:" + orderSn + "," + invoiceNo, e);
+        }
+        return bl;
+    }
+
+    public static void main(String[] args) {
+        DistributeShipServiceImpl distributeShipService = new DistributeShipServiceImpl();
+        MasterOrderPay masterOrderPay = new MasterOrderPay();
+        masterOrderPay.setMasterOrderSn("2006131512026035");
+        masterOrderPay.setPayTotalfee(BigDecimal.valueOf(1533.36));
+
+        List<OrderDepotShip> list = new ArrayList<>();
+        OrderDepotShip orderDepotShip = new OrderDepotShip();
+        orderDepotShip.setOrderSn("2006131512026035S01");
+        orderDepotShip.setInvoiceNo("eeqqq1111");
+        orderDepotShip.setOrderNumber(1);
+        orderDepotShip.setShippingStatus((byte)2);
+        orderDepotShip.setPayMoney(BigDecimal.valueOf(266.68));
+        list.add(orderDepotShip);
+
+        orderDepotShip = new OrderDepotShip();
+        orderDepotShip.setOrderSn("2006131512026035S01");
+        orderDepotShip.setInvoiceNo("eeqqq11112222");
+        orderDepotShip.setOrderNumber(1);
+        orderDepotShip.setShippingStatus((byte)2);
+        orderDepotShip.setPayMoney(BigDecimal.valueOf(133.34));
+        list.add(orderDepotShip);
+
+        orderDepotShip = new OrderDepotShip();
+        orderDepotShip.setOrderSn("2006131512026035S01");
+        orderDepotShip.setInvoiceNo("yuancheng1112222");
+        orderDepotShip.setShippingStatus((byte)2);
+        orderDepotShip.setOrderNumber(1);
+        orderDepotShip.setPayMoney(BigDecimal.valueOf(133.34));
+        list.add(orderDepotShip);
+
+        OrderDepotShip lastOrderDepotShip = distributeShipService.getLastOrderDepotShip(list, masterOrderPay);
+
+        System.out.println(JSONObject.toJSONString(lastOrderDepotShip));
     }
 }

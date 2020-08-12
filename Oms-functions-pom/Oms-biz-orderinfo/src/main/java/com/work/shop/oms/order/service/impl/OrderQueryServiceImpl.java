@@ -294,6 +294,20 @@ public class OrderQueryServiceImpl implements OrderQueryService {
             criteria.andPayIdEqualTo(payId);
         }
 
+        //是否为团购订单
+        Integer isGroup = request.getIsGroup();
+        if (isGroup != null) {
+            condition = false;
+            criteria.andIsGroupEqualTo(isGroup);
+        }
+
+		//团购ID
+		Integer groupId = request.getGroupId();
+		if (groupId != null) {
+			condition = false;
+			criteria.andGroupIdEqualTo(groupId);
+		}
+
         //公司id
         String companyId = request.getCompanyId();
         if (StringUtils.isNotBlank(companyId)) {
@@ -333,6 +347,13 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 criteria.andOrderFromEqualTo(Constant.DEFAULT_SHOP);
             }
         }
+
+		// ERP订单编号
+		String erpOrderNo = request.getErpOrderNo();
+		if (StringUtils.isNotBlank(erpOrderNo)) {
+			condition = false;
+			criteria.andeErpOrderNoLike("%" + erpOrderNo + "%");
+		}
 
 		//订单有效、隐藏、全部状态
 		if (null != request.getOrderView()) {
@@ -2208,7 +2229,29 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 			paramMap.put("shopCode", shopCode);
 		}
 
-        try {
+		// 供应商名称
+		String supplierName = request.getSupplierName();
+		if (StringUtils.isNotBlank(supplierName)) {
+			paramMap.put("supplierName", supplierName);
+		}
+		// 问题单状态
+		Integer questionStatus = request.getQuestionStatus();
+		if (questionStatus != null) {
+			paramMap.put("questionStatus", questionStatus);
+		}
+		// 是否需要签章
+		Integer needSign = request.getNeedSign();
+		if (needSign != null) {
+			paramMap.put("needSign", needSign);
+		}
+		// 签章状态
+		Integer signStatus = request.getSignStatus();
+		if (signStatus != null) {
+			paramMap.put("signStatus", signStatus);
+		}
+
+
+		try {
             // 订单列表
             List<OrderQueryExportResult> resultList = orderInfoSearchMapper.getOrderQueryExportList(paramMap);
             int exportList = orderInfoSearchMapper.countOrderQueryExportList(paramMap);

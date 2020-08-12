@@ -32,9 +32,10 @@ public interface PurchaseOrderService {
      * @param actionUser
      * @param actionUserId
      * @param supplierCode 供应商编码
+	 * @param orderSn 交货单号
      * @param type 0买家->超市，1超市->供应商, 2 买家->店铺
      */
-    void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, int type);
+    void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, String orderSn, int type);
 
     /**
      * 更新采购单签章状态

@@ -1,12 +1,7 @@
 package com.work.shop.oms.channel.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -14,11 +9,15 @@ import com.work.shop.oms.api.bean.*;
 import com.work.shop.oms.api.orderinfo.service.BGOrderInfoService;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.config.service.SystemPaymentService;
 import com.work.shop.oms.dao.*;
 import com.work.shop.oms.order.service.GoodsReturnChangeService;
 import com.work.shop.oms.ship.service.DistributeShipService;
 import com.work.shop.oms.utils.DateTimeUtils;
 import com.work.shop.oms.utils.StringUtil;
+import com.work.shop.pca.common.ResultData;
+import com.work.shop.pca.feign.BgProductService;
+import com.work.shop.pca.model.BgGroupBuyInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -98,6 +97,11 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
     @Resource
     private DistributeShipService distributeShipService;
 
+    @Resource
+    private SystemPaymentService systemPaymentService;
+
+    @Resource
+    private BgProductService bgProductService;
     /**
      * 判断查询订单列表参数
      *
@@ -228,7 +232,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             Paging paging = new Paging();
             paging.setTotalProperty(defineOrderMapper.selectUserOrderInfoCount(params));
             List<OrderPageInfo> pageList = defineOrderMapper.selectUserOrderInfo(params);
-
+            //获取铁信支付的payId
+            SystemPayment systemPayment = systemPaymentService.selectSystemPayByCode(Constant.PAY_TIEXIN);
             for (OrderPageInfo orderPageInfo : pageList) {
                 // 未支付订单
                 if (orderPageInfo.getTotalOrderStatus() == 1) {
@@ -299,7 +304,23 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                     orderPageInfo.setOrderShipInfo(shipList);
                 }
                 orderPageInfo.setGoodsCount(goodsCount);
+                //判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
+                if (Constant.OUTSIDE_COMPANY.equals(orderPageInfo.getCompanyType())) {
+                    if (systemPayment.getPayId() == orderPageInfo.getPayId()) {
+                        orderPageInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
+                    }
+                }
+                //特殊情况 对应需求1351 子公司买店铺商品用铁信支付时 specialType = 3
+                if (Constant.INTERNAL_COMPANY.equals(orderPageInfo.getCompanyType())
+                        && systemPayment.getPayId() == orderPageInfo.getPayId()
+                        && !Constant.DEFAULT_SHOP.equals(orderPageInfo.getOrderFrom())) {
+                        orderPageInfo.setSpecialType(Constant.SPECIAL_TYPE_INTERNAL_COMPANY_BUY_STORE_TIEXIN);
+                }
             }
+
+            //查询订单团购信息
+            getOrderGroupBuyInfo(pageList);
+
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             paging.setRoot(pageList);
             apiReturnData.setData(paging);
@@ -310,6 +331,52 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             apiReturnData.setIsOk(Constant.OS_STR_NO);
         }
         return apiReturnData;
+    }
+
+    /**
+     * 处理订单团购信息
+     * @param pageList
+     */
+    private void getOrderGroupBuyInfo(List<OrderPageInfo> pageList) {
+        if (CollectionUtils.isEmpty(pageList)) {
+            return;
+        }
+        Map<String, MasterOrderInfoExtend> groupIdMap = new HashMap<>();
+        Set groupIdSet = new HashSet();
+        List<String> orderSns = pageList.stream().map(x -> x.getOrderSn()).collect(Collectors.toList());
+        List<MasterOrderInfoExtend> extendList=masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(orderSns);
+        for (MasterOrderInfoExtend extend : extendList) {
+            groupIdMap.put(extend.getMasterOrderSn(), extend);
+            if (extend.getGroupId() != null) {
+                groupIdSet.add(extend.getGroupId());
+            }
+        }
+        ResultData<List<BgGroupBuyInfo>> groupBuyInfoList=null;
+        if (CollectionUtils.isNotEmpty(groupIdSet)) {
+            groupBuyInfoList = bgProductService.getGroupBuyInfoBuGroupIds(new ArrayList<>(groupIdSet));
+        }
+        for (OrderPageInfo order : pageList) {
+            MasterOrderInfoExtend infoExtend = groupIdMap.get(order.getOrderSn());
+            if (infoExtend == null || infoExtend.getGroupId() == null) {
+                continue;
+            }
+            order.setGroupId(infoExtend.getGroupId());
+            order.setIsConfirmPay(infoExtend.getIsConfirmPay());
+            order.setIsOperationConfirmPay(infoExtend.getIsOperationConfirmPay());
+
+            if (groupBuyInfoList != null || groupBuyInfoList.getIsOk() == 1 || CollectionUtils.isNotEmpty(groupBuyInfoList.getData())) {
+
+                List<BgGroupBuyInfo> data = groupBuyInfoList.getData();
+                for (BgGroupBuyInfo buyInfo : data) {
+                    if (infoExtend.getGroupId().compareTo(buyInfo.getId()) == 0) {
+                        order.setGroupBuyBeginTime(buyInfo.getBeginTime());
+                        order.setGroupBuyEndTime(buyInfo.getEndTime());
+                        order.setGroupBuyStatus(buyInfo.getGroupBuyStatus());
+                    }
+                }
+
+            }
+        }
     }
 
     /**
@@ -401,7 +468,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 params.put("returnProcessStatus", returnProcessStatus);
             }
 
-
+            List<String> masterOrderSnList = new ArrayList<>();
             List<OrderReturnPageInfo> pageList = defineOrderMapper.selectUserOrderReturnInfo(params);
             Paging<OrderReturnPageInfo> paging = new Paging<OrderReturnPageInfo>();
             paging.setTotalProperty(defineOrderMapper.selectUserOrderReturnInfoCount(params));
@@ -411,7 +478,31 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 List<OrderReturnGoodsInfo> orderGoodsList = defineOrderMapper.selectOrderReturnGoodsInfo(goodsParams);
                 setReturnGoodsInfo(orderGoodsList);
                 orderReturnPageInfo.setOrderGoodsInfo(orderGoodsList);
+
+                //返回团购信息
+                masterOrderSnList.add(orderReturnPageInfo.getOrderSn());
             }
+
+            Map<String,MasterOrderInfoExtend> masterOrderInfoExtendMap = new HashMap<>();
+            //返回团购信息,只查询团购id
+            if (masterOrderSnList != null && masterOrderSnList.size() >0) {
+                List<MasterOrderInfoExtend> masterOrderInfoExtends = masterOrderInfoExtendMapper.selectGroupId(masterOrderSnList);
+                if (masterOrderInfoExtends != null && masterOrderInfoExtends.size() >0) {
+                    for (MasterOrderInfoExtend masterOrderInfoExtend : masterOrderInfoExtends) {
+                        masterOrderInfoExtendMap.put(masterOrderInfoExtend.getMasterOrderSn(),masterOrderInfoExtend);
+                    }
+                }
+            }
+
+            if (masterOrderInfoExtendMap != null && masterOrderInfoExtendMap.size() >0) {
+                for (OrderReturnPageInfo orderReturnPageInfo : pageList) {
+                    MasterOrderInfoExtend masterOrderInfoExtend = masterOrderInfoExtendMap.get(orderReturnPageInfo.getOrderSn());
+                    if (masterOrderInfoExtend != null && masterOrderInfoExtend.getGroupId() != null) {
+                        orderReturnPageInfo.setGroupId(masterOrderInfoExtend.getGroupId());
+                    }
+                }
+            }
+
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             paging.setRoot(pageList);
             apiReturnData.setData(paging);
@@ -471,6 +562,14 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             List<OrderReturnAction> returnActions = orderReturnActionMapper.selectByExample(example);
             fillShow(returnActions);
             orderReturnDetailInfo.setActions(returnActions);
+
+            //查询团购信息
+            List<String> arrayList = new ArrayList<>();
+            arrayList.add(orderReturnDetailInfo.getOrderSn());
+            List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectGroupIdByOrderSnList(arrayList);
+            if (CollectionUtils.isNotEmpty(extendList)) {
+                orderReturnDetailInfo.setGroupId(extendList.get(0).getGroupId());
+            }
 
             apiReturnData.setIsOk(Constant.OS_STR_YES);
             apiReturnData.setData(orderReturnDetailInfo);
@@ -840,6 +939,16 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             }
             orderDetailInfo.setOrderShipInfo(shipList);
             setOrderGoodsInfo(orderDetailInfo);
+            //判断是不是外部买家用铁信支付的类型，目前只有在买自营这一个场景，这个场景不允许前端确认支付
+            if (Constant.PAY_TIEXIN.equals(orderDetailInfo.getPayCode()) && Constant.OUTSIDE_COMPANY.equals(orderDetailInfo.getCompanyType())) {
+                orderDetailInfo.setSpecialType(Constant.SPECIAL_TYPE_OUTSIDE_COMPANY_TIEXIN);
+            }
+
+            //特殊情况 对应需求1351 子公司买店铺商品用铁信支付时 specialType = 3
+            if (Constant.PAY_TIEXIN.equals(orderDetailInfo.getPayCode()) && Constant.INTERNAL_COMPANY.equals(orderDetailInfo.getCompanyType())
+                    && !Constant.DEFAULT_SHOP.equals(orderDetailInfo.getChannelCode())) {
+                orderDetailInfo.setSpecialType(Constant.SPECIAL_TYPE_INTERNAL_COMPANY_BUY_STORE_TIEXIN);
+            }
             apiReturnData.setData(orderDetailInfo);
             apiReturnData.setIsOk(Constant.OS_STR_YES);
         } catch (Exception e) {
@@ -905,7 +1014,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         if (CollectionUtils.isNotEmpty(orderGoodsList)) {
             for (OrderGoodsInfo orderGoods : orderGoodsList) {
                 if (orderGoods.getSkuSn() != null && orderGoods.getSkuSn().length() > 6) {
-                    orderGoods.setGoodsSn(orderGoods.getSkuSn().substring(0, 6));
+                    orderGoods.setGoodsSn(orderGoods.getSkuSn());
                 }
             }
         }
@@ -915,7 +1024,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
         if (CollectionUtils.isNotEmpty(orderReturnGoodsList)) {
             for (OrderReturnGoodsInfo orderReturnGoods : orderReturnGoodsList) {
                 if (orderReturnGoods.getSkuSn() != null && orderReturnGoods.getSkuSn().length() > 6) {
-                    orderReturnGoods.setGoodsSn(orderReturnGoods.getSkuSn().substring(0, 6));
+                    orderReturnGoods.setGoodsSn(orderReturnGoods.getSkuSn());
                 }
             }
         }
@@ -1323,7 +1432,6 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
     /**
      * 确认收货
-     *
      * @param orderSn    订单编码
      * @param invoiceNo  运单号
      * @param actionUser 操作人
@@ -1384,10 +1492,18 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                 for (OrderDepotShip orderDepotShip : orderDepotShipList) {
                     if (orderDepotShip.getOrderSn().indexOf(orderSn) != -1) {
                         shipSn = orderDepotShip.getOrderSn();
+                        if (orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_RECEIVED || orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_CONFIRM) {
+                            continue;
+                        }
                         orderDepotShip.setUpdateTime(new Date());
-                        orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+                        orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
                         orderDepotShip.setDeliveryConfirmTime(new Date());
                         orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
+
+                        // 通知发货单签收计算扣费信息
+                        List<String> invoiceNoList = new ArrayList<>();
+                        invoiceNoList.add(invoiceNo);
+                        sendOrderDepotShipReceive(orderSn, orderDepotShip.getOrderSn(), invoiceNoList);
                     }
                 }
                 orderDepotShipExample.clear();
@@ -1465,10 +1581,8 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
                     }
                 }
             }
-
             masterOrderActionService.insertOrderActionBySn(orderSn, "客户确认收货！", actionUser);
-
-            distributeShipService.processMasterShipResult(orderSn);
+            distributeShipService.processMasterShipResult(orderSn, 1);
             ri.setIsOk(ConstantValues.YESORNO_YES);
             ri.setMessage("确认收货更新完成！");
             ri.setData(true);
@@ -1494,8 +1608,7 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
 
     /**
      * 设置交货单已收货
-     *
-     * @param orderDistributeList
+     * @param orderDistributeList 交货单列表
      */
     private void setOrderDistributeShipReceived(List<OrderDistribute> orderDistributeList) {
         for (OrderDistribute orderDistribute : orderDistributeList) {
@@ -1510,16 +1623,50 @@ public class ChannelOrderInfoServiceImpl implements BGOrderInfoService {
             OrderDepotShipExample orderDepotShipExample = new OrderDepotShipExample();
             orderDepotShipExample.or().andOrderSnEqualTo(orderDistribute.getOrderSn());
             List<OrderDepotShip> orderDepotShipList = orderDepotShipMapper.selectByExample(orderDepotShipExample);
+
+            List<String> invoiceNoList = new ArrayList<>();
             for (OrderDepotShip orderDepotShip : orderDepotShipList) {
                 if (orderDepotShip.getIsDel() == 1) {
                     continue;
                 }
+                // 是否已收货
+                if (orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_RECEIVED || orderDepotShip.getShippingStatus() == Constant.OS_SHIPPING_STATUS_CONFIRM) {
+                    continue;
+                }
+
+                // 未收货的发货单
+                String invoiceNo = orderDepotShip.getInvoiceNo();
+                if (StringUtils.isBlank(invoiceNo)) {
+                    invoiceNo = orderDepotShip.getDepotCode() + "-" + TimeUtil.getDate(TimeUtil.YYYY_MM_DD);
+                    orderDepotShip.setInvoiceNo(invoiceNo);
+                }
+                if (invoiceNoList.contains(orderDepotShip.getInvoiceNo())) {
+                    invoiceNoList.add(orderDepotShip.getInvoiceNo());
+                }
                 orderDepotShip.setUpdateTime(new Date());
-                orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_CONFIRM);
+                orderDepotShip.setShippingStatus((byte) Constant.OS_SHIPPING_STATUS_RECEIVED);
                 orderDepotShip.setDeliveryConfirmTime(new Date());
                 orderDepotShipMapper.updateByPrimaryKeySelective(orderDepotShip);
             }
+
+            // 通知发货单签收计算扣费信息
+            sendOrderDepotShipReceive(orderDistribute.getMasterOrderSn(), orderDistribute.getOrderSn(), invoiceNoList);
         }
+    }
+
+    /**
+     * 发货单签收
+     * @param masterOrderSn 订单编号
+     * @param orderSn 交货单号
+     * @param invoiceNoList 快递单号
+     */
+    private void sendOrderDepotShipReceive(String masterOrderSn, String orderSn, List<String> invoiceNoList) {
+        // 通知发货单签收计算扣费信息
+        DistributeShippingBean orderReceiveBean = new DistributeShippingBean();
+        orderReceiveBean.setOrderSn(masterOrderSn);
+        orderReceiveBean.setShipSn(orderSn);
+        orderReceiveBean.setInvoiceNoList(invoiceNoList);
+        distributeShipService.sendOrderReceiveSettlementInfo(orderReceiveBean);
     }
 
     /**

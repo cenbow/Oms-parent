@@ -95,6 +95,11 @@ public class OrderItemDetail implements Serializable {
 	private Integer invoiceStatus;//发票状态
 	private Integer deliveryStationId;//发票ID
     private String invPhone;//发票注册电话
+	private Integer isConfirmPay;//客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效',
+	private Integer isOperationConfirmPay;//运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
+	private Integer groupId; //团购ID
+	private Integer isGroupDel;//订单团购商品1失效,0正常
+
 	//主单地址信息表字段
 	private String consignee;//收货人的姓名
 	private String country;//收货人的国家
@@ -146,6 +151,16 @@ public class OrderItemDetail implements Serializable {
      * 是否需要审核 0不需要、1需要
      */
     private Integer needAudit;
+
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
 
     /**
      * 开户银行
@@ -233,9 +248,14 @@ public class OrderItemDetail implements Serializable {
     private String insteadUserId;
 
     /**
-     * bd编码
-     */
-    private String saleBd;
+	 * bd编码
+	 */
+	private String saleBd;
+
+	/**
+	 * 盈合Id
+	 */
+	private String boId;
 
     /**
      * 需要合同签章 0不需要、1需要
@@ -1526,4 +1546,60 @@ public class OrderItemDetail implements Serializable {
     public void setSignStatus(Byte signStatus) {
         this.signStatus = signStatus;
     }
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public Integer getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Integer isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Integer getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Integer isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
+	}
 }

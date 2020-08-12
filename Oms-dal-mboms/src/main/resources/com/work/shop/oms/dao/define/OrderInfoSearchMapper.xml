@@ -2208,6 +2208,9 @@
     <result column="address" jdbcType="VARCHAR" property="address" />
 	<result column="user_pay_apply" property="userPayApply" />
       <result column="user_bank_no" property="userBankNo" />
+      <result column="goods_decimal_count" property="goodsDecimalCount" />
+	  <result column="erp_order_no" property="erpOrderNo" />
+	  <result column="is_group" property="isGroup" />
   </resultMap>
   
 	<!-- 默认订单列表  -->
@@ -2228,6 +2231,7 @@
             oi.user_name,
             DATE_FORMAT(oi.add_time, '%Y-%m-%d %H:%i:%S') add_time,
             oi.goods_count,
+            oi.goods_decimal_count,
             oi.goods_amount,
             oi.total_fee,
             oi.money_paid,
@@ -2247,7 +2251,14 @@
             oi.instead_user_id instead_user_id,
             mop.pay_name as payMethod,
 			oie.company_name as companyName,
-			oie.company_code as companyCode
+			oie.company_code as companyCode,
+			oie.company_full_name as companyFullName,
+			oi.sign_contract_num as signContractNum,
+			oi.sign_status as signStatus,
+			oi.need_sign as needSign,
+			oi.erp_order_no as erpOrderNo,
+			oie.bo_id as boId,
+			oie.is_group as isGroup
         FROM master_order_info oi,
             master_order_address_info oai,
             master_order_info_extend oie,
@@ -2312,6 +2323,7 @@
             oai.mobile,
             oai.address,
 			oie.company_name as companyName,
+			oie.company_full_name as companyFullName,
 			oie.company_code as companyId,
             mog.goods_name as goodsName,
             mog.goods_sn as goodsSn,
@@ -2319,6 +2331,7 @@
             mog.extension_code as extensionCode,
             mog.depot_code as depotCode,
             sum(mog.goods_number) as goodsNumber,
+            sum(mog.goods_decimal_number) as goodsDecimalNumber,
             mog.goods_price as goodsPrice,
             sum(mog.goods_price) as totalGoodsPrice,
             mog.transaction_price as transactionPrice,
@@ -2619,46 +2632,68 @@
 		and moie.pay_period_status = 0
 	</select>
 
+	<!-- 获取公司发货单账期支付 -->
+	<select id="selectCompanyPayPeriodListByOrderDepotShip" resultType="com.work.shop.oms.bean.OrderAccountPeriod" parameterType="map">
+		select moi.master_order_sn masterOrderSn, moi.add_time addTime, moi.user_id userId, moie.company_code companyId,
+			ods.order_sn as orderSn, ods.invoice_no as invoiceNo, ods.order_number as orderNumber, ods.pay_money as orderMoney
+		from master_order_info moi, master_order_info_extend moie, order_distribute od, order_depot_ship ods
+		where moi.master_order_sn = moie.master_order_sn
+		and moi.master_order_sn = od.master_order_sn
+		and od.order_sn = ods.order_sn
+		and moi.order_status != 2
+		and ods.last_pay_date &lt; #{dateTime}
+		and ods.pay_period_status = 0
+	</select>
+
     <!--订单合同查询-->
     <select id="selectOrderContractList" parameterType="com.work.shop.oms.api.bean.OrderContractRequest" resultType="com.work.shop.oms.api.bean.OrderContractBean">
-        select master_order_sn masterOrderSn,
-        order_status orderStatus,
-        sign_status signStatus,
-        sign_contract_num signContractNum,
-        sign_complete_time signCompleteTime
-        from master_order_info
+        select moi.master_order_sn masterOrderSn,
+		moi.order_status orderStatus,
+		moi.sign_status signStatus,
+		moi.sign_contract_num signContractNum,
+		moi.sign_complete_time signCompleteTime,
+		moie.order_type orderType,
+		moi.question_status questionStatus
+        from master_order_info moi
+        left join master_order_info_extend moie on moi.master_order_sn = moie.master_order_sn
         where need_sign = 1
         <if test="masterOrderSn != null">
-            and master_order_sn = #{masterOrderSn}
+            and moi.master_order_sn = #{masterOrderSn}
         </if>
         <if test="channelCode != null">
-            and channel_code = #{channelCode}
+            and moi.channel_code = #{channelCode}
         </if>
         <if test="shopCode != null">
-            and order_from = #{shopCode}
+            and moi.order_from = #{shopCode}
         </if>
         <if test="orderStatus == 0">
-            and order_status = 2
+            and moi.order_status = 2
         </if>
         <if test="orderStatus == 1">
-            and order_status in (0,1,3)
+            and moi.order_status in (0,1,3)
         </if>
         <if test="signStatus != null">
-            and sign_status = #{signStatus}
+            and moi.sign_status = #{signStatus}
         </if>
         <if test="signStatus != null">
-            and sign_status = #{signStatus}
+            and moi.sign_status = #{signStatus}
         </if>
         <if test="signContractNum != null">
-            and sign_contract_num = #{signContractNum}
+            and moi.sign_contract_num = #{signContractNum}
         </if>
         <if test="startTime != null">
-            and sign_complete_time &gt;= #{startTime}
+            and moi.sign_complete_time &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            and sign_complete_time &lt;= #{endTime}
+            and moi.sign_complete_time &lt;= #{endTime}
         </if>
-        order by sign_complete_time desc
+		<if test="orderType != null">
+			and moie.order_type = #{orderType}
+		</if>
+		<if test="questionStatus != null">
+			and moi.question_status = #{questionStatus}
+		</if>
+        order by moi.sign_complete_time desc
         <if test="limit > 0">
             limit ${start}, ${limit}
         </if>
@@ -2666,38 +2701,45 @@
 
     <select id="countOrderContractList" parameterType="com.work.shop.oms.api.bean.OrderContractRequest" resultType="int">
         select count(1)
-        from master_order_info
-        where need_sign = 1
-        <if test="masterOrderSn != null">
-            and master_order_sn = #{masterOrderSn}
-        </if>
-        <if test="channelCode != null">
-            and channel_code = #{channelCode}
-        </if>
-        <if test="shopCode != null">
-            and order_from = #{shopCode}
-        </if>
-        <if test="orderStatus == 0">
-            and order_status = 2
-        </if>
-        <if test="orderStatus == 1">
-            and order_status in (0,1,3)
-        </if>
-        <if test="signStatus != null">
-            and sign_status = #{signStatus}
-        </if>
-        <if test="signStatus != null">
-            and sign_status = #{signStatus}
-        </if>
-        <if test="signContractNum != null">
-            and sign_contract_num = #{signContractNum}
-        </if>
-        <if test="startTime != null">
-            and sign_complete_time &gt;= #{startTime}
-        </if>
-        <if test="endTime != null">
-            and sign_complete_time &lt;= #{endTime}
-        </if>
+		from master_order_info moi
+		left join master_order_info_extend moie on moi.master_order_sn = moie.master_order_sn
+		where need_sign = 1
+		<if test="masterOrderSn != null">
+			and moi.master_order_sn = #{masterOrderSn}
+		</if>
+		<if test="channelCode != null">
+			and moi.channel_code = #{channelCode}
+		</if>
+		<if test="shopCode != null">
+			and moi.order_from = #{shopCode}
+		</if>
+		<if test="orderStatus == 0">
+			and moi.order_status = 2
+		</if>
+		<if test="orderStatus == 1">
+			and moi.order_status in (0,1,3)
+		</if>
+		<if test="signStatus != null">
+			and moi.sign_status = #{signStatus}
+		</if>
+		<if test="signStatus != null">
+			and moi.sign_status = #{signStatus}
+		</if>
+		<if test="signContractNum != null">
+			and moi.sign_contract_num = #{signContractNum}
+		</if>
+		<if test="startTime != null">
+			and moi.sign_complete_time &gt;= #{startTime}
+		</if>
+		<if test="endTime != null">
+			and moi.sign_complete_time &lt;= #{endTime}
+		</if>
+		<if test="orderType != null">
+			and moie.order_type = #{orderType}
+		</if>
+		<if test="questionStatus != null">
+			and moi.question_status = #{questionStatus}
+		</if>
     </select>
 
     <!--公司订单导出查询-->
@@ -2708,17 +2750,19 @@
         moi.shop_name as shopName,
         if(moie.order_type = 1, "联采订单", "自采订单") as "orderTypeStr",
         moi.goods_count as goodsNum,
+        moi.goods_decimal_count as goodsDecimalNum,
 		<!--
         moi.total_fee as orderTotalAmount,
         -->
-		sum(ROUND(mog.transaction_price * mog.goods_number)) as orderTotalAmount,
+		sum(ROUND(mog.transaction_price * (mog.goods_number + mog.goods_decimal_number) ,2)) as orderTotalAmount,
         sum(
         if((mog.input_tax is not null and mog.input_tax > 0),
-        ROUND(mog.cost_price * (1 + mog.input_tax/100) * mog.goods_number, 2),
-        ROUND(mog.cost_price * mog.goods_number,2))
+        ROUND(mog.cost_price * (1 + mog.input_tax/100) * (mog.goods_number + mog.goods_decimal_number) , 2),
+        ROUND(mog.cost_price * (mog.goods_number + mog.goods_decimal_number) ,2))
         ) as purchaseTotalAmount,
         moi.user_id as userId,
         moie.company_name as companyName,
+        moie.company_code as companyCode,
         moi.add_time as addTime,
         moai.consignee as consignee
         from master_order_info moi, master_order_info_extend moie
@@ -2726,13 +2770,25 @@
         LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
         WHERE moi.master_order_sn = moie.master_order_sn
 		and moi.master_order_sn = mog.master_order_sn
-        and moi.order_status != 2
+        and moi.order_status != 2 and moi.order_status != 0
         and moi.pay_status != 0
         <if test="orderType != null">
 			AND moie.order_type = #{orderType}
 		</if>
 		<if test="shopCode != null">
 			AND moi.order_from = #{shopCode}
+		</if>
+		<if test="questionStatus != null">
+			and moi.question_status = #{questionStatus}
+		</if>
+		<if test="needSign == null and signStatus != null">
+			and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = #{signStatus}))
+		</if>
+		<if test="needSign != null and signStatus != null">
+			and moi.need_sign = #{needSign} and moi.sign_status = #{signStatus}
+		</if>
+		<if test="needSign != null and signStatus == null">
+			and moi.need_sign = #{needSign}
 		</if>
         <if test="companyIdList != null">
             AND moie.company_code in
@@ -2752,6 +2808,9 @@
 		<if test="masterOrderSn != null">
 			AND moi.master_order_sn = #{masterOrderSn}
 		</if>
+		<if test="supplierName != null ">
+			and  mog.supplier_name  LIKE CONCAT(CONCAT('%', #{supplierName}), '%')
+		</if>
         GROUP BY moi.master_order_sn, mog.supplier_code
         ORDER BY moi.add_time DESC
         <if test="limit != null and limit > 0">
@@ -2768,7 +2827,7 @@
             LEFT JOIN master_order_address_info moai on moie.master_order_sn = moai.master_order_sn
             WHERE moi.master_order_sn = moie.master_order_sn
 			and moi.master_order_sn = mog.master_order_sn
-            and moi.order_status != 2
+            and moi.order_status != 2 and moi.order_status != 0
             and moi.pay_status != 0
             <if test="orderType != null">
                 AND moie.order_type = #{orderType}
@@ -2776,6 +2835,18 @@
             <if test="shopCode != null">
                 AND moi.order_from = #{shopCode}
             </if>
+			<if test="questionStatus != null">
+				and moi.question_status = #{questionStatus}
+			</if>
+			<if test="needSign == null and signStatus != null">
+				and (moi.need_sign = 0 or (moi.need_sign = 1 and moi.sign_status = #{signStatus}))
+			</if>
+			<if test="needSign != null and signStatus != null">
+				and moi.need_sign = #{needSign} and moi.sign_status = #{signStatus}
+			</if>
+			<if test="needSign != null and signStatus == null">
+				and moi.need_sign = #{needSign}
+			</if>
             <if test="companyIdList != null">
                 AND moie.company_code in
                 <foreach collection="companyIdList" item="companyId" open="(" close=")" separator=",">
@@ -2791,6 +2862,12 @@
             <if test="endTime != null">
                 AND moi.add_time &lt;= #{endTime}
             </if>
+			<if test="masterOrderSn != null">
+				AND moi.master_order_sn = #{masterOrderSn}
+			</if>
+			<if test="supplierName != null ">
+				and  mog.supplier_name  LIKE CONCAT(CONCAT('%', #{supplierName}), '%')
+			</if>
             GROUP BY moi.master_order_sn, mog.supplier_code
         ) as countOrderQueryExport
 

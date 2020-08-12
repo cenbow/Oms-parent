@@ -68,15 +68,45 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 		orderPriceService.financialPrice(masterOrderInfo, orderGoodsList);
 		// 订单商品总财务价
 		double settlementPrice = 0D;
-		for (MasterOrderGoods orderGoods : orderGoodsList) {
-			settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
-					* orderGoods.getGoodsNumber();
-			masterOrderGoodsMapper.insertSelective(orderGoods);
+		// 需求1272 修改含税总额计算方式，未税总额加税额
+		if ("hbis".equals(masterOrderInfo.getOrderFrom())){
+			for (MasterOrderGoods orderGoods : orderGoodsList) {
+				//未税成交价
+				BigDecimal transactionPriceNoTax = orderGoods.getTransactionPriceNoTax();
+				//数量
+				BigDecimal goodsNumber = new BigDecimal(orderGoods.getGoodsNumber());
+				//小数数量
+				BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber() != null ? orderGoods.getGoodsDecimalNumber() : BigDecimal.ZERO;
+				//未税总额
+				BigDecimal totalNoTax = transactionPriceNoTax.multiply(goodsNumber.add(goodsDecimalNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+				//销项税
+				BigDecimal outputTax = new BigDecimal(orderGoods.getOutputTax().toString());
+				//税额
+				BigDecimal tax = totalNoTax.multiply(outputTax.divide(new BigDecimal(100))).setScale(2, BigDecimal.ROUND_HALF_UP);
+				//含税总额
+				BigDecimal totalPrice = totalNoTax.add(tax);
+
+				settlementPrice += NumberUtil.getDoubleByDecimal(totalPrice, 2);
+				masterOrderGoodsMapper.insertSelective(orderGoods);
+			}
+		}else {
+			for (MasterOrderGoods orderGoods : orderGoodsList) {
+				settlementPrice += (orderGoods.getSettlementPrice().doubleValue() + orderGoods.getTax().doubleValue())
+						* orderGoods.getGoodsNumber();
+			/*settlementPrice += (orderGoods.getSettlementPrice().add(orderGoods.getTax()))
+					.multiply(new BigDecimal(orderGoods.getGoodsNumber()).add(orderGoods.getGoodsDecimalNumber())).doubleValue();*/
+				BigDecimal goodsDecimalNumber = orderGoods.getGoodsDecimalNumber();
+				if (goodsDecimalNumber != null && goodsDecimalNumber.doubleValue() > 0) {
+					settlementPrice += NumberUtil.getDecimalValue(orderGoods.getSettlementPrice().multiply(goodsDecimalNumber), 2).doubleValue();
+				}
+				masterOrderGoodsMapper.insertSelective(orderGoods);
+			}
 		}
 		// 商品结算价 = 商品结算价 + 综合税费
 		settlementPrice += masterOrder.getTax();
 		settlementPrice = NumberUtil.getDoubleByValue(settlementPrice, 2);
 		masterOrder.setGoodsSettlementPrice(settlementPrice);
+		logger.info("订单：" + masterOrderSn + "，商品总结算价格:" + settlementPrice + "," + masterOrder.getPaySettlementPrice());
 		try {
 			MasterOrderAction orderAction = masterOrderActionService.createOrderAction(masterOrderInfo);
 			orderAction.setActionNote("优惠券和余额平摊计算正确！");
@@ -134,7 +164,15 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
 				? Constant.DETAILS_DEPOT_CODE : masterGoods.getDepotCode());
 
         fillGoodsBaseInfo(masterOrderGoods, masterGoods);
-
+		//处理无库存下单相关
+		logger.info("创建订单:" + masterOrderSn + "商品信息:" + masterGoods.getGoodsSn() + "支持无库存标识：" + masterGoods.getPurchasesWithoutStockFlag() + ",goodsNum=" + masterOrderGoods.getGoodsNumber() + ",goodsPaymentPeriodId" + masterGoods.getGoodsPaymentPeriodId());
+		masterOrderGoods.setWithStockNumber(masterGoods.getWithStockNumber());
+		masterOrderGoods.setWithoutStockNumber(masterGoods.getWithoutStockNumber());
+		masterOrderGoods.setPurchasesWithoutStockFlag(masterGoods.getPurchasesWithoutStockFlag());
+		masterOrderGoods.setWithoutStockDeliveryCycle(masterGoods.getWithoutStockDeliveryCycle());
+		masterOrderGoods.setWithoutStockDepotNo(masterGoods.getWithoutStockDepotNo());
+		//商品账期
+		masterOrderGoods.setGoodsPaymentPeriodId(masterGoods.getGoodsPaymentPeriodId());
         fillGoodsDetail(masterOrderGoods, masterGoods);
 
 		return masterOrderGoods;
@@ -168,6 +206,8 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         setGoodsDiscount(masterGoods, goodsPrice, masterOrderGoods);
         // 商品价格
         masterOrderGoods.setGoodsPrice(BigDecimal.valueOf(masterGoods.getGoodsPrice()));
+        // 商品价格 - 未税
+        masterOrderGoods.setGoodsPriceNoTax(masterGoods.getGoodsPriceNoTax());
         // 商品市场价
         masterOrderGoods.setMarketPrice(BigDecimal.valueOf(goodsPrice));
         // 商品11位码
@@ -189,13 +229,21 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         // 套装名称
         masterOrderGoods.setGroupName("");
         // 商品数量
-        masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
+		logger.info("fillGoodsBaseInfo masterOrderGoods goodsNum=" + masterGoods.getGoodsNumber());
+		masterOrderGoods.setGoodsNumber(masterGoods.getGoodsNumber());
+        // 商品数量小数部分
+		masterOrderGoods.setGoodsDecimalNumber(masterGoods.getGoodsDecimals());
         // 父商品sn
         masterOrderGoods.setParentSn("");
         // 成交价格
         masterOrderGoods.setTransactionPrice(BigDecimal.valueOf(masterGoods.getTransactionPrice()));
+        // 成交价格 - 未税
+        masterOrderGoods.setTransactionPriceNoTax(masterGoods.getTransactionPriceNoTax());
+        //库存占用数量 向上取整
+		BigDecimal sendNumberDecimal = masterGoods.getGoodsDecimals().add(BigDecimal.valueOf(masterGoods.getSendNumber()));
+		int sendNumber = sendNumberDecimal.setScale( 0, BigDecimal.ROUND_UP ).intValue();
         // 占用库存数量
-        masterOrderGoods.setSendNumber(masterGoods.getSendNumber());
+        masterOrderGoods.setSendNumber(sendNumber);
         // 促销名称
         masterOrderGoods.setPromotionDesc(masterGoods.getPromotionDesc());
         // 财务结算价
@@ -290,6 +338,16 @@ public class MasterOrderGoodsServiceImpl implements MasterOrderGoodsService{
         if (goodsAddPrice != null) {
             masterOrderGoods.setGoodsAddPrice(goodsAddPrice);
         }
+        //商品数据来源
+		masterOrderGoods.setDataSources(masterGoods.getDataSources());
+
+        //商品销售类型  0：正常商品；1：非标定制商品；2：改价商品；3：盈合商品
+		masterOrderGoods.setSaleType(masterGoods.getSaleType());
+
+		//品牌ID
+		masterOrderGoods.setBrandId(masterGoods.getBrandId());
+		//品牌名称
+		masterOrderGoods.setBrandName(masterGoods.getBrandName());
 
     }
 

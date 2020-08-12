@@ -410,6 +410,11 @@ public class OrderDetailInfo  implements Serializable{
      */
     private String companyName;
 
+	/**
+	 * 子公司全称
+	 */
+	private String companyFullName;
+
     /**
      * 最后确认收货时间
      */
@@ -435,6 +440,16 @@ public class OrderDetailInfo  implements Serializable{
      */
     private Byte needSign;
 
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Byte goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Byte priceChangeStatus;
+
     /**
      * 订单备注
      */
@@ -444,6 +459,140 @@ public class OrderDetailInfo  implements Serializable{
      * 合同号
      */
     private String signContractNum;
+
+	/**
+	 * 用户备注
+	 */
+	private String remark;
+
+	/**
+	 * 公司类型
+	 */
+	private Integer companyType;
+
+	/**
+	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
+	 */
+	private int specialType;
+
+	/**
+	 * 盈合ID
+	 */
+	private String boId;
+	/**
+	 * 团购ID
+	 */
+	private Integer groupId;
+	/**
+	 * 运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
+	 */
+	private Integer isOperationConfirmPay;
+	/**
+	 * 客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效
+	 */
+	private Integer isConfirmPay;
+
+	/**
+	 * 尾款金额
+	 */
+	private BigDecimal balanceAmount;
+	/**
+	 * 预付款金额
+	 */
+	private BigDecimal prepayments;
+
+	/**
+	 *   团购状态（1团购中、2团购成功、3团购失败）
+	 */
+	private Integer groupBuyStatus;
+
+	/**
+	 * 当前时间
+	 */
+	private Long currentTime;
+	/**
+	 * 团购订单原价
+	 */
+	private BigDecimal groupBuyMoney;
+
+	/**
+	 *订单团购商品1失效,0正常
+	 */
+	private Integer isGroupDel;
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
+	}
+
+	public Long getCurrentTime() {
+		return currentTime;
+	}
+
+	public void setCurrentTime(Long currentTime) {
+		this.currentTime = currentTime;
+	}
+
+
+
+	public BigDecimal getGroupBuyMoney() {
+		return groupBuyMoney;
+	}
+
+	public void setGroupBuyMoney(BigDecimal groupBuyMoney) {
+		this.groupBuyMoney = groupBuyMoney;
+	}
+
+	public Integer getGroupBuyStatus() {
+		return groupBuyStatus;
+	}
+
+	public void setGroupBuyStatus(Integer groupBuyStatus) {
+		this.groupBuyStatus = groupBuyStatus;
+	}
+
+	public BigDecimal getBalanceAmount() {
+		return balanceAmount;
+	}
+
+	public void setBalanceAmount(BigDecimal balanceAmount) {
+		this.balanceAmount = balanceAmount;
+	}
+
+	public BigDecimal getPrepayments() {
+		return prepayments;
+	}
+
+	public void setPrepayments(BigDecimal prepayments) {
+		this.prepayments = prepayments;
+	}
+
+	public Integer getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Integer isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
+	}
+
+	public Integer getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Integer isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
 
 	public int getOrderType() {
         return orderType;
@@ -1068,4 +1217,60 @@ public class OrderDetailInfo  implements Serializable{
     public void setSignContractNum(String signContractNum) {
         this.signContractNum = signContractNum;
     }
+
+	public Byte getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Byte goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Byte getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Byte priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public Integer getCompanyType() {
+		return companyType;
+	}
+
+	public void setCompanyType(Integer companyType) {
+		this.companyType = companyType;
+	}
+
+	public int getSpecialType() {
+		return specialType;
+	}
+
+	public void setSpecialType(int specialType) {
+		this.specialType = specialType;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
+	}
 }

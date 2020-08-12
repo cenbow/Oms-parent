@@ -2,6 +2,7 @@ package com.work.shop.oms.orderop.service.impl;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.work.shop.oms.api.bean.OrderGoodsInfo;
+import com.work.shop.oms.bean.MasterOrderInfoExtend;
 import com.work.shop.oms.bimonitor.service.BIMonitorService;
 import com.work.shop.oms.common.bean.*;
 import com.work.shop.oms.dao.define.DefineOrderMapper;
@@ -309,4 +310,18 @@ public class OrderCommonServiceImpl implements OrderCommonService{
     public ReturnInfo<String> editInvAddressInfoByMasterSn(ConsigneeModifyInfo consignInfo) {
         return orderDistributeEditService.editInvAddressInfoByMasterSn(consignInfo);
     }
+
+
+	/***
+	 * 主订单编辑创业团队id和盈合商品id
+	 * @param masterOrderDetail 订单信息
+	 * @param actionUser  修改人
+	 * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+	 * @author wk
+	 * @date 2020/6/23
+	 **/
+	@Override
+	public ReturnInfo<String> editBindTeam(String actionUser,MasterOrderDetail masterOrderDetail) {
+		return masterOrderInfoService.editBindTeamInfoByMasterSn(actionUser,masterOrderDetail);
+	}
 }

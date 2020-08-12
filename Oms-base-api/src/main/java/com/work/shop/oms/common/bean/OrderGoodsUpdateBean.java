@@ -269,7 +269,7 @@ public class OrderGoodsUpdateBean implements Serializable, Comparable<OrderGoods
 
 	public String getGoodsSn() {
 		if (StringUtils.isEmpty(goodsSn) && StringUtils.isNotEmpty(customCode)) {
-			goodsSn = customCode.substring(0, 6);
+			goodsSn = customCode;
 		}
 		return goodsSn;
 	}

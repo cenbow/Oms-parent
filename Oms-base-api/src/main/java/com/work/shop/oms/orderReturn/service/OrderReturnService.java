@@ -44,12 +44,13 @@ public interface OrderReturnService {
  
     /**
      * 退款单生成 - 提供外部 
-     * @param createReturnVO 
+     * @param createReturnVO
+     * @param groupId 团购id
      * @return ReturnInfo<String>
      * 1.订单删除商品时调用
      * 4.returnSource  ConstantValues.ORDERRETURN_REFUND_SOURCE  无货退款单 来源类型（ 删除商品,订单发货，订单取消）
      */
-    ReturnInfo<String> createOrderReturnPay(CreateReturnVO createReturnVO);
+    ReturnInfo<String> createOrderReturnPay(CreateReturnVO createReturnVO, Integer groupId);
     
     /**
      * 退货相关-短信发送

@@ -5,7 +5,9 @@ import java.util.List;
 import com.work.shop.oms.bean.MasterOrderGoods;
 import com.work.shop.oms.bean.MasterOrderInfo;
 import com.work.shop.oms.bean.OrderAccountPeriod;
+import com.work.shop.oms.bean.ProductGroupBuyBean;
 import com.work.shop.oms.common.bean.*;
+import com.work.shop.oms.order.response.OmsBaseResponse;
 
 /**
  * 主订单服务
@@ -63,8 +65,8 @@ public interface MasterOrderInfoService {
 
 	/**
 	 * 设置账期支付支付时间和扣款
-	 * @param masterOrderInfo
-	 * @return
+	 * @param masterOrderInfo 订单编号
+	 * @return ReturnInfo<Boolean>
 	 */
 	ReturnInfo<Boolean> processOrderPayPeriod(MasterOrderInfo masterOrderInfo);
 
@@ -73,7 +75,7 @@ public interface MasterOrderInfoService {
 	 * @param orderAccountPeriod
 	 * @return
 	 */
-	ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod);
+	ReturnInfo<Boolean> sendOrderPayPeriod(OrderAccountPeriod orderAccountPeriod);
 
     /**
      * 通过订单编码获取订单商品列表
@@ -96,4 +98,16 @@ public interface MasterOrderInfoService {
      * @return
      */
     ReturnInfo<String> editInvInfoByMasterSn(ConsigneeModifyInfo consignInfo);
+
+	/***
+	 * 主订单编辑创业团队id和盈合商品id
+	 * @param masterOrderDetail 订单信息
+	 * @param actionUser  修改人
+	 * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+	 * @author wk
+	 * @date 2020/6/23
+	 **/
+	ReturnInfo<String> editBindTeamInfoByMasterSn(String actionUser,MasterOrderDetail masterOrderDetail);
+
+    OmsBaseResponse<String> delGroupBuyProduct(ProductGroupBuyBean productGroupBuyBean);
 }

@@ -53,6 +53,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 	@Resource(name="supplierOrderSendJmsTemplate")
 	private JmsTemplate supplierOrderSendJmsTemplate;
 
+	@Resource(name="supplierStoreOrderSendJmsTemplate")
+	private JmsTemplate supplierStoreOrderSendJmsTemplate;
 	/**
 	 * 采购单创建
 	 * @param request
@@ -77,7 +79,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 				info.setMessage("交货单信息不存在！");
 				return info;
 			}
-			Map<String, Object> paramMap = new HashMap<String, Object>();
+			Map<String, Object> paramMap = new HashMap<String, Object>(Constant.DEFAULT_MAP_SIZE);
 			paramMap.put("masterOrderSn", distribute.getMasterOrderSn());
 			paramMap.put("isHistory", 0);
 			//查询主单信息（主单表、扩展表、地址信息表）
@@ -155,8 +157,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 	/**
 	 * 采购单创建
-	 * @param master
-	 * @param distribute
+	 * @param master 订单信息
+	 * @param distribute 交货单信息
 	 * @param request
 	 * @return ReturnInfo<String>
 	 */
@@ -165,6 +167,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 		String orderFrom = master.getOrderFrom();
 		if (!Constant.DEFAULT_SHOP.equals(orderFrom)) {
+			if(master.getCreateOrderType()!=1){
+				//联采订单不扣除库存，只有正常订单才扣除供应商店铺中商品的数量
+				pushPurchaseStoreOrder(distribute.getOrderSn(), distribute.getSupplierCode());
+			}
 			info.setMessage("店铺订单,不需要转采购订单");
             info.setIsOk(Constant.OS_YES);
 			return info;
@@ -183,7 +189,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		PurchaseOrder record = new PurchaseOrder();
         fillPurchaseOrder(record, master, distribute);
         record.setOperateUser(request.getActionUser());
+		record.setErpOrderNo(request.getErpOrderNo());
         fillOrderPrice(record, lines);
+		logger.info("-ERP订单号获取-"+ JSON.toJSONString(record));
 		purchaseOrderMapper.insertSelective(record);
 		
 		for (PurchaseOrderLine line : lines) {
@@ -207,7 +215,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             flag = true;
         }
         if (flag) {
-            pushJointPurchasing(master.getMasterOrderSn(), request.getActionUser(), request.getActionUserId(), distribute.getSupplierCode(), 1);
+            pushJointPurchasing(master.getMasterOrderSn(), request.getActionUser(), request.getActionUserId(), distribute.getSupplierCode(), distribute.getOrderSn(), 1);
         }
 
 		pushPurchaseOrder(distribute.getOrderSn());
@@ -258,7 +266,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     private void fillOrderPrice(PurchaseOrder record, List<PurchaseOrderLine> lines) {
         int goodsCount = 0;
+        //含税商品总价
         BigDecimal totalPrice = new BigDecimal(0);
+        //未税 的商品总价
         BigDecimal totalUntaxPrice = new BigDecimal(0);
         for (PurchaseOrderLine line : lines) {
             Integer goodsNumber = line.getGoodsNumber();
@@ -267,6 +277,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             }
 
             goodsCount += goodsNumber;
+            //协议价
             BigDecimal price = line.getPrice();
             if (price != null) {
                 // 未税商品总价
@@ -276,9 +287,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 // 进项税
                 BigDecimal inputTax = line.getInputTax();
                 if (inputTax != null && inputTax.doubleValue() > 0) {
-                    BigDecimal rate = MathOperation.div(inputTax.add(BigDecimal.valueOf(100)), BigDecimal.valueOf(100), 2);
-                    BigDecimal totalFee = MathOperation.mul(goodsTotalPrice, rate, 2);
-                    totalPrice = totalPrice.add(totalFee);
+                	//原订单总价： 成本价*数量*((税率+100)/100) 保留两位小数
+					//改： 未税商品总价+税额   税额 = 未税商品总价*税率（保留两位小数）
+                    //未税商品总价
+					BigDecimal notaxTotal = price.multiply(new BigDecimal(goodsNumber + "")).setScale(2, 4);
+					//总税率
+					BigDecimal taxTotal = notaxTotal.multiply(inputTax.divide(new BigDecimal("100"))).setScale(2, 4);
+					//该商品的订单总价
+					BigDecimal totalFee = notaxTotal.add(taxTotal);
+					totalPrice = totalPrice.add(totalFee);
                 } else {
                     totalPrice = totalPrice.add(goodsTotalPrice);
                 }
@@ -386,10 +403,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * @param actionUser 操作人
      * @param actionUserId 操作人id
      * @param supplierCode 供应商编码
+	 * @param orderSn 交货单号
      * @param type 0买家->超市，1超市->供应商, 2 买家->店铺
      */
     @Override
-	public void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, int type) {
+	public void pushJointPurchasing(String masterOrderSn, String actionUser, String actionUserId, String supplierCode, String orderSn, int type) {
         //校验订单类型；联采订单供应商编码不能为空，普通订单必须为企业用户
         logger.info("订单推送供应链信息：订单号" + masterOrderSn + ",供应商编码" + supplierCode + ",推送类型" + type);
         Map<String, Object> paramMap = new HashMap<String, Object>(4);
@@ -443,12 +461,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         if (StringUtils.isNotBlank(supplierCode)) {
             paramMap.put("supplierCode", supplierCode);
-            OrderDistributeExample distributeExample = new OrderDistributeExample();
-            distributeExample.or().andMasterOrderSnEqualTo(masterOrderSn).andSupplierCodeEqualTo(supplierCode);
-            List<OrderDistribute> orderDistributes = orderDistributeMapper.selectByExample(distributeExample);
-            if (StringUtil.isListNotNull(orderDistributes)) {
-                paramMap.put("orderSn", orderDistributes.get(0).getOrderSn());
-            }
+			paramMap.put("orderSn", orderSn);
         }
         paramMap.put("type", type);
         logger.info("订单推送供应链推送:" + JSONObject.toJSONString(paramMap));
@@ -525,6 +538,25 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 		supplierOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
 	}
 
+	/**
+	 * 采购订单下发
+	 * @param orderSn
+	 */
+	private void pushPurchaseStoreOrder(String orderSn,String vendorCode) {
+		Map<String, Object> paramMap = new HashMap<String, Object>(2);
+		paramMap.put("orderSn", orderSn);
+		paramMap.put("vendorCode", vendorCode);
+		supplierStoreOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
+	}
+	/**
+	 * 店铺采购扣除数量消息下发
+	 * @param orderSn
+	 */
+	private void pushSupplierProductDecuctCount(String orderSn, String su) {
+		Map<String, Object> paramMap = new HashMap<String, Object>(2);
+		paramMap.put("orderSn", orderSn);
+		supplierOrderSendJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(paramMap)));
+	}
     /**
      * 根据主订单号批量更新
      * @param purchaseOrder

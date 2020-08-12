@@ -1,6 +1,8 @@
 package com.work.shop.oms.api.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 订单商品信息
@@ -58,9 +60,13 @@ public class OrderGoodsInfo implements Serializable{
 	private double	discountedPrice;
 	
 	private double	goodsPrice;
-	
+
+	private double	goodsPriceNoTax;
+
 	private double transactionPrice;
-	
+
+	private double transactionPriceNoTax;
+
 	private double settlementPrice;
 
 	/**
@@ -85,6 +91,22 @@ public class OrderGoodsInfo implements Serializable{
 	private String c2mItemStr;
 
 	/**
+	 * 采购申请号集合
+	 */
+	private List<String> buyerNoList;
+
+	/**
+	 * 采购申请行项目号集合
+	 */
+	private List<String> buyerLineNoList;
+
+	/**
+	 * 采购申请行项目商品数量
+	 */
+	private List<String> buyerGoodsNum;
+
+
+	/**
 	 * 订单单个商品状态(1、退货中;2、换货中;3、退货完成;4、换货完成)
 	 */
 	private int goodsStatus;
@@ -107,6 +129,16 @@ public class OrderGoodsInfo implements Serializable{
 	 * 综合税率
 	 */
 	private Double taxRate;
+
+	/**
+	 * 进项税
+	 */
+	private BigDecimal inputTax;
+
+	/**
+	 * 销项税
+	 */
+	private BigDecimal outputTax;
 
 	/**
 	 * 基础BV值
@@ -162,7 +194,63 @@ public class OrderGoodsInfo implements Serializable{
      * 供应商名称
      */
     private String supplierName;
-	
+
+	/**
+	 * 商品是否支持无库存下单 0：不支持 1：支持
+	 */
+	private Integer purchasesWithoutStockFlag;
+
+	/**
+	 * 商品走库存的数量
+	 */
+	private Integer withStockNumber;
+
+	/**
+	 * 商品不走库存的数量
+	 */
+	private Integer withoutStockNumber;
+
+	/**
+	 * 无库存下单发货周期
+	 */
+	private String withoutStockDeliveryCycle;
+
+	/**
+	 * 有货发货周期
+	 */
+	private String deliveryCycle;
+
+	/**
+	 * 品牌Id
+	 */
+	private Integer brandId;
+
+	/**
+	 * 品牌名称
+	 */
+	private String brandName;
+
+
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
+
+	/**
+	 * 商品账期字典id，关联商品库system_payment_period表的id
+	 */
+	private Integer goodsPaymentPeriodId;
+
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
+	/**
+	 * 商品数据来源  1、是店铺普通模板 2、店铺快速模板 3、快速自营模板
+	 */
+	private Integer  dataSources;
+
 	public int getGoodsStatus() {
 		return goodsStatus;
 	}
@@ -448,4 +536,148 @@ public class OrderGoodsInfo implements Serializable{
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
     }
+
+	public List<String> getBuyerNoList() {
+		return buyerNoList;
+	}
+
+	public void setBuyerNoList(List<String> buyerNoList) {
+		this.buyerNoList = buyerNoList;
+	}
+
+	public List<String> getBuyerLineNoList() {
+		return buyerLineNoList;
+	}
+
+	public void setBuyerLineNoList(List<String> buyerLineNoList) {
+		this.buyerLineNoList = buyerLineNoList;
+	}
+
+	public List<String> getBuyerGoodsNum() {
+		return buyerGoodsNum;
+	}
+
+	public void setBuyerGoodsNum(List<String> buyerGoodsNum) {
+		this.buyerGoodsNum = buyerGoodsNum;
+	}
+
+	public Integer getPurchasesWithoutStockFlag() {
+		return purchasesWithoutStockFlag;
+	}
+
+	public void setPurchasesWithoutStockFlag(Integer purchasesWithoutStockFlag) {
+		this.purchasesWithoutStockFlag = purchasesWithoutStockFlag;
+	}
+
+	public Integer getWithStockNumber() {
+		return withStockNumber;
+	}
+
+	public void setWithStockNumber(Integer withStockNumber) {
+		this.withStockNumber = withStockNumber;
+	}
+
+	public Integer getWithoutStockNumber() {
+		return withoutStockNumber;
+	}
+
+	public void setWithoutStockNumber(Integer withoutStockNumber) {
+		this.withoutStockNumber = withoutStockNumber;
+	}
+
+	public String getWithoutStockDeliveryCycle() {
+		return withoutStockDeliveryCycle;
+	}
+
+	public void setWithoutStockDeliveryCycle(String withoutStockDeliveryCycle) {
+		this.withoutStockDeliveryCycle = withoutStockDeliveryCycle;
+	}
+
+	public String getDeliveryCycle() {
+		return deliveryCycle;
+	}
+
+	public void setDeliveryCycle(String deliveryCycle) {
+		this.deliveryCycle = deliveryCycle;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
+	}
+
+	public Integer getGoodsPaymentPeriodId() {
+		return goodsPaymentPeriodId;
+	}
+
+	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
+		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Integer dataSources) {
+		this.dataSources = dataSources;
+	}
+
+	public Integer getBrandId() {
+		return brandId;
+	}
+
+	public void setBrandId(Integer brandId) {
+		this.brandId = brandId;
+	}
+
+	public String getBrandName() {
+		return brandName;
+	}
+
+	public void setBrandName(String brandName) {
+		this.brandName = brandName;
+	}
+
+	public double getGoodsPriceNoTax() {
+		return goodsPriceNoTax;
+	}
+
+	public void setGoodsPriceNoTax(double goodsPriceNoTax) {
+		this.goodsPriceNoTax = goodsPriceNoTax;
+	}
+
+	public double getTransactionPriceNoTax() {
+		return transactionPriceNoTax;
+	}
+
+	public void setTransactionPriceNoTax(double transactionPriceNoTax) {
+		this.transactionPriceNoTax = transactionPriceNoTax;
+	}
+
+	public BigDecimal getInputTax() {
+		return inputTax;
+	}
+
+	public void setInputTax(BigDecimal inputTax) {
+		this.inputTax = inputTax;
+	}
+
+	public BigDecimal getOutputTax() {
+		return outputTax;
+	}
+
+	public void setOutputTax(BigDecimal outputTax) {
+		this.outputTax = outputTax;
+	}
 }

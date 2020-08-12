@@ -1,36 +1,30 @@
 package com.work.shop.oms.order.service.impl;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.annotation.Resource;
-
-import com.alibaba.fastjson.JSONObject;
-import com.work.shop.oms.bean.*;
-import com.work.shop.oms.common.bean.*;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.cardAPI.api.CardCartSearchServiceApi;
 import com.work.shop.cardAPI.bean.APIBackMsgBean;
 import com.work.shop.cardAPI.bean.ParaUserCardStatus;
-import com.work.shop.oms.api.ship.bean.WkUdDistribute;
+import com.work.shop.oms.bean.*;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShop;
 import com.work.shop.oms.bean.bgchanneldb.ChannelShopExample;
-import com.work.shop.oms.dao.ChannelShopMapper;
-import com.work.shop.oms.dao.MasterOrderInfoMapper;
-import com.work.shop.oms.distribute.service.OrderDistributeService;
+import com.work.shop.oms.common.bean.AsynProcessOrderBean;
+import com.work.shop.oms.common.bean.ConsigneeModifyInfo;
+import com.work.shop.oms.common.bean.MasterGoods;
+import com.work.shop.oms.common.bean.MasterOrder;
+import com.work.shop.oms.common.bean.MasterOrderDetail;
+import com.work.shop.oms.common.bean.MasterPay;
+import com.work.shop.oms.common.bean.MasterShip;
+import com.work.shop.oms.common.bean.OcpbStatus;
+import com.work.shop.oms.common.bean.OrderCreateReturnInfo;
+import com.work.shop.oms.common.bean.OrderStatus;
+import com.work.shop.oms.common.bean.OrdersCreateReturnInfo;
+import com.work.shop.oms.common.bean.ReturnInfo;
+import com.work.shop.oms.common.bean.ServiceReturnInfo;
+import com.work.shop.oms.common.bean.ValidateOrder;
+import com.work.shop.oms.dao.*;
 import com.work.shop.oms.mq.bean.TextMessageCreator;
+import com.work.shop.oms.order.response.OmsBaseResponse;
 import com.work.shop.oms.order.service.MasterOrderActionService;
 import com.work.shop.oms.order.service.MasterOrderAddressInfoService;
 import com.work.shop.oms.order.service.MasterOrderGoodsService;
@@ -47,6 +41,19 @@ import com.work.shop.oms.stock.service.ChannelStockService;
 import com.work.shop.oms.utils.Constant;
 import com.work.shop.oms.utils.NumberUtil;
 import com.work.shop.oms.utils.StringUtil;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 主订单服务
@@ -62,6 +69,12 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 	@Resource
 	private MasterOrderAddressInfoService addressInfoService;
+
+	@Resource
+	private MasterOrderInfoExtendMapper masterOrderInfoExtendMapper;
+
+	@Resource
+	private MasterOrderGoodsMapper masterOrderGoodsMapper;
 
 	@Resource
 	private MasterOrderGoodsService masterOrderGoodsService;
@@ -110,6 +123,15 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
 	@Resource(name="orderAccountPeriodJmsTemplate")
 	private JmsTemplate orderAccountPeriodJmsTemplate;
+
+	@Resource
+	private BoSupplierOrderMapper boSupplierOrderMapper;
+
+	@Resource
+	private MasterOrderPayMapper masterOrderPayMapper;
+
+	@Resource
+	private BoSupplierCooperationMapper boSupplierCooperationMapper;
 
 	/**
 	 * 问题单类型
@@ -413,6 +435,9 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 	 * @param integer 问题单
 	 */
 	public void asynProcessOrder(String masterOrderSn, ValidateOrder validateOrder, OcpbStatus ocpbStatus, Integer integer) {
+        if (integer == null) {
+            integer=Integer.valueOf(0);
+        }
 		AsynProcessOrderBean bean = new AsynProcessOrderBean(masterOrderSn, ocpbStatus, validateOrder, integer);
 		String json = JSON.toJSONString(bean);
 		logger.debug("订单[" + masterOrderSn + "]下单成功后异步处理:" + json);
@@ -522,6 +547,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setDiscount(BigDecimal.valueOf(masterOrder.getDiscount()));
 		// 商品数量
 		orderInfo.setGoodsCount(statisticsGoodsCount(masterOrder));
+		// 商品小数部分数量
+		orderInfo.setGoodsDecimalCount(statisticsGoodsDecimalCount(masterOrder));
 		// 下单时间
 		orderInfo.setAddTime(masterOrder.getAddTime() == null ? new Date() : masterOrder.getAddTime());
 		// 商家给客户的留言
@@ -534,6 +561,12 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         orderInfo.setNeedAudit(masterOrder.getNeedAudit());
         //是否需要合同签章
         orderInfo.setNeedSign(masterOrder.getNeedSign());
+        //订单商品销售类型
+		orderInfo.setGoodsSaleType(masterOrder.getGoodsSaleType());
+		//价格变动确认
+		orderInfo.setPriceChangeStatus(masterOrder.getPriceChangeStatus());
+		//联采订单 签章合同号
+		orderInfo.setSignContractNum(masterOrder.getSignContractNum());
 	}
 
 	/**
@@ -608,6 +641,12 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 		orderInfo.setNeedAudit(masterOrder.getNeedAudit());
 		// 是否需要合同签章
 		orderInfo.setNeedSign(masterOrder.getNeedSign());
+		//订单商品销售类型
+		orderInfo.setGoodsSaleType(masterOrder.getGoodsSaleType());
+		//价格变动确认
+		orderInfo.setPriceChangeStatus(masterOrder.getPriceChangeStatus());
+
+		orderInfo.setPrepayments(masterOrder.getPrepayments());
 		masterOrderInfoMapper.insertSelective(orderInfo);
 		byte payStatus = orderInfo.getPayStatus() == 2 ? orderInfo.getPayStatus() : 0;
 		// 写入订单日志
@@ -630,6 +669,30 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 				if (goodsLists != null && goodsLists.size() > 0) {
 					for (MasterGoods masterGoods : goodsLists) {
 						count += masterGoods.getGoodsNumber();
+					}
+				}
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * 统计订单商品实际数量
+	 * @param masterOrder 订单数据
+	 * @return Integer
+	 */
+	private BigDecimal statisticsGoodsDecimalCount(MasterOrder masterOrder) {
+		BigDecimal count = BigDecimal.ZERO;
+		if (masterOrder != null) {
+			if (masterOrder.getShipList() != null && masterOrder.getShipList().size() > 0) {
+				List<MasterGoods> goodsLists = masterOrder.getShipList().get(0).getGoodsList();
+				if (goodsLists != null && goodsLists.size() > 0) {
+					for (MasterGoods masterGoods : goodsLists) {
+						if(masterGoods.getGoodsDecimals() != null){
+							count = count.add(masterGoods.getGoodsDecimals());
+						}else {
+							masterGoods.setGoodsDecimals(BigDecimal.ZERO);
+						}
 					}
 				}
 			}
@@ -707,7 +770,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 	 * @return
 	 */
 	@Override
-	public ReturnInfo<Boolean> processOrderPayPeriod(OrderAccountPeriod orderAccountPeriod) {
+	public ReturnInfo<Boolean> sendOrderPayPeriod(OrderAccountPeriod orderAccountPeriod) {
 		ReturnInfo<Boolean> returnInfo = new ReturnInfo<Boolean>();
 		returnInfo.setIsOk(Constant.OS_NO);
 
@@ -720,7 +783,9 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 			}
 
 			MasterOrderPay masterOrderPay = masterOrderPayList.get(0);
-			orderAccountPeriod.setOrderMoney(masterOrderPay.getPayTotalfee());
+			if (orderAccountPeriod.getOrderType() == 0) {
+				orderAccountPeriod.setOrderMoney(masterOrderPay.getPayTotalfee());
+			}
 			orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
 			orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
 			orderAccountPeriod.setType(1);
@@ -730,6 +795,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
             } else if (Constant.PAYMENT_YINCHENG == masterOrderPay.getPayId()) {
                 orderAccountPeriod.setPayType(1);
             }
+            logger.info("账期支付下发数据:" + JSONObject.toJSONString(orderAccountPeriod));
 			orderAccountPeriodJmsTemplate.send(new TextMessageCreator(JSONObject.toJSONString(orderAccountPeriod)));
 		} catch (Exception e) {
 			logger.error("处理订单账期支付推送问题");
@@ -740,8 +806,8 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
 
     /**
      * 设置账期支付支付时间和扣款
-     * @param masterOrderInfo
-     * @return
+     * @param masterOrderInfo 订单信息
+     * @return ReturnInfo<Boolean>
      */
     @Override
 	public ReturnInfo<Boolean> processOrderPayPeriod(MasterOrderInfo masterOrderInfo) {
@@ -981,7 +1047,181 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         return returnInfo;
     }
 
-    /**
+	/***
+	 * 主订单编辑创业团队id和盈合商品id
+	 * @param masterOrderDetail 订单信息
+	 * @param actionUser  修改人
+	 * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+	 * @author wk
+	 * @date 2020/6/23
+	 **/
+	@Override
+	public ReturnInfo<String> editBindTeamInfoByMasterSn(String actionUser,MasterOrderDetail masterOrderDetail) {
+		ReturnInfo<String> returnInfo = new ReturnInfo<>();
+		returnInfo.setMessage("主订单编辑创业团队id和盈合商品id失败");
+
+		if (masterOrderDetail == null) {
+			returnInfo.setMessage("请求参数为空");
+			return returnInfo;
+		}
+
+		String orderSn = masterOrderDetail.getMasterOrderSn();
+		if (StringUtils.isBlank(orderSn)) {
+			returnInfo.setMessage("主订单号为空");
+			return returnInfo;
+		}
+
+		if (StringUtils.isBlank(actionUser)) {
+			returnInfo.setMessage("操作人为空");
+			return returnInfo;
+		}
+
+		if(StringUtils.isBlank(masterOrderDetail.getBoId()) && StringUtils.isBlank(masterOrderDetail.getSaleBd())){
+			returnInfo.setMessage("团队id为空（盈合id与创业团队id）");
+			return returnInfo;
+		}
+
+		try {
+			//校验订单
+			MasterOrderInfo masterOrderInfo = getOrderInfoBySn(orderSn);
+			if (masterOrderInfo == null) {
+				returnInfo.setMessage(orderSn + "订单不存在");
+				return returnInfo;
+			}
+
+			//校验扩展信息
+			List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendService.getMasterOrderInfoExtendByOrder(orderSn);
+			if (StringUtil.isListNull(extendList)) {
+				returnInfo.setMessage(orderSn + "订单扩展信息不存在");
+				return returnInfo;
+			}
+			MasterOrderInfoExtend extendBydb = extendList.get(0);
+
+			StringBuffer sb = new StringBuffer();
+			MasterOrderInfoExtend extend = new MasterOrderInfoExtend();
+			//推送盈合标记
+			Boolean  sendFlag = false;
+			//如果输入创业团队ID，则计算收益推送创业团队H5    优先级高于盈合
+			//创业团队id
+			String saleBd = masterOrderDetail.getSaleBd();
+			if (StringUtils.isNotBlank(saleBd) && !saleBd.equalsIgnoreCase(extendBydb.getSaleBd())) {
+				extend.setSaleBd(saleBd);
+				sb.append("销售BD号由‘" + extendBydb.getSaleBd() + "’→‘" + saleBd + "’；<br />");
+			}else{
+				//盈合id
+				String boId = masterOrderDetail.getBoId();
+				if (StringUtils.isNotBlank(boId) && !boId.equalsIgnoreCase(extendBydb.getBoId())) {
+					extend.setBoId(boId);
+					sb.append("盈合id由‘" + extendBydb.getBoId() + "’→‘" + boId + "’；<br />");
+				}
+				//推送盈合标记
+				sendFlag = true;
+			}
+
+			//无修改，返回
+			String msg = sb.toString();
+			if (StringUtils.isBlank(msg)) {
+				returnInfo.setIsOk(1);
+				returnInfo.setMessage("修改成功");
+				return returnInfo;
+			}
+
+			extend.setMasterOrderSn(orderSn);
+			int update = masterOrderInfoExtendService.updateByPrimaryKeySelective(extend);
+			if (update > 0) {
+				returnInfo.setIsOk(1);
+				returnInfo.setMessage("修改成功");
+			}
+
+			//添加日志
+			masterOrderActionService.insertOrderActionBySn(orderSn, "绑定团队信息修改：<br />" + msg, actionUser);
+
+			//推送盈合
+			if(sendFlag){
+				MasterOrderPay masterOrderPay = masterOrderPayMapper.selectByMasterOrderSn(masterOrderDetail.getMasterOrderSn());
+				if(masterOrderPay != null){
+					//设置营销合伙人系统的子项目
+					BoSupplierOrder boSupplierOrder = new BoSupplierOrder();
+					boSupplierOrder.setMasterOrderSn(masterOrderDetail.getMasterOrderSn());
+					boSupplierOrder.setBoId(masterOrderDetail.getBoId());
+					boSupplierOrder.setCompanyCode(extendBydb.getCompanyCode());
+					boSupplierOrder.setCompanyName(extendBydb.getCompanyFullName());
+					boSupplierOrder.setCompanyType(extendBydb.getCompanyType());
+					boSupplierOrder.setPayId(Integer.valueOf(masterOrderPay.getPayId().toString()));
+					boSupplierOrder.setPayName(masterOrderPay.getPayName());
+					boSupplierOrder.setCreateUser(Constant.OS_STRING_SYSTEM);
+					boSupplierOrder.setCreateTime(new Date());
+					boSupplierOrder.setUpdateUser(Constant.OS_STRING_SYSTEM);
+					boSupplierOrder.setUpdateTime(new Date());
+					//查询商业合伙人供应商合同  如果只有一个默认写入对应子公司id
+					List<BoSupplierCooperation> boSupplierCooperation = boSupplierCooperationMapper.selectByBoId(masterOrderDetail.getBoId());
+					if(boSupplierCooperation != null && boSupplierCooperation.size()==1){
+						Byte cooperationStatus = boSupplierCooperation.get(0).getCooperationStatus();
+						//子公司与供应商合作状态有效
+						if (1 == (int) cooperationStatus){
+							boSupplierOrder.setChildCompanyId(boSupplierCooperation.get(0).getChildCompanyId());
+						}
+						boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
+					}else if(boSupplierCooperation != null && boSupplierCooperation.size() > 0){
+						boSupplierOrder.setSupplierCode(boSupplierCooperation.get(0).getSupplierCode());
+					}
+					boSupplierOrderMapper.insertSelective(boSupplierOrder);
+					//添加日志
+					masterOrderActionService.insertOrderActionBySn(orderSn, "推送盈合系统成功", actionUser);
+				}else{
+					//添加日志
+					masterOrderActionService.insertOrderActionBySn(orderSn, "推送盈合系统失败：<br /> 支付单不存在", actionUser);
+				}
+			}
+
+		} catch (Exception e) {
+			logger.error("主订单编辑绑定团队信息异常" + JSONObject.toJSONString(masterOrderDetail), e);
+		}
+
+		return returnInfo;
+	}
+
+	@Override
+	public OmsBaseResponse<String> delGroupBuyProduct(ProductGroupBuyBean productGroupBuyBean) {
+		OmsBaseResponse<String> response = new OmsBaseResponse<>();
+
+		//拦截有已付款订单下的删除操作
+		//查询团购下的非取消,有付款订单
+		List<String> orderSnList = masterOrderInfoExtendMapper.selectDelGroupBuyProduct(productGroupBuyBean);
+		if (CollectionUtils.isNotEmpty(orderSnList)) {
+			logger.info("删除团购商品,团购订单列表:"+JSON.toJSONString(orderSnList)+",删除商品列表:"+JSON.toJSONString(productGroupBuyBean.getSpuList()));
+			productGroupBuyBean.setOrderSnList(orderSnList);
+			List<MasterOrderGoods> goods=masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+			if (CollectionUtils.isNotEmpty(goods)) {
+				response.setSuccess(false);
+				response.setMessage("已存在已支付的订单,无法删除");
+				return response;
+			}
+		}
+
+		MasterOrderInfoExtend extendQuery = new MasterOrderInfoExtend();
+		extendQuery.setGroupId(productGroupBuyBean.getId());
+		//查询团购下订单
+		List<MasterOrderInfoExtend> extendList = masterOrderInfoExtendMapper.selectOrderSnByGroupId(extendQuery);
+		if (CollectionUtils.isNotEmpty(extendList)) {
+		    //查询团购下有删除商品的订单
+            List<String> collect = extendList.stream().map(x -> x.getMasterOrderSn()).collect(Collectors.toList());
+            productGroupBuyBean.setOrderSnList(collect);
+            List<MasterOrderGoods> goodsList = masterOrderGoodsMapper.selectByOrderSnList(productGroupBuyBean);
+            for (MasterOrderGoods goods : goodsList) {
+				MasterOrderInfoExtend masterOrderInfoExtend = new MasterOrderInfoExtend();
+				masterOrderInfoExtend.setMasterOrderSn(goods.getMasterOrderSn());
+				masterOrderInfoExtend.setIsGroupDel(1);
+				masterOrderInfoExtendMapper.updateByPrimaryKeySelective(masterOrderInfoExtend);
+			}
+		}
+
+		response.setSuccess(true);
+		response.setMessage("删除成功");
+		return response;
+	}
+
+	/**
      * 处理订单账期支付信息
      * @param masterOrderPay
      */
@@ -1025,6 +1265,7 @@ public class MasterOrderinfoServiceImpl implements MasterOrderInfoService {
         orderAccountPeriod.setPaymentPeriod(masterOrderPay.getPaymentPeriod());
         orderAccountPeriod.setPaymentRate(masterOrderPay.getPaymentRate());
         orderAccountPeriod.setType(1);
+		orderAccountPeriod.setOrderType(0);
 
         if (Constant.PAYMENT_ZHANGQI_ID == masterOrderPay.getPayId()) {
             orderAccountPeriod.setPayType(0);

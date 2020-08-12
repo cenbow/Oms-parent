@@ -24,4 +24,24 @@
         <property name="concurrency" value="1"/>
     </bean>
 
+    <!--     团购成功-->
+    <bean id="groupBuyResult" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="group_buy_result"/>
+    </bean>
+
+    <bean id="groupBuyResultListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <constructor-arg>
+            <bean class="com.work.shop.oms.controller.jmsmessage.GroupBuyResutlListener"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="groupBuyResultContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="groupBuyResult" />
+        <property name="messageListener" ref="groupBuyResultListener" />
+        <property name="concurrency" value="1"/>
+    </bean>
+
+
 </beans>

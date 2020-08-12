@@ -151,6 +151,11 @@ public class OrderQueryRequest implements Serializable {
 	private String insteadUserId;
 
 	/**
+	 * 盈合编码
+	 */
+	private String boId;
+
+	/**
 	 * 配送编码
 	 */
 	private String tmsCode;
@@ -182,6 +187,11 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private String companyName;
 
+	/**
+	 * 公司全称
+	 */
+	private String companyFullName;
+
     /**
      * 公司类型 1内部公司、2外部公司
      */
@@ -197,7 +207,67 @@ public class OrderQueryRequest implements Serializable {
 	 */
 	private Integer channelType;
 
-    public Integer getPageNo() {
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
+	/**
+	 * 订单来源
+	 */
+	private String orderFrom;
+
+	/**
+	 * 商品数据来源
+	 */
+	private  Integer goodsDataSources;
+
+	/**
+	 * 供应商名称
+	 */
+	private String supplierName;
+
+	/**
+	 * 签章状态
+	 */
+	private Integer signStatus;
+
+	/**
+	 * 是否需要签章
+	 */
+	private Integer needSign;
+
+	/**
+	 * ERP订单号
+	 */
+	private String erpOrderNo;
+
+
+	/**
+	 * 是否为 团购订单    0  不是， 1 团购订单
+	 */
+	private Integer isGroup;
+
+	/**
+	 * 团购ID
+	 */
+	private Integer groupId;
+
+
+	public String getErpOrderNo() {
+		return erpOrderNo;
+	}
+
+	public void setErpOrderNo(String erpOrderNo) {
+		this.erpOrderNo = erpOrderNo;
+	}
+
+	public Integer getPageNo() {
 		return pageNo;
 	}
 
@@ -499,5 +569,93 @@ public class OrderQueryRequest implements Serializable {
 
 	public void setChannelType(Integer channelType) {
 		this.channelType = channelType;
+	}
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getOrderFrom() {
+		return orderFrom;
+	}
+
+	public void setOrderFrom(String orderFrom) {
+		this.orderFrom = orderFrom;
+	}
+
+	public Integer getGoodsDataSources() {
+		return goodsDataSources;
+	}
+
+	public void setGoodsDataSources(Integer goodsDataSources) {
+		this.goodsDataSources = goodsDataSources;
+	}
+
+	public String getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(String supplierName) {
+		this.supplierName = supplierName;
+	}
+
+	public Integer getSignStatus() {
+		return signStatus;
+	}
+
+	public void setSignStatus(Integer signStatus) {
+		this.signStatus = signStatus;
+	}
+
+	public Integer getNeedSign() {
+		return needSign;
+	}
+
+	public void setNeedSign(Integer needSign) {
+		this.needSign = needSign;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
+	}
+
+	public Integer getIsGroup() {
+		return isGroup;
+	}
+
+	public void setIsGroup(Integer isGroup) {
+		this.isGroup = isGroup;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
 	}
 }

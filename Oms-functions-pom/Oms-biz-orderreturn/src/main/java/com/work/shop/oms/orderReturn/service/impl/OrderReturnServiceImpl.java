@@ -728,7 +728,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 	 * @return ReturnInfo<String>
 	 */
 	@Override
-	public ReturnInfo<String> createOrderReturnPay(CreateReturnVO createReturnVO) {
+	public ReturnInfo<String> createOrderReturnPay(CreateReturnVO createReturnVO,Integer groupId) {
 		logger.info("createOrderReturnPay..orderSn:" + createReturnVO.getMasterOrderSn() + ",createReturnVO:" + JSON.toJSONString(createReturnVO));
 		ReturnInfo<String> orderReturnMessage = new ReturnInfo<String>();
 		orderReturnMessage.setOrderSn(createReturnVO.getMasterOrderSn());
@@ -813,7 +813,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 			orderReturnBean.setCreateOrderReturn(createOrderReturn);
 			
 			//退款 - 付款金额默认
-			List<CreateOrderRefund> returnPayList = processReturnPayList(createReturnVO.getMasterOrderSn(), orderInfo.getTransType().intValue(), createReturnVO.getReturnMoney());
+			List<CreateOrderRefund> returnPayList = processReturnPayList(createReturnVO.getMasterOrderSn(), orderInfo.getTransType().intValue(), createReturnVO.getReturnMoney(),groupId);
 			orderReturnBean.setCreateOrderRefundList(returnPayList);
 		
 			// 公共方法调用
@@ -886,13 +886,20 @@ public class OrderReturnServiceImpl implements OrderReturnService {
      * @param transType
 	 * @param totalReturnMoney //退款总金额
 	 */
-	private List<CreateOrderRefund> processReturnPayList(String masterOrderSn, Integer transType, Double totalReturnMoney){
+	private List<CreateOrderRefund> processReturnPayList(String masterOrderSn, Integer transType, Double totalReturnMoney,Integer groupId){
 		MasterOrderPayExample masterOrderPayExample = new MasterOrderPayExample();
 		if(Constant.OI_TRANS_TYPE_PRESHIP == transType.intValue()){
 			//货到付款
 			masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn);
 		}else{
-			masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
+			if (groupId != null) {
+				List<Byte> payStatusList = new ArrayList<>();
+				payStatusList.add(ConstantValues.OP_ORDER_PAY_STATUS.PAYING.byteValue());
+				payStatusList.add(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
+				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusIn(payStatusList);
+			} else {
+				masterOrderPayExample.or().andMasterOrderSnEqualTo(masterOrderSn).andPayStatusEqualTo(ConstantValues.OP_ORDER_PAY_STATUS.PAYED.byteValue());
+			}
 		}
 		List<MasterOrderPay> orderPayList = masterOrderPayMapper.selectByExample(masterOrderPayExample);
 		List<CreateOrderRefund> createOrderRefundList = new ArrayList<CreateOrderRefund>();
@@ -1572,7 +1579,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				}
 				OrderReturnGoods orderReturnGoods = new OrderReturnGoods();
 				orderReturnGoods.setRelatingReturnSn(param.getOrderReturnSn());
-				orderReturnGoods.setGoodsSn(createGoods.getCustomCode().substring(0, 6));
+				orderReturnGoods.setGoodsSn(createGoods.getCustomCode());
                 //供销商编码
 				orderReturnGoods.setSeller(createGoods.getSeller());
 				if (param.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()) {
@@ -1580,7 +1587,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				}
 				
 				if (null != createGoods.getCustomCode()) {
-					String goodsSn = createGoods.getCustomCode().substring(0, 6);
+					String goodsSn = createGoods.getCustomCode();
 					/*ProductGoodsWithBLOBs productGoods = productGoodsMapper.selectByPrimaryKey(goodsSn);
 					if(null != productGoods){
 						orderReturnGoods.setGoodsName(productGoods.getGoodsName());
@@ -1682,7 +1689,7 @@ public class OrderReturnServiceImpl implements OrderReturnService {
 				}
 				OrderReturnGoods orderReturnGoods = new OrderReturnGoods();
 				orderReturnGoods.setRelatingReturnSn(param.getOrderReturnSn());
-				orderReturnGoods.setGoodsSn(createGoods.getCustomCode().substring(0, 6));
+				orderReturnGoods.setGoodsSn(createGoods.getCustomCode());
 				//供销商编码
 				orderReturnGoods.setSeller(createGoods.getSeller());
 				if(param.getReturnType().intValue() == ConstantValues.ORDERRETURN_TYPE.RETURN_GOODS.intValue()){
@@ -2553,16 +2560,22 @@ public class OrderReturnServiceImpl implements OrderReturnService {
                         costPrice = MathOperation.setScale(costPrice, 2);
                         returnGoods.setCostPrice(costPrice);
                         BigDecimal totalCostPrice = MathOperation.mul(costPrice, BigDecimal.valueOf(goodsReturnNumber));
+                        //退款结算未税总金额
                         returnTotalSettlementUntaxPrice = returnTotalSettlementUntaxPrice.add(totalCostPrice);
 
                         BigDecimal totalTaxPrice = totalCostPrice;
                         BigDecimal inputTax = masterOrderGoods.getInputTax();
                         if (inputTax != null && inputTax.doubleValue() > 0) {
-                            inputTax = inputTax.add(BigDecimal.valueOf(100));
-                            BigDecimal taxPrice = costPrice.multiply(inputTax);
-                            totalTaxPrice = MathOperation.mul(taxPrice, BigDecimal.valueOf(goodsReturnNumber));
-                            totalTaxPrice = MathOperation.div(totalTaxPrice, BigDecimal.valueOf(100), 2);
-                        }
+
+							//未税商品总价
+							BigDecimal notaxTotal = costPrice.multiply(BigDecimal.valueOf(goodsReturnNumber)).setScale(2, 4);
+							//总税额 未税商品总价* 税率
+							BigDecimal taxTotal = notaxTotal.multiply(inputTax.divide(BigDecimal.valueOf(100))).setScale(2, 4);
+							//该订单中此商品总价
+							totalTaxPrice = notaxTotal.add(taxTotal);
+
+						}
+                        //退款结算总金额
                         returnTotalSettlementPrice = returnTotalSettlementPrice.add(totalTaxPrice);
                     }
 

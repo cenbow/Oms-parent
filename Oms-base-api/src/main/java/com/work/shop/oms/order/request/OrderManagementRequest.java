@@ -1,6 +1,7 @@
 package com.work.shop.oms.order.request;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -81,10 +82,49 @@ public class OrderManagementRequest implements Serializable {
      */
     private Integer orderType;
 
-	/**
+	/**d
 	 * 采购订单下发 1强制下发
 	 */
 	private int purchaseOrderSend;
+
+	/**
+	 * ERP订单编号
+	 */
+	private String erpOrderNo;
+
+	/**
+	 * 折扣
+	 */
+	private BigDecimal discount;
+
+	/**
+	 * 1为尾款单
+	 */
+	private int flag;
+
+	public int getFlag() {
+		return flag;
+	}
+
+	public void setFlag(int flag) {
+		this.flag = flag;
+	}
+
+	public BigDecimal getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(BigDecimal discount) {
+		this.discount = discount;
+	}
+
+	public String getErpOrderNo() {
+		return erpOrderNo;
+	}
+
+	public void setErpOrderNo(String erpOrderNo) {
+		this.erpOrderNo = erpOrderNo;
+	}
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;

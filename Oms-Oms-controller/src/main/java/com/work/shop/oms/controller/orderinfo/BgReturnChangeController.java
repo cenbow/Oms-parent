@@ -200,7 +200,7 @@ public class BgReturnChangeController {
      */
     @PostMapping("/setOrderReturnShipInfo")
     public ReturnInfo<Boolean> setOrderReturnShipInfo(@RequestParam(name="returnSn") String returnSn, @RequestParam(name="returnExpress") String returnExpress,
-                                             @RequestParam(name="returnInvoiceNo") String returnInvoiceNo, @RequestParam(name="returnExpressImg") String returnExpressImg,
+                                             @RequestParam(name="returnInvoiceNo") String returnInvoiceNo, @RequestParam(name="returnExpressImg", required = false) String returnExpressImg,
                                              @RequestParam(name="siteCode") String siteCode) {
         ReturnInfo<Boolean> returnBean = new ReturnInfo<Boolean>();
 

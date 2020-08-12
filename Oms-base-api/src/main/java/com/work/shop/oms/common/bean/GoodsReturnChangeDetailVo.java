@@ -73,6 +73,55 @@ public class GoodsReturnChangeDetailVo implements Serializable {
      */
     private String supplierName;
 
+    /**
+     * 商品的未税售卖价
+     */
+    private BigDecimal goodsPriceNoTax;
+    /**
+     * 商品的未税成交价
+     */
+    private BigDecimal transactionPriceNoTax;
+    /**
+     * 进项税
+     */
+    private BigDecimal inputTax;
+    /**
+     * 销项税
+     */
+    private BigDecimal outputTax;
+
+    public BigDecimal getGoodsPriceNoTax() {
+        return goodsPriceNoTax;
+    }
+
+    public void setGoodsPriceNoTax(BigDecimal goodsPriceNoTax) {
+        this.goodsPriceNoTax = goodsPriceNoTax;
+    }
+
+    public BigDecimal getTransactionPriceNoTax() {
+        return transactionPriceNoTax;
+    }
+
+    public void setTransactionPriceNoTax(BigDecimal transactionPriceNoTax) {
+        this.transactionPriceNoTax = transactionPriceNoTax;
+    }
+
+    public BigDecimal getInputTax() {
+        return inputTax;
+    }
+
+    public void setInputTax(BigDecimal inputTax) {
+        this.inputTax = inputTax;
+    }
+
+    public BigDecimal getOutputTax() {
+        return outputTax;
+    }
+
+    public void setOutputTax(BigDecimal outputTax) {
+        this.outputTax = outputTax;
+    }
+
     public String getGoodsName() {
         return goodsName;
     }

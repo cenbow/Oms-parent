@@ -142,6 +142,21 @@ public class PageListParam implements Serializable{
      */
 	private String companyId;
 
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
+	/**
+	 * 盈合Id
+	 */
+	private String boId;
+
 	public String getUserId() {
 		return userId;
 	}
@@ -390,7 +405,23 @@ public class PageListParam implements Serializable{
         this.companyId = companyId;
     }
 
-    @Override
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	@Override
 	public String toString() {
 		return "PageListParam [userId=" + userId + ", isHistory=" + isHistory
 				+ ", from=" + from + ", rstatus=" + rstatus + ", orderSn="

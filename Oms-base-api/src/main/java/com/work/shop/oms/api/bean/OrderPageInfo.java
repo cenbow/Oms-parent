@@ -259,6 +259,121 @@ public class OrderPageInfo implements Serializable{
      */
     private boolean isReceipt;
 
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
+	/**
+	 * 公司类型
+	 */
+	private Integer companyType;
+
+	/**
+	 * 特殊业务类型：外部买家铁信支付类型为1（此类型不允许其前端确认支付）
+	 */
+	private int specialType;
+
+	/**
+	 * 盈合id
+	 */
+	private String boId;
+	/**
+	 * 团购id
+	 */
+	private Integer groupId;
+
+	/**
+	 *团购开始时间
+	 */
+	private Date groupBuyBeginTime;
+
+	/**
+	 *团购结束时间
+	 */
+	private Date groupBuyEndTime;
+
+	/**
+	 * 状态（1团购中、2团购成功、3团购失败）
+	 */
+	private Short groupBuyStatus;
+
+	/**
+	 * 客户团购确认支付类型（-1为未确认 0为预付款 1为尾款），此字段在参与团购时有效
+	 */
+	private Byte isConfirmPay;
+
+	/**
+	 * 运营团购确认支付类型（-1为未确认，0为预付款，1为尾款）此字段在参与团购时有效
+	 */
+	private Byte isOperationConfirmPay;
+
+	/**
+	 *订单团购商品1失效,0正常
+	 */
+	private Integer isGroupDel;
+
+	public Integer getIsGroupDel() {
+		return isGroupDel;
+	}
+
+	public void setIsGroupDel(Integer isGroupDel) {
+		this.isGroupDel = isGroupDel;
+	}
+
+	public Byte getIsConfirmPay() {
+		return isConfirmPay;
+	}
+
+	public void setIsConfirmPay(Byte isConfirmPay) {
+		this.isConfirmPay = isConfirmPay;
+	}
+
+	public Byte getIsOperationConfirmPay() {
+		return isOperationConfirmPay;
+	}
+
+	public void setIsOperationConfirmPay(Byte isOperationConfirmPay) {
+		this.isOperationConfirmPay = isOperationConfirmPay;
+	}
+
+	public Short getGroupBuyStatus() {
+		return groupBuyStatus;
+	}
+
+	public void setGroupBuyStatus(Short groupBuyStatus) {
+		this.groupBuyStatus = groupBuyStatus;
+	}
+
+	public Date getGroupBuyBeginTime() {
+		return groupBuyBeginTime;
+	}
+
+	public void setGroupBuyBeginTime(Date groupBuyBeginTime) {
+		this.groupBuyBeginTime = groupBuyBeginTime;
+	}
+
+	public Date getGroupBuyEndTime() {
+		return groupBuyEndTime;
+	}
+
+	public void setGroupBuyEndTime(Date groupBuyEndTime) {
+		this.groupBuyEndTime = groupBuyEndTime;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
 	public String getChannelCode() {
 		return channelCode;
 	}
@@ -651,4 +766,44 @@ public class OrderPageInfo implements Serializable{
     public void setReceipt(boolean receipt) {
         isReceipt = receipt;
     }
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public Integer getCompanyType() {
+		return companyType;
+	}
+
+	public void setCompanyType(Integer companyType) {
+		this.companyType = companyType;
+	}
+
+	public int getSpecialType() {
+		return specialType;
+	}
+
+	public void setSpecialType(int specialType) {
+		this.specialType = specialType;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
 }

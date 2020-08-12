@@ -1407,7 +1407,12 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
         }
 
         orderReturnBean.setCompanyId(masterOrderInfoExtend.getCompanyCode());
-        orderReturnBean.setSettlement(masterOrderInfoExtend.getSettlementAccount());
+		Byte isGroup = masterOrderInfoExtend.getIsGroup();
+		if (isGroup != null && isGroup == 1) {
+			orderReturnBean.setSettlement(2);
+		} else {
+			orderReturnBean.setSettlement(masterOrderInfoExtend.getSettlementAccount());
+		}
 
         List<MasterOrderPay> orderPayList = masterOrderPayService.getMasterOrderPayList(masterOrderSn);
         if (orderPayList == null || orderPayList.size() == 0) {
@@ -1595,7 +1600,7 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setGoodsName(orderReturnGoods.getGoodsName());
 		returnGoodsVO.setExtensionCode(orderReturnGoods.getExtensionCode());
 		if (null != orderReturnGoods.getCustomCode()) {
-			String goodsSn = orderReturnGoods.getCustomCode().substring(0, 6);
+			String goodsSn = orderReturnGoods.getCustomCode();
 			returnGoodsVO.setGoodsSn(goodsSn);
 		}
 		returnGoodsVO.setGoodsColorName(orderReturnGoods.getGoodsColorName());
@@ -1603,7 +1608,11 @@ public class ReturnManagementServiceImpl implements ReturnManagementService {
 		returnGoodsVO.setCustomCode(orderReturnGoods.getCustomCode());
 		returnGoodsVO.setMarketPrice(orderReturnGoods.getMarketPrice().doubleValue());
 		returnGoodsVO.setGoodsPrice(orderReturnGoods.getSalePrice().doubleValue());
+		returnGoodsVO.setGoodsPriceNoTax(orderReturnGoods.getGoodsPriceNoTax().doubleValue());
         returnGoodsVO.setTransactionPrice(orderReturnGoods.getGoodsPrice().doubleValue());
+        returnGoodsVO.setTransactionPriceNoTax(orderReturnGoods.getTransactionPriceNoTax().doubleValue());
+        returnGoodsVO.setInputTax(orderReturnGoods.getInputTax());
+        returnGoodsVO.setOutputTax(orderReturnGoods.getOutputTax());
 		returnGoodsVO.setSettlementPrice(orderReturnGoods.getSettlementPrice().doubleValue());
 		returnGoodsVO.setShareBonus(orderReturnGoods.getShareBonus().doubleValue());
 		returnGoodsVO.setGoodsBuyNumber(orderReturnGoods.getGoodsBuyNumber().intValue());

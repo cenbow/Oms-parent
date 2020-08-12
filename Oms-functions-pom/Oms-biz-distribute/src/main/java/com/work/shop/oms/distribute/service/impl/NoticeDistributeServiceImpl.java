@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.common.utils.CachedBeanCopier;
 import com.work.shop.oms.common.utils.NumberUtil;
 import org.apache.commons.beanutils.BeanUtils;
@@ -362,7 +363,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 		// 构建shipSn---(sku,shipsn)的关系
         final Map<String, Map<ShipSku, Integer>> shipSkuMap = new HashMap<String, Map<ShipSku, Integer>>(Constant.DEFAULT_MAP_SIZE);
 		fillShipSkuMap(shipProviderList, orderShipList, shipSkuMap);
-
+		logger.info("processOrderGoods shipSkuMap=" + shipSkuMap);
 		List<MasterOrderGoods> newOrderGoodsList = new ArrayList<MasterOrderGoods>(oldOrderGoodsList.size() + 10);
 		for (int i = 0; i < oldOrderGoodsList.size(); i++) {
 			MasterOrderGoods orderGoods = oldOrderGoodsList.get(i);
@@ -371,6 +372,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				newOrderGoodsList.add(cloneGoods(orderGoods));
 				continue;
 			}
+			logger.info("processOrderGoods  orderGoods=" + JSONObject.toJSONString(orderGoods));
 			// 商品数量
 			int goodsNum = orderGoods.getGoodsNumber();
 			// 发货单
@@ -498,6 +500,7 @@ public class NoticeDistributeServiceImpl implements NoticeDistributeService {
 				if (orderGoods.getCustomCode().equals(goods.getCustomCode())
 						&& orderGoods.getExtensionCode().equals(goods.getExtensionCode())
 						&& orderGoods.getExtensionId().equals(goods.getExtensionId())) {
+					logger.info("groupOrderGoodsBySkuExtCode 设置goodsNum" + orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					orderGoods.setGoodsNumber(orderGoods.getGoodsNumber() + goods.getGoodsNumber());
 					flag = true;
 				}

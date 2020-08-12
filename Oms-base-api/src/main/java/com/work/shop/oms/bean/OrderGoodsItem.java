@@ -53,6 +53,11 @@ public class OrderGoodsItem implements Serializable {
 	 * 商品数量
 	 */
 	private Integer goodsNumber;
+
+	/**
+	 * 商品数量小数部分
+	 */
+	private BigDecimal goodsDecimalNumber;
 	
 	/**
 	 * 商品售价
@@ -141,6 +146,11 @@ public class OrderGoodsItem implements Serializable {
 	private String companyName;
 
 	/**
+	 * 下单公司全称
+	 */
+	private String companyFullName;
+
+	/**
 	 * 物料描述
 	 */
 	private String customerMaterialName;
@@ -169,6 +179,11 @@ public class OrderGoodsItem implements Serializable {
 	 * 供应商联系电话
 	 */
 	private String supplierContactMobile;
+
+	/**
+	 * 商品销售类型  0 正常商品 1 非标定制
+	 */
+	private Integer saleType;
 
 	public String getMasterOrderSn() {
 		return masterOrderSn;
@@ -512,5 +527,29 @@ public class OrderGoodsItem implements Serializable {
 
 	public void setCompanyId(String companyId) {
 		this.companyId = companyId;
+	}
+
+	public BigDecimal getGoodsDecimalNumber() {
+		return goodsDecimalNumber;
+	}
+
+	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
+		this.goodsDecimalNumber = goodsDecimalNumber;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }

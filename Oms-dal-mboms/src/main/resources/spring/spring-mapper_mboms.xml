@@ -352,6 +352,21 @@
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
 	</bean>
 
+	<bean id="boSupplierCooperationMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BoSupplierCooperationMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="boSupplierContractMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BoSupplierContractMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="boSupplierOrderMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.BoSupplierOrderMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
 	<bean id="orderTaskConfigMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
 		<property name="mapperInterface" value="com.work.shop.oms.dao.OrderTaskConfigMapper" />
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
@@ -529,6 +544,11 @@
 
 	<bean id="rewardPointRatioMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
 		<property name="mapperInterface" value="com.work.shop.oms.dao.RewardPointRatioMapper" />
+		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
+	</bean>
+
+	<bean id="PayPeriodMapper" class="com.work.shop.spring.mapper.MapperFactoryBeanInvocation">
+		<property name="mapperInterface" value="com.work.shop.oms.dao.PayPeriodMapper" />
 		<property name="sqlSessionFactory" ref="mbomssqlSessionFactory" />
 	</bean>
 </beans>

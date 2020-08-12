@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -93,6 +94,8 @@ public class MasterOrderPayServiceImpl implements MasterOrderPayService{
         mop.setPaymentPeriod(masterPay.getPaymentPeriod().shortValue());
         // 支付费率
         mop.setPaymentRate(BigDecimal.valueOf(masterPay.getPaymentRate()));
+        // 预付款金额
+        mop.setPrepayments(masterPay.getPrepayments());
 
         // 付款最后期限设置
         int secp = 0;
@@ -154,7 +157,7 @@ public class MasterOrderPayServiceImpl implements MasterOrderPayService{
                 MasterOrderPay mop = fillMasterOrderPay(masterOrderSn, masterPaySn, masterPay, payment);
 
 				try {
-					masterOrderPayMapper.insert(mop);
+					masterOrderPayMapper.insertSelective(mop);
 				} catch (Exception e) {
 					logger.error(masterOrderSn + "生成付款单失败-" + e.getMessage(), e);
 					return new ServiceReturnInfo<List<String>>("创建付款单信息" + masterOrderSn + "失败" + e.getMessage());
@@ -309,6 +312,52 @@ public class MasterOrderPayServiceImpl implements MasterOrderPayService{
     public int updateByPrimaryKeySelective(MasterOrderPay masterOrderPay) {
         return masterOrderPayMapper.updateByPrimaryKeySelective(masterOrderPay);
     }
+
+	/**
+	 * 根据订单号 更新主支付单最后支付时间
+	 * @param masterOrderSn
+	 * @return
+	 */
+	@Override
+	public int updateBymasterOrderSnLastTime(String masterOrderSn) {
+		int num = 0;
+		if(StringUtils.isNotBlank(masterOrderSn)){
+			List<MasterOrderPay> masterOrderPayList = getMasterOrderPayList(masterOrderSn);
+			if (masterOrderPayList !=null && masterOrderPayList.size() > 0){
+				// 付款最后期限设置
+				int secp = 0;
+				String secpValue = null;
+				int pe = 1;
+				try {
+					secpValue = redisClient.get("OS_PAYMENT_PERIOD_" + pe);
+				} catch (Throwable e) {
+					logger.error("redis is null error ," + e);
+				}
+				if (StringUtil.isNotEmpty(secpValue)) {
+					secp = new Integer(secpValue);
+				} else {
+					secp = getPeriodDetailValue(pe, Constant.OS_PAYMENT_PERIOD);
+					try {
+						redisClient.set("OS_PAYMENT_PERIOD_" + pe, secp + "");
+					} catch (Throwable e) {
+						logger.error("redis is null error ," + e);
+					}
+				}
+
+				// 付款最后期限
+				if (secp != 0) {
+					for (MasterOrderPay orderPay : masterOrderPayList){
+						MasterOrderPay  param = new MasterOrderPay();
+						param.setMasterPaySn(orderPay.getMasterPaySn());
+						param.setPayLasttime(getDate(new Date(), secp));
+						num += masterOrderPayMapper.updateByPrimaryKeySelective(param);
+					}
+				}
+
+			}
+		}
+		return num;
+	}
 
 	public Date getDate(Date t, int sec) {
 		long milliseconds = t.getTime();

@@ -1,6 +1,7 @@
 package com.work.shop.oms.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 订单列表
@@ -19,6 +20,11 @@ public class OrderItem implements Serializable{
 	 * 外部订单号
 	 */
 	private String outerOrderSn;
+
+	/**
+	 * 签章合同号
+	 */
+	private String signContractNum;
 
 	/**
 	 * 下单人
@@ -111,6 +117,16 @@ public class OrderItem implements Serializable{
 	private Integer questionStatus;
 
 	/**
+	 * 签章状态 0未签章、1已签章
+	 */
+	private Integer signStatus;
+
+	/**
+	 * 需要合同签章 0不需要、1需要
+	 */
+	private Integer needSign;
+
+	/**
 	 * 下单时间
 	 */
 	private String addTime;
@@ -119,6 +135,11 @@ public class OrderItem implements Serializable{
 	 * 商品数量
 	 */
 	private Integer goodsCount;
+
+	/**
+	 * 商品数量小数部分
+	 */
+	private BigDecimal goodsDecimalCount;
 
 	/**
 	 * 订单总金额
@@ -236,6 +257,11 @@ public class OrderItem implements Serializable{
 	private String insteadUserId;
 
 	/**
+	 * 盈合id
+	 */
+	private String boId;
+
+	/**
 	 * 仓库编码
 	 */
 	private String depotCode;
@@ -270,11 +296,46 @@ public class OrderItem implements Serializable{
      */
     private String companyName;
 
+
+	/**
+	 * 公司全称
+	 */
+	private String companyFullName;
+
     /**
      * 公司id
      */
     private String companyCode;
-	
+
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
+	/**
+	 * erp订单号
+	 * @return
+	 */
+	private String erpOrderNo;
+
+	/**
+	 * 是否为 团购订单    0  不是， 1 团购订单
+	 */
+	private Integer isGroup;
+
+	public String getErpOrderNo() {
+		return erpOrderNo;
+	}
+
+	public void setErpOrderNo(String erpOrderNo) {
+		this.erpOrderNo = erpOrderNo;
+	}
+
 	public String getMasterOrderSn() {
 		return masterOrderSn;
 	}
@@ -704,4 +765,76 @@ public class OrderItem implements Serializable{
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
     }
+
+	public BigDecimal getGoodsDecimalCount() {
+		return goodsDecimalCount;
+	}
+
+	public void setGoodsDecimalCount(BigDecimal goodsDecimalCount) {
+		this.goodsDecimalCount = goodsDecimalCount;
+	}
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getSignContractNum() {
+		return signContractNum;
+	}
+
+	public void setSignContractNum(String signContractNum) {
+		this.signContractNum = signContractNum;
+	}
+
+	public Integer getSignStatus() {
+		return signStatus;
+	}
+
+	public void setSignStatus(Integer signStatus) {
+		this.signStatus = signStatus;
+	}
+
+	public Integer getNeedSign() {
+		return needSign;
+	}
+
+	public void setNeedSign(Integer needSign) {
+		this.needSign = needSign;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
+	}
+
+	public Integer getIsGroup() {
+		return isGroup;
+	}
+
+	public void setIsGroup(Integer isGroup) {
+		this.isGroup = isGroup;
+	}
 }

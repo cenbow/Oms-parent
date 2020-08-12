@@ -30,6 +30,7 @@
         op.pay_lasttime payLastTime,
         oie.is_review isReview,
         oie.free_post_type freePostType,
+        oie.is_group_del isGroupDel,
         oi.order_status orderStatus,
         oi.pay_status payStatus,
         oi.user_id userId,
@@ -41,6 +42,8 @@
         oi.source source,
         oi.order_from channelCode,
         oi.shop_name channelName,
+        oi.goods_sale_type goodsSaleType,
+        oi.price_change_status priceChangeStatus,
         oie.is_advance isAdvance,
         oie.customer_contract_num customerContractNum,
         oi.expected_ship_date expectedShipDate,
@@ -50,7 +53,9 @@
         oi.need_audit needAudit,
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
-        oai.inv_address invAddress
+        oai.inv_address invAddress,
+        oie.company_type companyType,
+        oie.bo_id boId
         from
         <if test="isHistory == 0">
             master_order_info
@@ -128,9 +133,21 @@
         <if test="signStatus != null">
             and oi.sign_status = #{signStatus}
         </if>
+        <!-- 订单商品销售类型 -->
+        <if test="goodsSaleType != null">
+            and oi.goods_sale_type = #{goodsSaleType}
+        </if>
+        <!-- 改价确认状态 -->
+        <if test="priceChangeStatus != null">
+            and oi.price_change_status = #{priceChangeStatus}
+        </if>
         <!-- 公司id -->
         <if test="companyId != null">
             and oie.company_code = #{companyId}
+        </if>
+        <!-- 盈合id -->
+        <if test="boId != null">
+            and oie.bo_id = #{boId}
         </if>
 
         <!--app列表只显示订单 -->
@@ -385,7 +402,9 @@
         select
         og.order_sn subOrderSn,
         og.goods_price goodsPrice,
+        og.goods_price_no_tax goodsPriceNoTax,
         og.transaction_price transactionPrice,
+        og.transaction_price_no_tax transactionPriceNoTax,
         og.settlement_price settlementPrice,
         og.goods_sn goodsSn,
         og.custom_code skuSn,
@@ -406,6 +425,8 @@
         og.expected_ship_date expectedShipDate,
         og.tax,
         og.tax_rate taxRate,
+        og.input_tax inputTax,
+        og.output_tax outputTax,
         og.base_bv_value baseBvValue,
         og.min_buy_num minBuyNum,
         og.buy_unit buyUnit,
@@ -415,7 +436,15 @@
         og.distribution_category distributionCategory,
         og.depot_code depotCode,
         og.supplier_code supplierCode,
-        og.supplier_name supplierName
+        og.supplier_name supplierName,
+        og.with_stock_number withStockNumber,
+        og.without_stock_number withoutStockNumber,
+        og.purchases_without_stock_flag purchasesWithoutStockFlag,
+        og.without_stock_delivery_cycle withoutStockDeliveryCycle,
+        og.delivery_cycle deliveryCycle,
+        og.data_sources  dataSources,
+        og.brand_id brandId,
+        og.brand_name brandName
         from
         <if test="isHistory == 0">
             master_order_goods
@@ -506,7 +535,7 @@
         AND
         orn.site_code = #{siteCode,jdbcType=VARCHAR}
         and
-        orn.return_type = 1
+        orn.return_type in (1,3)
         and
         orn.process_type = 1
         and
@@ -584,7 +613,7 @@
         AND
         orn.site_code = #{siteCode,jdbcType=VARCHAR}
         and
-        orn.return_type = 1
+        orn.return_type in (1,3)
         and
         orn.process_type = 1
         and
@@ -654,6 +683,10 @@
         oai.street street,
         oai.address address,
         oai.user_shop_name userShopName,
+        <if test="isHistory == 0">
+            oi.prepayments prepayments,
+            oi.balance_amount balanceAmount,
+        </if>
         oi.shipping_total_fee postage,
         oi.referer referer,
         oi.bonus bonus,
@@ -681,7 +714,11 @@
         oie.shop_code storeCode,
         oie.shop_name storeName,
         oie.user_bank_no userBankNo,
+        oie.group_id groupId,
         oie.user_pay_apply userPayApply,
+        oie.is_operation_confirm_pay isOperationConfirmPay,
+        oie.is_confirm_pay isConfirmPay,
+        oie.is_group_del isGroupDel,
         DATE_FORMAT(op.pay_time,'%Y-%m-%d %T') orderPayTime,
         oi.money_paid moneyPaid,
         op.pay_name paymentMethod,
@@ -703,6 +740,8 @@
         oie.last_pay_date lastPayDate,
         oie.company_code companyCode,
         oie.company_name companyName,
+        oie.company_full_name companyFullName,
+        oie.group_buy_money groupBuyMoney,
         oi.expected_ship_date expectedShipDate,
         oi.tax tax,
         oai.user_card_no userCardNo,
@@ -723,7 +762,12 @@
         oai.inv_consignee invConsignee,
         oai.inv_mobile invMobile,
         oai.inv_address invAddress,
-        oai.shipping_name shippingName
+        oai.shipping_name shippingName,
+        oi.goods_sale_type goodsSaleType,
+        oi.price_change_status priceChangeStatus,
+        oie.remark remark,
+        oie.company_type companyType,
+        oie.bo_id  boId
         from
         <if test="isHistory == 0">
             master_order_info
@@ -774,6 +818,7 @@
         orn.return_bonus_money bonus,
         orn.return_shipping returnPostage,
         orn.return_goods_money returnGoodsMoney,
+        orn.relating_order_sn orderSn,
         DATE_FORMAT(orn.clear_time,'%Y-%m-%d %T') clearingTime,
         orn.return_sn orderReturnSn,
         orn.user_id userId,

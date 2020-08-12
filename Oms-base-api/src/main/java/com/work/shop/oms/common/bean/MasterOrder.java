@@ -1,6 +1,7 @@
 package com.work.shop.oms.common.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,6 +74,10 @@ public class MasterOrder implements Serializable{
      * 外部交易号
      */
 	private String orderOutSn;
+    /**
+     * 团购预付款金额
+     */
+	private BigDecimal prepayments;
 
     /**
      * 订单当日流水号
@@ -238,6 +243,11 @@ public class MasterOrder implements Serializable{
      */
 	private Integer goodsCount;
 
+	/**
+	 * 订单商品小数部分总数
+	 */
+	private BigDecimal goodsDecimalsCount;
+
     /**
      * 折扣金额
      */
@@ -314,6 +324,14 @@ public class MasterOrder implements Serializable{
      * 订单是否为团购
      */
 	private short isGroup;
+    /**
+     * 团购id
+     */
+	private Integer groupId;
+    /**
+     * 团购名称
+     */
+	private String groupName;
 
     /**
      * 是否为预售商品
@@ -457,6 +475,11 @@ public class MasterOrder implements Serializable{
      */
 	private String customerContractNum;
 
+	/**
+	 * 签章合同号
+	 */
+	private String signContractNum;
+
     /**
      * 配送时间
      */
@@ -498,6 +521,11 @@ public class MasterOrder implements Serializable{
     private String companyName;
 
 	/**
+	 * 子公司全称
+	 */
+	private String companyFullName;
+
+	/**
 	 * 公司类型 1内部公司、2外部公司
 	 */
 	private Integer companyType;
@@ -506,6 +534,58 @@ public class MasterOrder implements Serializable{
      * 销售bd
      */
     private String saleBd;
+
+	/**
+	 * 盈合id
+	 */
+	private String boId;
+
+	/**
+	 * 订单商品销售类型：0正常商品 1 非标定制 2 可改价商品
+	 */
+	private Integer goodsSaleType;
+
+	/**
+	 * 价格变更状态：0 无 1 未确认  2 平台确认 3 用户确认
+	 */
+	private Integer priceChangeStatus;
+
+	/**
+	 * 团购下单时折扣
+	 */
+    private BigDecimal groupBuyDiscount;
+
+	public BigDecimal getGroupBuyDiscount() {
+		return groupBuyDiscount;
+	}
+
+	public void setGroupBuyDiscount(BigDecimal groupBuyDiscount) {
+		this.groupBuyDiscount = groupBuyDiscount;
+	}
+
+	public BigDecimal getPrepayments() {
+        return prepayments;
+    }
+
+    public void setPrepayments(BigDecimal prepayments) {
+        this.prepayments = prepayments;
+    }
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
 
 	public String getUserId() {
 		return userId;
@@ -1368,5 +1448,53 @@ public class MasterOrder implements Serializable{
 
 	public void setCompanyType(Integer companyType) {
 		this.companyType = companyType;
+	}
+
+	public BigDecimal getGoodsDecimalsCount() {
+		return goodsDecimalsCount;
+	}
+
+	public void setGoodsDecimalsCount(BigDecimal goodsDecimalsCount) {
+		this.goodsDecimalsCount = goodsDecimalsCount;
+	}
+
+	public Integer getGoodsSaleType() {
+		return goodsSaleType;
+	}
+
+	public void setGoodsSaleType(Integer goodsSaleType) {
+		this.goodsSaleType = goodsSaleType;
+	}
+
+	public Integer getPriceChangeStatus() {
+		return priceChangeStatus;
+	}
+
+	public void setPriceChangeStatus(Integer priceChangeStatus) {
+		this.priceChangeStatus = priceChangeStatus;
+	}
+
+	public String getSignContractNum() {
+		return signContractNum;
+	}
+
+	public void setSignContractNum(String signContractNum) {
+		this.signContractNum = signContractNum;
+	}
+
+	public String getBoId() {
+		return boId;
+	}
+
+	public void setBoId(String boId) {
+		this.boId = boId;
+	}
+
+	public String getCompanyFullName() {
+		return companyFullName;
+	}
+
+	public void setCompanyFullName(String companyFullName) {
+		this.companyFullName = companyFullName;
 	}
 }

@@ -1,9 +1,9 @@
 package com.work.shop.oms.common.bean;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
-
-import com.alibaba.fastjson.JSON;
 
 /**
  * 配送商品信息
@@ -39,9 +39,19 @@ public class MasterGoods implements Serializable {
 	private Double transactionPrice;
 
 	/**
+	 * 未税成交价格
+	 */
+	private BigDecimal transactionPriceNoTax;
+
+	/**
 	 * 商品数量
 	 */
 	private Integer goodsNumber;
+
+	/**
+	 * 商品数量小数部分
+	 */
+	private BigDecimal goodsDecimals;
 
 	/**
 	 * 商品编码
@@ -67,6 +77,11 @@ public class MasterGoods implements Serializable {
 	 * 商品销售价
 	 */
 	private Double goodsPrice;
+
+	/**
+	 * 商品销售价未税
+	 */
+	private BigDecimal goodsPriceNoTax;
 
 	/**
 	 * 促销信息
@@ -272,6 +287,61 @@ public class MasterGoods implements Serializable {
      * 商品加价金额
      */
 	private BigDecimal goodsAddPrice;
+
+	/**
+	 * 商品是否支持无库存下单 0：不支持 1：支持
+	 */
+	private Integer purchasesWithoutStockFlag;
+
+	/**
+	 * 商品走库存的数量
+	 */
+	private Integer withStockNumber;
+
+	/**
+	 * 商品不走库存的数量
+	 */
+	private Integer withoutStockNumber;
+
+	/**
+	 * 无库存下单发货周期
+	 */
+	private String withoutStockDeliveryCycle;
+
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
+
+	/**
+	 * 商品数据来源  1、是店铺普通模板 2、店铺快速模板 3、快速自营模板
+	 */
+	private Integer  dataSources;
+
+	/**
+	 * 商品账期字典id，关联商品库system_payment_period表的id
+	 */
+	private Integer goodsPaymentPeriodId;
+
+	/**
+	 * 商品品牌id
+	 */
+	private Integer brandId;
+
+	/**
+	 * 商品品牌Code
+	 */
+	private String brandCode;
+
+	/**
+	 * 商品品牌名称
+	 */
+	private String brandName;
 
     public Double getShareBonus() {
 		return shareBonus;
@@ -696,4 +766,116 @@ public class MasterGoods implements Serializable {
     public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
         this.goodsAddPrice = goodsAddPrice;
     }
+
+	public BigDecimal getGoodsDecimals() {
+		return goodsDecimals;
+	}
+
+	public void setGoodsDecimals(BigDecimal goodsDecimals) {
+		this.goodsDecimals = goodsDecimals;
+	}
+
+	public Integer getPurchasesWithoutStockFlag() {
+		return purchasesWithoutStockFlag;
+	}
+
+	public void setPurchasesWithoutStockFlag(Integer purchasesWithoutStockFlag) {
+		this.purchasesWithoutStockFlag = purchasesWithoutStockFlag;
+	}
+
+	public Integer getWithStockNumber() {
+		return withStockNumber;
+	}
+
+	public void setWithStockNumber(Integer withStockNumber) {
+		this.withStockNumber = withStockNumber;
+	}
+
+	public Integer getWithoutStockNumber() {
+		return withoutStockNumber;
+	}
+
+	public void setWithoutStockNumber(Integer withoutStockNumber) {
+		this.withoutStockNumber = withoutStockNumber;
+	}
+
+	public String getWithoutStockDeliveryCycle() {
+		return withoutStockDeliveryCycle;
+	}
+
+	public void setWithoutStockDeliveryCycle(String withoutStockDeliveryCycle) {
+		this.withoutStockDeliveryCycle = withoutStockDeliveryCycle;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
+	}
+
+	public Integer getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Integer dataSources) {
+		this.dataSources = dataSources;
+	}
+
+	public Integer getGoodsPaymentPeriodId() {
+		return goodsPaymentPeriodId;
+	}
+
+	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
+		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
+	}
+
+	public Integer getBrandId() {
+		return brandId;
+	}
+
+	public void setBrandId(Integer brandId) {
+		this.brandId = brandId;
+	}
+
+	public String getBrandCode() {
+		return brandCode;
+	}
+
+	public void setBrandCode(String brandCode) {
+		this.brandCode = brandCode;
+	}
+
+	public String getBrandName() {
+		return brandName;
+	}
+
+	public void setBrandName(String brandName) {
+		this.brandName = brandName;
+	}
+
+	public BigDecimal getTransactionPriceNoTax() {
+		return transactionPriceNoTax;
+	}
+
+	public void setTransactionPriceNoTax(BigDecimal transactionPriceNoTax) {
+		this.transactionPriceNoTax = transactionPriceNoTax;
+	}
+
+	public BigDecimal getGoodsPriceNoTax() {
+		return goodsPriceNoTax;
+	}
+
+	public void setGoodsPriceNoTax(BigDecimal goodsPriceNoTax) {
+		this.goodsPriceNoTax = goodsPriceNoTax;
+	}
 }

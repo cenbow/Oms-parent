@@ -1,6 +1,7 @@
 package com.work.shop.oms.core.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.work.shop.oms.bean.*;
 import com.work.shop.oms.core.beans.BaseTask;
 import com.work.shop.oms.core.beans.ConstantTask;
@@ -9,6 +10,7 @@ import com.work.shop.oms.core.service.ATaskServiceProcess;
 import com.work.shop.oms.dao.define.OrderInfoSearchMapper;
 import com.work.shop.oms.order.service.MasterOrderInfoService;
 import com.work.shop.oms.utils.Constant;
+import com.work.shop.oms.utils.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -40,18 +42,24 @@ public class CompanyPayPeriodTask extends ATaskServiceProcess {
 	@Override
 	public List<BaseTask> queryServiceData(List<String> orderIdList, Integer dataLimit) {
 
-		Date date = new Date();
-		Map<String, Object> queryMap = new HashMap<String, Object>(2);
-		queryMap.put("dateTime", date);
-		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
-
 		List<BaseTask> taskDataList = new ArrayList<BaseTask>();
-		if (list == null || list.size() > 0) {
-			return taskDataList;
+
+		Map<String, Object> queryMap = new HashMap<String, Object>(2);
+		queryMap.put("dateTime", TimeUtil.getDate(TimeUtil.YYYY_MM_DD_HH_MM_SS));
+		List<OrderAccountPeriod> list = orderInfoSearchMapper.selectCompanyPayPeriodList(queryMap);
+		if (list != null && list.size() > 0) {
+			for (OrderAccountPeriod orderAccountPeriod : list) {
+				masterOrderInfoService.sendOrderPayPeriod(orderAccountPeriod);
+			}
 		}
 
-		for (OrderAccountPeriod orderAccountPeriod : list) {
-            masterOrderInfoService.processOrderPayPeriod(orderAccountPeriod);
+		// 查询订单发货单
+		List<OrderAccountPeriod> orderDepotShipList = orderInfoSearchMapper.selectCompanyPayPeriodListByOrderDepotShip(queryMap);
+		if (orderDepotShipList != null && orderDepotShipList.size() > 0) {
+			for (OrderAccountPeriod orderAccountPeriod : orderDepotShipList) {
+                orderAccountPeriod.setOrderType(1);
+				masterOrderInfoService.sendOrderPayPeriod(orderAccountPeriod);
+			}
 		}
 
 		return taskDataList;

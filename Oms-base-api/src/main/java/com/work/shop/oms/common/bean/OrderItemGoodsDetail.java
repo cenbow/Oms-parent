@@ -1,5 +1,7 @@
 package com.work.shop.oms.common.bean;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -19,6 +21,8 @@ public class OrderItemGoodsDetail implements Serializable {
 	 */
 	private String goodsSn;
 
+
+	private String sellerCode;
 	/**
 	 * 条形码
 	 */
@@ -33,6 +37,11 @@ public class OrderItemGoodsDetail implements Serializable {
 	 * 可用数量
 	 */
 	private String availableNumber;
+
+	/**
+	 *
+	 */
+	private Date addTime;
 
 	// 发货仓字段
 	private Byte shippingId;
@@ -172,9 +181,15 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	private Integer goodsNumber;
 
+	private BigDecimal goodsDecimalNumber;
+
 	private BigDecimal goodsPrice;
 
+	private BigDecimal goodsPriceNoTax;
+
 	private BigDecimal transactionPrice;
+
+	private BigDecimal transactionPriceNoTax;
 
 	private BigDecimal settlementPrice;
 
@@ -325,8 +340,61 @@ public class OrderItemGoodsDetail implements Serializable {
      */
 	private BigDecimal goodsAddPrice;
 
+	/**
+	 * 商品购买数量中走库存的数量
+	 */
+	private Integer withStockNumber;
+
+	/**
+	 * 商品购买数量中不走库存的数量
+	 */
+	private Integer withoutStockNumber;
+
+	/**
+	 * 商品销售类型
+	 */
+	private Integer saleType;
+
+	/**
+	 * 保护价
+	 */
+	private BigDecimal protectPrice;
+
+	/**
+	 * 商品账期字典id，关联商品库system_payment_period表的id
+	 */
+	private Integer goodsPaymentPeriodId;
+
+	/**
+	 * 商城商品是否支持无库存下单 0：不支持 1：支持
+	 */
+	private Integer purchasesWithoutStockFlag;
+
+	/**
+	 * 无库存下单发货周期
+	 */
+	private String withoutStockDeliveryCycle;
+
+	/**
+	 * 无库存下单补库存时使用的仓库
+	 */
+	private String withoutStockDepotNo;
+
+	/**
+	 * 商品数据来源  1、是店铺普通模板 2、店铺快速模板 3、快速自营模板
+	 */
+	private Integer  dataSources;
+
     public BigDecimal getGoodsAddPrice() {
         return goodsAddPrice;
+    }
+
+    public Date getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(Date addTime) {
+        this.addTime = addTime;
     }
 
     public void setGoodsAddPrice(BigDecimal goodsAddPrice) {
@@ -357,7 +425,7 @@ public class OrderItemGoodsDetail implements Serializable {
 		this.masterOrderSn = masterOrderSn == null ? null : masterOrderSn.trim();
 	}
 
-	public String getOrderSn() {
+    public String getOrderSn() {
 		return orderSn;
 	}
 
@@ -601,7 +669,15 @@ public class OrderItemGoodsDetail implements Serializable {
 		return isDel;
 	}
 
-	public void setIsDel(Integer isDel) {
+    public String getSellerCode() {
+        return sellerCode;
+    }
+
+    public void setSellerCode(String sellerCode) {
+        this.sellerCode = sellerCode;
+    }
+
+    public void setIsDel(Integer isDel) {
 		this.isDel = isDel;
 	}
 
@@ -854,18 +930,47 @@ public class OrderItemGoodsDetail implements Serializable {
 	}
 
 	public BigDecimal getSubTotal() {
-		if (null == subTotal || subTotal.doubleValue() == 0) {
-			if (null == transactionPrice) {
-				transactionPrice = new BigDecimal(0.00);
-			}
-			if (null == goodsNumber) {
-				subTotal = new BigDecimal(0.00);
-			} else {
-				BigDecimal number = new BigDecimal(goodsNumber);
-				subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
-				//subTotal = transactionPrice.doubleValue() * goodsNumber;
-			}
-		}
+        if (null == subTotal || subTotal.doubleValue() == 0) {
+            if (StringUtils.isNotEmpty(subTotalStr)) {
+                return new BigDecimal(subTotalStr);
+            }
+            long time = 1595260800000L;
+            Date noTaxDate = new Date(time);
+            //只有是自营的订单商品 且订单创建时间比未税上线时间晚
+            if (null != sellerCode && "hbis".equalsIgnoreCase(sellerCode) && null != addTime && addTime.compareTo(noTaxDate) > 0) {
+                if (null == transactionPriceNoTax) {
+                    transactionPriceNoTax = BigDecimal.ZERO;
+                }
+                if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO) == 0)) {
+                    subTotal = BigDecimal.ZERO;
+                } else {
+                    BigDecimal number = new BigDecimal(goodsNumber);
+                    if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO) != 0) {
+                        number = number.add(goodsDecimalNumber);
+                    }
+                    BigDecimal noTax = transactionPriceNoTax.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    if (null == outputTax) {
+                        outputTax = BigDecimal.ZERO;
+                    }
+                    BigDecimal tax = noTax.multiply(outputTax).divide(new BigDecimal("100")).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    subTotal = noTax.add(tax).setScale(2,BigDecimal.ROUND_HALF_UP);
+                }
+            } else {
+                if (null == transactionPrice) {
+                    transactionPrice = new BigDecimal(0.00);
+                }
+                if (null == goodsNumber && (goodsDecimalNumber == null || goodsDecimalNumber.compareTo(BigDecimal.ZERO) == 0)) {
+                    subTotal = new BigDecimal(0.00);
+                } else {
+                    BigDecimal number = new BigDecimal(goodsNumber);
+                    if (goodsDecimalNumber != null && goodsDecimalNumber.compareTo(BigDecimal.ZERO) != 0) {
+                        number = number.add(goodsDecimalNumber);
+                    }
+                    subTotal = transactionPrice.multiply(number).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    //subTotal = transactionPrice.doubleValue() * goodsNumber;
+                }
+            }
+        }
 		return subTotal;
 	}
 
@@ -1074,9 +1179,10 @@ public class OrderItemGoodsDetail implements Serializable {
     }
 
     public String getSubTotalStr() {
-        BigDecimal subTotal = getSubTotal();
-        subTotalStr = "";
-        if (subTotal != null) {
+        if (StringUtils.isEmpty(subTotalStr)) {
+            if (subTotal == null) {
+                subTotal = getSubTotal();
+            }
             subTotalStr = subTotal.toString();
         }
         return subTotalStr;
@@ -1132,5 +1238,101 @@ public class OrderItemGoodsDetail implements Serializable {
 
 	public void setCostPrice(BigDecimal costPrice) {
 		this.costPrice = costPrice;
+	}
+
+	public BigDecimal getGoodsDecimalNumber() {
+		return goodsDecimalNumber;
+	}
+
+	public void setGoodsDecimalNumber(BigDecimal goodsDecimalNumber) {
+		this.goodsDecimalNumber = goodsDecimalNumber;
+	}
+
+	public Integer getWithStockNumber() {
+		return withStockNumber;
+	}
+
+	public void setWithStockNumber(Integer withStockNumber) {
+		this.withStockNumber = withStockNumber;
+	}
+
+	public Integer getWithoutStockNumber() {
+		return withoutStockNumber;
+	}
+
+	public void setWithoutStockNumber(Integer withoutStockNumber) {
+		this.withoutStockNumber = withoutStockNumber;
+	}
+
+	public Integer getSaleType() {
+		return saleType;
+	}
+
+	public void setSaleType(Integer saleType) {
+		this.saleType = saleType;
+	}
+
+	public BigDecimal getProtectPrice() {
+		return protectPrice;
+	}
+
+	public void setProtectPrice(BigDecimal protectPrice) {
+		this.protectPrice = protectPrice;
+	}
+
+	public Integer getGoodsPaymentPeriodId() {
+		return goodsPaymentPeriodId;
+	}
+
+	public void setGoodsPaymentPeriodId(Integer goodsPaymentPeriodId) {
+		this.goodsPaymentPeriodId = goodsPaymentPeriodId;
+	}
+
+	public Integer getPurchasesWithoutStockFlag() {
+		return purchasesWithoutStockFlag;
+	}
+
+	public void setPurchasesWithoutStockFlag(Integer purchasesWithoutStockFlag) {
+		this.purchasesWithoutStockFlag = purchasesWithoutStockFlag;
+	}
+
+	public String getWithoutStockDeliveryCycle() {
+		return withoutStockDeliveryCycle;
+	}
+
+	public void setWithoutStockDeliveryCycle(String withoutStockDeliveryCycle) {
+		this.withoutStockDeliveryCycle = withoutStockDeliveryCycle;
+	}
+
+	public String getWithoutStockDepotNo() {
+		return withoutStockDepotNo;
+	}
+
+	public void setWithoutStockDepotNo(String withoutStockDepotNo) {
+		this.withoutStockDepotNo = withoutStockDepotNo;
+	}
+
+	public Integer getDataSources() {
+		return dataSources;
+	}
+
+	public void setDataSources(Integer dataSources) {
+		this.dataSources = dataSources;
+	}
+
+	public BigDecimal getGoodsPriceNoTax() {
+		return goodsPriceNoTax;
+	}
+
+	public void setGoodsPriceNoTax(BigDecimal goodsPriceNoTax) {
+		this.goodsPriceNoTax = goodsPriceNoTax;
+	}
+
+	public BigDecimal getTransactionPriceNoTax() {
+		return transactionPriceNoTax;
+	}
+
+	public void setTransactionPriceNoTax(BigDecimal transactionPriceNoTax) {
+		this.transactionPriceNoTax = transactionPriceNoTax;
 	}
 }

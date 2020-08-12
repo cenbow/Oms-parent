@@ -2,6 +2,9 @@ package com.work.shop.oms.controller.orderop;
 
 import javax.annotation.Resource;
 
+import com.work.shop.oms.bean.MasterOrderInfoExtend;
+import com.work.shop.oms.common.bean.MasterOrder;
+import com.work.shop.oms.common.bean.MasterOrderDetail;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -291,8 +294,7 @@ public class OrderCommonController {
     }
 
     /**
-     * 供应商订单发货结果
-     *
+     * 供应商订单发货
      * @param request
      * @return DistOrderShipResponse
      */
@@ -391,4 +393,26 @@ public class OrderCommonController {
 
         return returnInfo;
     }
+
+    /***
+     * 主订单编辑创业团队id和盈合商品id
+     * @param actionUser
+     * @param masterOrderDetail 订单信息
+     * @return com.work.shop.oms.common.bean.ReturnInfo<java.lang.String>
+     * @author wk
+     * @date 2020/6/23
+     **/
+    @PostMapping("/editBindTeam")
+    public ReturnInfo<String> editBindTeam(@RequestBody MasterOrderDetail masterOrderDetail, String actionUser) {
+        ReturnInfo<String> returnInfo = new ReturnInfo<String>();
+
+        try {
+            returnInfo = orderCommonService.editBindTeam(actionUser,masterOrderDetail);
+        } catch (Exception e) {
+            logger.error("主订单编辑绑定团队异常:" + JSON.toJSONString(masterOrderDetail), e);
+            returnInfo.setMessage("主订单编辑绑定团队异常");
+        }
+        return returnInfo;
+    }
+
 }
