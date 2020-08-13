@@ -382,7 +382,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 			line.setGoodsNumber(item.getGoodsNumber());
 			line.setGoodsThumb(item.getGoodsThumb());
 			line.setGoodsSizeName(item.getGoodsSizeName());
-            line.setPrice(MathOperation.setScale(item.getCostPrice(), 2));
+			//2020-08-12 修改不四舍五入
+			//line.setPrice(MathOperation.setScale(item.getCostPrice(), 2));
+            line.setPrice(item.getCostPrice());
             line.setSupplierCode(item.getSupplierCode());
             line.setInputTax(item.getInputTax());
             line.setOutputTax(item.getOutputTax());
